@@ -3,7 +3,8 @@
 # recall sheet.
 #
 # Usage: notes-recall [BOOKS] [NAME] [FONT]
-#        notes-recall [-b|--books DIR] [-n|--name NAME] [-f|--font SIZE] [-F|--font-name NAME] [-o|--out-dir DIR]
+#        notes-recall [-b|--books DIR] [-n|--name NAME] [-f|--font SIZE] [-F|--font-name NAME]
+#                     [-p|--page-number [POS]] [-o|--out-dir DIR]
 #   BOOKS / -b   Folder of highlighted PDFs, subfolders included
 #                (default: ~/Documents/Dump)
 #   NAME  / -n   Base name of the output files (default: Dump)
@@ -11,6 +12,9 @@
 #   -F           Body font for both PDFs: any installed font, e.g. -F Roboto
 #                or -F "Noto Serif" (default: Latin Modern Roman). Checked
 #                before anything is extracted.
+#   -p           Print page numbers (default: no page numbers). Alone, -p puts
+#                them at the bottom right; or name a position: br bl bc
+#                (bottom right/left/centre), tr tl tc (top), e.g. -p bc
 #   -o           Where to write the outputs (default: the folder that contains
 #                BOOKS). It must not be inside BOOKS: the next run would read
 #                your notes PDFs as books.
@@ -38,6 +42,7 @@ books="$HOME/Documents/Dump"
 name="Dump"
 font="14"
 font_name=""
+page_number="none"   # -p alone -> br; or bl bc tl tr tc
 out_dir=""
 positional=()
 
@@ -56,6 +61,14 @@ while [ $# -gt 0 ]; do
                 -o|--out-dir) out_dir="$2" ;;
             esac
             shift 2
+            ;;
+        -p|--page-number)
+            page_number="br"
+            # optional position right after -p (anything else is left alone)
+            case "${2:-}" in
+                br|bl|bc|tr|tl|tc|none) page_number="$2"; shift ;;
+            esac
+            shift
             ;;
         -h|--help)
             usage
@@ -129,7 +142,8 @@ notes_pdf="$out_dir/$name.pdf"
 recall_pdf="$out_dir/${name}_recall.pdf"
 
 echo "Books:  $books"
-echo "Output: $out_dir/$name{.md,.pdf,_recall.pdf}  (font ${font}pt${font_name:+, $font_name})"
+if [ "$page_number" = "none" ]; then pages_msg="no page numbers"; else pages_msg="page numbers $page_number"; fi
+echo "Output: $out_dir/$name{.md,.pdf,_recall.pdf}  (font ${font}pt${font_name:+, $font_name}, $pages_msg)"
 echo
 
 # ---- 1. every PDF in the folder -> one combined Markdown file ---------------
@@ -155,13 +169,13 @@ mv -f "$tmp_md" "$notes_md"
 failed=()
 echo
 # (--md2pdf-cmd is split like a shell command line, so quote the path)
-if ! "$recall_cmd" "$notes_md" -o "$recall_pdf" -s "$font" ${font_args[@]+"${font_args[@]}"} --right bold --md2pdf-cmd "$(printf '%q' "$md2pdf_cmd")"; then
+if ! "$recall_cmd" "$notes_md" -o "$recall_pdf" -s "$font" ${font_args[@]+"${font_args[@]}"} -p "$page_number" --right bold --md2pdf-cmd "$(printf '%q' "$md2pdf_cmd")"; then
     failed+=("recall sheet ($recall_pdf)")
 fi
 
 # ---- 3. notes PDF ------------------------------------------------------------
 echo
-if ! "$md2pdf_cmd" -s "$font" ${font_args[@]+"${font_args[@]}"} "$notes_md" "$notes_pdf"; then
+if ! "$md2pdf_cmd" -s "$font" ${font_args[@]+"${font_args[@]}"} -p "$page_number" "$notes_md" "$notes_pdf"; then
     failed+=("notes PDF ($notes_pdf)")
 fi
 
