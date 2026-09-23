@@ -1,0 +1,316 @@
+#!/usr/bin/env node
+/**
+ * YouTube Subscription Diff & Sync Script (Node.js)
+ * ---------------------------------------------------
+ * Compares subscriptions between TWO YouTube accounts:
+ *   - Ashu      (old account, source of truth)
+ *   - Sudhanshu (new account, migration target)
+ *
+ * Step 1: Fetches subscriptions from BOTH accounts (cheap: 1 unit per
+ *         50 results via subscriptions.list — no writes involved yet).
+ * Step 2: Computes which channels Ashu is subscribed to that Sudhanshu
+ *         is NOT yet subscribed to.
+ * Step 3: Prints that list and asks for confirmation before doing
+ *         anything else.
+ * Step 4: Only if you confirm, it subscribes Sudhanshu to the missing
+ *         channels (subscriptions.insert, 50 units each), using the
+ *         same progress-tracking/quota-safe approach as before.
+ *
+ * SETUP:
+ * 1. You need TWO separate OAuth clients (Desktop app type), one for
+ *    each Google Cloud project/app you've been using, OR the same
+ *    project is fine too — what matters is you'll authenticate twice,
+ *    once per account.
+ *    - Save Ashu's client credentials as    client_secret_ashu.json
+ *    - Save Sudhanshu's client credentials as client_secret_sudhanshu.json
+ *    (If you've been using ONE client_secret.json for both, you can
+ *    just copy it to both filenames below.)
+ * 2. Make sure BOTH Ashu's and Sudhanshu's emails are added as test
+ *    users on whichever OAuth consent screen(s) you're using.
+ * 3. npm install googleapis @google-cloud/local-auth
+ *
+ * USAGE:
+ *    yt-subs-sync
+ *
+ * You will be prompted to log in TWICE in the browser:
+ *    1st: log in as Ashu   (old account)
+ *    2nd: log in as Sudhanshu (new account)
+ */
+
+const fs = require("fs");
+const path = require("path");
+const readline = require("readline");
+const { authenticate } = require("@google-cloud/local-auth");
+const { google } = require("googleapis");
+
+const READ_SCOPE = ["https://www.googleapis.com/auth/youtube.readonly"];
+const WRITE_SCOPE = ["https://www.googleapis.com/auth/youtube"];
+
+const CLIENT_SECRET_ASHU = path.join(__dirname, "client_secret_ashu.json");
+const CLIENT_SECRET_SUDHANSHU = path.join(
+	__dirname,
+	"client_secret_sudhanshu.json",
+);
+
+const TOKEN_ASHU = path.join(__dirname, "token_ashu.json");
+const TOKEN_SUDHANSHU = path.join(__dirname, "token_sudhanshu.json");
+
+const PROGRESS_FILE = path.join(__dirname, "progress.json");
+const MISSING_FILE = path.join(__dirname, "missing_channels.json");
+
+// ---------- Auth helpers ----------
+
+async function getAuthenticatedClient(clientSecretFile, tokenFile, scopes) {
+	if (fs.existsSync(tokenFile)) {
+		const savedCreds = JSON.parse(fs.readFileSync(tokenFile, "utf-8"));
+		return google.auth.fromJSON(savedCreds);
+	}
+
+	const client = await authenticate({
+		scopes,
+		keyfilePath: clientSecretFile,
+	});
+
+	if (client.credentials) {
+		const keys = JSON.parse(fs.readFileSync(clientSecretFile, "utf-8"));
+		const key = keys.installed || keys.web;
+		const payload = {
+			type: "authorized_user",
+			client_id: key.client_id,
+			client_secret: key.client_secret,
+			refresh_token: client.credentials.refresh_token,
+		};
+		fs.writeFileSync(tokenFile, JSON.stringify(payload));
+	}
+
+	return client;
+}
+
+// ---------- Subscription fetching ----------
+
+async function fetchAllSubscriptions(youtube, label) {
+	const subs = new Map(); // channelId -> title
+	let nextPageToken = undefined;
+	let calls = 0;
+
+	do {
+		const res = await youtube.subscriptions.list({
+			part: ["snippet"],
+			mine: true,
+			maxResults: 50,
+			pageToken: nextPageToken,
+		});
+		calls++;
+
+		for (const item of res.data.items || []) {
+			const channelId = item.snippet.resourceId.channelId;
+			subs.set(channelId, item.snippet.title);
+		}
+
+		nextPageToken = res.data.nextPageToken;
+		console.log(`  [${label}] fetched page ${calls} (${subs.size} so far)...`);
+	} while (nextPageToken);
+
+	console.log(
+		`  [${label}] done. Total: ${subs.size} subscriptions, ${calls} quota units used.\n`,
+	);
+	return subs;
+}
+
+// ---------- Progress tracking (for the sync/insert step) ----------
+
+function loadProgress() {
+	if (fs.existsSync(PROGRESS_FILE)) {
+		const progress = JSON.parse(fs.readFileSync(PROGRESS_FILE, "utf-8"));
+		progress.subscribed = [...new Set(progress.subscribed || [])];
+		progress.failed = [...new Set(progress.failed || [])];
+		return progress;
+	}
+	return { subscribed: [], failed: [] };
+}
+
+function saveProgress(progress) {
+	fs.writeFileSync(PROGRESS_FILE, JSON.stringify(progress, null, 2));
+}
+
+function addFailed(progress, value) {
+	if (!progress.failed.includes(value)) {
+		progress.failed.push(value);
+	}
+}
+
+// ---------- Subscribe (write) ----------
+
+async function subscribeTo(youtube, channelId) {
+	try {
+		await youtube.subscriptions.insert({
+			part: ["snippet"],
+			requestBody: {
+				snippet: {
+					resourceId: {
+						kind: "youtube#channel",
+						channelId,
+					},
+				},
+			},
+		});
+		return { ok: true };
+	} catch (err) {
+		const msg = err.message || String(err);
+		if (msg.includes("quotaExceeded")) {
+			return { ok: false, quotaExceeded: true };
+		}
+		if (msg.includes("subscriptionDuplicate")) {
+			return { ok: true };
+		}
+		console.log(`  Error subscribing to ${channelId}: ${msg}`);
+		return { ok: false };
+	}
+}
+
+function sleep(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// ---------- Interactive confirmation ----------
+
+function askQuestion(query) {
+	const rl = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout,
+	});
+	return new Promise((resolve) =>
+		rl.question(query, (answer) => {
+			rl.close();
+			resolve(answer.trim().toLowerCase());
+		}),
+	);
+}
+
+// ---------- Main ----------
+
+async function main() {
+	console.log("=== Step 1: Authenticate as Ashu (old account, read-only) ===");
+	const ashuAuth = await getAuthenticatedClient(
+		CLIENT_SECRET_ASHU,
+		TOKEN_ASHU,
+		READ_SCOPE,
+	);
+	const ashuYoutube = google.youtube({ version: "v3", auth: ashuAuth });
+
+	console.log("\n=== Step 2: Authenticate as Sudhanshu (new account) ===");
+	const sudhanshuAuth = await getAuthenticatedClient(
+		CLIENT_SECRET_SUDHANSHU,
+		TOKEN_SUDHANSHU,
+		WRITE_SCOPE, // needs write scope since we may subscribe later
+	);
+	const sudhanshuYoutube = google.youtube({
+		version: "v3",
+		auth: sudhanshuAuth,
+	});
+
+	console.log("\n=== Step 3: Fetching subscriptions from both accounts ===");
+	console.log("Fetching Ashu's subscriptions...");
+	const ashuSubs = await fetchAllSubscriptions(ashuYoutube, "Ashu");
+
+	console.log("Fetching Sudhanshu's subscriptions...");
+	const sudhanshuSubs = await fetchAllSubscriptions(
+		sudhanshuYoutube,
+		"Sudhanshu",
+	);
+
+	console.log(
+		"=== Step 4: Computing missing channels (in Ashu, not in Sudhanshu) ===",
+	);
+	const missing = [];
+	for (const [channelId, title] of ashuSubs.entries()) {
+		if (!sudhanshuSubs.has(channelId)) {
+			missing.push({ channelId, title });
+		}
+	}
+
+	console.log(`\nAshu total subscriptions:      ${ashuSubs.size}`);
+	console.log(`Sudhanshu total subscriptions: ${sudhanshuSubs.size}`);
+	console.log(`Missing from Sudhanshu:        ${missing.length}\n`);
+
+	if (missing.length === 0) {
+		console.log(
+			"Nothing to sync — Sudhanshu already has every channel Ashu is subscribed to.",
+		);
+		return;
+	}
+
+	console.log("Channels missing from Sudhanshu:");
+	missing.forEach((m, i) =>
+		console.log(`  ${i + 1}. ${m.title} (${m.channelId})`),
+	);
+
+	fs.writeFileSync(MISSING_FILE, JSON.stringify(missing, null, 2));
+	console.log(`\nSaved full list to ${MISSING_FILE}`);
+
+	const answer = await askQuestion(
+		`\nSubscribe Sudhanshu to these ${missing.length} missing channels now? (yes/no): `,
+	);
+
+	if (answer !== "yes" && answer !== "y") {
+		console.log(
+			"Okay, not subscribing anything. You can review missing_channels.json and re-run this script when ready.",
+		);
+		return;
+	}
+
+	console.log("\n=== Step 5: Subscribing Sudhanshu to missing channels ===");
+	const progress = loadProgress();
+	// Only skip channels already confirmed subscribed in a PRIOR RUN OF THIS
+	// SCRIPT (in case it was interrupted mid-way, e.g. by hitting quota).
+	// We deliberately do NOT skip based on the "failed" list here: since
+	// "missing" was just computed from a live, ground-truth API check,
+	// anything still in this list is genuinely still missing — a channel
+	// failing once (network blip, transient error, old bug) should not
+	// mean it's silently skipped forever on every future run.
+	const alreadyDoneThisTarget = new Set(progress.subscribed);
+
+	const toProcess = missing.filter(
+		(m) => !alreadyDoneThisTarget.has(m.channelId),
+	);
+	console.log(
+		`${toProcess.length} channels to process (${missing.length - toProcess.length} already confirmed subscribed in a prior run)\n`,
+	);
+
+	for (let i = 0; i < toProcess.length; i++) {
+		const { channelId, title } = toProcess[i];
+		console.log(
+			`[${i + 1}/${toProcess.length}] Subscribing to: ${title} (${channelId})`,
+		);
+
+		const result = await subscribeTo(sudhanshuYoutube, channelId);
+
+		if (result.quotaExceeded) {
+			console.log(
+				"\nDaily quota exceeded. Run this script again tomorrow to continue — it will pick up where it left off.",
+			);
+			process.exit(0);
+		}
+
+		if (result.ok) {
+			if (!progress.subscribed.includes(channelId)) {
+				progress.subscribed.push(channelId);
+			}
+			// If it previously failed and now succeeded, remove the stale failed record
+			progress.failed = progress.failed.filter((id) => id !== channelId);
+		} else {
+			addFailed(progress, channelId);
+		}
+		saveProgress(progress);
+		await sleep(500);
+	}
+
+	console.log("\nDone with this run.");
+	console.log(`Subscribed (all-time total): ${progress.subscribed.length}`);
+	console.log(`Failed (all-time total): ${progress.failed.length}`);
+}
+
+main().catch((err) => {
+	console.error("Error:", err.message || err);
+	process.exit(1);
+});

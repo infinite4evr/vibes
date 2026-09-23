@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# split-pdf: split a PDF into consecutive chunks of N pages (default 50)
+#
+# Usage: split-pdf <file.pdf> [pages-per-part] [-o|--output DIR]
+#   file.pdf        PDF to split
+#   pages-per-part  Pages in each part (default: 50), e.g. split-pdf book.pdf 100
+#   -o, --output    Output directory (default: <file>-split/ next to the PDF)
+#
+# Parts are named <file>_part01_p1-50.pdf, <file>_part02_p51-100.pdf, ...
+# The last part holds whatever pages remain.
+#
+# Uses qpdf for page extraction (not poppler's pdfseparate/pdfunite): some
+# PDFs -- notably ones with a large/odd Outlines (bookmark) tree, seen e.g.
+# in calibre/Zotero-produced ebooks -- make poppler log endless
+# "PDFDoc::markDictionary: Found recursive dicts" warnings and crawl at a
+# couple of pages/second. qpdf's --pages page-range extraction sidesteps
+# that codepath entirely and is normally well under a second per part.
+set -euo pipefail
+
+usage() { echo "Usage: split-pdf <file.pdf> [pages-per-part] [-o|--output DIR]"; }
+
+outdir=""
+positional=()
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -o|--output)
+            if [ $# -lt 2 ]; then
+                echo "Error: $1 requires a value (e.g. $1 parts/)"
+                exit 1
+            fi
+            outdir="$2"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            positional+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if [ "${#positional[@]}" -lt 1 ] || [ "${#positional[@]}" -gt 2 ]; then
+    usage
+    exit 1
+fi
+
+input="${positional[0]}"
+size="${positional[1]:-50}"
+
+if [ ! -f "$input" ]; then
+    echo "Error: file not found: $input"
+    exit 1
+fi
+
+if ! [[ "$size" =~ ^[0-9]+$ ]] || [ "$size" -lt 1 ]; then
+    echo "Error: pages-per-part must be a positive whole number (got: $size)"
+    exit 1
+fi
+
+if ! command -v qpdf >/dev/null 2>&1; then
+    echo "Error: qpdf not found. Install it (e.g. 'sudo apt install qpdf')."
+    exit 1
+fi
+
+input_abs="$(cd "$(dirname "$input")" && pwd)/$(basename "$input")"
+
+total="$(qpdf --show-npages "$input_abs" 2>/dev/null || true)"
+if [ -z "$total" ] || ! [[ "$total" =~ ^[0-9]+$ ]] || [ "$total" -lt 1 ]; then
+    echo "Error: could not read page count from $input (encrypted or not a valid PDF?)"
+    exit 1
+fi
+
+base="$(basename "$input")"
+base="${base%.*}"
+
+if [ -z "$outdir" ]; then
+    outdir="$(dirname "$input_abs")/${base}-split"
+fi
+mkdir -p "$outdir"
+outdir="$(cd "$outdir" && pwd)"
+
+if [ "$total" -le "$size" ]; then
+    echo "$input has $total pages, which fits in one part of $size; nothing to split."
+    exit 0
+fi
+
+parts=$(( (total + size - 1) / size ))
+width=${#parts}
+[ "$width" -lt 2 ] && width=2
+
+n=0
+for (( start=1; start<=total; start+=size )); do
+    end=$(( start + size - 1 ))
+    [ "$end" -gt "$total" ] && end="$total"
+    n=$(( n + 1 ))
+    out="$(printf "%s/%s_part%0${width}d_p%d-%d.pdf" "$outdir" "$base" "$n" "$start" "$end")"
+
+    qpdf "$input_abs" --pages "$input_abs" "$start-$end" -- "$out"
+    echo "  part $n/$parts: pages $start-$end -> $(basename "$out")"
+done
+
+echo "Split $total pages into $parts parts of up to $size pages in $outdir"

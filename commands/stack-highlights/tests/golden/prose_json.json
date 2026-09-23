@@ -1,0 +1,153 @@
+{
+  "highlights": 4,
+  "entries": [
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "CHAPTER 1 TEST NOTES"
+        }
+      ],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The features of the system are:",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "text": "1. First item keeps the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "important fact.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "text": "2. ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Second item",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " has another key detail.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "importantfact."
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Seconditem"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "CHAPTER 1 TEST NOTES"
+        }
+      ],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "A separate sentence provides ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "useful surrounding",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " context.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "usefulsurrounding"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "CHAPTER 1 TEST NOTES"
+        }
+      ],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "A co-",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "operation",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " example crosses a line break.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "operation"
+        }
+      ]
+    }
+  ]
+}

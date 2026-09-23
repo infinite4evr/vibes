@@ -1,0 +1,162 @@
+#!/usr/bin/env python3
+"""
+notes -- one command to turn a highlighted PDF into every output you want.
+
+It runs stack-highlights ONCE and reuses that result for each target, so the
+PDF is only parsed a single time:
+
+    notes book.pdf                              # -> notes PDF + recall PDF
+    notes book.pdf --to notes                   # just the notes PDF
+    notes book.pdf --to notes,recall,md,json    # everything
+    notes book.pdf --preset revise              # a preset, passed to extraction
+    notes book.pdf --profile laxmikanth         # a publisher profile
+    notes book.pdf --context clause --min-words 6   # extraction flags pass through
+    notes book.pdf --recall-args="--right cloze --gap 1.5"
+    notes book.pdf --md-args="--compact -p br"
+    notes folder/ --to recall                   # every PDF in a folder
+
+Targets:
+    notes    <name>_notes.pdf   (stack-highlights -> md-to-pdf)
+    recall   <name>_recall.pdf  (recall sheet, reusing the extracted .md)
+    md       <name>.md          (the raw Markdown)
+    json     <name>.json        (structured output; a second extraction)
+
+Flag routing: --preset/--profile/--config and any flag stack-highlights knows
+go to the extraction step; --recall-args and --md-args are forwarded verbatim
+to those tools. Run `stack-highlights --help` for the extraction flags.
+"""
+import argparse
+import shlex
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+
+
+def tool(name):
+    """Find a sibling tool (installed next to this script), else rely on PATH."""
+    local = HERE / name
+    return str(local) if local.exists() else name
+
+
+def run(cmd, **kw):
+    return subprocess.run(cmd, **kw)
+
+
+def stack_extract(inp, out_md, passthrough, fmt=None):
+    cmd = [tool("stack-highlights"), str(inp), "--out", str(out_md), *passthrough]
+    if fmt:
+        cmd += ["--format", fmt]
+    p = run(cmd)
+    return p.returncode == 0
+
+
+def main():
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,
+        add_help=True)
+    ap.add_argument("input", help="A highlighted PDF or a folder of PDFs")
+    ap.add_argument("--to", default="notes,recall",
+                    help="Comma list of targets: notes, recall, md, json (default: notes,recall)")
+    ap.add_argument("--out-dir", help="Where to write outputs (default: next to the input)")
+    ap.add_argument("--preset", help="Preset, forwarded to stack-highlights")
+    ap.add_argument("--profile", help="Publisher profile, forwarded to stack-highlights")
+    ap.add_argument("--config", help="Config file, forwarded to stack-highlights")
+    ap.add_argument("--recall-args", default="", help="Extra flags for the recall sheet, quoted, as --recall-args=\"...\"")
+    ap.add_argument("--md-args", default="", help="Extra flags for md-to-pdf (notes), quoted, as --md-args=\"...\"")
+    # everything else is treated as a stack-highlights extraction flag
+    args, extra = ap.parse_known_args()
+
+    targets = [t.strip() for t in args.to.split(",") if t.strip()]
+    known = {"notes", "recall", "md", "json"}
+    bad = [t for t in targets if t not in known]
+    if bad:
+        sys.exit(f"error: unknown target(s) {bad}; choose from {sorted(known)}")
+
+    inp = Path(args.input).expanduser()
+    if not inp.exists():
+        sys.exit(f"error: {inp} does not exist")
+
+    # forwarded extraction flags: preset/profile/config + any pass-through
+    passthrough = list(extra)
+    for name, val in (("--preset", args.preset), ("--profile", args.profile), ("--config", args.config)):
+        if val:
+            passthrough += [name, val]
+
+    recall_extra = shlex.split(args.recall_args)
+    md_extra = shlex.split(args.md_args)
+
+    # resolve the list of PDFs (folder mode processes each)
+    if inp.is_dir():
+        pdfs = sorted(p for p in inp.rglob("*.pdf"))
+        if not pdfs:
+            sys.exit(f"error: no PDFs under {inp}")
+    else:
+        pdfs = [inp]
+
+    out_dir = Path(args.out_dir).expanduser() if args.out_dir else None
+    if out_dir:
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+    ok = True
+    for pdf in pdfs:
+        base_dir = out_dir or pdf.parent
+        stem = pdf.stem
+        produced = []
+        with tempfile.TemporaryDirectory() as td:
+            work_md = Path(td) / f"{stem}.md"
+            work_json = Path(td) / f"{stem}.json"
+            # extract each format we need once, applying the extraction flags
+            need_md = any(t in targets for t in ("notes", "md"))
+            need_json = any(t in targets for t in ("recall", "json"))
+            if need_md and not stack_extract(pdf, work_md, passthrough):
+                print(f"  error   {pdf.name}: extraction failed", file=sys.stderr)
+                ok = False
+                continue
+            if need_json and not stack_extract(pdf, work_json, passthrough, fmt="json"):
+                print(f"  error   {pdf.name}: extraction failed", file=sys.stderr)
+                ok = False
+                continue
+            if (need_md and not work_md.exists()) or (need_json and not work_json.exists()):
+                print(f"  note    {pdf.name}: no highlights found", file=sys.stderr)
+
+            if "md" in targets and work_md.exists():
+                dst = base_dir / f"{stem}.md"
+                dst.write_bytes(work_md.read_bytes())
+                produced.append(dst.name)
+
+            if "notes" in targets and work_md.exists():
+                dst = base_dir / f"{stem}_notes.pdf"
+                p = run([tool("md-to-pdf"), str(work_md), str(dst), *md_extra])
+                if p.returncode == 0:
+                    produced.append(dst.name)
+                else:
+                    ok = False
+
+            if "recall" in targets and work_json.exists():
+                dst = base_dir / f"{stem}_recall.pdf"
+                # feed the structured JSON so recall-sheet never re-parses Markdown;
+                # extraction flags are already baked in, so only layout flags apply here
+                p = run([tool("recall-sheet"), str(work_json), "-o", str(dst),
+                         "--stack-cmd", tool("stack-highlights"),
+                         "--md2pdf-cmd", tool("md-to-pdf"), *recall_extra])
+                if p.returncode == 0:
+                    produced.append(dst.name)
+                else:
+                    ok = False
+
+            if "json" in targets and work_json.exists():
+                dst = base_dir / f"{stem}.json"
+                dst.write_bytes(work_json.read_bytes())
+                produced.append(dst.name)
+
+        if produced:
+            print(f"  {pdf.name} -> {', '.join(produced)}", file=sys.stderr)
+
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

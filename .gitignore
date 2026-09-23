@@ -1,0 +1,8 @@
+dump/
+dump_old/
+
+# Never commit dependencies or credentials, anywhere in the repo
+node_modules/
+client_secret*.json
+token_*.json
+source-pdfs/

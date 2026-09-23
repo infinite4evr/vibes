@@ -1,0 +1,606 @@
+#!/usr/bin/env node
+/**
+ * normalize-names
+ *
+ * Recursively renames files and folders inside a given directory (and the
+ * directory itself) to PascalCase words. Underscores, hyphens, and real
+ * spaces are all treated as word separators and come out as a single space
+ * between capitalized words (e.g. "my_file-name" -> "My File Name"). Other
+ * special characters are simply removed, without adding a space. camelCase
+ * humps are split into separate capitalized words but stay joined with no
+ * space, since there was no explicit separator there in the original name
+ * (e.g. "camelCaseFile" -> "CamelCaseFile").
+ *
+ * SAFETY MODEL
+ * ------------
+ * 1. Dry-run by default. Nothing is renamed unless you pass --apply.
+ * 2. Never overwrites an existing file/folder. If the target name already
+ *    exists (or is claimed by another rename planned in the same run), the
+ *    rename is skipped and logged as a collision instead of proceeding.
+ * 3. Only fs.renameSync is ever called. fs.unlink / fs.rm are never used,
+ *    so this script cannot delete anything.
+ * 4. Renames happen bottom-up (deepest paths first), so a parent directory
+ *    is only renamed after everything inside it has already been handled -
+ *    a rename never invalidates a path that's still queued.
+ * 5. Every run writes a timestamped log file. Every applied run also writes
+ *    a JSON manifest of the renames it actually performed, which can be
+ *    replayed with --revert to undo that run.
+ * 6. .git/.svn/.hg are always skipped. node_modules and dotfiles/dotfolders
+ *    are skipped by default (opt in with --include-node-modules /
+ *    --include-hidden).
+ *
+ * USAGE
+ * -----
+ *   node normalize-names <folder>                    Preview only (dry-run)
+ *   node normalize-names <folder> --apply             Actually rename
+ *   node normalize-names <folder> --apply --yes        Skip confirmation
+ *   node normalize-names <folder> --revert manifest.json   Undo a run
+ *
+ * OPTIONS
+ * -------
+ *   --apply                  Perform the renames (default: dry-run preview)
+ *   --yes, -y                Skip the confirmation prompt when applying
+ *   --include-hidden         Also process dotfiles/dotfolders
+ *   --include-node-modules   Also process node_modules directories
+ *   --exclude <a,b,c>        Extra comma-separated names to skip
+ *   --revert <manifest.json> Undo a previous run using its manifest file
+ *   --verbose, -v            Also log unchanged/skipped items
+ *   --help, -h               Show this help
+ */
+
+"use strict";
+
+const fs = require("fs");
+const path = require("path");
+const readline = require("readline");
+
+// ---------------------------------------------------------------------------
+// CLI parsing
+// ---------------------------------------------------------------------------
+
+function parseArgs(argv) {
+	const opts = {
+		target: null,
+		apply: false,
+		yes: false,
+		includeHidden: false,
+		includeNodeModules: false,
+		exclude: [],
+		revert: null,
+		verbose: false,
+		help: false,
+	};
+
+	for (let i = 0; i < argv.length; i++) {
+		const a = argv[i];
+		switch (a) {
+			case "--apply":
+				opts.apply = true;
+				break;
+			case "--yes":
+			case "-y":
+				opts.yes = true;
+				break;
+			case "--include-hidden":
+				opts.includeHidden = true;
+				break;
+			case "--include-node-modules":
+				opts.includeNodeModules = true;
+				break;
+			case "--verbose":
+			case "-v":
+				opts.verbose = true;
+				break;
+			case "--help":
+			case "-h":
+				opts.help = true;
+				break;
+			case "--exclude":
+				opts.exclude = (argv[++i] || "")
+					.split(",")
+					.map((s) => s.trim())
+					.filter(Boolean);
+				break;
+			case "--revert":
+				opts.revert = argv[++i];
+				break;
+			default:
+				if (!a.startsWith("-") && !opts.target) opts.target = a;
+		}
+	}
+	return opts;
+}
+
+function printHelp() {
+	console.log(`
+Usage:
+  node normalize-names <folder> [options]
+
+Options:
+  --apply                  Perform the renames (default: dry-run preview only)
+  --yes, -y                Skip the confirmation prompt when applying
+  --include-hidden         Also process dotfiles/dotfolders (skipped by default)
+  --include-node-modules   Also process node_modules dirs (skipped by default)
+  --exclude <a,b,c>        Extra comma-separated names to skip
+  --revert <manifest.json> Undo a previous run using its manifest file
+  --verbose, -v            Log unchanged/skipped items too
+  --help, -h               Show this help
+`);
+}
+
+// ---------------------------------------------------------------------------
+// Logger — writes to console AND a timestamped log file
+// ---------------------------------------------------------------------------
+
+class Logger {
+	constructor(logFilePath, verbose) {
+		this.verbose = verbose;
+		this.stream = fs.createWriteStream(logFilePath, { flags: "a" });
+		this.counts = {
+			renamed: 0,
+			unchanged: 0,
+			collision: 0,
+			excluded: 0,
+			error: 0,
+		};
+	}
+
+	_write(level, msg) {
+		const line = `[${new Date().toISOString()}] [${level}] ${msg}`;
+		this.stream.write(line + "\n");
+		return line;
+	}
+
+	info(msg) {
+		console.log(this._write("INFO", msg));
+	}
+	warn(msg) {
+		console.warn(this._write("WARN", msg));
+	}
+	error(msg) {
+		console.error(this._write("ERROR", msg));
+	}
+	debug(msg) {
+		const line = this._write("DEBUG", msg);
+		if (this.verbose) console.log(line);
+	}
+
+	close() {
+		return new Promise((resolve) => this.stream.end(resolve));
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Name normalization
+// ---------------------------------------------------------------------------
+
+/**
+ * Converts an arbitrary string (snake_case, kebab-case, camelCase, spaced,
+ * with special characters/accents, etc.) into PascalCase words joined with
+ * no separator.
+ */
+function toPascalCase(input) {
+	if (!input) return "";
+
+	let s = input
+		.normalize("NFKD") // split accented chars into base + diacritic
+		.replace(/[\u0300-\u036f]/g, ""); // drop the diacritics
+
+	// Underscores, hyphens, and real whitespace are all treated as the same
+	// kind of word separator, and are PRESERVED as a single space in the
+	// output between the PascalCase words on either side of them.
+	s = s.replace(/[_\-\s]+/g, " ");
+
+	const segments = s.split(" ").filter(Boolean);
+
+	const pascalSegments = segments
+		.map((segment) => {
+			// camelCase -> split into words within this segment. These stay
+			// concatenated with NO space, since there was no explicit separator
+			// (underscore/hyphen/space) at that point in the original name.
+			const withCamelBoundaries = segment.replace(
+				/([a-z0-9])([A-Z])/g,
+				"$1 $2",
+			);
+			// Any other special character is also a word boundary, but is simply
+			// deleted rather than turned into a space.
+			const words = withCamelBoundaries.split(/[^a-zA-Z0-9]+/).filter(Boolean);
+			return words
+				.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+				.join("");
+		})
+		.filter(Boolean);
+
+	return pascalSegments.join(" ");
+}
+
+let fallbackCounter = 0;
+
+/**
+ * Normalizes a single file or directory name.
+ * - Directories: the whole name is PascalCased.
+ * - Files: the base name is PascalCased; the extension is kept but stripped
+ *   of special characters (so .txt stays .txt).
+ * - A leading dot (hidden files/folders) is preserved as a prefix rather
+ *   than stripped, so normalizing ".gitignore" (only reached with
+ *   --include-hidden) yields ".Gitignore", not "Gitignore".
+ */
+function normalizeEntryName(name, isDirectory) {
+	const hiddenPrefix = name.startsWith(".") ? "." : "";
+	const bareName = hiddenPrefix ? name.slice(1) : name;
+
+	if (isDirectory) {
+		const pascal = toPascalCase(bareName);
+		return hiddenPrefix + (pascal || `UnnamedFolder${++fallbackCounter}`);
+	}
+
+	const ext = path.extname(bareName);
+	const base = ext ? bareName.slice(0, -ext.length) : bareName;
+
+	const pascalBase = toPascalCase(base) || `UnnamedFile${++fallbackCounter}`;
+	const cleanExt = ext.replace(/[^a-zA-Z0-9.]/g, "");
+
+	return hiddenPrefix + pascalBase + cleanExt;
+}
+
+// ---------------------------------------------------------------------------
+// Walking the tree
+// ---------------------------------------------------------------------------
+
+function shouldSkipEntry(name, isDirectory, opts) {
+	if (isDirectory && (name === ".git" || name === ".svn" || name === ".hg"))
+		return "vcs-folder";
+	if (!opts.includeNodeModules && isDirectory && name === "node_modules")
+		return "node_modules";
+	if (!opts.includeHidden && name.startsWith(".")) return "hidden";
+	if (opts.exclude.includes(name)) return "user-excluded";
+	return null;
+}
+
+/**
+ * Walks the tree from rootDir (inclusive) and returns a flat list of nodes,
+ * sorted so the deepest paths come first. That order is what makes bottom-up
+ * renaming safe: a directory is only renamed after everything inside it has
+ * already been renamed, so no in-flight path is ever invalidated.
+ */
+function walk(rootDir, opts, logger) {
+	const nodes = [];
+
+	function visit(fullPath, depth) {
+		let lst;
+		try {
+			lst = fs.lstatSync(fullPath);
+		} catch (err) {
+			logger.error(`Could not stat "${fullPath}": ${err.message}`);
+			return;
+		}
+
+		const isDirectory = lst.isDirectory();
+		const isSymlink = lst.isSymbolicLink();
+
+		nodes.push({
+			fullPath,
+			parentDir: path.dirname(fullPath),
+			name: path.basename(fullPath),
+			isDirectory,
+			isSymlink,
+			depth,
+		});
+
+		// Don't follow symlinks when recursing, even if they point at a directory.
+		if (isDirectory && !isSymlink) {
+			let children;
+			try {
+				children = fs.readdirSync(fullPath);
+			} catch (err) {
+				logger.error(`Could not read directory "${fullPath}": ${err.message}`);
+				return;
+			}
+
+			for (const child of children) {
+				const childPath = path.join(fullPath, child);
+				let childIsDir = false;
+				try {
+					childIsDir = fs.lstatSync(childPath).isDirectory();
+				} catch (err) {
+					logger.error(`Could not stat "${childPath}": ${err.message}`);
+					continue;
+				}
+
+				const skipReason = shouldSkipEntry(child, childIsDir, opts);
+				if (skipReason) {
+					logger.counts.excluded++;
+					logger.debug(`Skipping "${childPath}" (${skipReason})`);
+					continue;
+				}
+
+				visit(childPath, depth + 1);
+			}
+		}
+	}
+
+	visit(rootDir, 0);
+
+	// Deepest first; alphabetical within the same depth for deterministic logs.
+	nodes.sort(
+		(a, b) => b.depth - a.depth || a.fullPath.localeCompare(b.fullPath),
+	);
+	return nodes;
+}
+
+// ---------------------------------------------------------------------------
+// Planning
+// ---------------------------------------------------------------------------
+
+function buildPlan(nodes) {
+	return nodes.map((node) => {
+		const newName = normalizeEntryName(node.name, node.isDirectory);
+		const newPath = path.join(node.parentDir, newName);
+		return { ...node, newName, newPath };
+	});
+}
+
+function isSameFile(pathA, pathB) {
+	try {
+		const a = fs.lstatSync(pathA);
+		const b = fs.lstatSync(pathB);
+		return a.dev === b.dev && a.ino === b.ino;
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Decides what should happen for one planned rename. Checks the live
+ * filesystem AND a "claimed" set of targets already spoken for earlier in
+ * this same pass, so a dry-run preview reports exactly what --apply would
+ * do — including collisions between two items that don't exist yet.
+ */
+function resolveAction(item, claimed) {
+	if (item.fullPath === item.newPath) {
+		return { action: "unchanged" };
+	}
+
+	if (claimed.has(item.newPath)) {
+		return {
+			action: "collision",
+			reason: `Target "${item.newPath}" is already claimed by another rename in this run`,
+		};
+	}
+
+	if (fs.existsSync(item.newPath)) {
+		if (isSameFile(item.fullPath, item.newPath)) {
+			// Same entry, case-only difference (case-insensitive filesystem).
+			return { action: "rename-case-only" };
+		}
+		return {
+			action: "collision",
+			reason: `Target already exists: ${item.newPath}`,
+		};
+	}
+
+	return { action: "rename" };
+}
+
+// ---------------------------------------------------------------------------
+// Execution
+// ---------------------------------------------------------------------------
+
+function performRename(item, action) {
+	if (action === "rename-case-only") {
+		// Two-step rename avoids issues on case-insensitive filesystems
+		// (macOS/Windows), where renaming "test" -> "Test" directly can no-op.
+		const tempPath = item.newPath + `.__tmp_${process.pid}_${Date.now()}__`;
+		fs.renameSync(item.fullPath, tempPath);
+		fs.renameSync(tempPath, item.newPath);
+	} else {
+		fs.renameSync(item.fullPath, item.newPath);
+	}
+}
+
+function executePlan(plan, logger, { apply }) {
+	const manifest = [];
+	const claimed = new Set();
+
+	for (const item of plan) {
+		const { action, reason } = resolveAction(item, claimed);
+		const kind = item.isDirectory ? "dir " : "file";
+
+		if (action === "rename" || action === "rename-case-only") {
+			claimed.add(item.newPath);
+		}
+
+		switch (action) {
+			case "unchanged":
+				logger.counts.unchanged++;
+				logger.debug(
+					`OK           [${kind}] "${item.fullPath}" already normalized`,
+				);
+				break;
+
+			case "collision":
+				logger.counts.collision++;
+				logger.warn(
+					`SKIP         [${kind}] "${item.fullPath}" -> "${item.newPath}" (${reason})`,
+				);
+				break;
+
+			case "rename":
+			case "rename-case-only":
+				if (!apply) {
+					logger.info(
+						`WOULD RENAME [${kind}] "${item.fullPath}" -> "${item.newPath}"`,
+					);
+					break;
+				}
+				try {
+					performRename(item, action);
+					logger.counts.renamed++;
+					logger.info(
+						`RENAMED      [${kind}] "${item.fullPath}" -> "${item.newPath}"`,
+					);
+					manifest.push({
+						from: item.fullPath,
+						to: item.newPath,
+						type: item.isDirectory ? "dir" : "file",
+					});
+				} catch (err) {
+					logger.counts.error++;
+					logger.error(
+						`FAILED       [${kind}] "${item.fullPath}" -> "${item.newPath}": ${err.message}`,
+					);
+					claimed.delete(item.newPath);
+				}
+				break;
+		}
+	}
+
+	return manifest;
+}
+
+// ---------------------------------------------------------------------------
+// Revert
+// ---------------------------------------------------------------------------
+
+function revert(manifestPath, logger) {
+	let manifest;
+	try {
+		manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+	} catch (err) {
+		logger.error(`Could not read manifest "${manifestPath}": ${err.message}`);
+		process.exitCode = 1;
+		return;
+	}
+
+	// Undo in the reverse order they were applied (children before parents
+	// going forward means parents before children coming back).
+	for (let i = manifest.length - 1; i >= 0; i--) {
+		const { from, to, type } = manifest[i];
+		try {
+			if (!fs.existsSync(to)) {
+				logger.warn(`SKIP revert [${type}] "${to}" no longer exists`);
+				continue;
+			}
+			if (fs.existsSync(from) && !isSameFile(to, from)) {
+				logger.warn(
+					`SKIP revert [${type}] "${from}" already exists and is a different entry`,
+				);
+				continue;
+			}
+			fs.renameSync(to, from);
+			logger.counts.renamed++;
+			logger.info(`REVERTED    [${type}] "${to}" -> "${from}"`);
+		} catch (err) {
+			logger.counts.error++;
+			logger.error(
+				`FAILED revert [${type}] "${to}" -> "${from}": ${err.message}`,
+			);
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Confirmation prompt
+// ---------------------------------------------------------------------------
+
+function confirm(question) {
+	const rl = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout,
+	});
+	return new Promise((resolve) => {
+		rl.question(question, (answer) => {
+			rl.close();
+			resolve(answer.trim().toLowerCase());
+		});
+	});
+}
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+
+async function main() {
+	const opts = parseArgs(process.argv.slice(2));
+
+	if (opts.help || (!opts.target && !opts.revert)) {
+		printHelp();
+		process.exit(opts.help ? 0 : 1);
+	}
+
+	const timestamp = Date.now();
+	const logFilePath = path.resolve(`normalize-log-${timestamp}.txt`);
+	const logger = new Logger(logFilePath, opts.verbose);
+
+	logger.info(`Log file: ${logFilePath}`);
+
+	try {
+		if (opts.revert) {
+			const manifestPath = path.resolve(opts.revert);
+			logger.info(`Reverting using manifest: ${manifestPath}`);
+			revert(manifestPath, logger);
+		} else {
+			const rootDir = path.resolve(opts.target);
+
+			if (!fs.existsSync(rootDir)) {
+				logger.error(`Path does not exist: ${rootDir}`);
+				process.exitCode = 1;
+				return;
+			}
+			if (!fs.lstatSync(rootDir).isDirectory()) {
+				logger.error(`Not a directory: ${rootDir}`);
+				process.exitCode = 1;
+				return;
+			}
+
+			logger.info(`Scanning: ${rootDir}`);
+			const nodes = walk(rootDir, opts, logger);
+			const plan = buildPlan(nodes);
+
+			const toRename = plan.filter((p) => p.fullPath !== p.newPath);
+			logger.info(
+				`Found ${plan.length} item(s) total, ${toRename.length} need renaming.`,
+			);
+
+			if (!opts.apply) {
+				executePlan(plan, logger, { apply: false });
+				logger.info(
+					"Dry-run complete. No files were changed. Re-run with --apply to perform these renames.",
+				);
+			} else {
+				if (!opts.yes) {
+					const answer = await confirm(
+						`About to rename ${toRename.length} item(s) inside "${rootDir}". Continue? (yes/no): `,
+					);
+					if (answer !== "yes" && answer !== "y") {
+						logger.info("Aborted by user. Nothing was changed.");
+						return;
+					}
+				}
+
+				const manifest = executePlan(plan, logger, { apply: true });
+
+				if (manifest.length > 0) {
+					const manifestPath = path.resolve(
+						`rename-manifest-${timestamp}.json`,
+					);
+					fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+					logger.info(
+						`Manifest written: ${manifestPath} (use --revert ${path.basename(manifestPath)} to undo)`,
+					);
+				}
+			}
+		}
+	} catch (err) {
+		logger.error(`Unexpected error: ${err.stack || err.message}`);
+		process.exitCode = 1;
+	} finally {
+		const c = logger.counts;
+		logger.info(
+			`Summary — renamed: ${c.renamed}, unchanged: ${c.unchanged}, collisions skipped: ${c.collision}, excluded: ${c.excluded}, errors: ${c.error}`,
+		);
+		await logger.close();
+	}
+}
+
+main();

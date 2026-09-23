@@ -1,0 +1,185 @@
+{
+  "highlights": 8,
+  "entries": [
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 22,
+      "page_label": "35",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "11. It ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "designated",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Governor-General",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " of India and the provincial governors as constitutional ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "(nominal) heads of the states.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "designated"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Governor-General"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "(nominal)headsofthestates."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 22,
+      "page_label": "35",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "He swore in ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Jawaharlal Nehru as the first Prime Minister of independent India.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " The ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Constituent Assembly",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " of India formed in 1946 ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "became the Parliament",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " of the Indian Dominion.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "JawaharlalNehruasthefirstPrimeMinisterofindependentIndia."
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ConstituentAssembly"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "becametheParliament"
+        }
+      ]
+    },
+    {
+      "kind": "row",
+      "headings": [
+        {
+          "level": 3,
+          "text": "Table 1.1 Interim Government (1946)"
+        }
+      ],
+      "page": 22,
+      "page_label": "35",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Sl. No.: 1. · Members: ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Jawaharlal Nehru",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " · Portfolios Held: ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Vice-President of the Council;",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " External Affairs and Commonwealth Relations",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "JawaharlalNehru"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Vice-PresidentoftheCouncil;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "pymupdf": "1.28.2",
+  "settings": "default",
+  "books": {
+    "00_The_Constitution_of_India.pdf": {
+      "found": 567,
+      "placed": 567,
+      "unplaced": []
+    },
+    "01_A_Brief_History_of_Modern_India.pdf": {
+      "found": 648,
+      "placed": 647,
+      "unplaced": [
+        [
+          102,
+          "no_text"
+        ]
+      ]
+    },
+    "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf": {
+      "found": 453,
+      "placed": 453,
+      "unplaced": []
+    },
+    "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf": {
+      "found": 773,
+      "placed": 773,
+      "unplaced": []
+    },
+    "01_Indian_Polity_Laxmikanth.pdf": {
+      "found": 5648,
+      "placed": 5646,
+      "unplaced": [
+        [
+          115,
+          "part_word"
+        ],
+        [
+          350,
+          "part_word"
+        ]
+      ]
+    },
+    "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf": {
+      "found": 450,
+      "placed": 449,
+      "unplaced": [
+        [
+          11,
+          "part_word"
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "cases": 180,
+  "profiles": 5,
+  "expected_comparisons": 900,
+  "full_page_pngs": 180,
+  "focus_pngs": 180,
+  "original_cases": 60,
+  "new_cases": 120,
+  "old_new_page_overlap": 0,
+  "visually_verified_cases": 180,
+  "density": {
+    "high": 73,
+    "medium": 107
+  },
+  "pdf_counts": {
+    "00_The_Constitution_of_India.pdf": 30,
+    "01_A_Brief_History_of_Modern_India.pdf": 30,
+    "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf": 30,
+    "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf": 30,
+    "01_Indian_Polity_Laxmikanth.pdf": 30,
+    "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf": 30
+  },
+  "benchmark_comparisons": 900
+}

@@ -1,0 +1,140 @@
+{
+  "overall_score": 97.2,
+  "comparisons": 180,
+  "status_counts": {
+    "PASS": 175,
+    "DANGEROUS": 5
+  },
+  "by_profile": {
+    "highlight_exact_flat": {
+      "score": 97.2,
+      "status_counts": {
+        "PASS": 175,
+        "DANGEROUS": 5
+      }
+    }
+  },
+  "by_pdf": {
+    "00_The_Constitution_of_India.pdf": {
+      "score": 99.71,
+      "status_counts": {
+        "PASS": 30
+      }
+    },
+    "01_A_Brief_History_of_Modern_India.pdf": {
+      "score": 83.89,
+      "status_counts": {
+        "PASS": 25,
+        "DANGEROUS": 5
+      }
+    },
+    "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf": {
+      "score": 99.78,
+      "status_counts": {
+        "PASS": 30
+      }
+    },
+    "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf": {
+      "score": 99.84,
+      "status_counts": {
+        "PASS": 30
+      }
+    },
+    "01_Indian_Polity_Laxmikanth.pdf": {
+      "score": 100.0,
+      "status_counts": {
+        "PASS": 30
+      }
+    },
+    "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf": {
+      "score": 100.0,
+      "status_counts": {
+        "PASS": 30
+      }
+    }
+  },
+  "by_kind": {
+    "footnote": {
+      "score": 100.0,
+      "n": 3
+    },
+    "heading": {
+      "score": 100.0,
+      "n": 19
+    },
+    "legal_clause": {
+      "score": 100.0,
+      "n": 19
+    },
+    "legal_list_item": {
+      "score": 100.0,
+      "n": 3
+    },
+    "legal_section": {
+      "score": 100.0,
+      "n": 2
+    },
+    "list_item": {
+      "score": 100.0,
+      "n": 14
+    },
+    "prose": {
+      "score": 95.66,
+      "n": 116
+    },
+    "runin_list": {
+      "score": 100.0,
+      "n": 1
+    },
+    "table_cell": {
+      "score": 100.0,
+      "n": 1
+    },
+    "toc_item": {
+      "score": 100.0,
+      "n": 2
+    }
+  },
+  "dangerous": [
+    {
+      "case_id": "VG015",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 124,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG017",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 157,
+      "score": 0.0,
+      "reason": "highlight missing/altered"
+    },
+    {
+      "case_id": "VG018",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 214,
+      "score": 16.67,
+      "reason": "highlight missing/altered"
+    },
+    {
+      "case_id": "VG090",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 136,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG100",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 240,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    }
+  ]
+}

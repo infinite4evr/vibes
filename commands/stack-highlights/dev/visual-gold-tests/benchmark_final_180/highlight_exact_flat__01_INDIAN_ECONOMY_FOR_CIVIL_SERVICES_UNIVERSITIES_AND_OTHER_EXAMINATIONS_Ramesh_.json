@@ -1,0 +1,4807 @@
+{
+  "highlights": 143,
+  "entries": [
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Economics",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Economics"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "study",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "study"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "how society uses its scarce resources",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "howsocietyusesitsscarceresources"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "John Maynard Keynes",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "JohnMaynardKeynes"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "macroeconomics",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "macroeconomics"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The General Theory of Employment, Interest and Money,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "TheGeneralTheoryofEmployment,InterestandMoney,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Keynesian",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Keynesian"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "New Classical",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "NewClassical"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Sectors & Types of Economies",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Sectors&TypesofEconomies"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Primary Sector:",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "PrimarySector:"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "agrarian",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "agrarian"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "economy.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "economy."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Secondary Sector:",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "SecondarySector:"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "sub-sectors,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "sub-sectors,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "manufacturing,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "manufacturing,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Tertiary Sector: All of the economic activities where services are produced falls in this sector, such as education, healthcare, banking, communication, etc.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "TertiarySector:Alloftheeconomicactivitieswhereservicesareproducedfallsinthissector,suchaseducation,healthcare,banking,communication,etc."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 46,
+      "page_label": "46",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "China, by mid-1980s, announced its Open-Door Policy embracing mixed economy",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "China,bymid-1980s,announceditsOpen-DoorPolicyembracingmixedeconomy"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 46,
+      "page_label": "46",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Mixed Economy",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "MixedEconomy"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 46,
+      "page_label": "46",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "economies adopted certain policy changes (borrowing from the non-market economy) to recover out of the Depression",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "economiesadoptedcertainpolicychanges(borrowingfromthenon-marketeconomy)torecoveroutoftheDepression"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 46,
+      "page_label": "46",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "first country to announce adopting this system was France (in 1944- 45, with the announcement to adopt national planning).",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "firstcountrytoannounceadoptingthissystemwasFrance(in1944-45,withtheannouncementtoadoptnationalplanning)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 46,
+      "page_label": "46",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "World Bank accepted the need of ‘state intervention’ in the economy",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "WorldBankacceptedtheneedof‘stateintervention’intheeconomy"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 56,
+      "page_label": "56",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "STANDING COMMITTEE ON ECONOMIC STATISTICS",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "STANDINGCOMMITTEEONECONOMICSTATISTICS"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 56,
+      "page_label": "56",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "As per the report of the IMF, India did show the following three types of deviations from the SDDS",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "AsperthereportoftheIMF,IndiadidshowthefollowingthreetypesofdeviationsfromtheSDDS33"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Thus, we may have some diverse cases of growth and development:",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "Thus,wemayhavesomediversecasesofgrowthanddevelopment:"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(i) Higher growth and higher development",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "(i)Highergrowthandhigherdevelopment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(ii) Higher growth but lower development",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "(ii)Highergrowthbutlowerdevelopment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(iii) Lower growth but higher development",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "(iii)Lowergrowthbuthigherdevelopment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Here started the branch of economics which came to be be known as ‘development economics’.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "Herestartedthebranchofeconomicswhichcametobebeknownas‘developmenteconomics’."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 75,
+      "page_label": "75",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "There is a growing literature in economics arguing that pro-social behaviour, which includes altruism and trustworthiness",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "Thereisagrowingliteratureineconomicsarguingthatpro-socialbehaviour,whichincludesaltruismandtrustworthiness24"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 75,
+      "page_label": "75",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Values and Economics",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "ValuesandEconomics"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 79,
+      "page_label": "79",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "EVOLUTION OF THE INDIAN ECONOMY",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "EVOLUTIONOFTHEINDIANECONOMY"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 79,
+      "page_label": "79",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "There was not only the unilateral transfer of investible capital to Britain by the colonial state (the ‘drain of wealth’),",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "TherewasnotonlytheunilateraltransferofinvestiblecapitaltoBritainbythecolonialstate(the‘drainofwealth’),"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 79,
+      "page_label": "79",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Industrialisation of India was also neglected by the colonisers—the infrastructure was not built to industrialise India but to exploit its raw materials",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "IndustrialisationofIndiawasalsoneglectedbythecolonisers—theinfrastructurewasnotbuilttoindustrialiseIndiabuttoexploititsrawmaterials"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 85,
+      "page_label": "85",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "(France had gone for a mixed economy by 1944–45).",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "(Francehadgoneforamixedeconomyby1944–45)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 85,
+      "page_label": "85",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "It will be suitable to note here that as 1950s and 1960s made the world experts favour",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Itwillbesuitabletonoteherethatas1950sand1960smadetheworldexpertsfavour"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 96,
+      "page_label": "96",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "TYPES OF PLANNING",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "TYPESOFPLANNING"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 96,
+      "page_label": "96",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": ". Imperative Planning",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": ".ImperativePlanning"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 96,
+      "page_label": "96",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Such planning is also called as directive or target planning",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Suchplanningisalsocalledasdirectiveortargetplanning"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 96,
+      "page_label": "96",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "In the socialist system, all economic decisions were centralised in the hands of the state with collective ownership of resources (except labour). In the communist system (i.e., China of the past) all resources were to be owned and utilised by the state (including labour).",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Inthesocialistsystem,alleconomicdecisionswerecentralisedinthehandsofthestatewithcollectiveownershipofresources(exceptlabour).Inthecommunistsystem(i.e.,Chinaofthepast)allresourcesweretobeownedandutilisedbythestate(includinglabour)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 96,
+      "page_label": "96",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The Command Economies followed this kind of planning. That is why such economies are also known as the Centrally Planned Economies—the USSR, Poland, Hungary, Austria, Romania, etc., and finally China",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "TheCommandEconomiesfollowedthiskindofplanning.ThatiswhysucheconomiesarealsoknownastheCentrallyPlannedEconomies—theUSSR,Poland,Hungary,Austria,Romania,etc.,andfinallyChina"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 96,
+      "page_label": "96",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Oskar Lange,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "OskarLange,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 96,
+      "page_label": "96",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "coined the concept of ‘market socialism’ in the 1950s",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "coinedtheconceptof‘marketsocialism’inthe1950s"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 96,
+      "page_label": "96",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The peak of this type of planning was reached in China after the Cultural Revolution (1966– 69), which led to an economic slowdown in the country, which had adopted a soviet-style central planning system after 1949.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "ThepeakofthistypeofplanningwasreachedinChinaaftertheCulturalRevolution(1966–69),whichledtoaneconomicslowdowninthecountry,whichhadadoptedasoviet-stylecentralplanningsystemafter1949."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 96,
+      "page_label": "96",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Under Deng Xiaoping (1977–97), China decentralised a great deal of economic power with its announcement of the open door policy in 1985 to save the economy.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "UnderDengXiaoping(1977–97),Chinadecentralisedagreatdealofeconomicpowerwithitsannouncementoftheopendoorpolicyin1985tosavetheeconomy."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 101,
+      "page_label": "101",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "PLANNING IN INDIA",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "PLANNINGININDIA"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 101,
+      "page_label": "101",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "It was the Soviet Union which explored and adopted national planning for the first time in the world.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "ItwastheSovietUnionwhichexploredandadoptednationalplanningforthefirsttimeintheworld."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 105,
+      "page_label": "105",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The Gandhian Plan",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "TheGandhianPlan"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 105,
+      "page_label": "105",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Sriman Narayan Agarwal formulated The Gandhian Plan in 1944.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "SrimanNarayanAgarwalformulatedTheGandhianPlanin1944."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 105,
+      "page_label": "105",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The plan laid more emphasis on agriculture.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Theplanlaidmoreemphasisonagriculture."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 105,
+      "page_label": "105",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "It needs to be noted here that the Gandhians did not agree with the views of the NPC or the Bombay Plan, particularly on issues like centralised planning, dominant role of the state in the economy and the emphasis on industrialisation being the major ones",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "ItneedstobenotedherethattheGandhiansdidnotagreewiththeviewsoftheNPCortheBombayPlan,particularlyonissueslikecentralisedplanning,dominantroleofthestateintheeconomyandtheemphasisonindustrialisationbeingthemajorones"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 105,
+      "page_label": "105",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Gandhi argued, rather than the inability to industrialise, which was the root cause of Indian poverty",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Gandhiargued,ratherthantheinabilitytoindustrialise,whichwastherootcauseofIndianpoverty"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 105,
+      "page_label": "105",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "But it was in the NPC that the Congress tried to articulate a different view on these issues, almost taking a break from Gandhi’s ideas.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "ButitwasintheNPCthattheCongresstriedtoarticulateadifferentviewontheseissues,almosttakingabreakfromGandhi’sideas."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 105,
+      "page_label": "105",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "He said on the occasion that the national priority as adopted by the Congress was to restrict and eliminate modern industrialism. The impasse was normalised after Nehru intervened and declared that most members of the NPC felt that large-scale industry ought to be promoted as long as it did not ‘come into conflict with the cottage industries’",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "HesaidontheoccasionthatthenationalpriorityasadoptedbytheCongresswastorestrictandeliminatemodernindustrialism.TheimpassewasnormalisedafterNehruintervenedanddeclaredthatmostmembersoftheNPCfeltthatlarge-scaleindustryoughttobepromotedaslongasitdidnot‘comeintoconflictwiththecottageindustries’"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 105,
+      "page_label": "105",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The people’s Plan",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Thepeople’sPlan"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 105,
+      "page_label": "105",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "In 1945, yet another plan was formulated by the radical humanist leader M.N. Roy, Chairman of the Post-War Reconstruction Committee of Indian Trade Union. The plan was based on Marxist socialism and advocated the need of providing the people with the ‘basic necessities of life’.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "In1945,yetanotherplanwasformulatedbytheradicalhumanistleaderM.N.Roy,ChairmanofthePost-WarReconstructionCommitteeofIndianTradeUnion"
+        },
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": ".TheplanwasbasedonMarxistsocialismandadvocatedtheneedofprovidingthepeoplewiththe‘basicnecessitiesoflife’."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 114,
+      "page_label": "114",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "we can visibly find some of the recommendations of the IEO resonating in the newly created body, the NITI Aayog, the replacement for the PC.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "wecanvisiblyfindsomeoftherecommendationsoftheIEOresonatinginthenewlycreatedbody,theNITIAayog,thereplacementforthePC."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 114,
+      "page_label": "114",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "NATIONAL DEVELOPMENT COUNCIL",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "NATIONALDEVELOPMENTCOUNCIL"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 114,
+      "page_label": "114",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The National Development Council (NDC) was set up on August 6, 1952 by a Resolution issued from the Cabinet Secretariat",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "TheNationalDevelopmentCouncil(NDC)wassetuponAugust6,1952byaResolutionissuedfromtheCabinetSecretariat"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 116,
+      "page_label": "116",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "A phase of tussle between the Centre and the states started worsening from here onward with a degradation in principles of the co-operative federalism, with every five-year plans which followed. It was only by the mid-1990s that we see the revival of the lost glory of NDC as well as that of the spirit of decentralised planning",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "AphaseoftusslebetweentheCentreandthestatesstartedworseningfromhereonwardwithadegradationinprinciplesoftheco-operativefederalism,witheveryfive-yearplanswhichfollowed.Itwasonlybythemid-1990sthatweseetherevivalofthelostgloryofNDCaswellasthatofthespiritofdecentralisedplanning"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 116,
+      "page_label": "116",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "NDC had its last meeting (57th) in December 2012 and since the new policy think tank Niti Aayog was set up has not been assigned any work. It is believed that in coming times it will be either abolished or merged with the Niti.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "NDChaditslastmeeting(57th)inDecember2012andsincethenewpolicythinktankNitiAayogwassetuphasnotbeenassignedanywork.ItisbelievedthatincomingtimesitwillbeeitherabolishedormergedwiththeNiti."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 116,
+      "page_label": "116",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Niti is ‘State’s best friend at the Centre’ (the 3rd function of the Niti)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Nitiis‘State’sbestfriendattheCentre’(the3rdfunctionoftheNiti)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 116,
+      "page_label": "116",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "▷ CENTRAL PLANNING",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "▷CENTRALPLANNING"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 116,
+      "page_label": "116",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The three central plans are:",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Thethreecentralplansare:1.Five-YearPlans,2.Twenty-PointProgramme,and65"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 116,
+      "page_label": "116",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "1. Five-Year Plans,",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Thethreecentralplansare:1.Five-YearPlans,2.Twenty-PointProgramme,and65"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 116,
+      "page_label": "116",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "2. Twenty-Point Programme, and",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Thethreecentralplansare:1.Five-YearPlans,2.Twenty-PointProgramme,and65"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 125,
+      "page_label": "125",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Third Strata: District-Level Planning",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "ThirdStrata:District-LevelPlanning"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 125,
+      "page_label": "125",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "89",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "DistrictPlanningBoardswiththerespectiveDistrictMagistratebeingthede-factochairman.89"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 125,
+      "page_label": "125",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "District Planning Boards with the respective District Magistrate being the de-facto chairman.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "DistrictPlanningBoardswiththerespectiveDistrictMagistratebeingthede-factochairman.89"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 140,
+      "page_label": "140",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Phase-IV (1991 onward)",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Phase-IV(1991onward)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 140,
+      "page_label": "140",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The hitherto monopoly sectors of the industry were opened up for private investment",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Thehithertomonopolysectorsoftheindustrywereopenedupforprivateinvestment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 140,
+      "page_label": "140",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "barring Nuclear Research, Nuclear power and Railways (latter two areas are partially opened)—in all of them direct foreign investments have also been allowed (between 26 to 100 per cent). We see the ‘investment model’ for ‘infrastructure sector’ shifting from ‘government-led’ to ‘private-led’.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "barringNuclearResearch,NuclearpowerandRailways(lattertwoareasarepartiallyopened)—inallofthemdirectforeigninvestmentshavealsobeenallowed(between26to100percent).Weseethe‘investmentmodel’for‘infrastructuresector’shiftingfrom‘government-led’to‘private-led’."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 140,
+      "page_label": "140",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "In coming times, GoI articulated the idea of the Public Private Partnership (PPP) model",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Incomingtimes,GoIarticulatedtheideaofthePublicPrivatePartnership(PPP)model"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "CONSUMER PRICE INDEX",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CONSUMERPRICEINDEX"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": ".Though, in 2011-12, the government announced a new set of consumer indices (i.e., CPI-R, CPI-U and CPI-C)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": ".Though,in2011-12,thegovernmentannouncedanewsetofconsumerindices(i.e.,CPI-R,CPI-UandCPI-C)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "CPI-IW",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CPI-IW"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The Consumer Price Index for the industrial workers (CPI-IW) has 260 item",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "TheConsumerPriceIndexfortheindustrialworkers(CPI-IW)has260item"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Basically, this index specifies the government employees (other than banks’ and embassies’ personnel). The wages/salaries of the central government employees are revised on the basis of the changes occurring in this index, the dearness allowance (DA) is announced twice a year. When the Pay Commission recommends pay revisions, the base is the CPI (IW).",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Basically,thisindexspecifiesthegovernmentemployees(otherthanbanks’andembassies’personnel).Thewages/salariesofthecentralgovernmentemployeesarerevisedonthebasisofthechangesoccurringinthisindex,thedearnessallowance(DA)isannouncedtwiceayear.WhenthePayCommissionrecommendspayrevisions,thebaseistheCPI(IW)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "CPI-UNME The Consumer Price Index for the Urban Non-Manual Employees (CPI-UNME) has 1984–85 (first base year was 1958–59)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CPI-UNMETheConsumerPriceIndexfortheUrbanNon-ManualEmployees(CPI-UNME)has1984–85(firstbaseyearwas1958–59)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "This price index has limited use and it is basically used for determining dearness allowances",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Thispriceindexhaslimiteduseanditisbasicallyusedfordeterminingdearnessallowances(DAs)ofemployeesofsomeforeigncompaniesoperatinginIndia"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(DAs) of employees of some foreign companies operating in India",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Thispriceindexhaslimiteduseanditisbasicallyusedfordeterminingdearnessallowances(DAs)ofemployeesofsomeforeigncompaniesoperatinginIndia"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "In 2004, the RBI transferred its total holding in the DFHI to the State Bank of India arm SBI",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "In2004,theRBItransferreditstotalholdingintheDFHItotheStateBankofIndiaarmSBIGiltsLimited"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 341,
+      "page_label": "341",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Gilts Limited",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "In2004,theRBItransferreditstotalholdingintheDFHItotheStateBankofIndiaarmSBIGiltsLimited"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 341,
+      "page_label": "341",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "As banks in India were weak",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "AsbanksinIndiawereweak"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 341,
+      "page_label": "341",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "This is why the government decided to set up ‘financial institutions’",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Thisiswhythegovernmentdecidedtosetup‘financialinstitutions’"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 341,
+      "page_label": "341",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "government decided to set up financial institutions (FIs).",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "governmentdecidedtosetupfinancialinstitutions(FIs)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 341,
+      "page_label": "341",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Financial Institutions",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "FinancialInstitutions"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 351,
+      "page_label": "351",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "1949 the RBI was nationalised.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "1949theRBIwasnationalised."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 351,
+      "page_label": "351",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Preamble",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Preamble"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 351,
+      "page_label": "351",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Manager of Foreign Exchange:",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ManagerofForeignExchange:"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 351,
+      "page_label": "351",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "(as Lender of Last Resort).",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "(asLenderofLastResort)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Developmental Functions",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "DevelopmentalFunctions"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "central board of directors.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "centralboardofdirectors."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "subsidiaries",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "subsidiaries"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "DICGC",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "DICGC"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "BRBNMPL",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "BRBNMPL"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "ReBIT",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ReBIT"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "IFTAS",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "IFTAS"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "RBI decided to shift to April-March as its new financial year",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "RBIdecidedtoshifttoApril-Marchasitsnewfinancialyear7"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "which could advise the manner in which it should share surplus capital with the Government.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "whichcouldadvisethemannerinwhichitshouldsharesurpluscapitalwiththeGovernment."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 353,
+      "page_label": "353",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "monetary policy committee (MPC)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "monetarypolicycommittee(MPC)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 353,
+      "page_label": "353",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "2016",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "2016"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 353,
+      "page_label": "353",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "total of 6 members",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "totalof6members"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 353,
+      "page_label": "353",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Governor as its Chairman who avails the right of casting vote in case of a tie in decisions.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "GovernorasitsChairmanwhoavailstherightofcastingvoteincaseofatieindecisions."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 353,
+      "page_label": "353",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "stances",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "stances"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 358,
+      "page_label": "358",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "MCLR (Marginal Cost of funds based Lending Rate)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "MCLR(MarginalCostoffundsbasedLendingRate)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 358,
+      "page_label": "358",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "As per the RBI, ‘for monetary transmission to occur, lending rates have to be sensitive to the policy rate’",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "AspertheRBI,‘formonetarytransmissiontooccur,lendingrateshavetobesensitivetothepolicyrate’"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 370,
+      "page_label": "370",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "ARCs",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ARCs"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 370,
+      "page_label": "370",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "SARFAESI Act",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "SARFAESIAct"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 370,
+      "page_label": "370",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "has suggested",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "hassuggested"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 370,
+      "page_label": "370",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "public sector asset rehabilitation agency",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [
+        {
+          "label": "Note",
+          "runs": [
+            {
+              "text": "No such agency till now",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "publicsectorassetrehabilitationagency"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 375,
+      "page_label": "375",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "CRR",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CRR"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 375,
+      "page_label": "375",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "SLR",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "SLR"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 375,
+      "page_label": "375",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "CAR",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CAR"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 375,
+      "page_label": "375",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "norm",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "norm"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 375,
+      "page_label": "375",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "central banking bodies of the developed economies",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "centralbankingbodiesofthedevelopedeconomies"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 375,
+      "page_label": "375",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "the CAR—also known as the Basel Accord",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "theCAR—alsoknownastheBaselAccord"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 375,
+      "page_label": "375",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Basel, Switzerland",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Basel,Switzerland"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 375,
+      "page_label": "375",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "It means that if the total investments and loans forwarded by a bank amounts to ₹100, the bank needs to maintain a free capital of ₹8 at that particular time.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Itmeansthatifthetotalinvestmentsandloansforwardedbyabankamountsto₹100,thebankneedstomaintainafreecapitalof₹8atthatparticulartime.47"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 382,
+      "page_label": "382",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "M1 to M4 the liquidity (inertia, stability, spendability) of the money goes on decreasing",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "MtoMtheliquidity(inertia,stability,spendability)ofthemoneygoesondecreasing14"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 382,
+      "page_label": "382",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "M1 is called narrow money",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Miscallednarrowmoney1"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 382,
+      "page_label": "382",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "M3 is called broad money",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Miscalledbroadmoney3"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 382,
+      "page_label": "382",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "RBI issues currency notes",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "RBIissuescurrencynotes"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 382,
+      "page_label": "382",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The aim of the scheme was to mobilise idle gold lying with households and temples into the system, and consequently, reduce imports.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Theaimoftheschemewastomobiliseidlegoldlyingwithhouseholdsandtemplesintothesystem,andconsequently,reduceimports."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 391,
+      "page_label": "391",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Micro Units Development and Refinance Agency Bank (MUDRA Bank)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "MicroUnitsDevelopmentandRefinanceAgencyBank(MUDRABank)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 391,
+      "page_label": "391",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "PMMY (Prime Minister Mudra Yojana).",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [
+        {
+          "label": "Note",
+          "runs": [
+            {
+              "text": "under sidbi",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "PMMY(PrimeMinisterMudraYojana)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 399,
+      "page_label": "399",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Export Credit Guarantee Corporation of India Ltd. (ECGC)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ExportCreditGuaranteeCorporationofIndiaLtd.(ECGC)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 399,
+      "page_label": "399",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Ministry of Commerce and Industry,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "MinistryofCommerceandIndustry,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 399,
+      "page_label": "399",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "for medium- and long-term exports",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "formedium-andlong-termexports"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 399,
+      "page_label": "399",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "NATIONAL EXPORT INSURANCE ACCOUNT",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "NATIONALEXPORTINSURANCEACCOUNT"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 413,
+      "page_label": "413",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Jobber",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Jobber"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 413,
+      "page_label": "413",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "broker’s broker",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "broker’sbroker"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 413,
+      "page_label": "413",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Market-Maker",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Market-Maker"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 413,
+      "page_label": "413",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Security and Exchange Board of India Act, 1992",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "SecurityandExchangeBoardofIndiaAct,1992"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 413,
+      "page_label": "413",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "as a non-statutory body set on 12 April, 1988",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "asanon-statutorybodyseton12April,1988"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 413,
+      "page_label": "413",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "COMMODITY TRADING",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "COMMODITYTRADING"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 413,
+      "page_label": "413",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "it means that all outstanding positions at the end of the day are marked for delivery,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "itmeansthatalloutstandingpositionsattheendofthedayaremarkedfordelivery,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 416,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Public Issue",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "PublicIssue"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 423,
+      "page_label": "423",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Category I",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CategoryI"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 423,
+      "page_label": "423",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Category II",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CategoryII"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 423,
+      "page_label": "423",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Category III",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CategoryIII"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 423,
+      "page_label": "423",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "angel investor",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "angelinvestor"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 423,
+      "page_label": "423",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Angel investor is an investor who provides financial backing to entrepreneurs for ‘starting their business’.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Angelinvestorisaninvestorwhoprovidesfinancialbackingtoentrepreneursfor‘startingtheirbusiness’."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 423,
+      "page_label": "423",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "provide technical advices",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "providetechnicaladvices"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 423,
+      "page_label": "423",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Angel investors are essentially the exact opposite of a venture capitalist",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Angelinvestorsareessentiallytheexactoppositeofaventurecapitalist"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 438,
+      "page_label": "438",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Financial Action Task Force (FATF)",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "FinancialActionTaskForce(FATF)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 438,
+      "page_label": "438",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "inter-governmental policy",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "inter-governmentalpolicy"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 438,
+      "page_label": "438",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "combating money laundering and terrorist financing",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "combatingmoneylaunderingandterroristfinancing"
+        }
+      ]
+    }
+  ]
+}

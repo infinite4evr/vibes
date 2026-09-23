@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+# notes-recall: turn a folder of highlighted PDFs into one notes PDF and one
+# recall sheet.
+#
+# Usage: notes-recall [BOOKS] [NAME] [FONT]
+#        notes-recall [-b|--books DIR] [-n|--name NAME] [-f|--font SIZE] [-o|--out-dir DIR]
+#   BOOKS / -b   Folder of highlighted PDFs, subfolders included
+#                (default: ~/Documents/Dump)
+#   NAME  / -n   Base name of the output files (default: Dump)
+#   FONT  / -f   Body font size in points for both PDFs (default: 14)
+#   -o           Where to write the outputs (default: the folder that contains
+#                BOOKS). It must not be inside BOOKS: the next run would read
+#                your notes PDFs as books.
+#
+# Writes, in the output folder:
+#   NAME.md          the combined notes (Markdown)
+#   NAME.pdf         the notes as a PDF
+#   NAME_recall.pdf  the two-column recall sheet (cues on the left; the
+#                    answer on the right keeps the marked words in bold)
+#
+# Extraction settings: every mark kind (highlight, underline, squiggly,
+# strikeout), comma context, non-yellow marks in bold italic, titles treated
+# as plain text, one section per book.
+#
+# The recall sheet and the notes PDF are made independently: if one fails,
+# the other is still made, and the run ends with a list of what was not.
+# (Characters LaTeX cannot handle do not stop either: md-to-pdf names the
+# note, prints it as plain text or leaves it out, and makes the rest.)
+set -euo pipefail
+
+# --help prints the comment block above, however long it gets
+usage() { awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "${BASH_SOURCE[0]}"; }
+
+books="$HOME/Documents/Dump"
+name="Dump"
+font="14"
+out_dir=""
+positional=()
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -b|--books|-n|--name|-f|--font|-o|--out-dir)
+            if [ $# -lt 2 ]; then
+                echo "Error: $1 needs a value" >&2
+                exit 1
+            fi
+            case "$1" in
+                -b|--books) books="$2" ;;
+                -n|--name) name="$2" ;;
+                -f|--font) font="$2" ;;
+                -o|--out-dir) out_dir="$2" ;;
+            esac
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -*)
+            echo "Error: unknown option $1 (see notes-recall --help)" >&2
+            exit 1
+            ;;
+        *)
+            positional+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if [ ${#positional[@]} -gt 3 ]; then
+    echo "Error: too many arguments (expected BOOKS NAME FONT; see notes-recall --help)" >&2
+    exit 1
+fi
+[ ${#positional[@]} -ge 1 ] && books="${positional[0]}"
+[ ${#positional[@]} -ge 2 ] && name="${positional[1]}"
+[ ${#positional[@]} -ge 3 ] && font="${positional[2]}"
+
+# ---- check the inputs -------------------------------------------------------
+if [ ! -d "$books" ]; then
+    echo "Error: books folder not found: $books" >&2
+    exit 1
+fi
+books="$(cd "$books" && pwd)"
+
+if [ -z "$name" ] || [[ "$name" == */* ]]; then
+    echo "Error: name must be a plain file name without '/' (got '$name')" >&2
+    exit 1
+fi
+
+if ! [[ "$font" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+    echo "Error: font must be a number of points, e.g. 12 or 11.5 (got '$font')" >&2
+    exit 1
+fi
+
+[ -z "$out_dir" ] && out_dir="$(dirname "$books")"
+mkdir -p "$out_dir"
+out_dir="$(cd "$out_dir" && pwd)"
+case "$out_dir/" in
+    "$books"/*)
+        echo "Error: the output folder ($out_dir) is inside the books folder." >&2
+        echo "The next run would read the notes PDFs as books. Choose another --out-dir." >&2
+        exit 1
+        ;;
+esac
+
+# ---- find the sibling commands (fall back to PATH) ---------------------------
+cmd_root="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+tool() {
+    if [ -x "$cmd_root/$1/$1" ]; then echo "$cmd_root/$1/$1"; else echo "$1"; fi
+}
+stack_cmd="$(tool stack-highlights)"
+recall_cmd="$(tool recall-sheet)"
+md2pdf_cmd="$(tool md-to-pdf)"
+
+notes_md="$out_dir/$name.md"
+notes_pdf="$out_dir/$name.pdf"
+recall_pdf="$out_dir/${name}_recall.pdf"
+
+echo "Books:  $books"
+echo "Output: $out_dir/$name{.md,.pdf,_recall.pdf}  (font ${font}pt)"
+echo
+
+# ---- 1. every PDF in the folder -> one combined Markdown file ---------------
+# Written to a temporary file first, so a failed run leaves the previous
+# notes untouched.
+tmp_md="$(mktemp "$out_dir/.${name}.XXXXXX.md")"
+trap 'rm -f "$tmp_md"' EXIT
+"$stack_cmd" "$books" \
+    --kinds highlight,underline,squiggly,strikeout \
+    --context comma \
+    --italic-colors \
+    --plain-titles \
+    --combine-out "$tmp_md"
+
+if [ ! -s "$tmp_md" ]; then
+    echo "Error: no highlights found in $books, so nothing was written." >&2
+    exit 1
+fi
+mv -f "$tmp_md" "$notes_md"
+
+# ---- 2. recall sheet ---------------------------------------------------------
+# Steps 2 and 3 are independent: if one fails, the other still runs.
+failed=()
+echo
+# (--md2pdf-cmd is split like a shell command line, so quote the path)
+if ! "$recall_cmd" "$notes_md" -o "$recall_pdf" -s "$font" --right bold --md2pdf-cmd "$(printf '%q' "$md2pdf_cmd")"; then
+    failed+=("recall sheet ($recall_pdf)")
+fi
+
+# ---- 3. notes PDF ------------------------------------------------------------
+echo
+if ! "$md2pdf_cmd" -s "$font" "$notes_md" "$notes_pdf"; then
+    failed+=("notes PDF ($notes_pdf)")
+fi
+
+echo
+if [ ${#failed[@]} -gt 0 ]; then
+    echo "Finished with errors. Not made:"
+    for f in "${failed[@]}"; do echo "  $f"; done
+    echo "The notes Markdown is complete: $notes_md"
+    exit 1
+fi
+echo "Done:"
+echo "  $notes_md"
+echo "  $notes_pdf"
+echo "  $recall_pdf"

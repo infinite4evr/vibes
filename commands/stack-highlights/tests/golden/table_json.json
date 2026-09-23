@@ -1,0 +1,136 @@
+{
+  "highlights": 4,
+  "entries": [
+    {
+      "kind": "row",
+      "headings": [
+        {
+          "level": 3,
+          "text": "Table 1.1 Interim Government (1946)"
+        }
+      ],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Sl. No.: 2. · Members: ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Sardar Patel",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " · Portfolios Held: Home and Information",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "SardarPatel"
+        }
+      ]
+    },
+    {
+      "kind": "row",
+      "headings": [
+        {
+          "level": 3,
+          "text": "Table 1.1 Interim Government (1946)"
+        }
+      ],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Sl. No.: 3. · Members: Rajendra Prasad · Portfolios Held: ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Food and Agriculture",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "FoodandAgriculture"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 3,
+          "text": "Table 1.1 Interim Government (1946)"
+        }
+      ],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The interim government was formed in ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "September 1946.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [
+        {
+          "label": "fn 1",
+          "runs": [
+            {
+              "text": "1 The Muslim League joined the interim government in ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "October 1946.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "September1946.1"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "October1946."
+        }
+      ]
+    }
+  ]
+}

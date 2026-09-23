@@ -1,0 +1,98 @@
+{
+  "highlights": 3,
+  "entries": [
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "CHAPTER II"
+        },
+        {
+          "level": 2,
+          "text": "PROCEDURE"
+        }
+      ],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(2) The authority shall ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "record reasons",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " before making the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "final order.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "recordreasons"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "finalorder."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "CHAPTER II"
+        },
+        {
+          "level": 2,
+          "text": "STATE AMENDMENT"
+        }
+      ],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Example State.-After sub-section (2), insert the following ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "local provision.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "localprovision."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+# pdf-merge: merge all PDFs in a directory into one PDF, in natural filename order
+#
+# Usage: pdf-merge [directory] [-o|--output OUTPUT.pdf]
+#   directory      Directory containing PDFs to merge (default: current directory)
+#   -o, --output   Output file path (default: <directory>/merged.pdf)
+#
+# Uses qpdf if installed (more tolerant of malformed PDFs and large batches),
+# otherwise falls back to pdfunite from poppler-utils.
+set -euo pipefail
+
+usage() {
+    echo "Usage: pdf-merge [directory] [-o|--output OUTPUT.pdf]"
+}
+
+die() {
+    echo "Error: $*" >&2
+    exit 1
+}
+
+output=""
+positional=()
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -o|--output)
+            [ $# -ge 2 ] || die "$1 requires a value (e.g. $1 combined.pdf)"
+            output="$2"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            positional+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if [ "${#positional[@]}" -gt 1 ]; then
+    usage >&2
+    die "expected at most one directory, got ${#positional[@]}"
+fi
+
+dir="${positional[0]:-.}"
+
+[ -d "$dir" ] || die "directory not found: $dir"
+dir_abs="$(cd "$dir" && pwd)"
+
+if [ -z "$output" ]; then
+    output="$dir_abs/merged.pdf"
+fi
+
+# Resolve output to an absolute path (its directory must already exist)
+output_dir="$(dirname "$output")"
+[ -d "$output_dir" ] || die "output directory not found: $output_dir"
+output_parent="$(cd "$output_dir" && pwd)"
+output_abs="${output_parent%/}/$(basename "$output")"
+
+# Prefer qpdf; fall back to pdfunite
+if command -v qpdf >/dev/null 2>&1; then
+    tool=qpdf
+elif command -v pdfunite >/dev/null 2>&1; then
+    tool=pdfunite
+else
+    die "neither qpdf nor pdfunite found. Install one (e.g. 'sudo apt install qpdf')."
+fi
+
+# Collect PDFs in the directory, naturally sorted (so page2.pdf comes before
+# page10.pdf), excluding the output file itself in case it already exists
+# from a previous run — otherwise re-running would merge merged.pdf into itself.
+# find prints paths as "$dir_abs/<name>", so they compare directly to output_abs.
+files=()
+while IFS= read -r -d '' f; do
+    if [ "$f" != "$output_abs" ]; then
+        files+=("$f")
+    fi
+done < <(find "$dir_abs" -maxdepth 1 -type f -iname '*.pdf' -print0 | sort -zV)
+
+if [ "${#files[@]}" -eq 0 ]; then
+    die "no PDF files found in $dir_abs"
+fi
+
+if [ "${#files[@]}" -eq 1 ]; then
+    echo "Only one PDF found (${files[0]}); nothing to merge." >&2
+    exit 1
+fi
+
+echo "Merging ${#files[@]} PDFs with $tool..."
+
+if [ "$tool" = qpdf ]; then
+    # qpdf exits with 3 when the output was written but it hit problems in
+    # some input files. Treat that as success with a warning instead of
+    # letting set -e abort. (Works on all qpdf versions, unlike --warning-exit-0.)
+    status=0
+    qpdf --empty --pages "${files[@]}" -- "$output_abs" || status=$?
+    if [ "$status" -eq 3 ]; then
+        echo "Warning: qpdf reported problems in some input files (see above);" \
+             "the merged file was still written." >&2
+    elif [ "$status" -ne 0 ]; then
+        die "qpdf failed (exit code $status)"
+    fi
+else
+    # pdfunite prints "Found recursive dicts" for PDFs containing
+    # self-referencing objects. It's harmless, so filter it out while still
+    # showing any other messages. With pipefail, a pdfunite failure still
+    # fails the pipeline; the "|| true" stops grep from failing when every
+    # line was filtered out.
+    if ! pdfunite "${files[@]}" "$output_abs" 2>&1 >/dev/null \
+            | { grep -v 'Found recursive dicts' || true; } >&2; then
+        die "pdfunite failed"
+    fi
+fi
+
+# Report the page count so the result is easy to sanity-check
+pages=""
+if [ "$tool" = qpdf ]; then
+    pages="$(qpdf --show-npages "$output_abs" 2>/dev/null || true)"
+elif command -v pdfinfo >/dev/null 2>&1; then
+    pages="$(pdfinfo "$output_abs" 2>/dev/null | awk '/^Pages:/ {print $2}' || true)"
+fi
+
+if [ -n "$pages" ]; then
+    echo "Merged ${#files[@]} PDFs ($pages pages) into $output_abs"
+else
+    echo "Merged ${#files[@]} PDFs into $output_abs"
+fi

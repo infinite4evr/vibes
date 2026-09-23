@@ -1,0 +1,345 @@
+# Visual review status
+
+Pages reviewed: **500 / 500**; marks judged: **3725** (P 3270, M 420, F 28, X 7).
+
+Strict (P only): **88.0%** · Usable (P + M): **99.2%**
+
+| Source | Pages reviewed / planned | Marks | P | M | F | Strict | Usable |
+|---|---|---|---|---|---|---|---|
+| A Brief History of Modern India (Spectrum, Rajiv Ahir) | 27 / 27 | 123 | 118 | 5 | 0 | 95.9% | 100.0% |
+| The Constitution of India (2024 diglot) | 34 / 34 | 128 | 112 | 16 | 0 | 87.5% | 100.0% |
+| Fundamentals of Accounting & Financial Analysis (Chowdhry) | 21 / 21 | 107 | 84 | 22 | 1 | 78.5% | 99.1% |
+| Indian Economy (Ramesh Singh) | 38 / 38 | 175 | 163 | 12 | 0 | 93.1% | 100.0% |
+| Indian Polity (M. Laxmikanth, 8th ed.) | 108 / 108 | 927 | 905 | 20 | 2 | 97.6% | 99.8% |
+| Employee's Compensation Act, 1923 | 12 / 12 | 121 | 114 | 7 | 0 | 94.2% | 100.0% |
+| Fundamentals of Accounting for CA-CPT (Jain & Panda) | 12 / 12 | 51 | 33 | 17 | 1 | 64.7% | 98.0% |
+| Trade Unions Act, 1926 | 12 / 12 | 107 | 94 | 13 | 0 | 87.9% | 100.0% |
+| Accountancy for CA-CPT (Tata McGraw Hill) | 10 / 10 | 27 | 10 | 17 | 0 | 37.0% | 100.0% |
+| Indian Economy (Vivek Singh, 7th ed.) | 46 / 46 | 364 | 243 | 108 | 13 | 66.8% | 96.4% |
+| Labour Acts: Payment of Wages 1936 ... Unorganised Workers 2008 | 90 / 90 | 767 | 680 | 87 | 0 | 88.7% | 100.0% |
+| ICSI Professional Programme: Labour Laws & Practice | 47 / 47 | 697 | 623 | 59 | 8 | 90.3% | 98.8% |
+| Industrial Relations, Trade Unions & Labour Legislation (Pearson, 3e) | 12 / 12 | 32 | 23 | 7 | 2 | 71.9% | 93.8% |
+| Industrial Relations and Labour Laws (Ghosh & Nanda) | 31 / 31 | 99 | 68 | 30 | 1 | 68.7% | 99.0% |
+
+## Failures (F)
+
+- P067 (merged p.1374) mark #3: table collapsed column by column: only 'AS-1' and 'Disclosure' bold, 'of accounting policies' lost in a jumble of all 17 rows
+- P224 (merged p.3402) mark #1: text scrambled: row mixes two layout columns, the marked phrase comes out reversed ('structure’ … ‘basic') inside a jumbled sentence
+- P224 (merged p.3402) mark #2: text scrambled: row mixes two layout columns, the marked phrase comes out reversed ('structure’ … ‘basic') inside a jumbled sentence
+- P243 (merged p.3832) mark #1: MCQ answer attached to the wrong question: Q6's '(a) Understatement of assets' printed under Q1 'Accounting principles are generally based on:'
+- P306 (merged p.5946) mark #1: table rows shifted: the Second Plan's 'focussed on rapid industrialization- heavy & basic industries' is filed in the Third Plan row
+- P306 (merged p.5946) mark #2: table rows shifted: the Second Plan's 'focussed on rapid industrialization- heavy & basic industries' is filed in the Third Plan row
+- P306 (merged p.5946) mark #4: table rows shifted: the Third Plan's 'agriculture was given top priority …' is filed in the Three Annual Plans row
+- P306 (merged p.5946) mark #5: table rows shifted: the Third Plan's 'agriculture was given top priority …' is filed in the Three Annual Plans row
+- P306 (merged p.5946) mark #6: table rows shifted: the Third Plan's 'agriculture was given top priority …' is filed in the Three Annual Plans row
+- P306 (merged p.5946) mark #8: table rows shifted: the Annual Plans' new agricultural strategy ('… exploitation of irrigation potential') is filed in the Fourth Plan row
+- P310 (merged p.5978) mark #1: text scrambled: this prose page is read as a table (entry kind 'row'), words from different lines are interleaved into word salad and the marked phrase 'Socio-Economic Caste Census (SECC 2011)' is split and scattered
+- P310 (merged p.5978) mark #2: text scrambled: this prose page is read as a table (entry kind 'row'), words from different lines are interleaved into word salad and the marked phrase 'Socio-Economic Caste Census (SECC 2011)' is split and scattered
+- P310 (merged p.5978) mark #3: text scrambled: this prose page is read as a table (entry kind 'row'), words from different lines are interleaved into word salad and the marked phrase 'Socio-Economic Caste Census (SECC 2011)' is split and scattered
+- P310 (merged p.5978) mark #4: text scrambled: this prose page is read as a table (entry kind 'row'), words from different lines are interleaved into word salad and the marked phrase 'Socio-Economic Caste Census (SECC 2011)' is split and scattered
+- P310 (merged p.5978) mark #5: text scrambled: this prose page is read as a table (entry kind 'row'), words from different lines are interleaved into word salad and the marked phrase 'Socio-Economic Caste Census (SECC 2011)' is split and scattered
+- P310 (merged p.5978) mark #6: text scrambled: this prose page is read as a table (entry kind 'row'), words from different lines are interleaved into word salad and the marked phrase 'Socio-Economic Caste Census (SECC 2011)' is split and scattered
+- P310 (merged p.5978) mark #7: text scrambled: this prose page is read as a table (entry kind 'row'), words from different lines are interleaved into word salad and the marked phrase 'Socio-Economic Caste Census (SECC 2011)' is split and scattered
+- P416 (merged p.7095) mark #7: marked text not placed in the notes at all, only listed under Check in book ('The crafting and adoption of international labour standards …', 'supervises the application of Conventions …', 'examines the Global Report …', 'stage for the discussion …', 'for setting up guidelines …')
+- P416 (merged p.7095) mark #8: marked text not placed in the notes at all, only listed under Check in book ('The crafting and adoption of international labour standards …', 'supervises the application of Conventions …', 'examines the Global Report …', 'stage for the discussion …', 'for setting up guidelines …')
+- P416 (merged p.7095) mark #9: marked text not placed in the notes at all, only listed under Check in book ('The crafting and adoption of international labour standards …', 'supervises the application of Conventions …', 'examines the Global Report …', 'stage for the discussion …', 'for setting up guidelines …')
+- P416 (merged p.7095) mark #10: marked text not placed in the notes at all, only listed under Check in book ('The crafting and adoption of international labour standards …', 'supervises the application of Conventions …', 'examines the Global Report …', 'stage for the discussion …', 'for setting up guidelines …')
+- P416 (merged p.7095) mark #11: marked text not placed in the notes at all, only listed under Check in book ('The crafting and adoption of international labour standards …', 'supervises the application of Conventions …', 'examines the Global Report …', 'stage for the discussion …', 'for setting up guidelines …')
+- P420 (merged p.7123) mark #11: text scrambled: the paragraph is read as a table row, 'done for' is torn out of the marked phrase ('… but also the act the protection …') and put at the entry start with stray words from other lines ('The definition done for v. E.S.I. club (CCI requirements …')
+- P443 (merged p.7435) mark #20: text scrambled: sub-section (vii)(1) is read as a table row, words torn out of the marked phrases and moved to the entry start ('twenty per total salary', 'be for being set on … fourth year' with 'cent of the', 'carried' and 'accounting' displaced)
+- P443 (merged p.7435) mark #21: text scrambled: sub-section (vii)(1) is read as a table row, words torn out of the marked phrases and moved to the entry start ('twenty per total salary', 'be for being set on … fourth year' with 'cent of the', 'carried' and 'accounting' displaced)
+- P466 (merged p.8374) mark #1: text scrambled: this prose page is read as a table row, the marked sentence is torn in two and the halves are printed apart in the wrong order ('… attention of the government and the public to the for the revision of the Factories Act of 1881.’' … '‘to invite the many grievances of the textile workers of Bombay, and to agitate')
+- P466 (merged p.8374) mark #3: text scrambled: 'no membership, no fund, no rules' and 'and it did not organize any real sort of working … class' are printed apart
+- P475 (merged p.9136) mark #1: text scrambled: the prose paragraph is read as a table row, 'or town to another' is torn out of the marked sentence and printed earlier among stray words ('… one village village or town is known as migration.')
+
+## Minor issues (M), grouped by reason
+
+- 24 × context trimmed so the subject is lost: the entry starts '… or any per
+- 19 × context trimmed so the condition is lost
+- 17 × context trimmed so the actor and condition are lost
+- 13 × line-break hyphen kept inside the marked words
+- 13 × bullet items run together into one paragraph
+- 13 × context trimmed so the actor is lost
+- 10 × definitions
+- 9 × line-break hyphen kept
+- 9 × list items
+- 8 × list of eight books run together into one paragraph
+- 8 × unrelated lead-in from the previous clause prefixed
+- 8 × intro sentence and both bullets run together into one entry
+- 7 × MCQ answer without its question
+- 7 × bullet items run together into one long entry
+- 7 × the two formula bullets run together with the preceding paragraph
+- 7 × context trimmed so the subject is lost
+- 7 × context trimmed so the case name is lost
+- 6 × one sentence split into two entries at a line break
+- 6 × unmarked list of strategic sectors run together with the marked bullet
+- 6 × context trimmed so the meaning is lost: '
+- 5 × ruling filed under the wrong case heading 'Shankari Prasad Case
+- 5 × context trimmed: 'Notice in writing … signed' and 'in the case of an a
+- 5 × True/False answers without their statements, options cut to the '
+- 5 × bullet list run together into one entry, separated by a private-use bu
+- 5 × box bullets run together into one line
+- 5 × target bullets run together without separators, their lead-in 'The mai
+- 5 × marked sentences intact but inside the same scrambled entry
+- 4 × contents rows merged: article numbers listed apart from their titles
+- 4 × list items without their lead-in
+- 4 × context trimmed so the subject
+- 4 × three bullet items run together into one entry, the middle one cut
+- 4 × separate bullets joined into one entry with a stray private-use bullet
+- 4 × two bullets run together into one entry
+- 4 × marked sentences intact but preceded by the scrambled words in the sam
+- 4 × stray bullet glyph read as the letter 'r'
+- 3 × context trimmed to '… that person’s seat in Parliament shall become va
+- 3 × context trimmed around 'prevail' so the subject
+- 3 × separate flowchart lines run together without breaks
+- 3 × words split after the 'fi' ligature throughout
+- 3 × stray fragment appended
+- 3 × fraction flattened: 'Capital Output Ratio = Capital Output'
+- 3 × table row without its column headers: 'Weight 22.62% 13.15% 64.23%' do
+- 3 × fraction flattened: 'Money Multiplier = Money Supply
+- 3 × merged table cell split by columns: the sub-bullets under 'Priority Se
+- 3 × table cell split from its pair: '
+- 2 × sentence starts mid-way
+- 2 × rows 336-338 merged, numbers apart from titles
+- 2 × line-break hyphens kept
+- 2 × marked item split into two entries at the line break
+- 2 × stray footnote number in context
+- 2 × words glued in context
+- 2 × glued inside the marked words
+- 2 × line-break hyphen kept in context
+- 2 × question start lost, lead-in garbled
+- 2 × words split after the 'fi' ligature
+- 2 × fraction flattened: denominators moved to the end
+- 2 × marked sentence glued to the end of the previous bullet
+- 2 × flowchart boxes run together
+- 2 × sentence cut at the page end
+- 2 × the two policy bullets run together into one entry
+- 2 × bullet list run together into one entry
+- 2 × row label and dates right, but paired with the previous row's content
+- 2 × unrelated lead-in prefixed: the 'Employment Data
+- 2 × list item
+- 2 × two-line Act title split into two entries
+- 2 × stray amendment-footnote number in the sentence
+- 2 × sub-items
+- 2 × context trimmed so the condition is lost: the one-to-three-year term a
+- 2 × words mostly covered by the highlights left unbold
+- 2 × marked definition split into two entries printed in reverse order
+- 2 × two-line chapter heading split, its second line glued to the next head
+- 1 × stray bullet '●' inside the context sentence
+- 1 × run-in heading split the sentence
+- 1 × only the attribution '—Hugh Rose' kept, quote it belongs to missing
+- 1 × stray numbers of unmarked rows 37/39 in the row
+- 1 × stray '243ZH.' appended
+- 1 × number '263.' split from its marked title
+- 1 × context cut: 'an Advisory Board … appointed as' dropped, so 'Judges of
+- 1 × stray table word 'Debit' appended
+- 1 × hyphen kept
+- 1 × one marked sentence split into two entries
+- 1 × run-in heading '1. Trade discount' appended to the list above, split f
+- 1 × footnote numbers 50/51 inserted mid-sentence
+- 1 × unrelated lead-in sentence from the previous page prefixed
+- 1 × margin note text 'trade bill' injected into the middle of the sentence
+- 1 × context cut mid-phrase
+- 1 × one marked sentence split over two entries, first labelled p.2070 with
+- 1 × table cell text cut mid-sentence
+- 1 × first table row: article number '243.' output alone, its subject 'Defi
+- 1 × first table row: '239.' output alone, its subject 'Administration of U
+- 1 × first table row: '244.' output alone, its subject 'Administration of S
+- 1 × first table row: '339.' output alone, its subject 'Scheduled Areas and
+- 1 × case-summary layout garbled into a row
+- 1 × words glued where an amendment marker was removed
+- 1 × same glue in the context
+- 1 × words glued where amendment markers were removed
+- 1 × answer line from another question inserted between Q1 and its answer '
+- 1 × question trimmed to its last sentence, the rule it asks about is lost
+- 1 × MCQ answer '32' without its question
+- 1 × stray characters 'ßß' appended
+- 1 × run-in bold text 'Clerical errors could' made a heading, splitting the
+- 1 × run-in heading 'Errors of omission' made a heading, splitting the mark
+- 1 × word split after the 'fi' ligature
+- 1 × word split after the 'fi' ligature inside the marked words
+- 1 × True/False answer without its statements, option cut to '
+- 1 × stray private-use bullet glyph
+- 1 × previous bullet's last sentence prefixed, separated by a private-use b
+- 1 × stray private-use bullet glyph after the marked sentence
+- 1 × marked label 'Seasonal Unemployment:' split into two entries
+- 1 × next bullet appended after a stray private-use bullet glyph
+- 1 × start of the next bullet
+- 1 × bullets run together into one entry
+- 1 × context trimmed so the subject is lost: '… controlled by the Central G
+- 1 × marked section heading split at the line break into two nested heading
+- 1 × word half-covered by the highlight left unbold
+- 1 × the marked bullet list is split off under an unrelated lead-in from th
+- 1 × stray bullet glyph read as the letter 'l' at the end of the heading li
+- 1 × context trimmed so the definition's condition is lost
+- 1 × sub-item
+- 1 × context trimmed so the actor and verb are lost
+- 1 × context trimmed so a prohibition reads like a permission
+- 1 × word mostly covered by the highlight
+- 1 × marked sentence in the case box split into three pieces, its middle li
+- 1 × marked words intact but inside a scrambled entry
+- 1 × marked chapter title split at the line break into two nested headings
+- 1 × marked phrase intact but inside the scrambled entry
+- 1 × marked sentence intact but inside the scrambled entry, line-break hyph
+- 1 × marked chapter title split at the line breaks into nested headings
+- 1 × stray bullet glyph read as the letter 'r' before the marked words
+- 1 × unrelated source line of the exhibit box
+- 1 × the sidebar's marked bullet list is torn from its title and glued to t
+- 1 × stray 'r' and line-break hyphen kept inside the marked words
+- 1 × marked paragraph split into two entries at a line break
+- 1 × last line of the marked box
+- 1 × rupee sign comes out as a backtick
+- 1 × marked Act title split at the line break into two nested headings
+- 1 × item
+- 1 × same split, and line-break hyphen kept inside the marked words
+
+## Page notes (S = structure/heading, N = typed note, T = text-layer)
+
+- P008 (p.95): S quote attribution '—Sidney Owen' used as heading
+- P009 (p.99): S quote attribution '—William Irvine,' used as heading
+- P013 (p.131): S quote attribution '—Lord Cornwallis' used as heading
+- P019 (p.172): S two headings merged into one line
+- P022 (p.214): S Rani Laxmibai paragraph filed under heading 'Maulvi Ahmadullah'
+- P027 (p.243): S bold bullet sentence used as heading
+- P028 (p.926): S table-of-contents rows grouped several to an entry
+- P033 (p.950): S 'PART B— [Omitted.]' used as heading
+- P035 (p.963): S running header 'THE CONSTITUTION OF INDIA' used as heading
+- P036 (p.967): S running header 'THE CONSTITUTION OF INDIA' used as heading
+- P044 (p.1005): S article 117 heading nested under article 116 heading
+- P049 (p.1078): S 'PART IXA' nested under 'PART VIII'
+- P059 (p.1265): S running header 'THE CONSTITUTION OF INDIA' used as heading
+- P061 (p.1274): S running header 'THE CONSTITUTION OF INDIA' used as heading
+- P068 (p.1384): S flowchart boxes used as headings
+- P075 (p.1436): T text layer duplicates the title lines; transcription corrected
+- P122 (p.2547): N typed note 'cabinet' (beside the 1861 'portfolio' item) attached to the 1909 Act entry instead
+- P124 (p.2571): footnote marks 7-9 correctly placed as fn 1 under the referencing sentence on p.2556
+- P128 (p.2596): S table rows for Second/Third Schedule came out as heading + text, not as rows
+- P132 (p.2628): S lead-in sentence repeated in two consecutive entries
+- P134 (p.2646): S table column header 'Consists of' used as heading
+- P144 (p.2719): S table row 13 came out as two separate entries (case name, then its element)
+- P149 (p.2759): S '(iii)' used as heading
+- P164 (p.2870): S sentence fragment 'part is put to vote.' used as heading
+- P169 (p.2909): S endnote placed in a 'Footnotes' section under the bogus heading 'part is put to vote.'
+- P191 (p.3082): S table header 'Article No. Subject-matter' used as heading
+- P228 (p.3543): S sentence fragment 'part of territory of India.' used as heading
+- P229 (p.3719): S Act title filed under heading 'CHAPTER IV' (from the arrangement-of-sections pages)
+- P234 (p.3753): S Schedule III filed under heading of section 36
+- P235 (p.3760): S Act title filed under heading 'CHAPTER IV'; this page is a duplicate of P229 (the Act appears twice in the merged PDF)
+- P236 (p.3763): N three typed notes at the page top attached to the first entry (acceptable)
+- P237 (p.3767): duplicate of P231
+- P238 (p.3772): duplicate of P232
+- P239 (p.3781): duplicate of P233
+- P240 (p.3794): S Schedule III filed under heading of section 36; duplicate of P234
+- P241 (p.3817): S headings 'Limitations of Accounting' and 'Book-keeping, Accounting and Accountancy' not recognised as headings, entries filed under a stale 'Objectives > External users or outsiders'
+- P242 (p.3829): S Note-box sentence (mark 4) output as a heading, the conventions below are filed under it
+- P243 (p.3832): two-column MCQ page, only the option letters are highlighted
+- P245 (p.3854): S 'Valuation Principle' heading output as bold text under a stale heading path ('Objectives > Money as a unit of measurement lacks universal app…')
+- P246 (p.3866): S Note-box sentence (mark 5) output as a heading. T control character U+0007 inside mark 1's second item (invisible, stripped in PDF output)
+- P249 (p.3910): S note-box fragment 'the goods in which the firm deals in) are recorded' used as heading
+- P250 (p.3941): T mark 4 covers only the 'o' of 'of' at a line end, so 'of' is not bold (text complete). S Note-box sentence used as heading for the entries below
+- P256 (p.4574): T text layer places 'body' before 'common seal' ('a body common seal'), the tool follows it
+- P259 (p.4580): duplicate of P253 (the Trade Unions Act is in the merged PDF twice: pp.4568-4579 and 4580-4591, identical highlights). S Act title filed under 'CHAPTER V > 33. Cognizance of offences' from the end of the first copy
+- P260 (p.4583): 'to be be the Registrar' is in the source
+- P261 (p.4584): duplicate of P255
+- P262 (p.4586): duplicate of P256
+- P263 (p.4589): 'he sent' is a typo in the source
+- P264 (p.4590): duplicate of P258
+- P266 (p.4750): S italic run-in headings ('Limitations of Trial Balance') not recognised, items filed under 'DEFINITIONS'
+- P276 (p.5730): N typed note 'gross investment = capital goods produced' output as a separate note entry '(p. 8)', not beside the formula (acceptable)
+- P277 (p.5739): S equation '(I - S) + (G-T) = M -X' used as heading
+- P278 (p.5743): S bold italic sentence 'required to produce one unit (Rupee one) of output' used as heading
+- P279 (p.5754): S table header 'Manufactured Products' and 'this is the main one' used as headings
+- P285 (p.5789): 'Check in book' lists a part-word notice for mark 6, although its word is bold through mark 7 (harmless)
+- P286 (p.5793): S heading '(i) Priority Sector Lending:' not recognised, entries filed under the fragment 'Government securities market,'
+- P292 (p.5825): S box title 'SEZ' used as heading
+- P293 (p.5828): S the subsection title 'MCLR' stays the top heading for all of chapter 2's later sections
+- P299 (p.5876): S bold sentence 'Fiscal Policy can be either expansionary or contractionary.' (mark 8) used as heading
+- P301 (p.5890): S Corporate income tax filed under the sibling heading 'Personal income tax'
+- P304 (p.5917): S marked subtitle merged into the section heading (acceptable)
+- P306 (p.5946): plan table continues from the previous page, where the row label sits; on p.5945 entry E4345 carries the mark 'Mahalanobis.' with no text at all (not in the sample)
+- P307 (p.5952): S heading doubled '7.3 Make in India Make in India'
+- P310 (p.5978): the next page (p.5979, E4378) is scrambled the same way (not in the sample)
+- P315 (p.6013): S '(ONOF)' split off the scheme heading and becomes a top-level heading for the following pages
+- P319 (p.6058): S bold phrase 'the following farming systems are practised.' used as heading
+- P322 (p.6194): S state-amendment heading 'Uttarakhand' left as the parent heading of section 7
+- P323 (p.6214): S new Act title filed under the previous Act's 'Maharashtra > Amendment of section 26 of Act IV of 1936'
+- P326 (p.6234): S the Act's long title filed under a stale 'CHAPTER VII' from the previous Act
+- P328 (p.6246): S stale state-amendment heading 'Registration of Unions.' as parent
+- P334 (p.6299): S schedule title filed under a stale state-amendment heading 'Manipur > Bihar Amendment …'
+- P335 (p.6308): repeat of merged p.6235 (the Industrial Disputes Act is in the merged PDF twice), twin not in the sample
+- P336 (p.6319): repeat of P328 (merged p.6246), tool output identical. S stale state-amendment heading 'Registration of Unions.' as parent
+- P337 (p.6324): S chapter heading 'CHAPTER IIB GRIEVANCE REDRESSAL MACHINERY' output as bold text under the previous section 9B
+- P338 (p.6327): repeat of P329 (merged p.6254), tool output identical
+- P339 (p.6335): repeat of P330 (merged p.6262), tool output identical
+- P340 (p.6340): repeat of merged p.6267, twin not in the sample
+- P341 (p.6352): repeat of P332 (merged p.6279), tool output identical
+- P342 (p.6364): repeat of merged p.6291, twin not in the sample
+- P343 (p.6376): S Act title filed under a stale 'Rajasthan > Explanation.-'
+- P347 (p.6405): repeat of merged p.6386 (the Minimum Wages Act is in the merged PDF twice), twin not in the sample
+- P348 (p.6414): S Act title filed under a stale 'PART II' (schedule of the previous Act)
+- P351 (p.6434): S section 45 title (amendment-bracketed) not recognised as a heading, output as text under section 44
+- P352 (p.6441): S section 53 title output as bold text under the previous section 52A
+- P355 (p.6481): repeat of P349 (merged p.6420; the ESI Act is in the merged PDF twice), tool output identical
+- P356 (p.6484): repeat of merged p.6423, twin not in the sample
+- P357 (p.6489): repeat of P350 (merged p.6428), tool output identical
+- P358 (p.6496): repeat of merged p.6435, twin not in the sample
+- P359 (p.6505): repeat of P353 (merged p.6444), tool output identical
+- P360 (p.6510): repeat of merged p.6449, twin not in the sample
+- P361 (p.6526): repeat of merged p.6465, twin not in the sample. S schedule title filed under a stale 'PART II'
+- P367 (p.6594): S schedule title filed under the last section '120. Repeal and savings'
+- P368 (p.6604): repeat of merged p.6544 (the Factories Act is in the merged PDF twice), twin not in the sample
+- P369 (p.6609): repeat of merged p.6549, twin not in the sample
+- P370 (p.6614): repeat of merged p.6554, twin not in the sample
+- P371 (p.6627): repeat of P365 (merged p.6567), tool output identical
+- P372 (p.6631): repeat of merged p.6571, twin not in the sample
+- P373 (p.6646): repeat of merged p.6586, twin not in the sample
+- P377 (p.6683): repeat of merged p.6659 (the Plantations Labour Act is in the merged PDF twice), twin not in the sample. S Act title filed under a stale 'CHAPTER VIII'
+- P378 (p.6687): repeat of merged p.6663, twin not in the sample
+- P379 (p.6693): repeat of merged p.6669, twin not in the sample
+- P380 (p.6704): S Act title filed under the previous Act's '43. General power to make rules'
+- P384 (p.6744): S schedule title filed under the fragment heading 'Chapter or of the rules made thereunder.]'
+- P385 (p.6746): repeat of P380 (merged p.6704, the EPF Act is in the merged PDF twice), same entries, only the stale parent heading differs
+- P386 (p.6756): repeat of merged p.6714, twin not in the sample
+- P387 (p.6761): repeat of P383 (merged p.6719), tool output identical
+- P388 (p.6772): repeat of merged p.6730, twin not in the sample. S fragment heading 'Chapter or of the rules made thereunder.]' as parent
+- P389 (p.6784): repeat of merged p.6742, twin not in the sample
+- P395 (p.6835): repeat of merged p.6795 (the Mines Act is in the merged PDF twice), twin not in the sample
+- P396 (p.6842): repeat of P391 (merged p.6802), tool output identical
+- P397 (p.6848): repeat of P392 (merged p.6808), tool output identical
+- P398 (p.6853): repeat of P393 (merged p.6813), tool output identical
+- P399 (p.6867): repeat of merged p.6827, twin not in the sample
+- P400 (p.6882): N typed notes 'struck down, supreme court' and 'Hamsaanandini Nanduri v. Union of India' correctly attached to sub-section (4)
+- P401 (p.6891): repeat of merged p.6880 (the Maternity Benefit Act is in the merged PDF twice), twin not in the sample
+- P402 (p.6893): repeat of P400 (merged p.6882), tool output identical
+- P403 (p.6907): 'salary of wage' is in the source
+- P405 (p.6937): S amendment-Act title 'AMENDMENT OF THE CONTRACT LABOUR (REGULATION AND A…' used as a top heading
+- P408 (p.6967): S long title filed under a stale 'CHAPTER III'
+- P411 (p.7072): 'theState' and 'should be shared equally provision of basic minimum' are in the source
+- P413 (p.7080): T mark 2 starts inside 'It', so 'It' is not bold (text complete)
+- P415 (p.7090): S the list is output as table rows ('1. ·', '2. ·'). S sentence 'The council is to take up issues …' repeated in two consecutive entries. Ink ticks ignored (out of scope)
+- P418 (p.7108): handwritten ink ignored (out of scope)
+- P420 (p.7123): S lists output as table rows '(1) ·'
+- P421 (p.7131): N typed note 'child below 14 section' correctly attached to the section 5 entry (it sits beside 'section 67'). Ink ignored
+- P422 (p.7135): S lists output as table rows '(a) ·'. Ink ignored
+- P425 (p.7148): ink ignored
+- P427 (p.7158): ink ignored
+- P428 (p.7163): ink ignored
+- P429 (p.7166): penalty table rows output as 'Section … · text · penalty'
+- P431 (p.7300): ink ignored
+- P432 (p.7305): S sexual-harassment definition filed under the heading '“employer”'
+- P440 (p.7414): ink ignored
+- P441 (p.7420): S following entries filed under a stale 'Article 9.' heading. Ink ignored
+- P442 (p.7427): ink ignored
+- P443 (p.7435): S heading '(vii) Set on and set off of allocable surplus' lost, entry filed under '(vi) Computation of number of working days'. Ink ignored
+- P444 (p.7442): ink ignored
+- P446 (p.7452): ink ignored
+- P447 (p.7460): ink ignored
+- P448 (p.7462): ink ignored
+- P450 (p.7474): ink ignored
+- P454 (p.7493): ink ignored
+- P455 (p.7501): S line 'part thereof in excess of six months.' repeated as a heading after the entry
+- P464 (p.8327): S sentence 'There are Variations in Union Organization and Adm…' used as the parent heading
+- P466 (p.8374): ink ignored
+- P471 (p.9112): S sidebar title 'Spotlight' and 'Concurrent List' used as headings
+- P495 (p.9699): S the second half then stays the top heading for the chapter
+- P498 (p.9738): underlines run the full width of each table row, so whole rows are bold (consistent with the marks)

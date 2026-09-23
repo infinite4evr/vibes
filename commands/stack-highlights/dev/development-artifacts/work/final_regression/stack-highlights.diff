@@ -1,0 +1,386 @@
+--- stack-highlights.before_user_fixes	2026-09-22 13:44:08.590103902 +0000
++++ stack-highlights	2026-09-22 13:46:33.603749616 +0000
+@@ -105,6 +105,7 @@
+ # Running headers / footers and page numbers
+ PAGENUM_BOTTOM_FRACTION = 0.5        # a page number sits below this fraction of page height
+ RUNNING_MIN_PAGE_FRACTION = 0.3      # a header/footer must repeat on >= this fraction of pages
++RUNNING_LOCAL_MIN_REPEAT = 3            # repeated text in the physical margin is also a running head
+ # Page-numbered running heads that change per chapter ("Advent of the Europeans
+ # in India * 23" on odd pages) never repeat on 30% of pages, and may sit below
+ # the --margin band. They are caught by their page number instead: the topmost
+@@ -131,6 +132,16 @@
+ NARROW_COLUMN_FRACTION = 0.3         # a block narrower than this fraction of page width may be a column
+ SIDE_BY_SIDE_GAP_FRACTION = 0.5      # horizontal gap (of line height) that splits side-by-side lines
+ TABLE_CONTINUATION_GAP_FRACTION = 0.6  # vertical gap (of line height) a table row may span to continue
++TABLE_ALIGN_SLOP = 12                  # column starts must repeat this closely across rows
++TABLE_MAX_ROW_GAP = 28                 # pt: a new row much farther away ends the table
++
++# Common publisher boilerplate that must never become structural context.  It
++# is intentionally tiny and conservative: these lines carry no study content,
++# but if they are promoted to headings they can incorrectly own many pages.
++BOILERPLATE_RE = re.compile(r"^this page is intentionally (?:left )?blank[.!]?$", re.I)
++STRUCTURAL_HEADING_RE = re.compile(r"^(?:CHAPTER|PART)\s+[A-Z0-9IVXLC]+(?:[-–—][A-Z0-9IVXLC]+)?\b", re.I)
++STATE_AMEND_RE = re.compile(r"^STATE\s+AMENDMENTS?$", re.I)
++SECTION_RUNIN_RE = re.compile(r"^[\[\(\"'“‘]*\d+[A-Z]*(?:-[A-Z])?\.\s*", re.I)
+ 
+ # List items
+ LIST_LINE_SHORT_FRACTION = 0.2       # a line ending this fraction of the block short ends the item
+@@ -341,7 +352,21 @@
+         if sizes:
+             self.body_size = sizes.most_common(1)[0][0]
+         need = max(3, int(self.doc.page_count * RUNNING_MIN_PAGE_FRACTION))
+-        self.running = {k for k, v in margin_keys.items() if v >= need or k == "#"}
++        # A fixed book title often repeats on half the pages, while a chapter
++        # title may repeat only on the odd (or even) pages of that chapter.
++        # Requiring 30% of the *whole book* therefore misses chapter-name
++        # running heads.  Text physically inside the margin is safe to strip
++        # after a few exact repeats; structural labels such as STATE AMENDMENT
++        # are excluded because, in legislation, they can legitimately start at
++        # the very top of a page.
++        self.running = {
++            k for k, v in margin_keys.items()
++            if k == "#" or v >= need or (
++                v >= RUNNING_LOCAL_MIN_REPEAT
++                and re.search(r"[a-z]", k)
++                and not k.startswith(("stateamendment", "chapter", "part"))
++            )
++        }
+         # page-numbered running heads: the page number must follow the book's
+         # dominant page offset (so a stray number in body text never qualifies)
+         offsets = Counter(off for _p, _k, off in edge_cands)
+@@ -658,6 +683,8 @@
+         self.header_paras = []
+         self.caption = None
+         self.id = 0
++        self.last_bottom = None
++        self.last_page = None
+ 
+ 
+ def line_is_heading(toks, ctx):
+@@ -668,6 +695,12 @@
+     size = max(t.size for t in words)
+     body = ctx.body_size
+     all_bold = all(t.bold for t in words)
++    # Legal / reference PDFs frequently typeset CHAPTER II or PART IVA in the
++    # same font as body text.  Treat the explicit structural label as a real
++    # heading even without bold/large-font evidence so it resets stale state
++    # (for example a preceding STATE AMENDMENT block).
++    if STRUCTURAL_HEADING_RE.match(text) and len(words) <= 8:
++        return 1
+     if text.rstrip().endswith(":") or text.rstrip().endswith(":—"):
+         return 0  # a bold lead-in line ("The features ... are:") is not a heading
+     if size >= body * 1.6:
+@@ -709,6 +742,11 @@
+         return None, toks
+     head = toks[:n]
+     htxt = " ".join(t.text for t in head).strip()
++    # A bold possessive opening word is commonly an attribution inside a
++    # sentence ("Kohler’s dictionary ..."), not a run-in heading.  Promoting
++    # it to the heading stack can attach a later highlight to the wrong label.
++    if len(head) == 1 and re.search(r"(?:['’]s|s['’])$", htxt, re.I):
++        return None, toks
+     if htxt.endswith(":") or len(head) > 14 or sum(ch[0].isalpha() for t in head for ch in t.chars) < 3:
+         return None, toks
+     rest = toks[n:]
+@@ -721,6 +759,119 @@
+     return head, rest
+ 
+ 
++def _block_text(b):
++    return " ".join(" ".join(t.text for t in toks) for toks, _ in b.get("_lines", []))
++
++
++def _attach_subscript_blocks(blocks):
++    """Attach small digit-only *subscript* lines to the neighbouring text line.
++
++    Some PDFs store M₁ as a normal-size ``M`` on one text line and the small
++    ``1`` as a completely separate line.  The old code classified every small
++    digit as a footnote marker, so M₁..M₄ became just M.  Only lower-positioned
++    digit lines are joined here; upper-positioned superscripts remain footnote
++    candidates.  Plain digits are used in the reconstructed text (M1), which is
++    semantically unambiguous and portable across Markdown/PDF fonts.
++    """
++    remove = set()
++    for i, sb in enumerate(blocks):
++        if len(sb.get("_lines", [])) != 1:
++            continue
++        stoks, sr = sb["_lines"][0]
++        if not stoks or not all(t.sup for t in stoks):
++            continue
++        raw = "".join(t.text for t in stoks).strip()
++        if not re.fullmatch(r"[0-9]{1,3}", raw):
++            continue
++        scy = (sr.y0 + sr.y1) / 2
++        best = None
++        best_score = None
++        for j, hb in enumerate(blocks):
++            if j == i:
++                continue
++            for li, (htoks, hr) in enumerate(hb.get("_lines", [])):
++                if not htoks:
++                    continue
++                hcy = (hr.y0 + hr.y1) / 2
++                # Subscripts sit lower than the host line centre but still
++                # overlap it vertically.  Superscript footnote markers sit up.
++                if scy <= hcy + 1.0 or sr.y0 >= hr.y1 + 3 or sr.y1 <= hr.y0:
++                    continue
++                prevs = [t for t in htoks if t.x1 <= sr.x0 + 2.5]
++                if not prevs:
++                    continue
++                prev = max(prevs, key=lambda t: t.x1)
++                gap = sr.x0 - prev.x1
++                if gap > 3.5 or gap < -4.0 or not prev.text[-1:].isalnum():
++                    continue
++                score = abs(gap) + abs(scy - hcy) * 0.15
++                if best_score is None or score < best_score:
++                    best_score = score
++                    best = (hb, li, htoks, prev)
++        if best is None:
++            continue
++        hb, li, htoks, prev = best
++        for t in stoks:
++            t.sup = False
++            t.line_start = False
++            t.glue = True
++        # Insert immediately after the host token rather than globally sorting
++        # by x: a small glyph can overlap the right edge of the host character.
++        k = max(k for k, t in enumerate(htoks) if t is prev) + 1
++        htoks[k:k] = stoks
++        remove.add(i)
++    if remove:
++        blocks[:] = [b for i, b in enumerate(blocks) if i not in remove]
++
++
++def _looks_like_split_heading(real):
++    """Two PDF blocks that are really ``7.5`` + ``LIQUIDITY RATIOS``.
++
++    Treating this common section-title layout as a table row can keep a table
++    state alive into the following prose and scramble the paragraph.
++    """
++    if len(real) != 2:
++        return False
++    left, right = sorted(real, key=lambda b: b["x0"])
++    a = re.sub(r"\s+", " ", _block_text(left)).strip()
++    b = re.sub(r"\s+", " ", _block_text(right)).strip()
++    if not re.fullmatch(r"(?:\d+|[IVXLC]+)(?:\.[0-9A-ZIVXLC]+)*\.?", a, re.I):
++        return False
++    letters = [c for c in b if c.isalpha()]
++    mostly_caps = bool(letters) and sum(c.isupper() for c in letters) / len(letters) >= 0.75
++    return word_count(b) <= 14 and (mostly_caps or len(b) <= 80)
++
++
++def _bands_align(a, b):
++    """High-confidence evidence that two multi-block bands are table rows."""
++    ra = [x for x in a if x.get("alnum")]
++    rb = [x for x in b if x.get("alnum")]
++    if len(ra) < 2 or len(rb) < 2:
++        return False
++    ax = [x["x0"] for x in ra]
++    bx = [x["x0"] for x in rb]
++    # One-to-one column matching: two nearby blocks in one band must not both
++    # "match" the same x-position in the other band (that exact pattern occurs
++    # when a section number + title follows a two-column prose block).
++    used = set()
++    matches = 0
++    for x in ax:
++        choices = [(abs(x - y), j) for j, y in enumerate(bx)
++                   if j not in used and abs(x - y) <= TABLE_ALIGN_SLOP]
++        if choices:
++            _d, j = min(choices)
++            used.add(j)
++            matches += 1
++    if matches < 2:
++        return False
++    # Rows of one table are near each other.  This prevents an outline near the
++    # top of a page from turning an unrelated section heading below into a row.
++    atop, abot = min(x["y0"] for x in ra), max(x["y1"] for x in ra)
++    btop, bbot = min(x["y0"] for x in rb), max(x["y1"] for x in rb)
++    gap = max(0.0, max(atop, btop) - min(abot, bbot))
++    return gap <= TABLE_MAX_ROW_GAP
++
++
+ def page_items(ctx, page, pno, marks):
+     cfg = ctx.cfg
+     rd = page.get_text("rawdict", flags=RAW_FLAGS)
+@@ -737,6 +888,9 @@
+                 continue
+             txt = " ".join(t.text for t in toks)
+             lr = pymupdf.Rect(l["bbox"])
++            has_raw_mark = any(ch[1] >= 0 for t in toks for ch in t.chars)
++            if BOILERPLATE_RE.match(txt.strip()) and not has_raw_mark:
++                continue
+             if ctx.is_running(page, lr, txt):
+                 # the head used to be an ordinary block that ended any table
+                 # running across the page break; keep that boundary
+@@ -771,6 +925,9 @@
+             blocks.append({"_lines": lines, "x0": x0, "x1": x1, "y0": y0, "y1": y1,
+                            "top": lines[0][1].y0, "alnum": has_alnum})
+ 
++    # Repair detached small subscript digits before layout classification.
++    _attach_subscript_blocks(blocks)
++
+     # --- group blocks sharing a top edge into bands (table rows) ---------
+     blocks.sort(key=lambda b: (round(b["top"]), b["x0"]))
+     bands = []
+@@ -792,19 +949,38 @@
+     items = []
+     if edge_top:
+         ctx.table = None
+-    for band in bands:
++
++    # A band is a table row only when another nearby band repeats at least two
++    # column starts.  The previous "two blocks + one narrow block" rule was
++    # intentionally permissive, but it could interpret ordinary prose / a
++    # section number plus title as a table and then reorder the sentence.
++    confident = set()
++    if cfg.tables:
++        for i in range(len(bands)):
++            if i > 0 and _bands_align(bands[i - 1], bands[i]):
++                confident.update((i - 1, i))
++            if i + 1 < len(bands) and _bands_align(bands[i], bands[i + 1]):
++                confident.update((i, i + 1))
++
++    for bi, band in enumerate(bands):
+         real = [b for b in band if b["alnum"]]
+-        is_row = False
+-        if cfg.tables and len(real) >= 2:
+-            narrow = any((b["x1"] - b["x0"]) < pw * NARROW_COLUMN_FRACTION for b in real)
+-            is_row = len(real) >= 3 or narrow
+-        elif cfg.tables and len(real) == 1 and ctx.table is not None:
++        split_heading = _looks_like_split_heading(real)
++        is_row = cfg.tables and len(real) >= 2 and bi in confident and not split_heading
++        if split_heading:
++            ctx.table = None
++        if cfg.tables and len(real) == 1 and ctx.table is not None:
+             b = real[0]
+-            is_row = continues_table(ctx.table, b, pw)
++            is_row = continues_table(ctx.table, b, pw, pno)
+         if is_row:
+             if len(real) == 1 and items and items[-1].type == "row" and wraps_into_last_row(items[-1], real[0]):
++                if ctx.table is not None:
++                    ctx.table.last_bottom = max(ctx.table.last_bottom or 0, real[0]["y1"])
++                    ctx.table.last_page = pno
+                 continue
+             new = make_row(ctx, real, pno)
++            if ctx.table is not None:
++                ctx.table.last_bottom = max(b["y1"] for b in real)
++                ctx.table.last_page = pno
+             for it in new:
+                 if it.type != "row":
+                     continue
+@@ -814,10 +990,12 @@
+             continue
+         if not real:
+             continue
+-        ctx.table = None if ctx.table is None or not items_ended_with_row(items) else ctx.table
++        # Any ordinary block is a hard boundary for the conservative table
++        # state.  Losing fancy row reconstruction is preferable to scrambling
++        # a sentence and presenting it as authoritative study material.
++        ctx.table = None
+         for b in band:
+             items.extend(text_block_items(ctx, b, pno))
+-            ctx.table = None
+     if edge_bottom:
+         ctx.table = None
+     return items
+@@ -888,13 +1066,22 @@
+     return False
+ 
+ 
+-def continues_table(st, b, pw):
++def continues_table(st, b, pw, pno=None):
+     """A lone block inside an active table is a row if it starts at a
+     column edge and every piece of it starts at a column edge
+     ("Chapter I – The Executive", "Chapter III – ... Suits 294 to 300")."""
+     cols = st.columns
+     if len(cols) < 2:
+         return False
++    # A table must remain spatially contiguous.  Previously a table detected
++    # near the top of a page could stay "active" and swallow an ordinary prose
++    # paragraph much farther down, scrambling its word order.
++    if st.last_bottom is not None and pno is not None:
++        if st.last_page == pno:
++            if b["top"] - st.last_bottom > TABLE_MAX_ROW_GAP:
++                return False
++        elif st.last_page is not None and pno != st.last_page + 1:
++            return False
+     toks = [t for toks, _ in b["_lines"] for t in toks]
+     first_line = " ".join(t.text for t in b["_lines"][0][0])
+     if CAPTION_RE.match(first_line):
+@@ -1618,6 +1805,16 @@
+     last_group = None
+     for idx, it in enumerate(items):
+         if it.type == "heading":
++            # State-amendment material is interleaved with the central Act.
++            # A following unquoted numbered run-in ("12. Duties ...") is the
++            # central section resuming, not a child of the state amendment.
++            # Quoted amended section text does not become a run-in heading in
++            # split_runin(), so this reset remains conservative.
++            if SECTION_RUNIN_RE.match(it.para.text):
++                cut = next((i for i, (_l, hp) in enumerate(stack)
++                            if STATE_AMEND_RE.match(hp.text.strip())), None)
++                if cut is not None:
++                    stack = stack[:cut]
+             stack = [(l, hp) for l, hp in stack if l < it.level]
+             stack.append((it.level, it.para))
+             last_group = None
+@@ -1720,16 +1917,24 @@
+                         last_group.bbox = bb if last_group.bbox is None else last_group.bbox | bb
+                     e = last_group
+                 else:
+-                    if entries and getattr(entries[-1], "src", None) is p.leadin and not entries[-1].subs:
+-                        entries.pop()  # the lead-in is repeated (with its marks) at the top of the group
+-                    e = Entry("snippet", crumbs(), it.page)
+                     ls, le, lh = leadin_text(p.leadin, cfg)
++                    all_leadin_ids = {m for m in p.leadin.marks if m >= 0}
++                    shown_leadin_ids = {m for m in p.leadin.marks[ls:le] if m >= 0}
++                    # Only replace the lead-in's standalone highlighted snippet
++                    # when every one of its marks is present in the lead-in text
++                    # we are about to emit.  Otherwise keep the standalone
++                    # snippet too: a little duplication is far safer than a
++                    # silently missing highlighted sentence.
++                    if entries and getattr(entries[-1], "src", None) is p.leadin and not entries[-1].subs \
++                            and all_leadin_ids <= shown_leadin_ids:
++                        entries.pop()
++                    e = Entry("snippet", crumbs(), it.page)
+                     e.lines.append(render_range(p.leadin, ls, le, fmt, ctx, lh, False))
+                     e.lines.append(body)
+                     e.leadin_key = key
+                     e.keys = {key}
+                     e.last_src = p
+-                    e.mark_ids |= ids
++                    e.mark_ids |= ids | shown_leadin_ids
+                     e.bbox = bb
+                     entries.append(e)
+                     last_group = e
+@@ -1776,6 +1981,22 @@
+     return entries
+ 
+ 
++def finalize_coverage(entries, ctx):
++    """Recompute coverage from entries that actually survived build_entries.
++
++    render_range() is also used while constructing temporary entries.  An
++    earlier version therefore counted a mark as placed even when that entry was
++    later removed (notably list lead-ins), yielding a misleading 100% report.
++    Entry.mark_ids is now the source of truth for final-output coverage.
++    """
++    for m in ctx.marks:
++        m.used = False
++    for e in entries:
++        for mid in e.mark_ids:
++            if 0 <= mid < len(ctx.marks):
++                ctx.marks[mid].used = True
++
++
+ def mark_bbox(p, s, e):
+     bb = None
+     for k in range(s, e):
+@@ -1971,6 +2192,7 @@
+                 print(f"  warning  {path.name}: could not build entries ({type(ex).__name__}: {ex})",
+                       file=sys.stderr)
+             entries = []
++        finalize_coverage(entries, ctx)
+         report = coverage_report(ctx, path, use_fills)
+         return entries, ctx, report
+     finally:

@@ -1,0 +1,9 @@
+# yt-subs credentials, tokens and run state
+client_secret*.json
+token_*.json
+progress.json
+missing_channels.json
+node_modules/
+# Python caches and test scratch output
+__pycache__/
+stack-highlights/tests/.tmp/

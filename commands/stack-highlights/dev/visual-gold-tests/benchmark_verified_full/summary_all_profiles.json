@@ -1,0 +1,315 @@
+{
+  "overall_score": 91.06,
+  "comparisons": 900,
+  "status_counts": {
+    "PASS": 755,
+    "FAIL": 114,
+    "REVIEW": 10,
+    "DANGEROUS": 21
+  },
+  "by_profile": {
+    "default_structured": {
+      "score": 91.01,
+      "status_counts": {
+        "PASS": 148,
+        "FAIL": 26,
+        "REVIEW": 3,
+        "DANGEROUS": 3
+      }
+    },
+    "highlight_exact_flat": {
+      "score": 97.2,
+      "status_counts": {
+        "PASS": 175,
+        "DANGEROUS": 5
+      }
+    },
+    "safe_sentence_flat": {
+      "score": 91.39,
+      "status_counts": {
+        "PASS": 151,
+        "FAIL": 21,
+        "REVIEW": 3,
+        "DANGEROUS": 5
+      }
+    },
+    "clause_structured": {
+      "score": 87.04,
+      "status_counts": {
+        "PASS": 133,
+        "FAIL": 40,
+        "REVIEW": 4,
+        "DANGEROUS": 3
+      }
+    },
+    "window12_flat": {
+      "score": 88.68,
+      "status_counts": {
+        "PASS": 148,
+        "FAIL": 27,
+        "DANGEROUS": 5
+      }
+    }
+  },
+  "by_pdf": {
+    "00_The_Constitution_of_India.pdf": {
+      "score": 88.4,
+      "status_counts": {
+        "PASS": 113,
+        "FAIL": 34,
+        "REVIEW": 3
+      }
+    },
+    "01_A_Brief_History_of_Modern_India.pdf": {
+      "score": 80.74,
+      "status_counts": {
+        "PASS": 110,
+        "DANGEROUS": 21,
+        "FAIL": 16,
+        "REVIEW": 3
+      }
+    },
+    "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf": {
+      "score": 96.75,
+      "status_counts": {
+        "FAIL": 7,
+        "PASS": 140,
+        "REVIEW": 3
+      }
+    },
+    "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf": {
+      "score": 95.23,
+      "status_counts": {
+        "PASS": 135,
+        "FAIL": 15
+      }
+    },
+    "01_Indian_Polity_Laxmikanth.pdf": {
+      "score": 95.89,
+      "status_counts": {
+        "PASS": 141,
+        "FAIL": 9
+      }
+    },
+    "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf": {
+      "score": 89.38,
+      "status_counts": {
+        "PASS": 116,
+        "FAIL": 33,
+        "REVIEW": 1
+      }
+    }
+  },
+  "by_kind": {
+    "footnote": {
+      "score": 93.69,
+      "n": 15
+    },
+    "heading": {
+      "score": 96.76,
+      "n": 95
+    },
+    "legal_clause": {
+      "score": 87.39,
+      "n": 95
+    },
+    "legal_list_item": {
+      "score": 98.75,
+      "n": 15
+    },
+    "legal_section": {
+      "score": 99.28,
+      "n": 10
+    },
+    "list_item": {
+      "score": 93.57,
+      "n": 70
+    },
+    "prose": {
+      "score": 90.23,
+      "n": 580
+    },
+    "runin_list": {
+      "score": 72.71,
+      "n": 5
+    },
+    "table_cell": {
+      "score": 100.0,
+      "n": 5
+    },
+    "toc_item": {
+      "score": 83.6,
+      "n": 10
+    }
+  },
+  "dangerous": [
+    {
+      "case_id": "VG017",
+      "profile": "default_structured",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 157,
+      "score": 8.0,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled; substantial unrelated/unsafe text"
+    },
+    {
+      "case_id": "VG018",
+      "profile": "default_structured",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 214,
+      "score": 12.5,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled"
+    },
+    {
+      "case_id": "VG100",
+      "profile": "default_structured",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 240,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG015",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 124,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG017",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 157,
+      "score": 0.0,
+      "reason": "highlight missing/altered"
+    },
+    {
+      "case_id": "VG018",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 214,
+      "score": 16.67,
+      "reason": "highlight missing/altered"
+    },
+    {
+      "case_id": "VG090",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 136,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG100",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 240,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG015",
+      "profile": "safe_sentence_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 124,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG017",
+      "profile": "safe_sentence_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 157,
+      "score": 8.0,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled; substantial unrelated/unsafe text"
+    },
+    {
+      "case_id": "VG018",
+      "profile": "safe_sentence_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 214,
+      "score": 23.25,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled; substantial unrelated/unsafe text"
+    },
+    {
+      "case_id": "VG090",
+      "profile": "safe_sentence_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 136,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG100",
+      "profile": "safe_sentence_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 240,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG017",
+      "profile": "clause_structured",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 157,
+      "score": 8.0,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled; substantial unrelated/unsafe text"
+    },
+    {
+      "case_id": "VG018",
+      "profile": "clause_structured",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 214,
+      "score": 12.5,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled"
+    },
+    {
+      "case_id": "VG100",
+      "profile": "clause_structured",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 240,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG015",
+      "profile": "window12_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 124,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG017",
+      "profile": "window12_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 157,
+      "score": 7.5,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled; substantial unrelated/unsafe text"
+    },
+    {
+      "case_id": "VG018",
+      "profile": "window12_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 214,
+      "score": 21.79,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled; substantial unrelated/unsafe text"
+    },
+    {
+      "case_id": "VG090",
+      "profile": "window12_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 136,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG100",
+      "profile": "window12_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 240,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    }
+  ]
+}

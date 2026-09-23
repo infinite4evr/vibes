@@ -1,0 +1,1155 @@
+\usepackage{fontspec}
+\usepackage{newunicodechar}
+
+% ==========================================================
+% MAIN FONT -- EXACTLY THE FONT USED BY THE REFERENCE PDF
+% ==========================================================
+
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+
+% ==========================================================
+% UNICODE FALLBACK
+%
+% Latin Modern Roman covers ordinary text, curly quotes, en/em dashes,
+% the ellipsis and the middle dot, but it lacks many technical glyphs
+% (arrows, set / relation operators, the rupee sign, circled numbers,
+% check marks ...). Any such glyph would otherwise trigger a "Missing
+% character" warning and vanish silently from the PDF. Each character
+% below is routed to DejaVu Sans, which does contain it.
+%
+% To add one more:  \newunicodechar{X}{{\fallbackfont X}}
+% ==========================================================
+
+\newfontfamily\fallbackfont{DejaVu Sans}
+
+% --- invisible characters: normalise so they never print a box ---
+\newunicodechar{ }{ }% U+00A0 NO-BREAK SPACE
+\newunicodechar{ }{ }% U+2002 EN SPACE
+\newunicodechar{ }{ }% U+2003 EM SPACE
+\newunicodechar{ }{ }% U+2004 THREE-PER-EM SPACE
+\newunicodechar{ }{ }% U+2005 FOUR-PER-EM SPACE
+\newunicodechar{ }{ }% U+2006 SIX-PER-EM SPACE
+\newunicodechar{ }{ }% U+2007 FIGURE SPACE
+\newunicodechar{ }{ }% U+2008 PUNCTUATION SPACE
+\newunicodechar{ }{ }% U+2009 THIN SPACE
+\newunicodechar{ }{ }% U+200A HAIR SPACE
+\newunicodechar{ }{ }% U+202F NARROW NO-BREAK SPACE
+\newunicodechar{ }{ }% U+205F MEDIUM MATHEMATICAL SPACE
+\newunicodechar{​}{}% U+200B ZERO WIDTH SPACE
+\newunicodechar{﻿}{}% U+FEFF ZERO WIDTH NO-BREAK SPACE
+\newunicodechar{­}{}% U+00AD SOFT HYPHEN
+\newunicodechar{‐}{-}% U+2010 HYPHEN
+\newunicodechar{‑}{-}% U+2011 NON-BREAKING HYPHEN
+\newunicodechar{‒}{-}% U+2012 FIGURE DASH
+
+% --- Superscripts & subscripts  (e.g. H2O, x2, footnote-style digits) ---
+\newunicodechar{⁰}{{\fallbackfont ⁰}}% U+2070 SUPERSCRIPT ZERO
+\newunicodechar{ⁱ}{{\fallbackfont ⁱ}}% U+2071 SUPERSCRIPT LATIN SMALL LETTER I
+\newunicodechar{⁴}{{\fallbackfont ⁴}}% U+2074 SUPERSCRIPT FOUR
+\newunicodechar{⁵}{{\fallbackfont ⁵}}% U+2075 SUPERSCRIPT FIVE
+\newunicodechar{⁶}{{\fallbackfont ⁶}}% U+2076 SUPERSCRIPT SIX
+\newunicodechar{⁷}{{\fallbackfont ⁷}}% U+2077 SUPERSCRIPT SEVEN
+\newunicodechar{⁸}{{\fallbackfont ⁸}}% U+2078 SUPERSCRIPT EIGHT
+\newunicodechar{⁹}{{\fallbackfont ⁹}}% U+2079 SUPERSCRIPT NINE
+\newunicodechar{⁺}{{\fallbackfont ⁺}}% U+207A SUPERSCRIPT PLUS SIGN
+\newunicodechar{⁻}{{\fallbackfont ⁻}}% U+207B SUPERSCRIPT MINUS
+\newunicodechar{⁼}{{\fallbackfont ⁼}}% U+207C SUPERSCRIPT EQUALS SIGN
+\newunicodechar{⁽}{{\fallbackfont ⁽}}% U+207D SUPERSCRIPT LEFT PARENTHESIS
+\newunicodechar{⁾}{{\fallbackfont ⁾}}% U+207E SUPERSCRIPT RIGHT PARENTHESIS
+\newunicodechar{ⁿ}{{\fallbackfont ⁿ}}% U+207F SUPERSCRIPT LATIN SMALL LETTER N
+\newunicodechar{₀}{{\fallbackfont ₀}}% U+2080 SUBSCRIPT ZERO
+\newunicodechar{₁}{{\fallbackfont ₁}}% U+2081 SUBSCRIPT ONE
+\newunicodechar{₂}{{\fallbackfont ₂}}% U+2082 SUBSCRIPT TWO
+\newunicodechar{₃}{{\fallbackfont ₃}}% U+2083 SUBSCRIPT THREE
+\newunicodechar{₄}{{\fallbackfont ₄}}% U+2084 SUBSCRIPT FOUR
+\newunicodechar{₅}{{\fallbackfont ₅}}% U+2085 SUBSCRIPT FIVE
+\newunicodechar{₆}{{\fallbackfont ₆}}% U+2086 SUBSCRIPT SIX
+\newunicodechar{₇}{{\fallbackfont ₇}}% U+2087 SUBSCRIPT SEVEN
+\newunicodechar{₈}{{\fallbackfont ₈}}% U+2088 SUBSCRIPT EIGHT
+\newunicodechar{₉}{{\fallbackfont ₉}}% U+2089 SUBSCRIPT NINE
+\newunicodechar{₊}{{\fallbackfont ₊}}% U+208A SUBSCRIPT PLUS SIGN
+\newunicodechar{₋}{{\fallbackfont ₋}}% U+208B SUBSCRIPT MINUS
+\newunicodechar{₌}{{\fallbackfont ₌}}% U+208C SUBSCRIPT EQUALS SIGN
+\newunicodechar{₍}{{\fallbackfont ₍}}% U+208D SUBSCRIPT LEFT PARENTHESIS
+\newunicodechar{₎}{{\fallbackfont ₎}}% U+208E SUBSCRIPT RIGHT PARENTHESIS
+\newunicodechar{ₐ}{{\fallbackfont ₐ}}% U+2090 LATIN SUBSCRIPT SMALL LETTER A
+\newunicodechar{ₑ}{{\fallbackfont ₑ}}% U+2091 LATIN SUBSCRIPT SMALL LETTER E
+\newunicodechar{ₒ}{{\fallbackfont ₒ}}% U+2092 LATIN SUBSCRIPT SMALL LETTER O
+\newunicodechar{ₓ}{{\fallbackfont ₓ}}% U+2093 LATIN SUBSCRIPT SMALL LETTER X
+\newunicodechar{ₔ}{{\fallbackfont ₔ}}% U+2094 LATIN SUBSCRIPT SMALL LETTER SCHWA
+\newunicodechar{ₕ}{{\fallbackfont ₕ}}% U+2095 LATIN SUBSCRIPT SMALL LETTER H
+\newunicodechar{ₖ}{{\fallbackfont ₖ}}% U+2096 LATIN SUBSCRIPT SMALL LETTER K
+\newunicodechar{ₗ}{{\fallbackfont ₗ}}% U+2097 LATIN SUBSCRIPT SMALL LETTER L
+\newunicodechar{ₘ}{{\fallbackfont ₘ}}% U+2098 LATIN SUBSCRIPT SMALL LETTER M
+\newunicodechar{ₙ}{{\fallbackfont ₙ}}% U+2099 LATIN SUBSCRIPT SMALL LETTER N
+\newunicodechar{ₚ}{{\fallbackfont ₚ}}% U+209A LATIN SUBSCRIPT SMALL LETTER P
+\newunicodechar{ₛ}{{\fallbackfont ₛ}}% U+209B LATIN SUBSCRIPT SMALL LETTER S
+\newunicodechar{ₜ}{{\fallbackfont ₜ}}% U+209C LATIN SUBSCRIPT SMALL LETTER T
+
+% --- Currency symbols  (Indian rupee, etc.) ---
+\newunicodechar{₠}{{\fallbackfont ₠}}% U+20A0 EURO-CURRENCY SIGN
+\newunicodechar{₢}{{\fallbackfont ₢}}% U+20A2 CRUZEIRO SIGN
+\newunicodechar{₣}{{\fallbackfont ₣}}% U+20A3 FRENCH FRANC SIGN
+\newunicodechar{₥}{{\fallbackfont ₥}}% U+20A5 MILL SIGN
+\newunicodechar{₧}{{\fallbackfont ₧}}% U+20A7 PESETA SIGN
+\newunicodechar{₨}{{\fallbackfont ₨}}% U+20A8 RUPEE SIGN
+\newunicodechar{₪}{{\fallbackfont ₪}}% U+20AA NEW SHEQEL SIGN
+\newunicodechar{₭}{{\fallbackfont ₭}}% U+20AD KIP SIGN
+\newunicodechar{₮}{{\fallbackfont ₮}}% U+20AE TUGRIK SIGN
+\newunicodechar{₯}{{\fallbackfont ₯}}% U+20AF DRACHMA SIGN
+\newunicodechar{₰}{{\fallbackfont ₰}}% U+20B0 GERMAN PENNY SIGN
+\newunicodechar{₲}{{\fallbackfont ₲}}% U+20B2 GUARANI SIGN
+\newunicodechar{₳}{{\fallbackfont ₳}}% U+20B3 AUSTRAL SIGN
+\newunicodechar{₴}{{\fallbackfont ₴}}% U+20B4 HRYVNIA SIGN
+\newunicodechar{₵}{{\fallbackfont ₵}}% U+20B5 CEDI SIGN
+\newunicodechar{₸}{{\fallbackfont ₸}}% U+20B8 TENGE SIGN
+\newunicodechar{₹}{{\fallbackfont ₹}}% U+20B9 INDIAN RUPEE SIGN
+\newunicodechar{₺}{{\fallbackfont ₺}}% U+20BA TURKISH LIRA SIGN
+\newunicodechar{₽}{{\fallbackfont ₽}}% U+20BD RUBLE SIGN
+
+% --- Letterlike symbols  (numero sign, deg C, deg F, trademark) ---
+\newunicodechar{℀}{{\fallbackfont ℀}}% U+2100 ACCOUNT OF
+\newunicodechar{℁}{{\fallbackfont ℁}}% U+2101 ADDRESSED TO THE SUBJECT
+\newunicodechar{ℂ}{{\fallbackfont ℂ}}% U+2102 DOUBLE-STRUCK CAPITAL C
+\newunicodechar{℄}{{\fallbackfont ℄}}% U+2104 CENTRE LINE SYMBOL
+\newunicodechar{℅}{{\fallbackfont ℅}}% U+2105 CARE OF
+\newunicodechar{℆}{{\fallbackfont ℆}}% U+2106 CADA UNA
+\newunicodechar{ℇ}{{\fallbackfont ℇ}}% U+2107 EULER CONSTANT
+\newunicodechar{℈}{{\fallbackfont ℈}}% U+2108 SCRUPLE
+\newunicodechar{℉}{{\fallbackfont ℉}}% U+2109 DEGREE FAHRENHEIT
+\newunicodechar{ℋ}{{\fallbackfont ℋ}}% U+210B SCRIPT CAPITAL H
+\newunicodechar{ℌ}{{\fallbackfont ℌ}}% U+210C BLACK-LETTER CAPITAL H
+\newunicodechar{ℍ}{{\fallbackfont ℍ}}% U+210D DOUBLE-STRUCK CAPITAL H
+\newunicodechar{ℎ}{{\fallbackfont ℎ}}% U+210E PLANCK CONSTANT
+\newunicodechar{ℏ}{{\fallbackfont ℏ}}% U+210F PLANCK CONSTANT OVER TWO PI
+\newunicodechar{ℐ}{{\fallbackfont ℐ}}% U+2110 SCRIPT CAPITAL I
+\newunicodechar{ℑ}{{\fallbackfont ℑ}}% U+2111 BLACK-LETTER CAPITAL I
+\newunicodechar{ℒ}{{\fallbackfont ℒ}}% U+2112 SCRIPT CAPITAL L
+\newunicodechar{ℓ}{{\fallbackfont ℓ}}% U+2113 SCRIPT SMALL L
+\newunicodechar{℔}{{\fallbackfont ℔}}% U+2114 L B BAR SYMBOL
+\newunicodechar{ℕ}{{\fallbackfont ℕ}}% U+2115 DOUBLE-STRUCK CAPITAL N
+\newunicodechar{℘}{{\fallbackfont ℘}}% U+2118 SCRIPT CAPITAL P
+\newunicodechar{ℙ}{{\fallbackfont ℙ}}% U+2119 DOUBLE-STRUCK CAPITAL P
+\newunicodechar{ℚ}{{\fallbackfont ℚ}}% U+211A DOUBLE-STRUCK CAPITAL Q
+\newunicodechar{ℛ}{{\fallbackfont ℛ}}% U+211B SCRIPT CAPITAL R
+\newunicodechar{ℜ}{{\fallbackfont ℜ}}% U+211C BLACK-LETTER CAPITAL R
+\newunicodechar{ℝ}{{\fallbackfont ℝ}}% U+211D DOUBLE-STRUCK CAPITAL R
+\newunicodechar{℟}{{\fallbackfont ℟}}% U+211F RESPONSE
+\newunicodechar{℡}{{\fallbackfont ℡}}% U+2121 TELEPHONE SIGN
+\newunicodechar{℣}{{\fallbackfont ℣}}% U+2123 VERSICLE
+\newunicodechar{ℤ}{{\fallbackfont ℤ}}% U+2124 DOUBLE-STRUCK CAPITAL Z
+\newunicodechar{℥}{{\fallbackfont ℥}}% U+2125 OUNCE SIGN
+\newunicodechar{ℨ}{{\fallbackfont ℨ}}% U+2128 BLACK-LETTER CAPITAL Z
+\newunicodechar{℩}{{\fallbackfont ℩}}% U+2129 TURNED GREEK SMALL LETTER IOTA
+\newunicodechar{K}{{\fallbackfont K}}% U+212A KELVIN SIGN
+\newunicodechar{Å}{{\fallbackfont Å}}% U+212B ANGSTROM SIGN
+\newunicodechar{ℬ}{{\fallbackfont ℬ}}% U+212C SCRIPT CAPITAL B
+\newunicodechar{ℭ}{{\fallbackfont ℭ}}% U+212D BLACK-LETTER CAPITAL C
+\newunicodechar{ℯ}{{\fallbackfont ℯ}}% U+212F SCRIPT SMALL E
+\newunicodechar{ℰ}{{\fallbackfont ℰ}}% U+2130 SCRIPT CAPITAL E
+\newunicodechar{ℱ}{{\fallbackfont ℱ}}% U+2131 SCRIPT CAPITAL F
+\newunicodechar{Ⅎ}{{\fallbackfont Ⅎ}}% U+2132 TURNED CAPITAL F
+\newunicodechar{ℳ}{{\fallbackfont ℳ}}% U+2133 SCRIPT CAPITAL M
+\newunicodechar{ℴ}{{\fallbackfont ℴ}}% U+2134 SCRIPT SMALL O
+\newunicodechar{ℵ}{{\fallbackfont ℵ}}% U+2135 ALEF SYMBOL
+\newunicodechar{ℶ}{{\fallbackfont ℶ}}% U+2136 BET SYMBOL
+\newunicodechar{ℷ}{{\fallbackfont ℷ}}% U+2137 GIMEL SYMBOL
+\newunicodechar{ℸ}{{\fallbackfont ℸ}}% U+2138 DALET SYMBOL
+\newunicodechar{ℹ}{{\fallbackfont ℹ}}% U+2139 INFORMATION SOURCE
+\newunicodechar{℺}{{\fallbackfont ℺}}% U+213A ROTATED CAPITAL Q
+\newunicodechar{℻}{{\fallbackfont ℻}}% U+213B FACSIMILE SIGN
+\newunicodechar{ℼ}{{\fallbackfont ℼ}}% U+213C DOUBLE-STRUCK SMALL PI
+\newunicodechar{ℽ}{{\fallbackfont ℽ}}% U+213D DOUBLE-STRUCK SMALL GAMMA
+\newunicodechar{ℾ}{{\fallbackfont ℾ}}% U+213E DOUBLE-STRUCK CAPITAL GAMMA
+\newunicodechar{ℿ}{{\fallbackfont ℿ}}% U+213F DOUBLE-STRUCK CAPITAL PI
+\newunicodechar{⅀}{{\fallbackfont ⅀}}% U+2140 DOUBLE-STRUCK N-ARY SUMMATION
+\newunicodechar{⅁}{{\fallbackfont ⅁}}% U+2141 TURNED SANS-SERIF CAPITAL G
+\newunicodechar{⅂}{{\fallbackfont ⅂}}% U+2142 TURNED SANS-SERIF CAPITAL L
+\newunicodechar{⅃}{{\fallbackfont ⅃}}% U+2143 REVERSED SANS-SERIF CAPITAL L
+\newunicodechar{⅄}{{\fallbackfont ⅄}}% U+2144 TURNED SANS-SERIF CAPITAL Y
+\newunicodechar{ⅅ}{{\fallbackfont ⅅ}}% U+2145 DOUBLE-STRUCK ITALIC CAPITAL D
+\newunicodechar{ⅆ}{{\fallbackfont ⅆ}}% U+2146 DOUBLE-STRUCK ITALIC SMALL D
+\newunicodechar{ⅇ}{{\fallbackfont ⅇ}}% U+2147 DOUBLE-STRUCK ITALIC SMALL E
+\newunicodechar{ⅈ}{{\fallbackfont ⅈ}}% U+2148 DOUBLE-STRUCK ITALIC SMALL I
+\newunicodechar{ⅉ}{{\fallbackfont ⅉ}}% U+2149 DOUBLE-STRUCK ITALIC SMALL J
+\newunicodechar{⅋}{{\fallbackfont ⅋}}% U+214B TURNED AMPERSAND
+\newunicodechar{ⅎ}{{\fallbackfont ⅎ}}% U+214E TURNED SMALL F
+
+% --- Number forms  (vulgar fractions, roman numerals) ---
+\newunicodechar{⅐}{{\fallbackfont ⅐}}% U+2150 VULGAR FRACTION ONE SEVENTH
+\newunicodechar{⅑}{{\fallbackfont ⅑}}% U+2151 VULGAR FRACTION ONE NINTH
+\newunicodechar{⅒}{{\fallbackfont ⅒}}% U+2152 VULGAR FRACTION ONE TENTH
+\newunicodechar{⅓}{{\fallbackfont ⅓}}% U+2153 VULGAR FRACTION ONE THIRD
+\newunicodechar{⅔}{{\fallbackfont ⅔}}% U+2154 VULGAR FRACTION TWO THIRDS
+\newunicodechar{⅕}{{\fallbackfont ⅕}}% U+2155 VULGAR FRACTION ONE FIFTH
+\newunicodechar{⅖}{{\fallbackfont ⅖}}% U+2156 VULGAR FRACTION TWO FIFTHS
+\newunicodechar{⅗}{{\fallbackfont ⅗}}% U+2157 VULGAR FRACTION THREE FIFTHS
+\newunicodechar{⅘}{{\fallbackfont ⅘}}% U+2158 VULGAR FRACTION FOUR FIFTHS
+\newunicodechar{⅙}{{\fallbackfont ⅙}}% U+2159 VULGAR FRACTION ONE SIXTH
+\newunicodechar{⅚}{{\fallbackfont ⅚}}% U+215A VULGAR FRACTION FIVE SIXTHS
+\newunicodechar{⅛}{{\fallbackfont ⅛}}% U+215B VULGAR FRACTION ONE EIGHTH
+\newunicodechar{⅜}{{\fallbackfont ⅜}}% U+215C VULGAR FRACTION THREE EIGHTHS
+\newunicodechar{⅝}{{\fallbackfont ⅝}}% U+215D VULGAR FRACTION FIVE EIGHTHS
+\newunicodechar{⅞}{{\fallbackfont ⅞}}% U+215E VULGAR FRACTION SEVEN EIGHTHS
+\newunicodechar{⅟}{{\fallbackfont ⅟}}% U+215F FRACTION NUMERATOR ONE
+\newunicodechar{Ⅰ}{{\fallbackfont Ⅰ}}% U+2160 ROMAN NUMERAL ONE
+\newunicodechar{Ⅱ}{{\fallbackfont Ⅱ}}% U+2161 ROMAN NUMERAL TWO
+\newunicodechar{Ⅲ}{{\fallbackfont Ⅲ}}% U+2162 ROMAN NUMERAL THREE
+\newunicodechar{Ⅳ}{{\fallbackfont Ⅳ}}% U+2163 ROMAN NUMERAL FOUR
+\newunicodechar{Ⅴ}{{\fallbackfont Ⅴ}}% U+2164 ROMAN NUMERAL FIVE
+\newunicodechar{Ⅵ}{{\fallbackfont Ⅵ}}% U+2165 ROMAN NUMERAL SIX
+\newunicodechar{Ⅶ}{{\fallbackfont Ⅶ}}% U+2166 ROMAN NUMERAL SEVEN
+\newunicodechar{Ⅷ}{{\fallbackfont Ⅷ}}% U+2167 ROMAN NUMERAL EIGHT
+\newunicodechar{Ⅸ}{{\fallbackfont Ⅸ}}% U+2168 ROMAN NUMERAL NINE
+\newunicodechar{Ⅹ}{{\fallbackfont Ⅹ}}% U+2169 ROMAN NUMERAL TEN
+\newunicodechar{Ⅺ}{{\fallbackfont Ⅺ}}% U+216A ROMAN NUMERAL ELEVEN
+\newunicodechar{Ⅻ}{{\fallbackfont Ⅻ}}% U+216B ROMAN NUMERAL TWELVE
+\newunicodechar{Ⅼ}{{\fallbackfont Ⅼ}}% U+216C ROMAN NUMERAL FIFTY
+\newunicodechar{Ⅽ}{{\fallbackfont Ⅽ}}% U+216D ROMAN NUMERAL ONE HUNDRED
+\newunicodechar{Ⅾ}{{\fallbackfont Ⅾ}}% U+216E ROMAN NUMERAL FIVE HUNDRED
+\newunicodechar{Ⅿ}{{\fallbackfont Ⅿ}}% U+216F ROMAN NUMERAL ONE THOUSAND
+\newunicodechar{ⅰ}{{\fallbackfont ⅰ}}% U+2170 SMALL ROMAN NUMERAL ONE
+\newunicodechar{ⅱ}{{\fallbackfont ⅱ}}% U+2171 SMALL ROMAN NUMERAL TWO
+\newunicodechar{ⅲ}{{\fallbackfont ⅲ}}% U+2172 SMALL ROMAN NUMERAL THREE
+\newunicodechar{ⅳ}{{\fallbackfont ⅳ}}% U+2173 SMALL ROMAN NUMERAL FOUR
+\newunicodechar{ⅴ}{{\fallbackfont ⅴ}}% U+2174 SMALL ROMAN NUMERAL FIVE
+\newunicodechar{ⅵ}{{\fallbackfont ⅵ}}% U+2175 SMALL ROMAN NUMERAL SIX
+\newunicodechar{ⅶ}{{\fallbackfont ⅶ}}% U+2176 SMALL ROMAN NUMERAL SEVEN
+\newunicodechar{ⅷ}{{\fallbackfont ⅷ}}% U+2177 SMALL ROMAN NUMERAL EIGHT
+\newunicodechar{ⅸ}{{\fallbackfont ⅸ}}% U+2178 SMALL ROMAN NUMERAL NINE
+\newunicodechar{ⅹ}{{\fallbackfont ⅹ}}% U+2179 SMALL ROMAN NUMERAL TEN
+\newunicodechar{ⅺ}{{\fallbackfont ⅺ}}% U+217A SMALL ROMAN NUMERAL ELEVEN
+\newunicodechar{ⅻ}{{\fallbackfont ⅻ}}% U+217B SMALL ROMAN NUMERAL TWELVE
+\newunicodechar{ⅼ}{{\fallbackfont ⅼ}}% U+217C SMALL ROMAN NUMERAL FIFTY
+\newunicodechar{ⅽ}{{\fallbackfont ⅽ}}% U+217D SMALL ROMAN NUMERAL ONE HUNDRED
+\newunicodechar{ⅾ}{{\fallbackfont ⅾ}}% U+217E SMALL ROMAN NUMERAL FIVE HUNDRED
+\newunicodechar{ⅿ}{{\fallbackfont ⅿ}}% U+217F SMALL ROMAN NUMERAL ONE THOUSAND
+\newunicodechar{ↀ}{{\fallbackfont ↀ}}% U+2180 ROMAN NUMERAL ONE THOUSAND C D
+\newunicodechar{ↁ}{{\fallbackfont ↁ}}% U+2181 ROMAN NUMERAL FIVE THOUSAND
+\newunicodechar{ↂ}{{\fallbackfont ↂ}}% U+2182 ROMAN NUMERAL TEN THOUSAND
+\newunicodechar{Ↄ}{{\fallbackfont Ↄ}}% U+2183 ROMAN NUMERAL REVERSED ONE HUNDRED
+\newunicodechar{ↄ}{{\fallbackfont ↄ}}% U+2184 LATIN SMALL LETTER REVERSED C
+\newunicodechar{ↅ}{{\fallbackfont ↅ}}% U+2185 ROMAN NUMERAL SIX LATE FORM
+\newunicodechar{↉}{{\fallbackfont ↉}}% U+2189 VULGAR FRACTION ZERO THIRDS
+
+% --- Arrows ---
+\newunicodechar{↔}{{\fallbackfont ↔}}% U+2194 LEFT RIGHT ARROW
+\newunicodechar{↕}{{\fallbackfont ↕}}% U+2195 UP DOWN ARROW
+\newunicodechar{↖}{{\fallbackfont ↖}}% U+2196 NORTH WEST ARROW
+\newunicodechar{↗}{{\fallbackfont ↗}}% U+2197 NORTH EAST ARROW
+\newunicodechar{↘}{{\fallbackfont ↘}}% U+2198 SOUTH EAST ARROW
+\newunicodechar{↙}{{\fallbackfont ↙}}% U+2199 SOUTH WEST ARROW
+\newunicodechar{↚}{{\fallbackfont ↚}}% U+219A LEFTWARDS ARROW WITH STROKE
+\newunicodechar{↛}{{\fallbackfont ↛}}% U+219B RIGHTWARDS ARROW WITH STROKE
+\newunicodechar{↜}{{\fallbackfont ↜}}% U+219C LEFTWARDS WAVE ARROW
+\newunicodechar{↝}{{\fallbackfont ↝}}% U+219D RIGHTWARDS WAVE ARROW
+\newunicodechar{↞}{{\fallbackfont ↞}}% U+219E LEFTWARDS TWO HEADED ARROW
+\newunicodechar{↟}{{\fallbackfont ↟}}% U+219F UPWARDS TWO HEADED ARROW
+\newunicodechar{↠}{{\fallbackfont ↠}}% U+21A0 RIGHTWARDS TWO HEADED ARROW
+\newunicodechar{↡}{{\fallbackfont ↡}}% U+21A1 DOWNWARDS TWO HEADED ARROW
+\newunicodechar{↢}{{\fallbackfont ↢}}% U+21A2 LEFTWARDS ARROW WITH TAIL
+\newunicodechar{↣}{{\fallbackfont ↣}}% U+21A3 RIGHTWARDS ARROW WITH TAIL
+\newunicodechar{↤}{{\fallbackfont ↤}}% U+21A4 LEFTWARDS ARROW FROM BAR
+\newunicodechar{↥}{{\fallbackfont ↥}}% U+21A5 UPWARDS ARROW FROM BAR
+\newunicodechar{↦}{{\fallbackfont ↦}}% U+21A6 RIGHTWARDS ARROW FROM BAR
+\newunicodechar{↧}{{\fallbackfont ↧}}% U+21A7 DOWNWARDS ARROW FROM BAR
+\newunicodechar{↨}{{\fallbackfont ↨}}% U+21A8 UP DOWN ARROW WITH BASE
+\newunicodechar{↩}{{\fallbackfont ↩}}% U+21A9 LEFTWARDS ARROW WITH HOOK
+\newunicodechar{↪}{{\fallbackfont ↪}}% U+21AA RIGHTWARDS ARROW WITH HOOK
+\newunicodechar{↫}{{\fallbackfont ↫}}% U+21AB LEFTWARDS ARROW WITH LOOP
+\newunicodechar{↬}{{\fallbackfont ↬}}% U+21AC RIGHTWARDS ARROW WITH LOOP
+\newunicodechar{↭}{{\fallbackfont ↭}}% U+21AD LEFT RIGHT WAVE ARROW
+\newunicodechar{↮}{{\fallbackfont ↮}}% U+21AE LEFT RIGHT ARROW WITH STROKE
+\newunicodechar{↯}{{\fallbackfont ↯}}% U+21AF DOWNWARDS ZIGZAG ARROW
+\newunicodechar{↰}{{\fallbackfont ↰}}% U+21B0 UPWARDS ARROW WITH TIP LEFTWARDS
+\newunicodechar{↱}{{\fallbackfont ↱}}% U+21B1 UPWARDS ARROW WITH TIP RIGHTWARDS
+\newunicodechar{↲}{{\fallbackfont ↲}}% U+21B2 DOWNWARDS ARROW WITH TIP LEFTWARDS
+\newunicodechar{↳}{{\fallbackfont ↳}}% U+21B3 DOWNWARDS ARROW WITH TIP RIGHTWARDS
+\newunicodechar{↴}{{\fallbackfont ↴}}% U+21B4 RIGHTWARDS ARROW WITH CORNER DOWNWARDS
+\newunicodechar{↵}{{\fallbackfont ↵}}% U+21B5 DOWNWARDS ARROW WITH CORNER LEFTWARDS
+\newunicodechar{↶}{{\fallbackfont ↶}}% U+21B6 ANTICLOCKWISE TOP SEMICIRCLE ARROW
+\newunicodechar{↷}{{\fallbackfont ↷}}% U+21B7 CLOCKWISE TOP SEMICIRCLE ARROW
+\newunicodechar{↸}{{\fallbackfont ↸}}% U+21B8 NORTH WEST ARROW TO LONG BAR
+\newunicodechar{↹}{{\fallbackfont ↹}}% U+21B9 LEFTWARDS ARROW TO BAR OVER RIGHTWARDS ARROW TO BAR
+\newunicodechar{↺}{{\fallbackfont ↺}}% U+21BA ANTICLOCKWISE OPEN CIRCLE ARROW
+\newunicodechar{↻}{{\fallbackfont ↻}}% U+21BB CLOCKWISE OPEN CIRCLE ARROW
+\newunicodechar{↼}{{\fallbackfont ↼}}% U+21BC LEFTWARDS HARPOON WITH BARB UPWARDS
+\newunicodechar{↽}{{\fallbackfont ↽}}% U+21BD LEFTWARDS HARPOON WITH BARB DOWNWARDS
+\newunicodechar{↾}{{\fallbackfont ↾}}% U+21BE UPWARDS HARPOON WITH BARB RIGHTWARDS
+\newunicodechar{↿}{{\fallbackfont ↿}}% U+21BF UPWARDS HARPOON WITH BARB LEFTWARDS
+\newunicodechar{⇀}{{\fallbackfont ⇀}}% U+21C0 RIGHTWARDS HARPOON WITH BARB UPWARDS
+\newunicodechar{⇁}{{\fallbackfont ⇁}}% U+21C1 RIGHTWARDS HARPOON WITH BARB DOWNWARDS
+\newunicodechar{⇂}{{\fallbackfont ⇂}}% U+21C2 DOWNWARDS HARPOON WITH BARB RIGHTWARDS
+\newunicodechar{⇃}{{\fallbackfont ⇃}}% U+21C3 DOWNWARDS HARPOON WITH BARB LEFTWARDS
+\newunicodechar{⇄}{{\fallbackfont ⇄}}% U+21C4 RIGHTWARDS ARROW OVER LEFTWARDS ARROW
+\newunicodechar{⇅}{{\fallbackfont ⇅}}% U+21C5 UPWARDS ARROW LEFTWARDS OF DOWNWARDS ARROW
+\newunicodechar{⇆}{{\fallbackfont ⇆}}% U+21C6 LEFTWARDS ARROW OVER RIGHTWARDS ARROW
+\newunicodechar{⇇}{{\fallbackfont ⇇}}% U+21C7 LEFTWARDS PAIRED ARROWS
+\newunicodechar{⇈}{{\fallbackfont ⇈}}% U+21C8 UPWARDS PAIRED ARROWS
+\newunicodechar{⇉}{{\fallbackfont ⇉}}% U+21C9 RIGHTWARDS PAIRED ARROWS
+\newunicodechar{⇊}{{\fallbackfont ⇊}}% U+21CA DOWNWARDS PAIRED ARROWS
+\newunicodechar{⇋}{{\fallbackfont ⇋}}% U+21CB LEFTWARDS HARPOON OVER RIGHTWARDS HARPOON
+\newunicodechar{⇌}{{\fallbackfont ⇌}}% U+21CC RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON
+\newunicodechar{⇍}{{\fallbackfont ⇍}}% U+21CD LEFTWARDS DOUBLE ARROW WITH STROKE
+\newunicodechar{⇎}{{\fallbackfont ⇎}}% U+21CE LEFT RIGHT DOUBLE ARROW WITH STROKE
+\newunicodechar{⇏}{{\fallbackfont ⇏}}% U+21CF RIGHTWARDS DOUBLE ARROW WITH STROKE
+\newunicodechar{⇐}{{\fallbackfont ⇐}}% U+21D0 LEFTWARDS DOUBLE ARROW
+\newunicodechar{⇑}{{\fallbackfont ⇑}}% U+21D1 UPWARDS DOUBLE ARROW
+\newunicodechar{⇒}{{\fallbackfont ⇒}}% U+21D2 RIGHTWARDS DOUBLE ARROW
+\newunicodechar{⇓}{{\fallbackfont ⇓}}% U+21D3 DOWNWARDS DOUBLE ARROW
+\newunicodechar{⇔}{{\fallbackfont ⇔}}% U+21D4 LEFT RIGHT DOUBLE ARROW
+\newunicodechar{⇕}{{\fallbackfont ⇕}}% U+21D5 UP DOWN DOUBLE ARROW
+\newunicodechar{⇖}{{\fallbackfont ⇖}}% U+21D6 NORTH WEST DOUBLE ARROW
+\newunicodechar{⇗}{{\fallbackfont ⇗}}% U+21D7 NORTH EAST DOUBLE ARROW
+\newunicodechar{⇘}{{\fallbackfont ⇘}}% U+21D8 SOUTH EAST DOUBLE ARROW
+\newunicodechar{⇙}{{\fallbackfont ⇙}}% U+21D9 SOUTH WEST DOUBLE ARROW
+\newunicodechar{⇚}{{\fallbackfont ⇚}}% U+21DA LEFTWARDS TRIPLE ARROW
+\newunicodechar{⇛}{{\fallbackfont ⇛}}% U+21DB RIGHTWARDS TRIPLE ARROW
+\newunicodechar{⇜}{{\fallbackfont ⇜}}% U+21DC LEFTWARDS SQUIGGLE ARROW
+\newunicodechar{⇝}{{\fallbackfont ⇝}}% U+21DD RIGHTWARDS SQUIGGLE ARROW
+\newunicodechar{⇞}{{\fallbackfont ⇞}}% U+21DE UPWARDS ARROW WITH DOUBLE STROKE
+\newunicodechar{⇟}{{\fallbackfont ⇟}}% U+21DF DOWNWARDS ARROW WITH DOUBLE STROKE
+\newunicodechar{⇠}{{\fallbackfont ⇠}}% U+21E0 LEFTWARDS DASHED ARROW
+\newunicodechar{⇡}{{\fallbackfont ⇡}}% U+21E1 UPWARDS DASHED ARROW
+\newunicodechar{⇢}{{\fallbackfont ⇢}}% U+21E2 RIGHTWARDS DASHED ARROW
+\newunicodechar{⇣}{{\fallbackfont ⇣}}% U+21E3 DOWNWARDS DASHED ARROW
+\newunicodechar{⇤}{{\fallbackfont ⇤}}% U+21E4 LEFTWARDS ARROW TO BAR
+\newunicodechar{⇥}{{\fallbackfont ⇥}}% U+21E5 RIGHTWARDS ARROW TO BAR
+\newunicodechar{⇦}{{\fallbackfont ⇦}}% U+21E6 LEFTWARDS WHITE ARROW
+\newunicodechar{⇧}{{\fallbackfont ⇧}}% U+21E7 UPWARDS WHITE ARROW
+\newunicodechar{⇨}{{\fallbackfont ⇨}}% U+21E8 RIGHTWARDS WHITE ARROW
+\newunicodechar{⇩}{{\fallbackfont ⇩}}% U+21E9 DOWNWARDS WHITE ARROW
+\newunicodechar{⇪}{{\fallbackfont ⇪}}% U+21EA UPWARDS WHITE ARROW FROM BAR
+\newunicodechar{⇫}{{\fallbackfont ⇫}}% U+21EB UPWARDS WHITE ARROW ON PEDESTAL
+\newunicodechar{⇬}{{\fallbackfont ⇬}}% U+21EC UPWARDS WHITE ARROW ON PEDESTAL WITH HORIZONTAL BAR
+\newunicodechar{⇭}{{\fallbackfont ⇭}}% U+21ED UPWARDS WHITE ARROW ON PEDESTAL WITH VERTICAL BAR
+\newunicodechar{⇮}{{\fallbackfont ⇮}}% U+21EE UPWARDS WHITE DOUBLE ARROW
+\newunicodechar{⇯}{{\fallbackfont ⇯}}% U+21EF UPWARDS WHITE DOUBLE ARROW ON PEDESTAL
+\newunicodechar{⇰}{{\fallbackfont ⇰}}% U+21F0 RIGHTWARDS WHITE ARROW FROM WALL
+\newunicodechar{⇱}{{\fallbackfont ⇱}}% U+21F1 NORTH WEST ARROW TO CORNER
+\newunicodechar{⇲}{{\fallbackfont ⇲}}% U+21F2 SOUTH EAST ARROW TO CORNER
+\newunicodechar{⇳}{{\fallbackfont ⇳}}% U+21F3 UP DOWN WHITE ARROW
+\newunicodechar{⇴}{{\fallbackfont ⇴}}% U+21F4 RIGHT ARROW WITH SMALL CIRCLE
+\newunicodechar{⇵}{{\fallbackfont ⇵}}% U+21F5 DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW
+\newunicodechar{⇶}{{\fallbackfont ⇶}}% U+21F6 THREE RIGHTWARDS ARROWS
+\newunicodechar{⇷}{{\fallbackfont ⇷}}% U+21F7 LEFTWARDS ARROW WITH VERTICAL STROKE
+\newunicodechar{⇸}{{\fallbackfont ⇸}}% U+21F8 RIGHTWARDS ARROW WITH VERTICAL STROKE
+\newunicodechar{⇹}{{\fallbackfont ⇹}}% U+21F9 LEFT RIGHT ARROW WITH VERTICAL STROKE
+\newunicodechar{⇺}{{\fallbackfont ⇺}}% U+21FA LEFTWARDS ARROW WITH DOUBLE VERTICAL STROKE
+\newunicodechar{⇻}{{\fallbackfont ⇻}}% U+21FB RIGHTWARDS ARROW WITH DOUBLE VERTICAL STROKE
+\newunicodechar{⇼}{{\fallbackfont ⇼}}% U+21FC LEFT RIGHT ARROW WITH DOUBLE VERTICAL STROKE
+\newunicodechar{⇽}{{\fallbackfont ⇽}}% U+21FD LEFTWARDS OPEN-HEADED ARROW
+\newunicodechar{⇾}{{\fallbackfont ⇾}}% U+21FE RIGHTWARDS OPEN-HEADED ARROW
+\newunicodechar{⇿}{{\fallbackfont ⇿}}% U+21FF LEFT RIGHT OPEN-HEADED ARROW
+\newunicodechar{⟰}{{\fallbackfont ⟰}}% U+27F0 UPWARDS QUADRUPLE ARROW
+\newunicodechar{⟱}{{\fallbackfont ⟱}}% U+27F1 DOWNWARDS QUADRUPLE ARROW
+\newunicodechar{⟲}{{\fallbackfont ⟲}}% U+27F2 ANTICLOCKWISE GAPPED CIRCLE ARROW
+\newunicodechar{⟳}{{\fallbackfont ⟳}}% U+27F3 CLOCKWISE GAPPED CIRCLE ARROW
+\newunicodechar{⟴}{{\fallbackfont ⟴}}% U+27F4 RIGHT ARROW WITH CIRCLED PLUS
+\newunicodechar{⟵}{{\fallbackfont ⟵}}% U+27F5 LONG LEFTWARDS ARROW
+\newunicodechar{⟶}{{\fallbackfont ⟶}}% U+27F6 LONG RIGHTWARDS ARROW
+\newunicodechar{⟷}{{\fallbackfont ⟷}}% U+27F7 LONG LEFT RIGHT ARROW
+\newunicodechar{⟸}{{\fallbackfont ⟸}}% U+27F8 LONG LEFTWARDS DOUBLE ARROW
+\newunicodechar{⟹}{{\fallbackfont ⟹}}% U+27F9 LONG RIGHTWARDS DOUBLE ARROW
+\newunicodechar{⟺}{{\fallbackfont ⟺}}% U+27FA LONG LEFT RIGHT DOUBLE ARROW
+\newunicodechar{⟻}{{\fallbackfont ⟻}}% U+27FB LONG LEFTWARDS ARROW FROM BAR
+\newunicodechar{⟼}{{\fallbackfont ⟼}}% U+27FC LONG RIGHTWARDS ARROW FROM BAR
+\newunicodechar{⟽}{{\fallbackfont ⟽}}% U+27FD LONG LEFTWARDS DOUBLE ARROW FROM BAR
+\newunicodechar{⟾}{{\fallbackfont ⟾}}% U+27FE LONG RIGHTWARDS DOUBLE ARROW FROM BAR
+\newunicodechar{⟿}{{\fallbackfont ⟿}}% U+27FF LONG RIGHTWARDS SQUIGGLE ARROW
+
+% --- Mathematical operators  (<=, >=, !=, sum, integral, set ops) ---
+\newunicodechar{∀}{{\fallbackfont ∀}}% U+2200 FOR ALL
+\newunicodechar{∁}{{\fallbackfont ∁}}% U+2201 COMPLEMENT
+\newunicodechar{∂}{{\fallbackfont ∂}}% U+2202 PARTIAL DIFFERENTIAL
+\newunicodechar{∃}{{\fallbackfont ∃}}% U+2203 THERE EXISTS
+\newunicodechar{∄}{{\fallbackfont ∄}}% U+2204 THERE DOES NOT EXIST
+\newunicodechar{∅}{{\fallbackfont ∅}}% U+2205 EMPTY SET
+\newunicodechar{∆}{{\fallbackfont ∆}}% U+2206 INCREMENT
+\newunicodechar{∇}{{\fallbackfont ∇}}% U+2207 NABLA
+\newunicodechar{∈}{{\fallbackfont ∈}}% U+2208 ELEMENT OF
+\newunicodechar{∉}{{\fallbackfont ∉}}% U+2209 NOT AN ELEMENT OF
+\newunicodechar{∊}{{\fallbackfont ∊}}% U+220A SMALL ELEMENT OF
+\newunicodechar{∋}{{\fallbackfont ∋}}% U+220B CONTAINS AS MEMBER
+\newunicodechar{∌}{{\fallbackfont ∌}}% U+220C DOES NOT CONTAIN AS MEMBER
+\newunicodechar{∍}{{\fallbackfont ∍}}% U+220D SMALL CONTAINS AS MEMBER
+\newunicodechar{∎}{{\fallbackfont ∎}}% U+220E END OF PROOF
+\newunicodechar{∏}{{\fallbackfont ∏}}% U+220F N-ARY PRODUCT
+\newunicodechar{∐}{{\fallbackfont ∐}}% U+2210 N-ARY COPRODUCT
+\newunicodechar{∑}{{\fallbackfont ∑}}% U+2211 N-ARY SUMMATION
+\newunicodechar{∓}{{\fallbackfont ∓}}% U+2213 MINUS-OR-PLUS SIGN
+\newunicodechar{∔}{{\fallbackfont ∔}}% U+2214 DOT PLUS
+\newunicodechar{∖}{{\fallbackfont ∖}}% U+2216 SET MINUS
+\newunicodechar{∘}{{\fallbackfont ∘}}% U+2218 RING OPERATOR
+\newunicodechar{∙}{{\fallbackfont ∙}}% U+2219 BULLET OPERATOR
+\newunicodechar{∛}{{\fallbackfont ∛}}% U+221B CUBE ROOT
+\newunicodechar{∜}{{\fallbackfont ∜}}% U+221C FOURTH ROOT
+\newunicodechar{∝}{{\fallbackfont ∝}}% U+221D PROPORTIONAL TO
+\newunicodechar{∟}{{\fallbackfont ∟}}% U+221F RIGHT ANGLE
+\newunicodechar{∠}{{\fallbackfont ∠}}% U+2220 ANGLE
+\newunicodechar{∡}{{\fallbackfont ∡}}% U+2221 MEASURED ANGLE
+\newunicodechar{∣}{{\fallbackfont ∣}}% U+2223 DIVIDES
+\newunicodechar{∤}{{\fallbackfont ∤}}% U+2224 DOES NOT DIVIDE
+\newunicodechar{∥}{{\fallbackfont ∥}}% U+2225 PARALLEL TO
+\newunicodechar{∦}{{\fallbackfont ∦}}% U+2226 NOT PARALLEL TO
+\newunicodechar{∧}{{\fallbackfont ∧}}% U+2227 LOGICAL AND
+\newunicodechar{∨}{{\fallbackfont ∨}}% U+2228 LOGICAL OR
+\newunicodechar{∩}{{\fallbackfont ∩}}% U+2229 INTERSECTION
+\newunicodechar{∪}{{\fallbackfont ∪}}% U+222A UNION
+\newunicodechar{∫}{{\fallbackfont ∫}}% U+222B INTEGRAL
+\newunicodechar{∬}{{\fallbackfont ∬}}% U+222C DOUBLE INTEGRAL
+\newunicodechar{∭}{{\fallbackfont ∭}}% U+222D TRIPLE INTEGRAL
+\newunicodechar{∮}{{\fallbackfont ∮}}% U+222E CONTOUR INTEGRAL
+\newunicodechar{∯}{{\fallbackfont ∯}}% U+222F SURFACE INTEGRAL
+\newunicodechar{∰}{{\fallbackfont ∰}}% U+2230 VOLUME INTEGRAL
+\newunicodechar{∱}{{\fallbackfont ∱}}% U+2231 CLOCKWISE INTEGRAL
+\newunicodechar{∲}{{\fallbackfont ∲}}% U+2232 CLOCKWISE CONTOUR INTEGRAL
+\newunicodechar{∳}{{\fallbackfont ∳}}% U+2233 ANTICLOCKWISE CONTOUR INTEGRAL
+\newunicodechar{∴}{{\fallbackfont ∴}}% U+2234 THEREFORE
+\newunicodechar{∵}{{\fallbackfont ∵}}% U+2235 BECAUSE
+\newunicodechar{∶}{{\fallbackfont ∶}}% U+2236 RATIO
+\newunicodechar{∷}{{\fallbackfont ∷}}% U+2237 PROPORTION
+\newunicodechar{∸}{{\fallbackfont ∸}}% U+2238 DOT MINUS
+\newunicodechar{∹}{{\fallbackfont ∹}}% U+2239 EXCESS
+\newunicodechar{∺}{{\fallbackfont ∺}}% U+223A GEOMETRIC PROPORTION
+\newunicodechar{∻}{{\fallbackfont ∻}}% U+223B HOMOTHETIC
+\newunicodechar{∼}{{\fallbackfont ∼}}% U+223C TILDE OPERATOR
+\newunicodechar{∽}{{\fallbackfont ∽}}% U+223D REVERSED TILDE
+\newunicodechar{∾}{{\fallbackfont ∾}}% U+223E INVERTED LAZY S
+\newunicodechar{∿}{{\fallbackfont ∿}}% U+223F SINE WAVE
+\newunicodechar{≀}{{\fallbackfont ≀}}% U+2240 WREATH PRODUCT
+\newunicodechar{≁}{{\fallbackfont ≁}}% U+2241 NOT TILDE
+\newunicodechar{≂}{{\fallbackfont ≂}}% U+2242 MINUS TILDE
+\newunicodechar{≃}{{\fallbackfont ≃}}% U+2243 ASYMPTOTICALLY EQUAL TO
+\newunicodechar{≄}{{\fallbackfont ≄}}% U+2244 NOT ASYMPTOTICALLY EQUAL TO
+\newunicodechar{≅}{{\fallbackfont ≅}}% U+2245 APPROXIMATELY EQUAL TO
+\newunicodechar{≆}{{\fallbackfont ≆}}% U+2246 APPROXIMATELY BUT NOT ACTUALLY EQUAL TO
+\newunicodechar{≇}{{\fallbackfont ≇}}% U+2247 NEITHER APPROXIMATELY NOR ACTUALLY EQUAL TO
+\newunicodechar{≈}{{\fallbackfont ≈}}% U+2248 ALMOST EQUAL TO
+\newunicodechar{≉}{{\fallbackfont ≉}}% U+2249 NOT ALMOST EQUAL TO
+\newunicodechar{≊}{{\fallbackfont ≊}}% U+224A ALMOST EQUAL OR EQUAL TO
+\newunicodechar{≋}{{\fallbackfont ≋}}% U+224B TRIPLE TILDE
+\newunicodechar{≌}{{\fallbackfont ≌}}% U+224C ALL EQUAL TO
+\newunicodechar{≍}{{\fallbackfont ≍}}% U+224D EQUIVALENT TO
+\newunicodechar{≎}{{\fallbackfont ≎}}% U+224E GEOMETRICALLY EQUIVALENT TO
+\newunicodechar{≏}{{\fallbackfont ≏}}% U+224F DIFFERENCE BETWEEN
+\newunicodechar{≐}{{\fallbackfont ≐}}% U+2250 APPROACHES THE LIMIT
+\newunicodechar{≑}{{\fallbackfont ≑}}% U+2251 GEOMETRICALLY EQUAL TO
+\newunicodechar{≒}{{\fallbackfont ≒}}% U+2252 APPROXIMATELY EQUAL TO OR THE IMAGE OF
+\newunicodechar{≓}{{\fallbackfont ≓}}% U+2253 IMAGE OF OR APPROXIMATELY EQUAL TO
+\newunicodechar{≔}{{\fallbackfont ≔}}% U+2254 COLON EQUALS
+\newunicodechar{≕}{{\fallbackfont ≕}}% U+2255 EQUALS COLON
+\newunicodechar{≖}{{\fallbackfont ≖}}% U+2256 RING IN EQUAL TO
+\newunicodechar{≗}{{\fallbackfont ≗}}% U+2257 RING EQUAL TO
+\newunicodechar{≘}{{\fallbackfont ≘}}% U+2258 CORRESPONDS TO
+\newunicodechar{≙}{{\fallbackfont ≙}}% U+2259 ESTIMATES
+\newunicodechar{≚}{{\fallbackfont ≚}}% U+225A EQUIANGULAR TO
+\newunicodechar{≛}{{\fallbackfont ≛}}% U+225B STAR EQUALS
+\newunicodechar{≜}{{\fallbackfont ≜}}% U+225C DELTA EQUAL TO
+\newunicodechar{≝}{{\fallbackfont ≝}}% U+225D EQUAL TO BY DEFINITION
+\newunicodechar{≞}{{\fallbackfont ≞}}% U+225E MEASURED BY
+\newunicodechar{≟}{{\fallbackfont ≟}}% U+225F QUESTIONED EQUAL TO
+\newunicodechar{≠}{{\fallbackfont ≠}}% U+2260 NOT EQUAL TO
+\newunicodechar{≡}{{\fallbackfont ≡}}% U+2261 IDENTICAL TO
+\newunicodechar{≢}{{\fallbackfont ≢}}% U+2262 NOT IDENTICAL TO
+\newunicodechar{≣}{{\fallbackfont ≣}}% U+2263 STRICTLY EQUIVALENT TO
+\newunicodechar{≤}{{\fallbackfont ≤}}% U+2264 LESS-THAN OR EQUAL TO
+\newunicodechar{≥}{{\fallbackfont ≥}}% U+2265 GREATER-THAN OR EQUAL TO
+\newunicodechar{≦}{{\fallbackfont ≦}}% U+2266 LESS-THAN OVER EQUAL TO
+\newunicodechar{≧}{{\fallbackfont ≧}}% U+2267 GREATER-THAN OVER EQUAL TO
+\newunicodechar{≨}{{\fallbackfont ≨}}% U+2268 LESS-THAN BUT NOT EQUAL TO
+\newunicodechar{≩}{{\fallbackfont ≩}}% U+2269 GREATER-THAN BUT NOT EQUAL TO
+\newunicodechar{≪}{{\fallbackfont ≪}}% U+226A MUCH LESS-THAN
+\newunicodechar{≫}{{\fallbackfont ≫}}% U+226B MUCH GREATER-THAN
+\newunicodechar{≬}{{\fallbackfont ≬}}% U+226C BETWEEN
+\newunicodechar{≭}{{\fallbackfont ≭}}% U+226D NOT EQUIVALENT TO
+\newunicodechar{≮}{{\fallbackfont ≮}}% U+226E NOT LESS-THAN
+\newunicodechar{≯}{{\fallbackfont ≯}}% U+226F NOT GREATER-THAN
+\newunicodechar{≰}{{\fallbackfont ≰}}% U+2270 NEITHER LESS-THAN NOR EQUAL TO
+\newunicodechar{≱}{{\fallbackfont ≱}}% U+2271 NEITHER GREATER-THAN NOR EQUAL TO
+\newunicodechar{≲}{{\fallbackfont ≲}}% U+2272 LESS-THAN OR EQUIVALENT TO
+\newunicodechar{≳}{{\fallbackfont ≳}}% U+2273 GREATER-THAN OR EQUIVALENT TO
+\newunicodechar{≴}{{\fallbackfont ≴}}% U+2274 NEITHER LESS-THAN NOR EQUIVALENT TO
+\newunicodechar{≵}{{\fallbackfont ≵}}% U+2275 NEITHER GREATER-THAN NOR EQUIVALENT TO
+\newunicodechar{≶}{{\fallbackfont ≶}}% U+2276 LESS-THAN OR GREATER-THAN
+\newunicodechar{≷}{{\fallbackfont ≷}}% U+2277 GREATER-THAN OR LESS-THAN
+\newunicodechar{≸}{{\fallbackfont ≸}}% U+2278 NEITHER LESS-THAN NOR GREATER-THAN
+\newunicodechar{≹}{{\fallbackfont ≹}}% U+2279 NEITHER GREATER-THAN NOR LESS-THAN
+\newunicodechar{≺}{{\fallbackfont ≺}}% U+227A PRECEDES
+\newunicodechar{≻}{{\fallbackfont ≻}}% U+227B SUCCEEDS
+\newunicodechar{≼}{{\fallbackfont ≼}}% U+227C PRECEDES OR EQUAL TO
+\newunicodechar{≽}{{\fallbackfont ≽}}% U+227D SUCCEEDS OR EQUAL TO
+\newunicodechar{≾}{{\fallbackfont ≾}}% U+227E PRECEDES OR EQUIVALENT TO
+\newunicodechar{≿}{{\fallbackfont ≿}}% U+227F SUCCEEDS OR EQUIVALENT TO
+\newunicodechar{⊀}{{\fallbackfont ⊀}}% U+2280 DOES NOT PRECEDE
+\newunicodechar{⊁}{{\fallbackfont ⊁}}% U+2281 DOES NOT SUCCEED
+\newunicodechar{⊂}{{\fallbackfont ⊂}}% U+2282 SUBSET OF
+\newunicodechar{⊃}{{\fallbackfont ⊃}}% U+2283 SUPERSET OF
+\newunicodechar{⊄}{{\fallbackfont ⊄}}% U+2284 NOT A SUBSET OF
+\newunicodechar{⊅}{{\fallbackfont ⊅}}% U+2285 NOT A SUPERSET OF
+\newunicodechar{⊆}{{\fallbackfont ⊆}}% U+2286 SUBSET OF OR EQUAL TO
+\newunicodechar{⊇}{{\fallbackfont ⊇}}% U+2287 SUPERSET OF OR EQUAL TO
+\newunicodechar{⊈}{{\fallbackfont ⊈}}% U+2288 NEITHER A SUBSET OF NOR EQUAL TO
+\newunicodechar{⊉}{{\fallbackfont ⊉}}% U+2289 NEITHER A SUPERSET OF NOR EQUAL TO
+\newunicodechar{⊊}{{\fallbackfont ⊊}}% U+228A SUBSET OF WITH NOT EQUAL TO
+\newunicodechar{⊋}{{\fallbackfont ⊋}}% U+228B SUPERSET OF WITH NOT EQUAL TO
+\newunicodechar{⊌}{{\fallbackfont ⊌}}% U+228C MULTISET
+\newunicodechar{⊍}{{\fallbackfont ⊍}}% U+228D MULTISET MULTIPLICATION
+\newunicodechar{⊎}{{\fallbackfont ⊎}}% U+228E MULTISET UNION
+\newunicodechar{⊏}{{\fallbackfont ⊏}}% U+228F SQUARE IMAGE OF
+\newunicodechar{⊐}{{\fallbackfont ⊐}}% U+2290 SQUARE ORIGINAL OF
+\newunicodechar{⊑}{{\fallbackfont ⊑}}% U+2291 SQUARE IMAGE OF OR EQUAL TO
+\newunicodechar{⊒}{{\fallbackfont ⊒}}% U+2292 SQUARE ORIGINAL OF OR EQUAL TO
+\newunicodechar{⊓}{{\fallbackfont ⊓}}% U+2293 SQUARE CAP
+\newunicodechar{⊔}{{\fallbackfont ⊔}}% U+2294 SQUARE CUP
+\newunicodechar{⊕}{{\fallbackfont ⊕}}% U+2295 CIRCLED PLUS
+\newunicodechar{⊖}{{\fallbackfont ⊖}}% U+2296 CIRCLED MINUS
+\newunicodechar{⊗}{{\fallbackfont ⊗}}% U+2297 CIRCLED TIMES
+\newunicodechar{⊘}{{\fallbackfont ⊘}}% U+2298 CIRCLED DIVISION SLASH
+\newunicodechar{⊙}{{\fallbackfont ⊙}}% U+2299 CIRCLED DOT OPERATOR
+\newunicodechar{⊚}{{\fallbackfont ⊚}}% U+229A CIRCLED RING OPERATOR
+\newunicodechar{⊛}{{\fallbackfont ⊛}}% U+229B CIRCLED ASTERISK OPERATOR
+\newunicodechar{⊜}{{\fallbackfont ⊜}}% U+229C CIRCLED EQUALS
+\newunicodechar{⊝}{{\fallbackfont ⊝}}% U+229D CIRCLED DASH
+\newunicodechar{⊞}{{\fallbackfont ⊞}}% U+229E SQUARED PLUS
+\newunicodechar{⊟}{{\fallbackfont ⊟}}% U+229F SQUARED MINUS
+\newunicodechar{⊠}{{\fallbackfont ⊠}}% U+22A0 SQUARED TIMES
+\newunicodechar{⊡}{{\fallbackfont ⊡}}% U+22A1 SQUARED DOT OPERATOR
+\newunicodechar{⊢}{{\fallbackfont ⊢}}% U+22A2 RIGHT TACK
+\newunicodechar{⊣}{{\fallbackfont ⊣}}% U+22A3 LEFT TACK
+\newunicodechar{⊤}{{\fallbackfont ⊤}}% U+22A4 DOWN TACK
+\newunicodechar{⊥}{{\fallbackfont ⊥}}% U+22A5 UP TACK
+\newunicodechar{⊦}{{\fallbackfont ⊦}}% U+22A6 ASSERTION
+\newunicodechar{⊧}{{\fallbackfont ⊧}}% U+22A7 MODELS
+\newunicodechar{⊨}{{\fallbackfont ⊨}}% U+22A8 TRUE
+\newunicodechar{⊩}{{\fallbackfont ⊩}}% U+22A9 FORCES
+\newunicodechar{⊪}{{\fallbackfont ⊪}}% U+22AA TRIPLE VERTICAL BAR RIGHT TURNSTILE
+\newunicodechar{⊫}{{\fallbackfont ⊫}}% U+22AB DOUBLE VERTICAL BAR DOUBLE RIGHT TURNSTILE
+\newunicodechar{⊬}{{\fallbackfont ⊬}}% U+22AC DOES NOT PROVE
+\newunicodechar{⊭}{{\fallbackfont ⊭}}% U+22AD NOT TRUE
+\newunicodechar{⊮}{{\fallbackfont ⊮}}% U+22AE DOES NOT FORCE
+\newunicodechar{⊯}{{\fallbackfont ⊯}}% U+22AF NEGATED DOUBLE VERTICAL BAR DOUBLE RIGHT TURNSTILE
+\newunicodechar{⊰}{{\fallbackfont ⊰}}% U+22B0 PRECEDES UNDER RELATION
+\newunicodechar{⊱}{{\fallbackfont ⊱}}% U+22B1 SUCCEEDS UNDER RELATION
+\newunicodechar{⊲}{{\fallbackfont ⊲}}% U+22B2 NORMAL SUBGROUP OF
+\newunicodechar{⊳}{{\fallbackfont ⊳}}% U+22B3 CONTAINS AS NORMAL SUBGROUP
+\newunicodechar{⊴}{{\fallbackfont ⊴}}% U+22B4 NORMAL SUBGROUP OF OR EQUAL TO
+\newunicodechar{⊵}{{\fallbackfont ⊵}}% U+22B5 CONTAINS AS NORMAL SUBGROUP OR EQUAL TO
+\newunicodechar{⊶}{{\fallbackfont ⊶}}% U+22B6 ORIGINAL OF
+\newunicodechar{⊷}{{\fallbackfont ⊷}}% U+22B7 IMAGE OF
+\newunicodechar{⊸}{{\fallbackfont ⊸}}% U+22B8 MULTIMAP
+\newunicodechar{⊹}{{\fallbackfont ⊹}}% U+22B9 HERMITIAN CONJUGATE MATRIX
+\newunicodechar{⊺}{{\fallbackfont ⊺}}% U+22BA INTERCALATE
+\newunicodechar{⊻}{{\fallbackfont ⊻}}% U+22BB XOR
+\newunicodechar{⊼}{{\fallbackfont ⊼}}% U+22BC NAND
+\newunicodechar{⊽}{{\fallbackfont ⊽}}% U+22BD NOR
+\newunicodechar{⊾}{{\fallbackfont ⊾}}% U+22BE RIGHT ANGLE WITH ARC
+\newunicodechar{⊿}{{\fallbackfont ⊿}}% U+22BF RIGHT TRIANGLE
+\newunicodechar{⋀}{{\fallbackfont ⋀}}% U+22C0 N-ARY LOGICAL AND
+\newunicodechar{⋁}{{\fallbackfont ⋁}}% U+22C1 N-ARY LOGICAL OR
+\newunicodechar{⋂}{{\fallbackfont ⋂}}% U+22C2 N-ARY INTERSECTION
+\newunicodechar{⋃}{{\fallbackfont ⋃}}% U+22C3 N-ARY UNION
+\newunicodechar{⋄}{{\fallbackfont ⋄}}% U+22C4 DIAMOND OPERATOR
+\newunicodechar{⋅}{{\fallbackfont ⋅}}% U+22C5 DOT OPERATOR
+\newunicodechar{⋆}{{\fallbackfont ⋆}}% U+22C6 STAR OPERATOR
+\newunicodechar{⋇}{{\fallbackfont ⋇}}% U+22C7 DIVISION TIMES
+\newunicodechar{⋈}{{\fallbackfont ⋈}}% U+22C8 BOWTIE
+\newunicodechar{⋉}{{\fallbackfont ⋉}}% U+22C9 LEFT NORMAL FACTOR SEMIDIRECT PRODUCT
+\newunicodechar{⋊}{{\fallbackfont ⋊}}% U+22CA RIGHT NORMAL FACTOR SEMIDIRECT PRODUCT
+\newunicodechar{⋋}{{\fallbackfont ⋋}}% U+22CB LEFT SEMIDIRECT PRODUCT
+\newunicodechar{⋌}{{\fallbackfont ⋌}}% U+22CC RIGHT SEMIDIRECT PRODUCT
+\newunicodechar{⋍}{{\fallbackfont ⋍}}% U+22CD REVERSED TILDE EQUALS
+\newunicodechar{⋎}{{\fallbackfont ⋎}}% U+22CE CURLY LOGICAL OR
+\newunicodechar{⋏}{{\fallbackfont ⋏}}% U+22CF CURLY LOGICAL AND
+\newunicodechar{⋐}{{\fallbackfont ⋐}}% U+22D0 DOUBLE SUBSET
+\newunicodechar{⋑}{{\fallbackfont ⋑}}% U+22D1 DOUBLE SUPERSET
+\newunicodechar{⋒}{{\fallbackfont ⋒}}% U+22D2 DOUBLE INTERSECTION
+\newunicodechar{⋓}{{\fallbackfont ⋓}}% U+22D3 DOUBLE UNION
+\newunicodechar{⋔}{{\fallbackfont ⋔}}% U+22D4 PITCHFORK
+\newunicodechar{⋕}{{\fallbackfont ⋕}}% U+22D5 EQUAL AND PARALLEL TO
+\newunicodechar{⋖}{{\fallbackfont ⋖}}% U+22D6 LESS-THAN WITH DOT
+\newunicodechar{⋗}{{\fallbackfont ⋗}}% U+22D7 GREATER-THAN WITH DOT
+\newunicodechar{⋘}{{\fallbackfont ⋘}}% U+22D8 VERY MUCH LESS-THAN
+\newunicodechar{⋙}{{\fallbackfont ⋙}}% U+22D9 VERY MUCH GREATER-THAN
+\newunicodechar{⋚}{{\fallbackfont ⋚}}% U+22DA LESS-THAN EQUAL TO OR GREATER-THAN
+\newunicodechar{⋛}{{\fallbackfont ⋛}}% U+22DB GREATER-THAN EQUAL TO OR LESS-THAN
+\newunicodechar{⋜}{{\fallbackfont ⋜}}% U+22DC EQUAL TO OR LESS-THAN
+\newunicodechar{⋝}{{\fallbackfont ⋝}}% U+22DD EQUAL TO OR GREATER-THAN
+\newunicodechar{⋞}{{\fallbackfont ⋞}}% U+22DE EQUAL TO OR PRECEDES
+\newunicodechar{⋟}{{\fallbackfont ⋟}}% U+22DF EQUAL TO OR SUCCEEDS
+\newunicodechar{⋠}{{\fallbackfont ⋠}}% U+22E0 DOES NOT PRECEDE OR EQUAL
+\newunicodechar{⋡}{{\fallbackfont ⋡}}% U+22E1 DOES NOT SUCCEED OR EQUAL
+\newunicodechar{⋢}{{\fallbackfont ⋢}}% U+22E2 NOT SQUARE IMAGE OF OR EQUAL TO
+\newunicodechar{⋣}{{\fallbackfont ⋣}}% U+22E3 NOT SQUARE ORIGINAL OF OR EQUAL TO
+\newunicodechar{⋤}{{\fallbackfont ⋤}}% U+22E4 SQUARE IMAGE OF OR NOT EQUAL TO
+\newunicodechar{⋥}{{\fallbackfont ⋥}}% U+22E5 SQUARE ORIGINAL OF OR NOT EQUAL TO
+\newunicodechar{⋦}{{\fallbackfont ⋦}}% U+22E6 LESS-THAN BUT NOT EQUIVALENT TO
+\newunicodechar{⋧}{{\fallbackfont ⋧}}% U+22E7 GREATER-THAN BUT NOT EQUIVALENT TO
+\newunicodechar{⋨}{{\fallbackfont ⋨}}% U+22E8 PRECEDES BUT NOT EQUIVALENT TO
+\newunicodechar{⋩}{{\fallbackfont ⋩}}% U+22E9 SUCCEEDS BUT NOT EQUIVALENT TO
+\newunicodechar{⋪}{{\fallbackfont ⋪}}% U+22EA NOT NORMAL SUBGROUP OF
+\newunicodechar{⋫}{{\fallbackfont ⋫}}% U+22EB DOES NOT CONTAIN AS NORMAL SUBGROUP
+\newunicodechar{⋬}{{\fallbackfont ⋬}}% U+22EC NOT NORMAL SUBGROUP OF OR EQUAL TO
+\newunicodechar{⋭}{{\fallbackfont ⋭}}% U+22ED DOES NOT CONTAIN AS NORMAL SUBGROUP OR EQUAL
+\newunicodechar{⋮}{{\fallbackfont ⋮}}% U+22EE VERTICAL ELLIPSIS
+\newunicodechar{⋯}{{\fallbackfont ⋯}}% U+22EF MIDLINE HORIZONTAL ELLIPSIS
+\newunicodechar{⋰}{{\fallbackfont ⋰}}% U+22F0 UP RIGHT DIAGONAL ELLIPSIS
+\newunicodechar{⋱}{{\fallbackfont ⋱}}% U+22F1 DOWN RIGHT DIAGONAL ELLIPSIS
+\newunicodechar{⋲}{{\fallbackfont ⋲}}% U+22F2 ELEMENT OF WITH LONG HORIZONTAL STROKE
+\newunicodechar{⋳}{{\fallbackfont ⋳}}% U+22F3 ELEMENT OF WITH VERTICAL BAR AT END OF HORIZONTAL STROKE
+\newunicodechar{⋴}{{\fallbackfont ⋴}}% U+22F4 SMALL ELEMENT OF WITH VERTICAL BAR AT END OF HORIZONTAL STROKE
+\newunicodechar{⋵}{{\fallbackfont ⋵}}% U+22F5 ELEMENT OF WITH DOT ABOVE
+\newunicodechar{⋶}{{\fallbackfont ⋶}}% U+22F6 ELEMENT OF WITH OVERBAR
+\newunicodechar{⋷}{{\fallbackfont ⋷}}% U+22F7 SMALL ELEMENT OF WITH OVERBAR
+\newunicodechar{⋸}{{\fallbackfont ⋸}}% U+22F8 ELEMENT OF WITH UNDERBAR
+\newunicodechar{⋹}{{\fallbackfont ⋹}}% U+22F9 ELEMENT OF WITH TWO HORIZONTAL STROKES
+\newunicodechar{⋺}{{\fallbackfont ⋺}}% U+22FA CONTAINS WITH LONG HORIZONTAL STROKE
+\newunicodechar{⋻}{{\fallbackfont ⋻}}% U+22FB CONTAINS WITH VERTICAL BAR AT END OF HORIZONTAL STROKE
+\newunicodechar{⋼}{{\fallbackfont ⋼}}% U+22FC SMALL CONTAINS WITH VERTICAL BAR AT END OF HORIZONTAL STROKE
+\newunicodechar{⋽}{{\fallbackfont ⋽}}% U+22FD CONTAINS WITH OVERBAR
+\newunicodechar{⋾}{{\fallbackfont ⋾}}% U+22FE SMALL CONTAINS WITH OVERBAR
+\newunicodechar{⋿}{{\fallbackfont ⋿}}% U+22FF Z NOTATION BAG MEMBERSHIP
+
+% --- Enclosed alphanumerics  (circled / parenthesised numbers) ---
+\newunicodechar{①}{{\fallbackfont ①}}% U+2460 CIRCLED DIGIT ONE
+\newunicodechar{②}{{\fallbackfont ②}}% U+2461 CIRCLED DIGIT TWO
+\newunicodechar{③}{{\fallbackfont ③}}% U+2462 CIRCLED DIGIT THREE
+\newunicodechar{④}{{\fallbackfont ④}}% U+2463 CIRCLED DIGIT FOUR
+\newunicodechar{⑤}{{\fallbackfont ⑤}}% U+2464 CIRCLED DIGIT FIVE
+\newunicodechar{⑥}{{\fallbackfont ⑥}}% U+2465 CIRCLED DIGIT SIX
+\newunicodechar{⑦}{{\fallbackfont ⑦}}% U+2466 CIRCLED DIGIT SEVEN
+\newunicodechar{⑧}{{\fallbackfont ⑧}}% U+2467 CIRCLED DIGIT EIGHT
+\newunicodechar{⑨}{{\fallbackfont ⑨}}% U+2468 CIRCLED DIGIT NINE
+\newunicodechar{⑩}{{\fallbackfont ⑩}}% U+2469 CIRCLED NUMBER TEN
+
+% --- Geometric shapes  (bullets, squares, triangles, diamonds) ---
+\newunicodechar{■}{{\fallbackfont ■}}% U+25A0 BLACK SQUARE
+\newunicodechar{□}{{\fallbackfont □}}% U+25A1 WHITE SQUARE
+\newunicodechar{▢}{{\fallbackfont ▢}}% U+25A2 WHITE SQUARE WITH ROUNDED CORNERS
+\newunicodechar{▣}{{\fallbackfont ▣}}% U+25A3 WHITE SQUARE CONTAINING BLACK SMALL SQUARE
+\newunicodechar{▤}{{\fallbackfont ▤}}% U+25A4 SQUARE WITH HORIZONTAL FILL
+\newunicodechar{▥}{{\fallbackfont ▥}}% U+25A5 SQUARE WITH VERTICAL FILL
+\newunicodechar{▦}{{\fallbackfont ▦}}% U+25A6 SQUARE WITH ORTHOGONAL CROSSHATCH FILL
+\newunicodechar{▧}{{\fallbackfont ▧}}% U+25A7 SQUARE WITH UPPER LEFT TO LOWER RIGHT FILL
+\newunicodechar{▨}{{\fallbackfont ▨}}% U+25A8 SQUARE WITH UPPER RIGHT TO LOWER LEFT FILL
+\newunicodechar{▩}{{\fallbackfont ▩}}% U+25A9 SQUARE WITH DIAGONAL CROSSHATCH FILL
+\newunicodechar{▪}{{\fallbackfont ▪}}% U+25AA BLACK SMALL SQUARE
+\newunicodechar{▫}{{\fallbackfont ▫}}% U+25AB WHITE SMALL SQUARE
+\newunicodechar{▬}{{\fallbackfont ▬}}% U+25AC BLACK RECTANGLE
+\newunicodechar{▭}{{\fallbackfont ▭}}% U+25AD WHITE RECTANGLE
+\newunicodechar{▮}{{\fallbackfont ▮}}% U+25AE BLACK VERTICAL RECTANGLE
+\newunicodechar{▯}{{\fallbackfont ▯}}% U+25AF WHITE VERTICAL RECTANGLE
+\newunicodechar{▰}{{\fallbackfont ▰}}% U+25B0 BLACK PARALLELOGRAM
+\newunicodechar{▱}{{\fallbackfont ▱}}% U+25B1 WHITE PARALLELOGRAM
+\newunicodechar{▲}{{\fallbackfont ▲}}% U+25B2 BLACK UP-POINTING TRIANGLE
+\newunicodechar{△}{{\fallbackfont △}}% U+25B3 WHITE UP-POINTING TRIANGLE
+\newunicodechar{▴}{{\fallbackfont ▴}}% U+25B4 BLACK UP-POINTING SMALL TRIANGLE
+\newunicodechar{▵}{{\fallbackfont ▵}}% U+25B5 WHITE UP-POINTING SMALL TRIANGLE
+\newunicodechar{▶}{{\fallbackfont ▶}}% U+25B6 BLACK RIGHT-POINTING TRIANGLE
+\newunicodechar{▷}{{\fallbackfont ▷}}% U+25B7 WHITE RIGHT-POINTING TRIANGLE
+\newunicodechar{▸}{{\fallbackfont ▸}}% U+25B8 BLACK RIGHT-POINTING SMALL TRIANGLE
+\newunicodechar{▹}{{\fallbackfont ▹}}% U+25B9 WHITE RIGHT-POINTING SMALL TRIANGLE
+\newunicodechar{►}{{\fallbackfont ►}}% U+25BA BLACK RIGHT-POINTING POINTER
+\newunicodechar{▻}{{\fallbackfont ▻}}% U+25BB WHITE RIGHT-POINTING POINTER
+\newunicodechar{▼}{{\fallbackfont ▼}}% U+25BC BLACK DOWN-POINTING TRIANGLE
+\newunicodechar{▽}{{\fallbackfont ▽}}% U+25BD WHITE DOWN-POINTING TRIANGLE
+\newunicodechar{▾}{{\fallbackfont ▾}}% U+25BE BLACK DOWN-POINTING SMALL TRIANGLE
+\newunicodechar{▿}{{\fallbackfont ▿}}% U+25BF WHITE DOWN-POINTING SMALL TRIANGLE
+\newunicodechar{◀}{{\fallbackfont ◀}}% U+25C0 BLACK LEFT-POINTING TRIANGLE
+\newunicodechar{◁}{{\fallbackfont ◁}}% U+25C1 WHITE LEFT-POINTING TRIANGLE
+\newunicodechar{◂}{{\fallbackfont ◂}}% U+25C2 BLACK LEFT-POINTING SMALL TRIANGLE
+\newunicodechar{◃}{{\fallbackfont ◃}}% U+25C3 WHITE LEFT-POINTING SMALL TRIANGLE
+\newunicodechar{◄}{{\fallbackfont ◄}}% U+25C4 BLACK LEFT-POINTING POINTER
+\newunicodechar{◅}{{\fallbackfont ◅}}% U+25C5 WHITE LEFT-POINTING POINTER
+\newunicodechar{◆}{{\fallbackfont ◆}}% U+25C6 BLACK DIAMOND
+\newunicodechar{◇}{{\fallbackfont ◇}}% U+25C7 WHITE DIAMOND
+\newunicodechar{◈}{{\fallbackfont ◈}}% U+25C8 WHITE DIAMOND CONTAINING BLACK SMALL DIAMOND
+\newunicodechar{◉}{{\fallbackfont ◉}}% U+25C9 FISHEYE
+\newunicodechar{◊}{{\fallbackfont ◊}}% U+25CA LOZENGE
+\newunicodechar{○}{{\fallbackfont ○}}% U+25CB WHITE CIRCLE
+\newunicodechar{◌}{{\fallbackfont ◌}}% U+25CC DOTTED CIRCLE
+\newunicodechar{◍}{{\fallbackfont ◍}}% U+25CD CIRCLE WITH VERTICAL FILL
+\newunicodechar{◎}{{\fallbackfont ◎}}% U+25CE BULLSEYE
+\newunicodechar{●}{{\fallbackfont ●}}% U+25CF BLACK CIRCLE
+\newunicodechar{◐}{{\fallbackfont ◐}}% U+25D0 CIRCLE WITH LEFT HALF BLACK
+\newunicodechar{◑}{{\fallbackfont ◑}}% U+25D1 CIRCLE WITH RIGHT HALF BLACK
+\newunicodechar{◒}{{\fallbackfont ◒}}% U+25D2 CIRCLE WITH LOWER HALF BLACK
+\newunicodechar{◓}{{\fallbackfont ◓}}% U+25D3 CIRCLE WITH UPPER HALF BLACK
+\newunicodechar{◔}{{\fallbackfont ◔}}% U+25D4 CIRCLE WITH UPPER RIGHT QUADRANT BLACK
+\newunicodechar{◕}{{\fallbackfont ◕}}% U+25D5 CIRCLE WITH ALL BUT UPPER LEFT QUADRANT BLACK
+\newunicodechar{◖}{{\fallbackfont ◖}}% U+25D6 LEFT HALF BLACK CIRCLE
+\newunicodechar{◗}{{\fallbackfont ◗}}% U+25D7 RIGHT HALF BLACK CIRCLE
+\newunicodechar{◘}{{\fallbackfont ◘}}% U+25D8 INVERSE BULLET
+\newunicodechar{◙}{{\fallbackfont ◙}}% U+25D9 INVERSE WHITE CIRCLE
+\newunicodechar{◚}{{\fallbackfont ◚}}% U+25DA UPPER HALF INVERSE WHITE CIRCLE
+\newunicodechar{◛}{{\fallbackfont ◛}}% U+25DB LOWER HALF INVERSE WHITE CIRCLE
+\newunicodechar{◜}{{\fallbackfont ◜}}% U+25DC UPPER LEFT QUADRANT CIRCULAR ARC
+\newunicodechar{◝}{{\fallbackfont ◝}}% U+25DD UPPER RIGHT QUADRANT CIRCULAR ARC
+\newunicodechar{◞}{{\fallbackfont ◞}}% U+25DE LOWER RIGHT QUADRANT CIRCULAR ARC
+\newunicodechar{◟}{{\fallbackfont ◟}}% U+25DF LOWER LEFT QUADRANT CIRCULAR ARC
+\newunicodechar{◠}{{\fallbackfont ◠}}% U+25E0 UPPER HALF CIRCLE
+\newunicodechar{◡}{{\fallbackfont ◡}}% U+25E1 LOWER HALF CIRCLE
+\newunicodechar{◢}{{\fallbackfont ◢}}% U+25E2 BLACK LOWER RIGHT TRIANGLE
+\newunicodechar{◣}{{\fallbackfont ◣}}% U+25E3 BLACK LOWER LEFT TRIANGLE
+\newunicodechar{◤}{{\fallbackfont ◤}}% U+25E4 BLACK UPPER LEFT TRIANGLE
+\newunicodechar{◥}{{\fallbackfont ◥}}% U+25E5 BLACK UPPER RIGHT TRIANGLE
+\newunicodechar{◧}{{\fallbackfont ◧}}% U+25E7 SQUARE WITH LEFT HALF BLACK
+\newunicodechar{◨}{{\fallbackfont ◨}}% U+25E8 SQUARE WITH RIGHT HALF BLACK
+\newunicodechar{◩}{{\fallbackfont ◩}}% U+25E9 SQUARE WITH UPPER LEFT DIAGONAL HALF BLACK
+\newunicodechar{◪}{{\fallbackfont ◪}}% U+25EA SQUARE WITH LOWER RIGHT DIAGONAL HALF BLACK
+\newunicodechar{◫}{{\fallbackfont ◫}}% U+25EB WHITE SQUARE WITH VERTICAL BISECTING LINE
+\newunicodechar{◬}{{\fallbackfont ◬}}% U+25EC WHITE UP-POINTING TRIANGLE WITH DOT
+\newunicodechar{◭}{{\fallbackfont ◭}}% U+25ED UP-POINTING TRIANGLE WITH LEFT HALF BLACK
+\newunicodechar{◮}{{\fallbackfont ◮}}% U+25EE UP-POINTING TRIANGLE WITH RIGHT HALF BLACK
+\newunicodechar{◯}{{\fallbackfont ◯}}% U+25EF LARGE CIRCLE
+\newunicodechar{◰}{{\fallbackfont ◰}}% U+25F0 WHITE SQUARE WITH UPPER LEFT QUADRANT
+\newunicodechar{◱}{{\fallbackfont ◱}}% U+25F1 WHITE SQUARE WITH LOWER LEFT QUADRANT
+\newunicodechar{◲}{{\fallbackfont ◲}}% U+25F2 WHITE SQUARE WITH LOWER RIGHT QUADRANT
+\newunicodechar{◳}{{\fallbackfont ◳}}% U+25F3 WHITE SQUARE WITH UPPER RIGHT QUADRANT
+\newunicodechar{◴}{{\fallbackfont ◴}}% U+25F4 WHITE CIRCLE WITH UPPER LEFT QUADRANT
+\newunicodechar{◵}{{\fallbackfont ◵}}% U+25F5 WHITE CIRCLE WITH LOWER LEFT QUADRANT
+\newunicodechar{◶}{{\fallbackfont ◶}}% U+25F6 WHITE CIRCLE WITH LOWER RIGHT QUADRANT
+\newunicodechar{◷}{{\fallbackfont ◷}}% U+25F7 WHITE CIRCLE WITH UPPER RIGHT QUADRANT
+\newunicodechar{◸}{{\fallbackfont ◸}}% U+25F8 UPPER LEFT TRIANGLE
+\newunicodechar{◹}{{\fallbackfont ◹}}% U+25F9 UPPER RIGHT TRIANGLE
+\newunicodechar{◺}{{\fallbackfont ◺}}% U+25FA LOWER LEFT TRIANGLE
+\newunicodechar{◻}{{\fallbackfont ◻}}% U+25FB WHITE MEDIUM SQUARE
+\newunicodechar{◼}{{\fallbackfont ◼}}% U+25FC BLACK MEDIUM SQUARE
+\newunicodechar{◽}{{\fallbackfont ◽}}% U+25FD WHITE MEDIUM SMALL SQUARE
+\newunicodechar{◾}{{\fallbackfont ◾}}% U+25FE BLACK MEDIUM SMALL SQUARE
+\newunicodechar{◿}{{\fallbackfont ◿}}% U+25FF LOWER RIGHT TRIANGLE
+
+% --- Miscellaneous symbols  (warning, stars, ballot boxes) ---
+\newunicodechar{☀}{{\fallbackfont ☀}}% U+2600 BLACK SUN WITH RAYS
+\newunicodechar{☁}{{\fallbackfont ☁}}% U+2601 CLOUD
+\newunicodechar{☂}{{\fallbackfont ☂}}% U+2602 UMBRELLA
+\newunicodechar{☃}{{\fallbackfont ☃}}% U+2603 SNOWMAN
+\newunicodechar{☄}{{\fallbackfont ☄}}% U+2604 COMET
+\newunicodechar{★}{{\fallbackfont ★}}% U+2605 BLACK STAR
+\newunicodechar{☆}{{\fallbackfont ☆}}% U+2606 WHITE STAR
+\newunicodechar{☇}{{\fallbackfont ☇}}% U+2607 LIGHTNING
+\newunicodechar{☈}{{\fallbackfont ☈}}% U+2608 THUNDERSTORM
+\newunicodechar{☉}{{\fallbackfont ☉}}% U+2609 SUN
+\newunicodechar{☊}{{\fallbackfont ☊}}% U+260A ASCENDING NODE
+\newunicodechar{☋}{{\fallbackfont ☋}}% U+260B DESCENDING NODE
+\newunicodechar{☌}{{\fallbackfont ☌}}% U+260C CONJUNCTION
+\newunicodechar{☍}{{\fallbackfont ☍}}% U+260D OPPOSITION
+\newunicodechar{☎}{{\fallbackfont ☎}}% U+260E BLACK TELEPHONE
+\newunicodechar{☏}{{\fallbackfont ☏}}% U+260F WHITE TELEPHONE
+\newunicodechar{☐}{{\fallbackfont ☐}}% U+2610 BALLOT BOX
+\newunicodechar{☑}{{\fallbackfont ☑}}% U+2611 BALLOT BOX WITH CHECK
+\newunicodechar{☒}{{\fallbackfont ☒}}% U+2612 BALLOT BOX WITH X
+\newunicodechar{☓}{{\fallbackfont ☓}}% U+2613 SALTIRE
+\newunicodechar{☔}{{\fallbackfont ☔}}% U+2614 UMBRELLA WITH RAIN DROPS
+\newunicodechar{☕}{{\fallbackfont ☕}}% U+2615 HOT BEVERAGE
+\newunicodechar{☖}{{\fallbackfont ☖}}% U+2616 WHITE SHOGI PIECE
+\newunicodechar{☗}{{\fallbackfont ☗}}% U+2617 BLACK SHOGI PIECE
+\newunicodechar{☘}{{\fallbackfont ☘}}% U+2618 SHAMROCK
+\newunicodechar{☙}{{\fallbackfont ☙}}% U+2619 REVERSED ROTATED FLORAL HEART BULLET
+\newunicodechar{☚}{{\fallbackfont ☚}}% U+261A BLACK LEFT POINTING INDEX
+\newunicodechar{☛}{{\fallbackfont ☛}}% U+261B BLACK RIGHT POINTING INDEX
+\newunicodechar{☜}{{\fallbackfont ☜}}% U+261C WHITE LEFT POINTING INDEX
+\newunicodechar{☝}{{\fallbackfont ☝}}% U+261D WHITE UP POINTING INDEX
+\newunicodechar{☞}{{\fallbackfont ☞}}% U+261E WHITE RIGHT POINTING INDEX
+\newunicodechar{☟}{{\fallbackfont ☟}}% U+261F WHITE DOWN POINTING INDEX
+\newunicodechar{☠}{{\fallbackfont ☠}}% U+2620 SKULL AND CROSSBONES
+\newunicodechar{☡}{{\fallbackfont ☡}}% U+2621 CAUTION SIGN
+\newunicodechar{☢}{{\fallbackfont ☢}}% U+2622 RADIOACTIVE SIGN
+\newunicodechar{☣}{{\fallbackfont ☣}}% U+2623 BIOHAZARD SIGN
+\newunicodechar{☤}{{\fallbackfont ☤}}% U+2624 CADUCEUS
+\newunicodechar{☥}{{\fallbackfont ☥}}% U+2625 ANKH
+\newunicodechar{☦}{{\fallbackfont ☦}}% U+2626 ORTHODOX CROSS
+\newunicodechar{☧}{{\fallbackfont ☧}}% U+2627 CHI RHO
+\newunicodechar{☨}{{\fallbackfont ☨}}% U+2628 CROSS OF LORRAINE
+\newunicodechar{☩}{{\fallbackfont ☩}}% U+2629 CROSS OF JERUSALEM
+\newunicodechar{☪}{{\fallbackfont ☪}}% U+262A STAR AND CRESCENT
+\newunicodechar{☫}{{\fallbackfont ☫}}% U+262B FARSI SYMBOL
+\newunicodechar{☬}{{\fallbackfont ☬}}% U+262C ADI SHAKTI
+\newunicodechar{☭}{{\fallbackfont ☭}}% U+262D HAMMER AND SICKLE
+\newunicodechar{☮}{{\fallbackfont ☮}}% U+262E PEACE SYMBOL
+\newunicodechar{☯}{{\fallbackfont ☯}}% U+262F YIN YANG
+\newunicodechar{☰}{{\fallbackfont ☰}}% U+2630 TRIGRAM FOR HEAVEN
+\newunicodechar{☱}{{\fallbackfont ☱}}% U+2631 TRIGRAM FOR LAKE
+\newunicodechar{☲}{{\fallbackfont ☲}}% U+2632 TRIGRAM FOR FIRE
+\newunicodechar{☳}{{\fallbackfont ☳}}% U+2633 TRIGRAM FOR THUNDER
+\newunicodechar{☴}{{\fallbackfont ☴}}% U+2634 TRIGRAM FOR WIND
+\newunicodechar{☵}{{\fallbackfont ☵}}% U+2635 TRIGRAM FOR WATER
+\newunicodechar{☶}{{\fallbackfont ☶}}% U+2636 TRIGRAM FOR MOUNTAIN
+\newunicodechar{☷}{{\fallbackfont ☷}}% U+2637 TRIGRAM FOR EARTH
+\newunicodechar{☸}{{\fallbackfont ☸}}% U+2638 WHEEL OF DHARMA
+\newunicodechar{☹}{{\fallbackfont ☹}}% U+2639 WHITE FROWNING FACE
+\newunicodechar{☺}{{\fallbackfont ☺}}% U+263A WHITE SMILING FACE
+\newunicodechar{☻}{{\fallbackfont ☻}}% U+263B BLACK SMILING FACE
+\newunicodechar{☼}{{\fallbackfont ☼}}% U+263C WHITE SUN WITH RAYS
+\newunicodechar{☽}{{\fallbackfont ☽}}% U+263D FIRST QUARTER MOON
+\newunicodechar{☾}{{\fallbackfont ☾}}% U+263E LAST QUARTER MOON
+\newunicodechar{☿}{{\fallbackfont ☿}}% U+263F MERCURY
+\newunicodechar{♀}{{\fallbackfont ♀}}% U+2640 FEMALE SIGN
+\newunicodechar{♁}{{\fallbackfont ♁}}% U+2641 EARTH
+\newunicodechar{♂}{{\fallbackfont ♂}}% U+2642 MALE SIGN
+\newunicodechar{♃}{{\fallbackfont ♃}}% U+2643 JUPITER
+\newunicodechar{♄}{{\fallbackfont ♄}}% U+2644 SATURN
+\newunicodechar{♅}{{\fallbackfont ♅}}% U+2645 URANUS
+\newunicodechar{♆}{{\fallbackfont ♆}}% U+2646 NEPTUNE
+\newunicodechar{♇}{{\fallbackfont ♇}}% U+2647 PLUTO
+\newunicodechar{♈}{{\fallbackfont ♈}}% U+2648 ARIES
+\newunicodechar{♉}{{\fallbackfont ♉}}% U+2649 TAURUS
+\newunicodechar{♊}{{\fallbackfont ♊}}% U+264A GEMINI
+\newunicodechar{♋}{{\fallbackfont ♋}}% U+264B CANCER
+\newunicodechar{♌}{{\fallbackfont ♌}}% U+264C LEO
+\newunicodechar{♍}{{\fallbackfont ♍}}% U+264D VIRGO
+\newunicodechar{♎}{{\fallbackfont ♎}}% U+264E LIBRA
+\newunicodechar{♏}{{\fallbackfont ♏}}% U+264F SCORPIUS
+\newunicodechar{♐}{{\fallbackfont ♐}}% U+2650 SAGITTARIUS
+\newunicodechar{♑}{{\fallbackfont ♑}}% U+2651 CAPRICORN
+\newunicodechar{♒}{{\fallbackfont ♒}}% U+2652 AQUARIUS
+\newunicodechar{♓}{{\fallbackfont ♓}}% U+2653 PISCES
+\newunicodechar{♔}{{\fallbackfont ♔}}% U+2654 WHITE CHESS KING
+\newunicodechar{♕}{{\fallbackfont ♕}}% U+2655 WHITE CHESS QUEEN
+\newunicodechar{♖}{{\fallbackfont ♖}}% U+2656 WHITE CHESS ROOK
+\newunicodechar{♗}{{\fallbackfont ♗}}% U+2657 WHITE CHESS BISHOP
+\newunicodechar{♘}{{\fallbackfont ♘}}% U+2658 WHITE CHESS KNIGHT
+\newunicodechar{♙}{{\fallbackfont ♙}}% U+2659 WHITE CHESS PAWN
+\newunicodechar{♚}{{\fallbackfont ♚}}% U+265A BLACK CHESS KING
+\newunicodechar{♛}{{\fallbackfont ♛}}% U+265B BLACK CHESS QUEEN
+\newunicodechar{♜}{{\fallbackfont ♜}}% U+265C BLACK CHESS ROOK
+\newunicodechar{♝}{{\fallbackfont ♝}}% U+265D BLACK CHESS BISHOP
+\newunicodechar{♞}{{\fallbackfont ♞}}% U+265E BLACK CHESS KNIGHT
+\newunicodechar{♟}{{\fallbackfont ♟}}% U+265F BLACK CHESS PAWN
+\newunicodechar{♠}{{\fallbackfont ♠}}% U+2660 BLACK SPADE SUIT
+\newunicodechar{♡}{{\fallbackfont ♡}}% U+2661 WHITE HEART SUIT
+\newunicodechar{♢}{{\fallbackfont ♢}}% U+2662 WHITE DIAMOND SUIT
+\newunicodechar{♣}{{\fallbackfont ♣}}% U+2663 BLACK CLUB SUIT
+\newunicodechar{♤}{{\fallbackfont ♤}}% U+2664 WHITE SPADE SUIT
+\newunicodechar{♥}{{\fallbackfont ♥}}% U+2665 BLACK HEART SUIT
+\newunicodechar{♦}{{\fallbackfont ♦}}% U+2666 BLACK DIAMOND SUIT
+\newunicodechar{♧}{{\fallbackfont ♧}}% U+2667 WHITE CLUB SUIT
+\newunicodechar{♨}{{\fallbackfont ♨}}% U+2668 HOT SPRINGS
+\newunicodechar{♩}{{\fallbackfont ♩}}% U+2669 QUARTER NOTE
+\newunicodechar{♫}{{\fallbackfont ♫}}% U+266B BEAMED EIGHTH NOTES
+\newunicodechar{♬}{{\fallbackfont ♬}}% U+266C BEAMED SIXTEENTH NOTES
+\newunicodechar{♭}{{\fallbackfont ♭}}% U+266D MUSIC FLAT SIGN
+\newunicodechar{♮}{{\fallbackfont ♮}}% U+266E MUSIC NATURAL SIGN
+\newunicodechar{♯}{{\fallbackfont ♯}}% U+266F MUSIC SHARP SIGN
+\newunicodechar{♰}{{\fallbackfont ♰}}% U+2670 WEST SYRIAC CROSS
+\newunicodechar{♱}{{\fallbackfont ♱}}% U+2671 EAST SYRIAC CROSS
+\newunicodechar{♲}{{\fallbackfont ♲}}% U+2672 UNIVERSAL RECYCLING SYMBOL
+\newunicodechar{♳}{{\fallbackfont ♳}}% U+2673 RECYCLING SYMBOL FOR TYPE-1 PLASTICS
+\newunicodechar{♴}{{\fallbackfont ♴}}% U+2674 RECYCLING SYMBOL FOR TYPE-2 PLASTICS
+\newunicodechar{♵}{{\fallbackfont ♵}}% U+2675 RECYCLING SYMBOL FOR TYPE-3 PLASTICS
+\newunicodechar{♶}{{\fallbackfont ♶}}% U+2676 RECYCLING SYMBOL FOR TYPE-4 PLASTICS
+\newunicodechar{♷}{{\fallbackfont ♷}}% U+2677 RECYCLING SYMBOL FOR TYPE-5 PLASTICS
+\newunicodechar{♸}{{\fallbackfont ♸}}% U+2678 RECYCLING SYMBOL FOR TYPE-6 PLASTICS
+\newunicodechar{♹}{{\fallbackfont ♹}}% U+2679 RECYCLING SYMBOL FOR TYPE-7 PLASTICS
+\newunicodechar{♺}{{\fallbackfont ♺}}% U+267A RECYCLING SYMBOL FOR GENERIC MATERIALS
+\newunicodechar{♻}{{\fallbackfont ♻}}% U+267B BLACK UNIVERSAL RECYCLING SYMBOL
+\newunicodechar{♼}{{\fallbackfont ♼}}% U+267C RECYCLED PAPER SYMBOL
+\newunicodechar{♽}{{\fallbackfont ♽}}% U+267D PARTIALLY-RECYCLED PAPER SYMBOL
+\newunicodechar{♾}{{\fallbackfont ♾}}% U+267E PERMANENT PAPER SIGN
+\newunicodechar{♿}{{\fallbackfont ♿}}% U+267F WHEELCHAIR SYMBOL
+\newunicodechar{⚀}{{\fallbackfont ⚀}}% U+2680 DIE FACE-1
+\newunicodechar{⚁}{{\fallbackfont ⚁}}% U+2681 DIE FACE-2
+\newunicodechar{⚂}{{\fallbackfont ⚂}}% U+2682 DIE FACE-3
+\newunicodechar{⚃}{{\fallbackfont ⚃}}% U+2683 DIE FACE-4
+\newunicodechar{⚄}{{\fallbackfont ⚄}}% U+2684 DIE FACE-5
+\newunicodechar{⚅}{{\fallbackfont ⚅}}% U+2685 DIE FACE-6
+\newunicodechar{⚆}{{\fallbackfont ⚆}}% U+2686 WHITE CIRCLE WITH DOT RIGHT
+\newunicodechar{⚇}{{\fallbackfont ⚇}}% U+2687 WHITE CIRCLE WITH TWO DOTS
+\newunicodechar{⚈}{{\fallbackfont ⚈}}% U+2688 BLACK CIRCLE WITH WHITE DOT RIGHT
+\newunicodechar{⚉}{{\fallbackfont ⚉}}% U+2689 BLACK CIRCLE WITH TWO WHITE DOTS
+\newunicodechar{⚊}{{\fallbackfont ⚊}}% U+268A MONOGRAM FOR YANG
+\newunicodechar{⚋}{{\fallbackfont ⚋}}% U+268B MONOGRAM FOR YIN
+\newunicodechar{⚌}{{\fallbackfont ⚌}}% U+268C DIGRAM FOR GREATER YANG
+\newunicodechar{⚍}{{\fallbackfont ⚍}}% U+268D DIGRAM FOR LESSER YIN
+\newunicodechar{⚎}{{\fallbackfont ⚎}}% U+268E DIGRAM FOR LESSER YANG
+\newunicodechar{⚏}{{\fallbackfont ⚏}}% U+268F DIGRAM FOR GREATER YIN
+\newunicodechar{⚐}{{\fallbackfont ⚐}}% U+2690 WHITE FLAG
+\newunicodechar{⚑}{{\fallbackfont ⚑}}% U+2691 BLACK FLAG
+\newunicodechar{⚒}{{\fallbackfont ⚒}}% U+2692 HAMMER AND PICK
+\newunicodechar{⚓}{{\fallbackfont ⚓}}% U+2693 ANCHOR
+\newunicodechar{⚔}{{\fallbackfont ⚔}}% U+2694 CROSSED SWORDS
+\newunicodechar{⚕}{{\fallbackfont ⚕}}% U+2695 STAFF OF AESCULAPIUS
+\newunicodechar{⚖}{{\fallbackfont ⚖}}% U+2696 SCALES
+\newunicodechar{⚗}{{\fallbackfont ⚗}}% U+2697 ALEMBIC
+\newunicodechar{⚘}{{\fallbackfont ⚘}}% U+2698 FLOWER
+\newunicodechar{⚙}{{\fallbackfont ⚙}}% U+2699 GEAR
+\newunicodechar{⚚}{{\fallbackfont ⚚}}% U+269A STAFF OF HERMES
+\newunicodechar{⚛}{{\fallbackfont ⚛}}% U+269B ATOM SYMBOL
+\newunicodechar{⚜}{{\fallbackfont ⚜}}% U+269C FLEUR-DE-LIS
+\newunicodechar{⚞}{{\fallbackfont ⚞}}% U+269E THREE LINES CONVERGING RIGHT
+\newunicodechar{⚟}{{\fallbackfont ⚟}}% U+269F THREE LINES CONVERGING LEFT
+\newunicodechar{⚠}{{\fallbackfont ⚠}}% U+26A0 WARNING SIGN
+\newunicodechar{⚡}{{\fallbackfont ⚡}}% U+26A1 HIGH VOLTAGE SIGN
+\newunicodechar{⚢}{{\fallbackfont ⚢}}% U+26A2 DOUBLED FEMALE SIGN
+\newunicodechar{⚣}{{\fallbackfont ⚣}}% U+26A3 DOUBLED MALE SIGN
+\newunicodechar{⚤}{{\fallbackfont ⚤}}% U+26A4 INTERLOCKED FEMALE AND MALE SIGN
+\newunicodechar{⚥}{{\fallbackfont ⚥}}% U+26A5 MALE AND FEMALE SIGN
+\newunicodechar{⚦}{{\fallbackfont ⚦}}% U+26A6 MALE WITH STROKE SIGN
+\newunicodechar{⚧}{{\fallbackfont ⚧}}% U+26A7 MALE WITH STROKE AND MALE AND FEMALE SIGN
+\newunicodechar{⚨}{{\fallbackfont ⚨}}% U+26A8 VERTICAL MALE WITH STROKE SIGN
+\newunicodechar{⚩}{{\fallbackfont ⚩}}% U+26A9 HORIZONTAL MALE WITH STROKE SIGN
+\newunicodechar{⚪}{{\fallbackfont ⚪}}% U+26AA MEDIUM WHITE CIRCLE
+\newunicodechar{⚫}{{\fallbackfont ⚫}}% U+26AB MEDIUM BLACK CIRCLE
+\newunicodechar{⚬}{{\fallbackfont ⚬}}% U+26AC MEDIUM SMALL WHITE CIRCLE
+\newunicodechar{⚯}{{\fallbackfont ⚯}}% U+26AF UNMARRIED PARTNERSHIP SYMBOL
+\newunicodechar{⚰}{{\fallbackfont ⚰}}% U+26B0 COFFIN
+\newunicodechar{⚱}{{\fallbackfont ⚱}}% U+26B1 FUNERAL URN
+\newunicodechar{⚲}{{\fallbackfont ⚲}}% U+26B2 NEUTER
+\newunicodechar{⚳}{{\fallbackfont ⚳}}% U+26B3 CERES
+\newunicodechar{⚴}{{\fallbackfont ⚴}}% U+26B4 PALLAS
+\newunicodechar{⚵}{{\fallbackfont ⚵}}% U+26B5 JUNO
+\newunicodechar{⚶}{{\fallbackfont ⚶}}% U+26B6 VESTA
+\newunicodechar{⚷}{{\fallbackfont ⚷}}% U+26B7 CHIRON
+\newunicodechar{⚸}{{\fallbackfont ⚸}}% U+26B8 BLACK MOON LILITH
+\newunicodechar{⛀}{{\fallbackfont ⛀}}% U+26C0 WHITE DRAUGHTS MAN
+\newunicodechar{⛁}{{\fallbackfont ⛁}}% U+26C1 WHITE DRAUGHTS KING
+\newunicodechar{⛂}{{\fallbackfont ⛂}}% U+26C2 BLACK DRAUGHTS MAN
+\newunicodechar{⛃}{{\fallbackfont ⛃}}% U+26C3 BLACK DRAUGHTS KING
+\newunicodechar{⛢}{{\fallbackfont ⛢}}% U+26E2 ASTRONOMICAL SYMBOL FOR URANUS
+
+% --- Dingbats  (check marks, crosses, arrowheads) ---
+\newunicodechar{✁}{{\fallbackfont ✁}}% U+2701 UPPER BLADE SCISSORS
+\newunicodechar{✂}{{\fallbackfont ✂}}% U+2702 BLACK SCISSORS
+\newunicodechar{✃}{{\fallbackfont ✃}}% U+2703 LOWER BLADE SCISSORS
+\newunicodechar{✄}{{\fallbackfont ✄}}% U+2704 WHITE SCISSORS
+\newunicodechar{✆}{{\fallbackfont ✆}}% U+2706 TELEPHONE LOCATION SIGN
+\newunicodechar{✇}{{\fallbackfont ✇}}% U+2707 TAPE DRIVE
+\newunicodechar{✈}{{\fallbackfont ✈}}% U+2708 AIRPLANE
+\newunicodechar{✉}{{\fallbackfont ✉}}% U+2709 ENVELOPE
+\newunicodechar{✌}{{\fallbackfont ✌}}% U+270C VICTORY HAND
+\newunicodechar{✍}{{\fallbackfont ✍}}% U+270D WRITING HAND
+\newunicodechar{✎}{{\fallbackfont ✎}}% U+270E LOWER RIGHT PENCIL
+\newunicodechar{✏}{{\fallbackfont ✏}}% U+270F PENCIL
+\newunicodechar{✐}{{\fallbackfont ✐}}% U+2710 UPPER RIGHT PENCIL
+\newunicodechar{✑}{{\fallbackfont ✑}}% U+2711 WHITE NIB
+\newunicodechar{✒}{{\fallbackfont ✒}}% U+2712 BLACK NIB
+\newunicodechar{✓}{{\fallbackfont ✓}}% U+2713 CHECK MARK
+\newunicodechar{✔}{{\fallbackfont ✔}}% U+2714 HEAVY CHECK MARK
+\newunicodechar{✕}{{\fallbackfont ✕}}% U+2715 MULTIPLICATION X
+\newunicodechar{✖}{{\fallbackfont ✖}}% U+2716 HEAVY MULTIPLICATION X
+\newunicodechar{✗}{{\fallbackfont ✗}}% U+2717 BALLOT X
+\newunicodechar{✘}{{\fallbackfont ✘}}% U+2718 HEAVY BALLOT X
+\newunicodechar{✙}{{\fallbackfont ✙}}% U+2719 OUTLINED GREEK CROSS
+\newunicodechar{✚}{{\fallbackfont ✚}}% U+271A HEAVY GREEK CROSS
+\newunicodechar{✛}{{\fallbackfont ✛}}% U+271B OPEN CENTRE CROSS
+\newunicodechar{✜}{{\fallbackfont ✜}}% U+271C HEAVY OPEN CENTRE CROSS
+\newunicodechar{✝}{{\fallbackfont ✝}}% U+271D LATIN CROSS
+\newunicodechar{✞}{{\fallbackfont ✞}}% U+271E SHADOWED WHITE LATIN CROSS
+\newunicodechar{✟}{{\fallbackfont ✟}}% U+271F OUTLINED LATIN CROSS
+\newunicodechar{✠}{{\fallbackfont ✠}}% U+2720 MALTESE CROSS
+\newunicodechar{✡}{{\fallbackfont ✡}}% U+2721 STAR OF DAVID
+\newunicodechar{✢}{{\fallbackfont ✢}}% U+2722 FOUR TEARDROP-SPOKED ASTERISK
+\newunicodechar{✣}{{\fallbackfont ✣}}% U+2723 FOUR BALLOON-SPOKED ASTERISK
+\newunicodechar{✤}{{\fallbackfont ✤}}% U+2724 HEAVY FOUR BALLOON-SPOKED ASTERISK
+\newunicodechar{✥}{{\fallbackfont ✥}}% U+2725 FOUR CLUB-SPOKED ASTERISK
+\newunicodechar{✦}{{\fallbackfont ✦}}% U+2726 BLACK FOUR POINTED STAR
+\newunicodechar{✧}{{\fallbackfont ✧}}% U+2727 WHITE FOUR POINTED STAR
+\newunicodechar{✩}{{\fallbackfont ✩}}% U+2729 STRESS OUTLINED WHITE STAR
+\newunicodechar{✪}{{\fallbackfont ✪}}% U+272A CIRCLED WHITE STAR
+\newunicodechar{✫}{{\fallbackfont ✫}}% U+272B OPEN CENTRE BLACK STAR
+\newunicodechar{✬}{{\fallbackfont ✬}}% U+272C BLACK CENTRE WHITE STAR
+\newunicodechar{✭}{{\fallbackfont ✭}}% U+272D OUTLINED BLACK STAR
+\newunicodechar{✮}{{\fallbackfont ✮}}% U+272E HEAVY OUTLINED BLACK STAR
+\newunicodechar{✯}{{\fallbackfont ✯}}% U+272F PINWHEEL STAR
+\newunicodechar{✰}{{\fallbackfont ✰}}% U+2730 SHADOWED WHITE STAR
+\newunicodechar{✱}{{\fallbackfont ✱}}% U+2731 HEAVY ASTERISK
+\newunicodechar{✲}{{\fallbackfont ✲}}% U+2732 OPEN CENTRE ASTERISK
+\newunicodechar{✳}{{\fallbackfont ✳}}% U+2733 EIGHT SPOKED ASTERISK
+\newunicodechar{✴}{{\fallbackfont ✴}}% U+2734 EIGHT POINTED BLACK STAR
+\newunicodechar{✵}{{\fallbackfont ✵}}% U+2735 EIGHT POINTED PINWHEEL STAR
+\newunicodechar{✶}{{\fallbackfont ✶}}% U+2736 SIX POINTED BLACK STAR
+\newunicodechar{✷}{{\fallbackfont ✷}}% U+2737 EIGHT POINTED RECTILINEAR BLACK STAR
+\newunicodechar{✸}{{\fallbackfont ✸}}% U+2738 HEAVY EIGHT POINTED RECTILINEAR BLACK STAR
+\newunicodechar{✹}{{\fallbackfont ✹}}% U+2739 TWELVE POINTED BLACK STAR
+\newunicodechar{✺}{{\fallbackfont ✺}}% U+273A SIXTEEN POINTED ASTERISK
+\newunicodechar{✻}{{\fallbackfont ✻}}% U+273B TEARDROP-SPOKED ASTERISK
+\newunicodechar{✼}{{\fallbackfont ✼}}% U+273C OPEN CENTRE TEARDROP-SPOKED ASTERISK
+\newunicodechar{✽}{{\fallbackfont ✽}}% U+273D HEAVY TEARDROP-SPOKED ASTERISK
+\newunicodechar{✾}{{\fallbackfont ✾}}% U+273E SIX PETALLED BLACK AND WHITE FLORETTE
+\newunicodechar{✿}{{\fallbackfont ✿}}% U+273F BLACK FLORETTE
+\newunicodechar{❀}{{\fallbackfont ❀}}% U+2740 WHITE FLORETTE
+\newunicodechar{❁}{{\fallbackfont ❁}}% U+2741 EIGHT PETALLED OUTLINED BLACK FLORETTE
+\newunicodechar{❂}{{\fallbackfont ❂}}% U+2742 CIRCLED OPEN CENTRE EIGHT POINTED STAR
+\newunicodechar{❃}{{\fallbackfont ❃}}% U+2743 HEAVY TEARDROP-SPOKED PINWHEEL ASTERISK
+\newunicodechar{❄}{{\fallbackfont ❄}}% U+2744 SNOWFLAKE
+\newunicodechar{❅}{{\fallbackfont ❅}}% U+2745 TIGHT TRIFOLIATE SNOWFLAKE
+\newunicodechar{❆}{{\fallbackfont ❆}}% U+2746 HEAVY CHEVRON SNOWFLAKE
+\newunicodechar{❇}{{\fallbackfont ❇}}% U+2747 SPARKLE
+\newunicodechar{❈}{{\fallbackfont ❈}}% U+2748 HEAVY SPARKLE
+\newunicodechar{❉}{{\fallbackfont ❉}}% U+2749 BALLOON-SPOKED ASTERISK
+\newunicodechar{❊}{{\fallbackfont ❊}}% U+274A EIGHT TEARDROP-SPOKED PROPELLER ASTERISK
+\newunicodechar{❋}{{\fallbackfont ❋}}% U+274B HEAVY EIGHT TEARDROP-SPOKED PROPELLER ASTERISK
+\newunicodechar{❍}{{\fallbackfont ❍}}% U+274D SHADOWED WHITE CIRCLE
+\newunicodechar{❏}{{\fallbackfont ❏}}% U+274F LOWER RIGHT DROP-SHADOWED WHITE SQUARE
+\newunicodechar{❐}{{\fallbackfont ❐}}% U+2750 UPPER RIGHT DROP-SHADOWED WHITE SQUARE
+\newunicodechar{❑}{{\fallbackfont ❑}}% U+2751 LOWER RIGHT SHADOWED WHITE SQUARE
+\newunicodechar{❒}{{\fallbackfont ❒}}% U+2752 UPPER RIGHT SHADOWED WHITE SQUARE
+\newunicodechar{❖}{{\fallbackfont ❖}}% U+2756 BLACK DIAMOND MINUS WHITE X
+\newunicodechar{❘}{{\fallbackfont ❘}}% U+2758 LIGHT VERTICAL BAR
+\newunicodechar{❙}{{\fallbackfont ❙}}% U+2759 MEDIUM VERTICAL BAR
+\newunicodechar{❚}{{\fallbackfont ❚}}% U+275A HEAVY VERTICAL BAR
+\newunicodechar{❛}{{\fallbackfont ❛}}% U+275B HEAVY SINGLE TURNED COMMA QUOTATION MARK ORNAMENT
+\newunicodechar{❜}{{\fallbackfont ❜}}% U+275C HEAVY SINGLE COMMA QUOTATION MARK ORNAMENT
+\newunicodechar{❝}{{\fallbackfont ❝}}% U+275D HEAVY DOUBLE TURNED COMMA QUOTATION MARK ORNAMENT
+\newunicodechar{❞}{{\fallbackfont ❞}}% U+275E HEAVY DOUBLE COMMA QUOTATION MARK ORNAMENT
+\newunicodechar{❡}{{\fallbackfont ❡}}% U+2761 CURVED STEM PARAGRAPH SIGN ORNAMENT
+\newunicodechar{❢}{{\fallbackfont ❢}}% U+2762 HEAVY EXCLAMATION MARK ORNAMENT
+\newunicodechar{❣}{{\fallbackfont ❣}}% U+2763 HEAVY HEART EXCLAMATION MARK ORNAMENT
+\newunicodechar{❤}{{\fallbackfont ❤}}% U+2764 HEAVY BLACK HEART
+\newunicodechar{❥}{{\fallbackfont ❥}}% U+2765 ROTATED HEAVY BLACK HEART BULLET
+\newunicodechar{❦}{{\fallbackfont ❦}}% U+2766 FLORAL HEART
+\newunicodechar{❧}{{\fallbackfont ❧}}% U+2767 ROTATED FLORAL HEART BULLET
+\newunicodechar{❨}{{\fallbackfont ❨}}% U+2768 MEDIUM LEFT PARENTHESIS ORNAMENT
+\newunicodechar{❩}{{\fallbackfont ❩}}% U+2769 MEDIUM RIGHT PARENTHESIS ORNAMENT
+\newunicodechar{❪}{{\fallbackfont ❪}}% U+276A MEDIUM FLATTENED LEFT PARENTHESIS ORNAMENT
+\newunicodechar{❫}{{\fallbackfont ❫}}% U+276B MEDIUM FLATTENED RIGHT PARENTHESIS ORNAMENT
+\newunicodechar{❬}{{\fallbackfont ❬}}% U+276C MEDIUM LEFT-POINTING ANGLE BRACKET ORNAMENT
+\newunicodechar{❭}{{\fallbackfont ❭}}% U+276D MEDIUM RIGHT-POINTING ANGLE BRACKET ORNAMENT
+\newunicodechar{❮}{{\fallbackfont ❮}}% U+276E HEAVY LEFT-POINTING ANGLE QUOTATION MARK ORNAMENT
+\newunicodechar{❯}{{\fallbackfont ❯}}% U+276F HEAVY RIGHT-POINTING ANGLE QUOTATION MARK ORNAMENT
+\newunicodechar{❰}{{\fallbackfont ❰}}% U+2770 HEAVY LEFT-POINTING ANGLE BRACKET ORNAMENT
+\newunicodechar{❱}{{\fallbackfont ❱}}% U+2771 HEAVY RIGHT-POINTING ANGLE BRACKET ORNAMENT
+\newunicodechar{❲}{{\fallbackfont ❲}}% U+2772 LIGHT LEFT TORTOISE SHELL BRACKET ORNAMENT
+\newunicodechar{❳}{{\fallbackfont ❳}}% U+2773 LIGHT RIGHT TORTOISE SHELL BRACKET ORNAMENT
+\newunicodechar{❴}{{\fallbackfont ❴}}% U+2774 MEDIUM LEFT CURLY BRACKET ORNAMENT
+\newunicodechar{❵}{{\fallbackfont ❵}}% U+2775 MEDIUM RIGHT CURLY BRACKET ORNAMENT
+\newunicodechar{❶}{{\fallbackfont ❶}}% U+2776 DINGBAT NEGATIVE CIRCLED DIGIT ONE
+\newunicodechar{❷}{{\fallbackfont ❷}}% U+2777 DINGBAT NEGATIVE CIRCLED DIGIT TWO
+\newunicodechar{❸}{{\fallbackfont ❸}}% U+2778 DINGBAT NEGATIVE CIRCLED DIGIT THREE
+\newunicodechar{❹}{{\fallbackfont ❹}}% U+2779 DINGBAT NEGATIVE CIRCLED DIGIT FOUR
+\newunicodechar{❺}{{\fallbackfont ❺}}% U+277A DINGBAT NEGATIVE CIRCLED DIGIT FIVE
+\newunicodechar{❻}{{\fallbackfont ❻}}% U+277B DINGBAT NEGATIVE CIRCLED DIGIT SIX
+\newunicodechar{❼}{{\fallbackfont ❼}}% U+277C DINGBAT NEGATIVE CIRCLED DIGIT SEVEN
+\newunicodechar{❽}{{\fallbackfont ❽}}% U+277D DINGBAT NEGATIVE CIRCLED DIGIT EIGHT
+\newunicodechar{❾}{{\fallbackfont ❾}}% U+277E DINGBAT NEGATIVE CIRCLED DIGIT NINE
+\newunicodechar{❿}{{\fallbackfont ❿}}% U+277F DINGBAT NEGATIVE CIRCLED NUMBER TEN
+\newunicodechar{➀}{{\fallbackfont ➀}}% U+2780 DINGBAT CIRCLED SANS-SERIF DIGIT ONE
+\newunicodechar{➁}{{\fallbackfont ➁}}% U+2781 DINGBAT CIRCLED SANS-SERIF DIGIT TWO
+\newunicodechar{➂}{{\fallbackfont ➂}}% U+2782 DINGBAT CIRCLED SANS-SERIF DIGIT THREE
+\newunicodechar{➃}{{\fallbackfont ➃}}% U+2783 DINGBAT CIRCLED SANS-SERIF DIGIT FOUR
+\newunicodechar{➄}{{\fallbackfont ➄}}% U+2784 DINGBAT CIRCLED SANS-SERIF DIGIT FIVE
+\newunicodechar{➅}{{\fallbackfont ➅}}% U+2785 DINGBAT CIRCLED SANS-SERIF DIGIT SIX
+\newunicodechar{➆}{{\fallbackfont ➆}}% U+2786 DINGBAT CIRCLED SANS-SERIF DIGIT SEVEN
+\newunicodechar{➇}{{\fallbackfont ➇}}% U+2787 DINGBAT CIRCLED SANS-SERIF DIGIT EIGHT
+\newunicodechar{➈}{{\fallbackfont ➈}}% U+2788 DINGBAT CIRCLED SANS-SERIF DIGIT NINE
+\newunicodechar{➉}{{\fallbackfont ➉}}% U+2789 DINGBAT CIRCLED SANS-SERIF NUMBER TEN
+\newunicodechar{➊}{{\fallbackfont ➊}}% U+278A DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT ONE
+\newunicodechar{➋}{{\fallbackfont ➋}}% U+278B DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT TWO
+\newunicodechar{➌}{{\fallbackfont ➌}}% U+278C DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT THREE
+\newunicodechar{➍}{{\fallbackfont ➍}}% U+278D DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT FOUR
+\newunicodechar{➎}{{\fallbackfont ➎}}% U+278E DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT FIVE
+\newunicodechar{➏}{{\fallbackfont ➏}}% U+278F DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT SIX
+\newunicodechar{➐}{{\fallbackfont ➐}}% U+2790 DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT SEVEN
+\newunicodechar{➑}{{\fallbackfont ➑}}% U+2791 DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT EIGHT
+\newunicodechar{➒}{{\fallbackfont ➒}}% U+2792 DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT NINE
+\newunicodechar{➓}{{\fallbackfont ➓}}% U+2793 DINGBAT NEGATIVE CIRCLED SANS-SERIF NUMBER TEN
+\newunicodechar{➔}{{\fallbackfont ➔}}% U+2794 HEAVY WIDE-HEADED RIGHTWARDS ARROW
+\newunicodechar{➘}{{\fallbackfont ➘}}% U+2798 HEAVY SOUTH EAST ARROW
+\newunicodechar{➙}{{\fallbackfont ➙}}% U+2799 HEAVY RIGHTWARDS ARROW
+\newunicodechar{➚}{{\fallbackfont ➚}}% U+279A HEAVY NORTH EAST ARROW
+\newunicodechar{➛}{{\fallbackfont ➛}}% U+279B DRAFTING POINT RIGHTWARDS ARROW
+\newunicodechar{➜}{{\fallbackfont ➜}}% U+279C HEAVY ROUND-TIPPED RIGHTWARDS ARROW
+\newunicodechar{➝}{{\fallbackfont ➝}}% U+279D TRIANGLE-HEADED RIGHTWARDS ARROW
+\newunicodechar{➞}{{\fallbackfont ➞}}% U+279E HEAVY TRIANGLE-HEADED RIGHTWARDS ARROW
+\newunicodechar{➟}{{\fallbackfont ➟}}% U+279F DASHED TRIANGLE-HEADED RIGHTWARDS ARROW
+\newunicodechar{➠}{{\fallbackfont ➠}}% U+27A0 HEAVY DASHED TRIANGLE-HEADED RIGHTWARDS ARROW
+\newunicodechar{➡}{{\fallbackfont ➡}}% U+27A1 BLACK RIGHTWARDS ARROW
+\newunicodechar{➢}{{\fallbackfont ➢}}% U+27A2 THREE-D TOP-LIGHTED RIGHTWARDS ARROWHEAD
+\newunicodechar{➣}{{\fallbackfont ➣}}% U+27A3 THREE-D BOTTOM-LIGHTED RIGHTWARDS ARROWHEAD
+\newunicodechar{➤}{{\fallbackfont ➤}}% U+27A4 BLACK RIGHTWARDS ARROWHEAD
+\newunicodechar{➥}{{\fallbackfont ➥}}% U+27A5 HEAVY BLACK CURVED DOWNWARDS AND RIGHTWARDS ARROW
+\newunicodechar{➦}{{\fallbackfont ➦}}% U+27A6 HEAVY BLACK CURVED UPWARDS AND RIGHTWARDS ARROW
+\newunicodechar{➧}{{\fallbackfont ➧}}% U+27A7 SQUAT BLACK RIGHTWARDS ARROW
+\newunicodechar{➨}{{\fallbackfont ➨}}% U+27A8 HEAVY CONCAVE-POINTED BLACK RIGHTWARDS ARROW
+\newunicodechar{➩}{{\fallbackfont ➩}}% U+27A9 RIGHT-SHADED WHITE RIGHTWARDS ARROW
+\newunicodechar{➪}{{\fallbackfont ➪}}% U+27AA LEFT-SHADED WHITE RIGHTWARDS ARROW
+\newunicodechar{➫}{{\fallbackfont ➫}}% U+27AB BACK-TILTED SHADOWED WHITE RIGHTWARDS ARROW
+\newunicodechar{➬}{{\fallbackfont ➬}}% U+27AC FRONT-TILTED SHADOWED WHITE RIGHTWARDS ARROW
+\newunicodechar{➭}{{\fallbackfont ➭}}% U+27AD HEAVY LOWER RIGHT-SHADOWED WHITE RIGHTWARDS ARROW
+\newunicodechar{➮}{{\fallbackfont ➮}}% U+27AE HEAVY UPPER RIGHT-SHADOWED WHITE RIGHTWARDS ARROW
+\newunicodechar{➯}{{\fallbackfont ➯}}% U+27AF NOTCHED LOWER RIGHT-SHADOWED WHITE RIGHTWARDS ARROW
+\newunicodechar{➱}{{\fallbackfont ➱}}% U+27B1 NOTCHED UPPER RIGHT-SHADOWED WHITE RIGHTWARDS ARROW
+\newunicodechar{➲}{{\fallbackfont ➲}}% U+27B2 CIRCLED HEAVY WHITE RIGHTWARDS ARROW
+\newunicodechar{➳}{{\fallbackfont ➳}}% U+27B3 WHITE-FEATHERED RIGHTWARDS ARROW
+\newunicodechar{➴}{{\fallbackfont ➴}}% U+27B4 BLACK-FEATHERED SOUTH EAST ARROW
+\newunicodechar{➵}{{\fallbackfont ➵}}% U+27B5 BLACK-FEATHERED RIGHTWARDS ARROW
+\newunicodechar{➶}{{\fallbackfont ➶}}% U+27B6 BLACK-FEATHERED NORTH EAST ARROW
+\newunicodechar{➷}{{\fallbackfont ➷}}% U+27B7 HEAVY BLACK-FEATHERED SOUTH EAST ARROW
+\newunicodechar{➸}{{\fallbackfont ➸}}% U+27B8 HEAVY BLACK-FEATHERED RIGHTWARDS ARROW
+\newunicodechar{➹}{{\fallbackfont ➹}}% U+27B9 HEAVY BLACK-FEATHERED NORTH EAST ARROW
+\newunicodechar{➺}{{\fallbackfont ➺}}% U+27BA TEARDROP-BARBED RIGHTWARDS ARROW
+\newunicodechar{➻}{{\fallbackfont ➻}}% U+27BB HEAVY TEARDROP-SHANKED RIGHTWARDS ARROW
+\newunicodechar{➼}{{\fallbackfont ➼}}% U+27BC WEDGE-TAILED RIGHTWARDS ARROW
+\newunicodechar{➽}{{\fallbackfont ➽}}% U+27BD HEAVY WEDGE-TAILED RIGHTWARDS ARROW
+\newunicodechar{➾}{{\fallbackfont ➾}}% U+27BE OPEN-OUTLINED RIGHTWARDS ARROW
+
+% --- Variation Selector-16 (emoji presentation): drop it ---
+\newunicodechar{️}{}% U+FE0F
+
+
+% ==========================================================
+% ADDED: Greek letters, primes, and Hindi (Devanagari) text.
+% These were the 'Missing character' errors: Latin Modern has none
+% of them. Greek and primes go to DejaVu Sans like the rest above.
+% ==========================================================
+
+% --- Greek letters (alpha, beta, pi, Delta ...) and primes (2' 3") ---
+% Switched as runs to DejaVu Sans (defining them one by one, like the
+% symbols above, clashes with pandoc's microtype for capital Greek).
+\newXeTeXintercharclass\greekclass
+\count255="0370
+\loop\XeTeXcharclass\count255=\greekclass\ifnum\count255<"03FF\advance\count255 by 1\repeat
+\XeTeXcharclass"2032=\greekclass \XeTeXcharclass"2033=\greekclass \XeTeXcharclass"2034=\greekclass
+\XeTeXinterchartoks 0 \greekclass = {\begingroup\fallbackfont}
+\XeTeXinterchartoks 4095 \greekclass = {\begingroup\fallbackfont}
+\XeTeXinterchartoks \greekclass 0 = {\endgroup}
+\XeTeXinterchartoks \greekclass 4095 = {\endgroup}
+\AtBeginDocument{\XeTeXinterchartokenstate=1}
+
+% --- Emoji: no font here has them; drop them instead of printing a box ---
+\newunicodechar{😀}{}% U+1F600 (common smileys are dropped)
+
+% --- Hindi / Devanagari ---
+% Hindi can't be routed letter-by-letter (the vowel signs and conjuncts
+% must be shaped together), so a whole run of Devanagari text switches
+% to the first Devanagari font found on this computer. If none is
+% installed the text still prints nothing -- install one, e.g.
+%   Ubuntu/Debian:  sudo apt install fonts-noto-core   (or fonts-lohit-deva)
+%   macOS:          already has 'Kohinoor Devanagari' / 'Devanagari Sangam MN'
+%   Windows:        already has 'Nirmala UI' / 'Mangal'
+\def\devafontname{}
+\def\trydevafont#1{\ifx\devafontname\empty\IfFontExistsTF{#1}{\def\devafontname{#1}}{}\fi}
+\trydevafont{Noto Sans Devanagari}\trydevafont{Noto Serif Devanagari}
+\trydevafont{Lohit Devanagari}\trydevafont{Kohinoor Devanagari}
+\trydevafont{Devanagari Sangam MN}\trydevafont{ITF Devanagari}
+\trydevafont{Nirmala UI}\trydevafont{Mangal}\trydevafont{Gargi}
+\ifx\devafontname\empty\else
+  \newfontfamily\devafont{\devafontname}[Script=Devanagari]
+  \AtBeginDocument{\XeTeXinterchartokenstate=1}
+  \newXeTeXintercharclass\devaclass
+  \count255="0900
+  \loop\XeTeXcharclass\count255=\devaclass\ifnum\count255<"097F\advance\count255 by 1\repeat
+  \XeTeXcharclass"200C=\devaclass \XeTeXcharclass"200D=\devaclass
+  \XeTeXinterchartoks 0 \devaclass = {\begingroup\devafont}
+  \XeTeXinterchartoks 4095 \devaclass = {\begingroup\devafont}
+  \XeTeXinterchartoks \devaclass 0 = {\endgroup}
+  \XeTeXinterchartoks \devaclass 4095 = {\endgroup}
+\fi
+
+
+% --- Word / PowerPoint "Symbol"/"Wingdings" bullets stored in the Private
+%     Use Area (very common in coaching PDFs): print the real symbol ---
+\newunicodechar{}{\textbullet}% U+F0B7 bullet
+\newunicodechar{}{{\fallbackfont ▪}}% U+F0A7 square bullet
+\newunicodechar{}{{\fallbackfont ➢}}% U+F0D8 arrowhead bullet
+\newunicodechar{}{{\fallbackfont ✓}}% U+F0FC check mark
+\newunicodechar{}{{\fallbackfont ❖}}% U+F076 diamond bullet
+\newunicodechar{}{{\fallbackfont □}}% U+F0A8 box bullet
+\newunicodechar{}{{\fallbackfont ➔}}% U+F0E8 arrow bullet
+\newunicodechar{}{{\fallbackfont ■}}% U+F06E black square
+\newunicodechar{}{{\fallbackfont ◆}}% U+F075 black diamond
+\newunicodechar{}{{\fallbackfont ●}}% U+F06C black circle
+
+% Normal word spacing after every period ("Dr. B.R.", "Art. 21")
+\AtBeginDocument{\frenchspacing}

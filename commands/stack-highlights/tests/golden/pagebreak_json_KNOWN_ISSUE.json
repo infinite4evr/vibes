@@ -1,0 +1,113 @@
+{
+  "highlights": 4,
+  "entries": [
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "CHAPTER 2"
+        },
+        {
+          "level": 2,
+          "text": "The Treaty"
+        }
+      ],
+      "page": 1,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The treaty that ended the war was ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "signed in 1782,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " and it promised that the two sides would stay at peace for ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "twenty years.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " The treaty also returned the captured forts to their old owners, which was its ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "most important term.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "signedin1782,"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "twentyyears."
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "mostimportantterm."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "CHAPTER 2"
+        },
+        {
+          "level": 2,
+          "text": "The Treaty"
+        }
+      ],
+      "page": 3,
+      "page_label": "14",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Rani Laxmibai",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " led the revolt at Jhansi and became its best-known leader.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "RaniLaxmibai"
+        }
+      ]
+    }
+  ]
+}

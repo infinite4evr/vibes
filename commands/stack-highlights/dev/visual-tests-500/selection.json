@@ -1,0 +1,8672 @@
+{
+ "seed": 20260923,
+ "total_pages": 500,
+ "rule": "Pick the 500 visual-test pages from Test-Merged-All.pdf (reproducible).\n\nOnly pages carrying at least one highlight/underline are eligible (a page with\nno marks has nothing to test). Pages are allocated to the 14 sources that have\nmarks in proportion to (marked pages)^0.8, with a floor of min(12, marked pages)\nso small sources are still represented. Inside a source the marked pages are\nput in page order, cut into k equal-size bins, and one page is drawn at random\nfrom each bin: random, but spread over the whole book.",
+ "allocation": {
+  "modern_india": 27,
+  "constitution": 34,
+  "acc_chowdhry": 21,
+  "econ_ramesh": 38,
+  "polity_laxmi": 108,
+  "act_empcomp": 12,
+  "acc_jain_panda": 12,
+  "act_tu": 12,
+  "acc_tmh_cpt": 10,
+  "econ_vivek": 46,
+  "labour_acts": 90,
+  "icsi_pp_llp": 47,
+  "ir_pearson": 12,
+  "ir_ghosh": 31
+ },
+ "eligible_pages": {
+  "modern_india": 121,
+  "constitution": 150,
+  "acc_chowdhry": 95,
+  "econ_ramesh": 173,
+  "polity_laxmi": 637,
+  "act_empcomp": 52,
+  "acc_jain_panda": 51,
+  "act_tu": 22,
+  "acc_tmh_cpt": 10,
+  "econ_vivek": 216,
+  "labour_acts": 503,
+  "icsi_pp_llp": 225,
+  "ir_pearson": 49,
+  "ir_ghosh": 134
+ },
+ "pages": [
+  {
+   "page": 56,
+   "source": "modern_india",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P001"
+  },
+  {
+   "page": 59,
+   "source": "modern_india",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P002"
+  },
+  {
+   "page": 64,
+   "source": "modern_india",
+   "n_marks": 13,
+   "kinds": {
+    "Highlight": 13
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P003"
+  },
+  {
+   "page": 70,
+   "source": "modern_india",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P004"
+  },
+  {
+   "page": 73,
+   "source": "modern_india",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P005"
+  },
+  {
+   "page": 82,
+   "source": "modern_india",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P006"
+  },
+  {
+   "page": 91,
+   "source": "modern_india",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P007"
+  },
+  {
+   "page": 95,
+   "source": "modern_india",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P008"
+  },
+  {
+   "page": 99,
+   "source": "modern_india",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P009"
+  },
+  {
+   "page": 105,
+   "source": "modern_india",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P010"
+  },
+  {
+   "page": 122,
+   "source": "modern_india",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P011"
+  },
+  {
+   "page": 124,
+   "source": "modern_india",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P012"
+  },
+  {
+   "page": 131,
+   "source": "modern_india",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P013"
+  },
+  {
+   "page": 133,
+   "source": "modern_india",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P014"
+  },
+  {
+   "page": 140,
+   "source": "modern_india",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P015"
+  },
+  {
+   "page": 144,
+   "source": "modern_india",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P016"
+  },
+  {
+   "page": 151,
+   "source": "modern_india",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P017"
+  },
+  {
+   "page": 158,
+   "source": "modern_india",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P018"
+  },
+  {
+   "page": 172,
+   "source": "modern_india",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P019"
+  },
+  {
+   "page": 185,
+   "source": "modern_india",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P020"
+  },
+  {
+   "page": 211,
+   "source": "modern_india",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P021"
+  },
+  {
+   "page": 214,
+   "source": "modern_india",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P022"
+  },
+  {
+   "page": 218,
+   "source": "modern_india",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P023"
+  },
+  {
+   "page": 222,
+   "source": "modern_india",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P024"
+  },
+  {
+   "page": 230,
+   "source": "modern_india",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P025"
+  },
+  {
+   "page": 237,
+   "source": "modern_india",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P026"
+  },
+  {
+   "page": 243,
+   "source": "modern_india",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 442,
+   "h": 614,
+   "act": null,
+   "id": "P027"
+  },
+  {
+   "page": 926,
+   "source": "constitution",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P028"
+  },
+  {
+   "page": 931,
+   "source": "constitution",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P029"
+  },
+  {
+   "page": 939,
+   "source": "constitution",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P030"
+  },
+  {
+   "page": 941,
+   "source": "constitution",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P031"
+  },
+  {
+   "page": 946,
+   "source": "constitution",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P032"
+  },
+  {
+   "page": 950,
+   "source": "constitution",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {
+    "FreeText": 1
+   },
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P033"
+  },
+  {
+   "page": 956,
+   "source": "constitution",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P034"
+  },
+  {
+   "page": 963,
+   "source": "constitution",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P035"
+  },
+  {
+   "page": 967,
+   "source": "constitution",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P036"
+  },
+  {
+   "page": 970,
+   "source": "constitution",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P037"
+  },
+  {
+   "page": 977,
+   "source": "constitution",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P038"
+  },
+  {
+   "page": 980,
+   "source": "constitution",
+   "n_marks": 13,
+   "kinds": {
+    "Highlight": 13
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P039"
+  },
+  {
+   "page": 984,
+   "source": "constitution",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P040"
+  },
+  {
+   "page": 991,
+   "source": "constitution",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P041"
+  },
+  {
+   "page": 996,
+   "source": "constitution",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P042"
+  },
+  {
+   "page": 1000,
+   "source": "constitution",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P043"
+  },
+  {
+   "page": 1005,
+   "source": "constitution",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P044"
+  },
+  {
+   "page": 1007,
+   "source": "constitution",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P045"
+  },
+  {
+   "page": 1019,
+   "source": "constitution",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P046"
+  },
+  {
+   "page": 1022,
+   "source": "constitution",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P047"
+  },
+  {
+   "page": 1048,
+   "source": "constitution",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P048"
+  },
+  {
+   "page": 1078,
+   "source": "constitution",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P049"
+  },
+  {
+   "page": 1096,
+   "source": "constitution",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P050"
+  },
+  {
+   "page": 1099,
+   "source": "constitution",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P051"
+  },
+  {
+   "page": 1121,
+   "source": "constitution",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P052"
+  },
+  {
+   "page": 1130,
+   "source": "constitution",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P053"
+  },
+  {
+   "page": 1137,
+   "source": "constitution",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P054"
+  },
+  {
+   "page": 1147,
+   "source": "constitution",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P055"
+  },
+  {
+   "page": 1162,
+   "source": "constitution",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P056"
+  },
+  {
+   "page": 1167,
+   "source": "constitution",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P057"
+  },
+  {
+   "page": 1231,
+   "source": "constitution",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P058"
+  },
+  {
+   "page": 1265,
+   "source": "constitution",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P059"
+  },
+  {
+   "page": 1272,
+   "source": "constitution",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P060"
+  },
+  {
+   "page": 1274,
+   "source": "constitution",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P061"
+  },
+  {
+   "page": 1342,
+   "source": "acc_chowdhry",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[0.9, 0.43, 0.93]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P062"
+  },
+  {
+   "page": 1357,
+   "source": "acc_chowdhry",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[0.9, 0.43, 0.93]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P063"
+  },
+  {
+   "page": 1360,
+   "source": "acc_chowdhry",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[0.9, 0.43, 0.93]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P064"
+  },
+  {
+   "page": 1366,
+   "source": "acc_chowdhry",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[0.9, 0.43, 0.93]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P065"
+  },
+  {
+   "page": 1370,
+   "source": "acc_chowdhry",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P066"
+  },
+  {
+   "page": 1374,
+   "source": "acc_chowdhry",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P067"
+  },
+  {
+   "page": 1384,
+   "source": "acc_chowdhry",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P068"
+  },
+  {
+   "page": 1385,
+   "source": "acc_chowdhry",
+   "n_marks": 15,
+   "kinds": {
+    "Highlight": 15
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 5,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P069"
+  },
+  {
+   "page": 1394,
+   "source": "acc_chowdhry",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P070"
+  },
+  {
+   "page": 1409,
+   "source": "acc_chowdhry",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P071"
+  },
+  {
+   "page": 1420,
+   "source": "acc_chowdhry",
+   "n_marks": 12,
+   "kinds": {
+    "Highlight": 12
+   },
+   "colors": [
+    "[0.18, 0.66, 0.9]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 7,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P072"
+  },
+  {
+   "page": 1421,
+   "source": "acc_chowdhry",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[0.18, 0.66, 0.9]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P073"
+  },
+  {
+   "page": 1426,
+   "source": "acc_chowdhry",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P074"
+  },
+  {
+   "page": 1436,
+   "source": "acc_chowdhry",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P075"
+  },
+  {
+   "page": 1437,
+   "source": "acc_chowdhry",
+   "n_marks": 12,
+   "kinds": {
+    "Highlight": 12
+   },
+   "colors": [
+    "[0.64, 0.54, 0.9]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 7,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P076"
+  },
+  {
+   "page": 1449,
+   "source": "acc_chowdhry",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P077"
+  },
+  {
+   "page": 1450,
+   "source": "acc_chowdhry",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P078"
+  },
+  {
+   "page": 1462,
+   "source": "acc_chowdhry",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 5,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P079"
+  },
+  {
+   "page": 1513,
+   "source": "acc_chowdhry",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P080"
+  },
+  {
+   "page": 1578,
+   "source": "acc_chowdhry",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P081"
+  },
+  {
+   "page": 1600,
+   "source": "acc_chowdhry",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 523,
+   "h": 685,
+   "act": null,
+   "id": "P082"
+  },
+  {
+   "page": 1773,
+   "source": "econ_ramesh",
+   "n_marks": 21,
+   "kinds": {
+    "Highlight": 21
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P083"
+  },
+  {
+   "page": 1777,
+   "source": "econ_ramesh",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P084"
+  },
+  {
+   "page": 1781,
+   "source": "econ_ramesh",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P085"
+  },
+  {
+   "page": 1786,
+   "source": "econ_ramesh",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P086"
+  },
+  {
+   "page": 1791,
+   "source": "econ_ramesh",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P087"
+  },
+  {
+   "page": 1797,
+   "source": "econ_ramesh",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P088"
+  },
+  {
+   "page": 1804,
+   "source": "econ_ramesh",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P089"
+  },
+  {
+   "page": 1812,
+   "source": "econ_ramesh",
+   "n_marks": 2,
+   "kinds": {
+    "Underline": 2
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P090"
+  },
+  {
+   "page": 1816,
+   "source": "econ_ramesh",
+   "n_marks": 6,
+   "kinds": {
+    "Underline": 6
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 4,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P091"
+  },
+  {
+   "page": 1819,
+   "source": "econ_ramesh",
+   "n_marks": 4,
+   "kinds": {
+    "Underline": 4
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 4,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P092"
+  },
+  {
+   "page": 1828,
+   "source": "econ_ramesh",
+   "n_marks": 5,
+   "kinds": {
+    "Underline": 5
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P093"
+  },
+  {
+   "page": 1833,
+   "source": "econ_ramesh",
+   "n_marks": 4,
+   "kinds": {
+    "Underline": 4
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P094"
+  },
+  {
+   "page": 1842,
+   "source": "econ_ramesh",
+   "n_marks": 3,
+   "kinds": {
+    "Underline": 3
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P095"
+  },
+  {
+   "page": 1843,
+   "source": "econ_ramesh",
+   "n_marks": 4,
+   "kinds": {
+    "Underline": 4
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P096"
+  },
+  {
+   "page": 1849,
+   "source": "econ_ramesh",
+   "n_marks": 3,
+   "kinds": {
+    "Underline": 3
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P097"
+  },
+  {
+   "page": 1853,
+   "source": "econ_ramesh",
+   "n_marks": 1,
+   "kinds": {
+    "Underline": 1
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P098"
+  },
+  {
+   "page": 1857,
+   "source": "econ_ramesh",
+   "n_marks": 3,
+   "kinds": {
+    "Underline": 3
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P099"
+  },
+  {
+   "page": 1911,
+   "source": "econ_ramesh",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P100"
+  },
+  {
+   "page": 1919,
+   "source": "econ_ramesh",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P101"
+  },
+  {
+   "page": 1926,
+   "source": "econ_ramesh",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P102"
+  },
+  {
+   "page": 2067,
+   "source": "econ_ramesh",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {
+    "FreeText": 1
+   },
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P103"
+  },
+  {
+   "page": 2071,
+   "source": "econ_ramesh",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P104"
+  },
+  {
+   "page": 2079,
+   "source": "econ_ramesh",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 4,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P105"
+  },
+  {
+   "page": 2080,
+   "source": "econ_ramesh",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P106"
+  },
+  {
+   "page": 2085,
+   "source": "econ_ramesh",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P107"
+  },
+  {
+   "page": 2091,
+   "source": "econ_ramesh",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P108"
+  },
+  {
+   "page": 2096,
+   "source": "econ_ramesh",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P109"
+  },
+  {
+   "page": 2104,
+   "source": "econ_ramesh",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P110"
+  },
+  {
+   "page": 2105,
+   "source": "econ_ramesh",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P111"
+  },
+  {
+   "page": 2113,
+   "source": "econ_ramesh",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P112"
+  },
+  {
+   "page": 2119,
+   "source": "econ_ramesh",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P113"
+  },
+  {
+   "page": 2120,
+   "source": "econ_ramesh",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P114"
+  },
+  {
+   "page": 2131,
+   "source": "econ_ramesh",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P115"
+  },
+  {
+   "page": 2136,
+   "source": "econ_ramesh",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P116"
+  },
+  {
+   "page": 2142,
+   "source": "econ_ramesh",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P117"
+  },
+  {
+   "page": 2146,
+   "source": "econ_ramesh",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P118"
+  },
+  {
+   "page": 2149,
+   "source": "econ_ramesh",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P119"
+  },
+  {
+   "page": 2159,
+   "source": "econ_ramesh",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P120"
+  },
+  {
+   "page": 2544,
+   "source": "polity_laxmi",
+   "n_marks": 24,
+   "kinds": {
+    "Highlight": 20,
+    "Underline": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P121"
+  },
+  {
+   "page": 2547,
+   "source": "polity_laxmi",
+   "n_marks": 23,
+   "kinds": {
+    "Highlight": 19,
+    "Underline": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {
+    "FreeText": 1,
+    "Ink": 1
+   },
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P122"
+  },
+  {
+   "page": 2558,
+   "source": "polity_laxmi",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 7,
+    "Underline": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P123"
+  },
+  {
+   "page": 2571,
+   "source": "polity_laxmi",
+   "n_marks": 9,
+   "kinds": {
+    "Underline": 4,
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P124"
+  },
+  {
+   "page": 2575,
+   "source": "polity_laxmi",
+   "n_marks": 24,
+   "kinds": {
+    "Highlight": 19,
+    "Underline": 5
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P125"
+  },
+  {
+   "page": 2585,
+   "source": "polity_laxmi",
+   "n_marks": 8,
+   "kinds": {
+    "Underline": 4,
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P126"
+  },
+  {
+   "page": 2589,
+   "source": "polity_laxmi",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 8,
+    "Underline": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P127"
+  },
+  {
+   "page": 2596,
+   "source": "polity_laxmi",
+   "n_marks": 7,
+   "kinds": {
+    "Underline": 3,
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P128"
+  },
+  {
+   "page": 2603,
+   "source": "polity_laxmi",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P129"
+  },
+  {
+   "page": 2610,
+   "source": "polity_laxmi",
+   "n_marks": 16,
+   "kinds": {
+    "Highlight": 14,
+    "Underline": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {
+    "FreeText": 1
+   },
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P130"
+  },
+  {
+   "page": 2612,
+   "source": "polity_laxmi",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P131"
+  },
+  {
+   "page": 2628,
+   "source": "polity_laxmi",
+   "n_marks": 7,
+   "kinds": {
+    "Underline": 5,
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P132"
+  },
+  {
+   "page": 2629,
+   "source": "polity_laxmi",
+   "n_marks": 9,
+   "kinds": {
+    "Underline": 1,
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P133"
+  },
+  {
+   "page": 2646,
+   "source": "polity_laxmi",
+   "n_marks": 33,
+   "kinds": {
+    "Underline": 28,
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P134"
+  },
+  {
+   "page": 2650,
+   "source": "polity_laxmi",
+   "n_marks": 9,
+   "kinds": {
+    "Underline": 2,
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P135"
+  },
+  {
+   "page": 2662,
+   "source": "polity_laxmi",
+   "n_marks": 13,
+   "kinds": {
+    "Underline": 4,
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P136"
+  },
+  {
+   "page": 2664,
+   "source": "polity_laxmi",
+   "n_marks": 18,
+   "kinds": {
+    "Underline": 1,
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P137"
+  },
+  {
+   "page": 2671,
+   "source": "polity_laxmi",
+   "n_marks": 3,
+   "kinds": {
+    "Underline": 2,
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P138"
+  },
+  {
+   "page": 2682,
+   "source": "polity_laxmi",
+   "n_marks": 12,
+   "kinds": {
+    "Underline": 4,
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P139"
+  },
+  {
+   "page": 2684,
+   "source": "polity_laxmi",
+   "n_marks": 12,
+   "kinds": {
+    "Underline": 8,
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P140"
+  },
+  {
+   "page": 2698,
+   "source": "polity_laxmi",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P141"
+  },
+  {
+   "page": 2699,
+   "source": "polity_laxmi",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P142"
+  },
+  {
+   "page": 2710,
+   "source": "polity_laxmi",
+   "n_marks": 21,
+   "kinds": {
+    "Highlight": 21
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P143"
+  },
+  {
+   "page": 2719,
+   "source": "polity_laxmi",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P144"
+  },
+  {
+   "page": 2734,
+   "source": "polity_laxmi",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P145"
+  },
+  {
+   "page": 2741,
+   "source": "polity_laxmi",
+   "n_marks": 21,
+   "kinds": {
+    "Highlight": 21
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P146"
+  },
+  {
+   "page": 2748,
+   "source": "polity_laxmi",
+   "n_marks": 15,
+   "kinds": {
+    "Highlight": 15
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P147"
+  },
+  {
+   "page": 2754,
+   "source": "polity_laxmi",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P148"
+  },
+  {
+   "page": 2759,
+   "source": "polity_laxmi",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P149"
+  },
+  {
+   "page": 2768,
+   "source": "polity_laxmi",
+   "n_marks": 15,
+   "kinds": {
+    "Highlight": 15
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P150"
+  },
+  {
+   "page": 2777,
+   "source": "polity_laxmi",
+   "n_marks": 23,
+   "kinds": {
+    "Highlight": 23
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 7,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P151"
+  },
+  {
+   "page": 2782,
+   "source": "polity_laxmi",
+   "n_marks": 13,
+   "kinds": {
+    "Highlight": 13
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P152"
+  },
+  {
+   "page": 2797,
+   "source": "polity_laxmi",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P153"
+  },
+  {
+   "page": 2799,
+   "source": "polity_laxmi",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P154"
+  },
+  {
+   "page": 2809,
+   "source": "polity_laxmi",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P155"
+  },
+  {
+   "page": 2819,
+   "source": "polity_laxmi",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P156"
+  },
+  {
+   "page": 2829,
+   "source": "polity_laxmi",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P157"
+  },
+  {
+   "page": 2834,
+   "source": "polity_laxmi",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P158"
+  },
+  {
+   "page": 2841,
+   "source": "polity_laxmi",
+   "n_marks": 16,
+   "kinds": {
+    "Highlight": 16
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P159"
+  },
+  {
+   "page": 2845,
+   "source": "polity_laxmi",
+   "n_marks": 16,
+   "kinds": {
+    "Highlight": 16
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P160"
+  },
+  {
+   "page": 2855,
+   "source": "polity_laxmi",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P161"
+  },
+  {
+   "page": 2861,
+   "source": "polity_laxmi",
+   "n_marks": 12,
+   "kinds": {
+    "Highlight": 12
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P162"
+  },
+  {
+   "page": 2864,
+   "source": "polity_laxmi",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P163"
+  },
+  {
+   "page": 2870,
+   "source": "polity_laxmi",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P164"
+  },
+  {
+   "page": 2875,
+   "source": "polity_laxmi",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P165"
+  },
+  {
+   "page": 2882,
+   "source": "polity_laxmi",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P166"
+  },
+  {
+   "page": 2889,
+   "source": "polity_laxmi",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P167"
+  },
+  {
+   "page": 2893,
+   "source": "polity_laxmi",
+   "n_marks": 13,
+   "kinds": {
+    "Highlight": 13
+   },
+   "colors": [
+    "[0.18, 0.66, 0.9]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P168"
+  },
+  {
+   "page": 2909,
+   "source": "polity_laxmi",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P169"
+  },
+  {
+   "page": 2921,
+   "source": "polity_laxmi",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P170"
+  },
+  {
+   "page": 2922,
+   "source": "polity_laxmi",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P171"
+  },
+  {
+   "page": 2933,
+   "source": "polity_laxmi",
+   "n_marks": 12,
+   "kinds": {
+    "Highlight": 12
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P172"
+  },
+  {
+   "page": 2939,
+   "source": "polity_laxmi",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P173"
+  },
+  {
+   "page": 2948,
+   "source": "polity_laxmi",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P174"
+  },
+  {
+   "page": 2951,
+   "source": "polity_laxmi",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P175"
+  },
+  {
+   "page": 2973,
+   "source": "polity_laxmi",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P176"
+  },
+  {
+   "page": 2978,
+   "source": "polity_laxmi",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P177"
+  },
+  {
+   "page": 2988,
+   "source": "polity_laxmi",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P178"
+  },
+  {
+   "page": 2992,
+   "source": "polity_laxmi",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P179"
+  },
+  {
+   "page": 2997,
+   "source": "polity_laxmi",
+   "n_marks": 18,
+   "kinds": {
+    "Highlight": 18
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P180"
+  },
+  {
+   "page": 3006,
+   "source": "polity_laxmi",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P181"
+  },
+  {
+   "page": 3010,
+   "source": "polity_laxmi",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P182"
+  },
+  {
+   "page": 3016,
+   "source": "polity_laxmi",
+   "n_marks": 16,
+   "kinds": {
+    "Highlight": 16
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P183"
+  },
+  {
+   "page": 3033,
+   "source": "polity_laxmi",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P184"
+  },
+  {
+   "page": 3042,
+   "source": "polity_laxmi",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P185"
+  },
+  {
+   "page": 3051,
+   "source": "polity_laxmi",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P186"
+  },
+  {
+   "page": 3057,
+   "source": "polity_laxmi",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P187"
+  },
+  {
+   "page": 3061,
+   "source": "polity_laxmi",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P188"
+  },
+  {
+   "page": 3067,
+   "source": "polity_laxmi",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P189"
+  },
+  {
+   "page": 3075,
+   "source": "polity_laxmi",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P190"
+  },
+  {
+   "page": 3082,
+   "source": "polity_laxmi",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P191"
+  },
+  {
+   "page": 3090,
+   "source": "polity_laxmi",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P192"
+  },
+  {
+   "page": 3104,
+   "source": "polity_laxmi",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P193"
+  },
+  {
+   "page": 3109,
+   "source": "polity_laxmi",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P194"
+  },
+  {
+   "page": 3114,
+   "source": "polity_laxmi",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P195"
+  },
+  {
+   "page": 3126,
+   "source": "polity_laxmi",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P196"
+  },
+  {
+   "page": 3132,
+   "source": "polity_laxmi",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P197"
+  },
+  {
+   "page": 3140,
+   "source": "polity_laxmi",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P198"
+  },
+  {
+   "page": 3146,
+   "source": "polity_laxmi",
+   "n_marks": 16,
+   "kinds": {
+    "Highlight": 16
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P199"
+  },
+  {
+   "page": 3152,
+   "source": "polity_laxmi",
+   "n_marks": 14,
+   "kinds": {
+    "Highlight": 14
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P200"
+  },
+  {
+   "page": 3162,
+   "source": "polity_laxmi",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P201"
+  },
+  {
+   "page": 3186,
+   "source": "polity_laxmi",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P202"
+  },
+  {
+   "page": 3193,
+   "source": "polity_laxmi",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P203"
+  },
+  {
+   "page": 3198,
+   "source": "polity_laxmi",
+   "n_marks": 12,
+   "kinds": {
+    "Highlight": 12
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P204"
+  },
+  {
+   "page": 3202,
+   "source": "polity_laxmi",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P205"
+  },
+  {
+   "page": 3210,
+   "source": "polity_laxmi",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P206"
+  },
+  {
+   "page": 3214,
+   "source": "polity_laxmi",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P207"
+  },
+  {
+   "page": 3226,
+   "source": "polity_laxmi",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P208"
+  },
+  {
+   "page": 3234,
+   "source": "polity_laxmi",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P209"
+  },
+  {
+   "page": 3244,
+   "source": "polity_laxmi",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P210"
+  },
+  {
+   "page": 3256,
+   "source": "polity_laxmi",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P211"
+  },
+  {
+   "page": 3265,
+   "source": "polity_laxmi",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P212"
+  },
+  {
+   "page": 3270,
+   "source": "polity_laxmi",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P213"
+  },
+  {
+   "page": 3290,
+   "source": "polity_laxmi",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P214"
+  },
+  {
+   "page": 3300,
+   "source": "polity_laxmi",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P215"
+  },
+  {
+   "page": 3304,
+   "source": "polity_laxmi",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P216"
+  },
+  {
+   "page": 3313,
+   "source": "polity_laxmi",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P217"
+  },
+  {
+   "page": 3325,
+   "source": "polity_laxmi",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P218"
+  },
+  {
+   "page": 3333,
+   "source": "polity_laxmi",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P219"
+  },
+  {
+   "page": 3344,
+   "source": "polity_laxmi",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P220"
+  },
+  {
+   "page": 3364,
+   "source": "polity_laxmi",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P221"
+  },
+  {
+   "page": 3380,
+   "source": "polity_laxmi",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P222"
+  },
+  {
+   "page": 3400,
+   "source": "polity_laxmi",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P223"
+  },
+  {
+   "page": 3402,
+   "source": "polity_laxmi",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P224"
+  },
+  {
+   "page": 3441,
+   "source": "polity_laxmi",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P225"
+  },
+  {
+   "page": 3466,
+   "source": "polity_laxmi",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P226"
+  },
+  {
+   "page": 3539,
+   "source": "polity_laxmi",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P227"
+  },
+  {
+   "page": 3543,
+   "source": "polity_laxmi",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P228"
+  },
+  {
+   "page": 3719,
+   "source": "act_empcomp",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P229"
+  },
+  {
+   "page": 3723,
+   "source": "act_empcomp",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P230"
+  },
+  {
+   "page": 3726,
+   "source": "act_empcomp",
+   "n_marks": 13,
+   "kinds": {
+    "Highlight": 13
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 5,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P231"
+  },
+  {
+   "page": 3731,
+   "source": "act_empcomp",
+   "n_marks": 13,
+   "kinds": {
+    "Highlight": 13
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P232"
+  },
+  {
+   "page": 3740,
+   "source": "act_empcomp",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P233"
+  },
+  {
+   "page": 3753,
+   "source": "act_empcomp",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P234"
+  },
+  {
+   "page": 3760,
+   "source": "act_empcomp",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P235"
+  },
+  {
+   "page": 3763,
+   "source": "act_empcomp",
+   "n_marks": 18,
+   "kinds": {
+    "Highlight": 18
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {
+    "FreeText": 3
+   },
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P236"
+  },
+  {
+   "page": 3767,
+   "source": "act_empcomp",
+   "n_marks": 13,
+   "kinds": {
+    "Highlight": 13
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 5,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P237"
+  },
+  {
+   "page": 3772,
+   "source": "act_empcomp",
+   "n_marks": 13,
+   "kinds": {
+    "Highlight": 13
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P238"
+  },
+  {
+   "page": 3781,
+   "source": "act_empcomp",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P239"
+  },
+  {
+   "page": 3794,
+   "source": "act_empcomp",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": null,
+   "id": "P240"
+  },
+  {
+   "page": 3817,
+   "source": "acc_jain_panda",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 488,
+   "h": 666,
+   "act": null,
+   "id": "P241"
+  },
+  {
+   "page": 3829,
+   "source": "acc_jain_panda",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 488,
+   "h": 666,
+   "act": null,
+   "id": "P242"
+  },
+  {
+   "page": 3832,
+   "source": "acc_jain_panda",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 488,
+   "h": 666,
+   "act": null,
+   "id": "P243"
+  },
+  {
+   "page": 3845,
+   "source": "acc_jain_panda",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 488,
+   "h": 666,
+   "act": null,
+   "id": "P244"
+  },
+  {
+   "page": 3854,
+   "source": "acc_jain_panda",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 488,
+   "h": 666,
+   "act": null,
+   "id": "P245"
+  },
+  {
+   "page": 3866,
+   "source": "acc_jain_panda",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 7,
+   "other": {},
+   "w": 488,
+   "h": 666,
+   "act": null,
+   "id": "P246"
+  },
+  {
+   "page": 3895,
+   "source": "acc_jain_panda",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 488,
+   "h": 666,
+   "act": null,
+   "id": "P247"
+  },
+  {
+   "page": 3905,
+   "source": "acc_jain_panda",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 488,
+   "h": 666,
+   "act": null,
+   "id": "P248"
+  },
+  {
+   "page": 3910,
+   "source": "acc_jain_panda",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 488,
+   "h": 666,
+   "act": null,
+   "id": "P249"
+  },
+  {
+   "page": 3941,
+   "source": "acc_jain_panda",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[0.18, 0.66, 0.9]",
+    "[0.64, 0.54, 0.9]",
+    "[0.9, 0.43, 0.93]",
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 5,
+   "other": {},
+   "w": 488,
+   "h": 666,
+   "act": null,
+   "id": "P250"
+  },
+  {
+   "page": 3943,
+   "source": "acc_jain_panda",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[0.18, 0.66, 0.9]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 488,
+   "h": 666,
+   "act": null,
+   "id": "P251"
+  },
+  {
+   "page": 3958,
+   "source": "acc_jain_panda",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[0.37, 0.7, 0.21]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 488,
+   "h": 666,
+   "act": null,
+   "id": "P252"
+  },
+  {
+   "page": 4568,
+   "source": "act_tu",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P253"
+  },
+  {
+   "page": 4570,
+   "source": "act_tu",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P254"
+  },
+  {
+   "page": 4572,
+   "source": "act_tu",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P255"
+  },
+  {
+   "page": 4574,
+   "source": "act_tu",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P256"
+  },
+  {
+   "page": 4576,
+   "source": "act_tu",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P257"
+  },
+  {
+   "page": 4578,
+   "source": "act_tu",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P258"
+  },
+  {
+   "page": 4580,
+   "source": "act_tu",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P259"
+  },
+  {
+   "page": 4583,
+   "source": "act_tu",
+   "n_marks": 20,
+   "kinds": {
+    "Highlight": 20
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P260"
+  },
+  {
+   "page": 4584,
+   "source": "act_tu",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P261"
+  },
+  {
+   "page": 4586,
+   "source": "act_tu",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P262"
+  },
+  {
+   "page": 4589,
+   "source": "act_tu",
+   "n_marks": 21,
+   "kinds": {
+    "Highlight": 21
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P263"
+  },
+  {
+   "page": 4590,
+   "source": "act_tu",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P264"
+  },
+  {
+   "page": 4749,
+   "source": "acc_tmh_cpt",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 536,
+   "h": 687,
+   "act": null,
+   "id": "P265"
+  },
+  {
+   "page": 4750,
+   "source": "acc_tmh_cpt",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 5,
+   "other": {},
+   "w": 536,
+   "h": 687,
+   "act": null,
+   "id": "P266"
+  },
+  {
+   "page": 4751,
+   "source": "acc_tmh_cpt",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 4,
+   "other": {},
+   "w": 536,
+   "h": 687,
+   "act": null,
+   "id": "P267"
+  },
+  {
+   "page": 4757,
+   "source": "acc_tmh_cpt",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 536,
+   "h": 687,
+   "act": null,
+   "id": "P268"
+  },
+  {
+   "page": 4762,
+   "source": "acc_tmh_cpt",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 536,
+   "h": 687,
+   "act": null,
+   "id": "P269"
+  },
+  {
+   "page": 4763,
+   "source": "acc_tmh_cpt",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 536,
+   "h": 687,
+   "act": null,
+   "id": "P270"
+  },
+  {
+   "page": 4765,
+   "source": "acc_tmh_cpt",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 536,
+   "h": 687,
+   "act": null,
+   "id": "P271"
+  },
+  {
+   "page": 4766,
+   "source": "acc_tmh_cpt",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 536,
+   "h": 687,
+   "act": null,
+   "id": "P272"
+  },
+  {
+   "page": 5317,
+   "source": "acc_tmh_cpt",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 536,
+   "h": 687,
+   "act": null,
+   "id": "P273"
+  },
+  {
+   "page": 5546,
+   "source": "acc_tmh_cpt",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 536,
+   "h": 687,
+   "act": null,
+   "id": "P274"
+  },
+  {
+   "page": 5726,
+   "source": "econ_vivek",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P275"
+  },
+  {
+   "page": 5730,
+   "source": "econ_vivek",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {
+    "FreeText": 1
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P276"
+  },
+  {
+   "page": 5739,
+   "source": "econ_vivek",
+   "n_marks": 18,
+   "kinds": {
+    "Highlight": 18
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P277"
+  },
+  {
+   "page": 5743,
+   "source": "econ_vivek",
+   "n_marks": 16,
+   "kinds": {
+    "Highlight": 16
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P278"
+  },
+  {
+   "page": 5754,
+   "source": "econ_vivek",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P279"
+  },
+  {
+   "page": 5764,
+   "source": "econ_vivek",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P280"
+  },
+  {
+   "page": 5766,
+   "source": "econ_vivek",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P281"
+  },
+  {
+   "page": 5772,
+   "source": "econ_vivek",
+   "n_marks": 28,
+   "kinds": {
+    "Highlight": 28
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 5,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P282"
+  },
+  {
+   "page": 5774,
+   "source": "econ_vivek",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P283"
+  },
+  {
+   "page": 5781,
+   "source": "econ_vivek",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P284"
+  },
+  {
+   "page": 5789,
+   "source": "econ_vivek",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P285"
+  },
+  {
+   "page": 5793,
+   "source": "econ_vivek",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P286"
+  },
+  {
+   "page": 5796,
+   "source": "econ_vivek",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P287"
+  },
+  {
+   "page": 5803,
+   "source": "econ_vivek",
+   "n_marks": 14,
+   "kinds": {
+    "Highlight": 14
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P288"
+  },
+  {
+   "page": 5807,
+   "source": "econ_vivek",
+   "n_marks": 12,
+   "kinds": {
+    "Highlight": 12
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P289"
+  },
+  {
+   "page": 5813,
+   "source": "econ_vivek",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P290"
+  },
+  {
+   "page": 5819,
+   "source": "econ_vivek",
+   "n_marks": 13,
+   "kinds": {
+    "Highlight": 13
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P291"
+  },
+  {
+   "page": 5825,
+   "source": "econ_vivek",
+   "n_marks": 14,
+   "kinds": {
+    "Highlight": 14
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P292"
+  },
+  {
+   "page": 5828,
+   "source": "econ_vivek",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P293"
+  },
+  {
+   "page": 5834,
+   "source": "econ_vivek",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P294"
+  },
+  {
+   "page": 5847,
+   "source": "econ_vivek",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P295"
+  },
+  {
+   "page": 5855,
+   "source": "econ_vivek",
+   "n_marks": 12,
+   "kinds": {
+    "Highlight": 12
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P296"
+  },
+  {
+   "page": 5868,
+   "source": "econ_vivek",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P297"
+  },
+  {
+   "page": 5872,
+   "source": "econ_vivek",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P298"
+  },
+  {
+   "page": 5876,
+   "source": "econ_vivek",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P299"
+  },
+  {
+   "page": 5887,
+   "source": "econ_vivek",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P300"
+  },
+  {
+   "page": 5890,
+   "source": "econ_vivek",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P301"
+  },
+  {
+   "page": 5897,
+   "source": "econ_vivek",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P302"
+  },
+  {
+   "page": 5901,
+   "source": "econ_vivek",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P303"
+  },
+  {
+   "page": 5917,
+   "source": "econ_vivek",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P304"
+  },
+  {
+   "page": 5926,
+   "source": "econ_vivek",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P305"
+  },
+  {
+   "page": 5946,
+   "source": "econ_vivek",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P306"
+  },
+  {
+   "page": 5952,
+   "source": "econ_vivek",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P307"
+  },
+  {
+   "page": 5961,
+   "source": "econ_vivek",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P308"
+  },
+  {
+   "page": 5965,
+   "source": "econ_vivek",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P309"
+  },
+  {
+   "page": 5978,
+   "source": "econ_vivek",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P310"
+  },
+  {
+   "page": 5981,
+   "source": "econ_vivek",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P311"
+  },
+  {
+   "page": 5988,
+   "source": "econ_vivek",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P312"
+  },
+  {
+   "page": 5994,
+   "source": "econ_vivek",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P313"
+  },
+  {
+   "page": 6008,
+   "source": "econ_vivek",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P314"
+  },
+  {
+   "page": 6013,
+   "source": "econ_vivek",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P315"
+  },
+  {
+   "page": 6019,
+   "source": "econ_vivek",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P316"
+  },
+  {
+   "page": 6026,
+   "source": "econ_vivek",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P317"
+  },
+  {
+   "page": 6030,
+   "source": "econ_vivek",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P318"
+  },
+  {
+   "page": 6058,
+   "source": "econ_vivek",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P319"
+  },
+  {
+   "page": 6067,
+   "source": "econ_vivek",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P320"
+  },
+  {
+   "page": 6190,
+   "source": "labour_acts",
+   "n_marks": 12,
+   "kinds": {
+    "Highlight": 12
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Payment of Wages Act, 1936",
+   "id": "P321"
+  },
+  {
+   "page": 6194,
+   "source": "labour_acts",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Payment of Wages Act, 1936",
+   "id": "P322"
+  },
+  {
+   "page": 6214,
+   "source": "labour_acts",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Payment of Wages Act, 1936",
+   "id": "P323"
+  },
+  {
+   "page": 6220,
+   "source": "labour_acts",
+   "n_marks": 16,
+   "kinds": {
+    "Highlight": 16
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Payment of Wages Act, 1936",
+   "id": "P324"
+  },
+  {
+   "page": 6222,
+   "source": "labour_acts",
+   "n_marks": 12,
+   "kinds": {
+    "Highlight": 12
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Payment of Wages Act, 1936",
+   "id": "P325"
+  },
+  {
+   "page": 6234,
+   "source": "labour_acts",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P326"
+  },
+  {
+   "page": 6237,
+   "source": "labour_acts",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P327"
+  },
+  {
+   "page": 6246,
+   "source": "labour_acts",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P328"
+  },
+  {
+   "page": 6254,
+   "source": "labour_acts",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P329"
+  },
+  {
+   "page": 6262,
+   "source": "labour_acts",
+   "n_marks": 13,
+   "kinds": {
+    "Highlight": 13
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P330"
+  },
+  {
+   "page": 6270,
+   "source": "labour_acts",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P331"
+  },
+  {
+   "page": 6279,
+   "source": "labour_acts",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P332"
+  },
+  {
+   "page": 6290,
+   "source": "labour_acts",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P333"
+  },
+  {
+   "page": 6299,
+   "source": "labour_acts",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P334"
+  },
+  {
+   "page": 6308,
+   "source": "labour_acts",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P335"
+  },
+  {
+   "page": 6319,
+   "source": "labour_acts",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P336"
+  },
+  {
+   "page": 6324,
+   "source": "labour_acts",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P337"
+  },
+  {
+   "page": 6327,
+   "source": "labour_acts",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P338"
+  },
+  {
+   "page": 6335,
+   "source": "labour_acts",
+   "n_marks": 13,
+   "kinds": {
+    "Highlight": 13
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P339"
+  },
+  {
+   "page": 6340,
+   "source": "labour_acts",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P340"
+  },
+  {
+   "page": 6352,
+   "source": "labour_acts",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P341"
+  },
+  {
+   "page": 6364,
+   "source": "labour_acts",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Industrial Disputes Act, 1947",
+   "id": "P342"
+  },
+  {
+   "page": 6376,
+   "source": "labour_acts",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Minimum Wages Act, 1948",
+   "id": "P343"
+  },
+  {
+   "page": 6379,
+   "source": "labour_acts",
+   "n_marks": 19,
+   "kinds": {
+    "Highlight": 19
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Minimum Wages Act, 1948",
+   "id": "P344"
+  },
+  {
+   "page": 6385,
+   "source": "labour_acts",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Minimum Wages Act, 1948",
+   "id": "P345"
+  },
+  {
+   "page": 6394,
+   "source": "labour_acts",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Minimum Wages Act, 1948",
+   "id": "P346"
+  },
+  {
+   "page": 6405,
+   "source": "labour_acts",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Minimum Wages Act, 1948",
+   "id": "P347"
+  },
+  {
+   "page": 6414,
+   "source": "labour_acts",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P348"
+  },
+  {
+   "page": 6420,
+   "source": "labour_acts",
+   "n_marks": 16,
+   "kinds": {
+    "Highlight": 16
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P349"
+  },
+  {
+   "page": 6428,
+   "source": "labour_acts",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P350"
+  },
+  {
+   "page": 6434,
+   "source": "labour_acts",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P351"
+  },
+  {
+   "page": 6441,
+   "source": "labour_acts",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P352"
+  },
+  {
+   "page": 6444,
+   "source": "labour_acts",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P353"
+  },
+  {
+   "page": 6459,
+   "source": "labour_acts",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P354"
+  },
+  {
+   "page": 6481,
+   "source": "labour_acts",
+   "n_marks": 16,
+   "kinds": {
+    "Highlight": 16
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P355"
+  },
+  {
+   "page": 6484,
+   "source": "labour_acts",
+   "n_marks": 20,
+   "kinds": {
+    "Highlight": 20
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P356"
+  },
+  {
+   "page": 6489,
+   "source": "labour_acts",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P357"
+  },
+  {
+   "page": 6496,
+   "source": "labour_acts",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P358"
+  },
+  {
+   "page": 6505,
+   "source": "labour_acts",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P359"
+  },
+  {
+   "page": 6510,
+   "source": "labour_acts",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P360"
+  },
+  {
+   "page": 6526,
+   "source": "labour_acts",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Employees' State Insurance Act, 1948",
+   "id": "P361"
+  },
+  {
+   "page": 6543,
+   "source": "labour_acts",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Factories Act, 1948",
+   "id": "P362"
+  },
+  {
+   "page": 6552,
+   "source": "labour_acts",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Factories Act, 1948",
+   "id": "P363"
+  },
+  {
+   "page": 6563,
+   "source": "labour_acts",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Factories Act, 1948",
+   "id": "P364"
+  },
+  {
+   "page": 6567,
+   "source": "labour_acts",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Factories Act, 1948",
+   "id": "P365"
+  },
+  {
+   "page": 6573,
+   "source": "labour_acts",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Factories Act, 1948",
+   "id": "P366"
+  },
+  {
+   "page": 6594,
+   "source": "labour_acts",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Factories Act, 1948",
+   "id": "P367"
+  },
+  {
+   "page": 6604,
+   "source": "labour_acts",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Factories Act, 1948",
+   "id": "P368"
+  },
+  {
+   "page": 6609,
+   "source": "labour_acts",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Factories Act, 1948",
+   "id": "P369"
+  },
+  {
+   "page": 6614,
+   "source": "labour_acts",
+   "n_marks": 17,
+   "kinds": {
+    "Highlight": 17
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Factories Act, 1948",
+   "id": "P370"
+  },
+  {
+   "page": 6627,
+   "source": "labour_acts",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Factories Act, 1948",
+   "id": "P371"
+  },
+  {
+   "page": 6631,
+   "source": "labour_acts",
+   "n_marks": 20,
+   "kinds": {
+    "Highlight": 20
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Factories Act, 1948",
+   "id": "P372"
+  },
+  {
+   "page": 6646,
+   "source": "labour_acts",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Factories Act, 1948",
+   "id": "P373"
+  },
+  {
+   "page": 6660,
+   "source": "labour_acts",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "Plantations Labour Act, 1951",
+   "id": "P374"
+  },
+  {
+   "page": 6666,
+   "source": "labour_acts",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "Plantations Labour Act, 1951",
+   "id": "P375"
+  },
+  {
+   "page": 6667,
+   "source": "labour_acts",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "Plantations Labour Act, 1951",
+   "id": "P376"
+  },
+  {
+   "page": 6683,
+   "source": "labour_acts",
+   "n_marks": 12,
+   "kinds": {
+    "Highlight": 12
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "Plantations Labour Act, 1951",
+   "id": "P377"
+  },
+  {
+   "page": 6687,
+   "source": "labour_acts",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "Plantations Labour Act, 1951",
+   "id": "P378"
+  },
+  {
+   "page": 6693,
+   "source": "labour_acts",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "Plantations Labour Act, 1951",
+   "id": "P379"
+  },
+  {
+   "page": 6704,
+   "source": "labour_acts",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "EPF & Misc. Provisions Act, 1952",
+   "id": "P380"
+  },
+  {
+   "page": 6709,
+   "source": "labour_acts",
+   "n_marks": 16,
+   "kinds": {
+    "Highlight": 16
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "EPF & Misc. Provisions Act, 1952",
+   "id": "P381"
+  },
+  {
+   "page": 6715,
+   "source": "labour_acts",
+   "n_marks": 12,
+   "kinds": {
+    "Highlight": 12
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "EPF & Misc. Provisions Act, 1952",
+   "id": "P382"
+  },
+  {
+   "page": 6719,
+   "source": "labour_acts",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "EPF & Misc. Provisions Act, 1952",
+   "id": "P383"
+  },
+  {
+   "page": 6744,
+   "source": "labour_acts",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "EPF & Misc. Provisions Act, 1952",
+   "id": "P384"
+  },
+  {
+   "page": 6746,
+   "source": "labour_acts",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "EPF & Misc. Provisions Act, 1952",
+   "id": "P385"
+  },
+  {
+   "page": 6756,
+   "source": "labour_acts",
+   "n_marks": 12,
+   "kinds": {
+    "Highlight": 12
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "EPF & Misc. Provisions Act, 1952",
+   "id": "P386"
+  },
+  {
+   "page": 6761,
+   "source": "labour_acts",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "EPF & Misc. Provisions Act, 1952",
+   "id": "P387"
+  },
+  {
+   "page": 6772,
+   "source": "labour_acts",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "EPF & Misc. Provisions Act, 1952",
+   "id": "P388"
+  },
+  {
+   "page": 6784,
+   "source": "labour_acts",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 612,
+   "h": 792,
+   "act": "EPF & Misc. Provisions Act, 1952",
+   "id": "P389"
+  },
+  {
+   "page": 6797,
+   "source": "labour_acts",
+   "n_marks": 14,
+   "kinds": {
+    "Highlight": 14
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Mines Act, 1952",
+   "id": "P390"
+  },
+  {
+   "page": 6802,
+   "source": "labour_acts",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Mines Act, 1952",
+   "id": "P391"
+  },
+  {
+   "page": 6808,
+   "source": "labour_acts",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Mines Act, 1952",
+   "id": "P392"
+  },
+  {
+   "page": 6813,
+   "source": "labour_acts",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Mines Act, 1952",
+   "id": "P393"
+  },
+  {
+   "page": 6819,
+   "source": "labour_acts",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Mines Act, 1952",
+   "id": "P394"
+  },
+  {
+   "page": 6835,
+   "source": "labour_acts",
+   "n_marks": 26,
+   "kinds": {
+    "Highlight": 26
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Mines Act, 1952",
+   "id": "P395"
+  },
+  {
+   "page": 6842,
+   "source": "labour_acts",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Mines Act, 1952",
+   "id": "P396"
+  },
+  {
+   "page": 6848,
+   "source": "labour_acts",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Mines Act, 1952",
+   "id": "P397"
+  },
+  {
+   "page": 6853,
+   "source": "labour_acts",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Mines Act, 1952",
+   "id": "P398"
+  },
+  {
+   "page": 6867,
+   "source": "labour_acts",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Mines Act, 1952",
+   "id": "P399"
+  },
+  {
+   "page": 6882,
+   "source": "labour_acts",
+   "n_marks": 14,
+   "kinds": {
+    "Highlight": 14
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {
+    "FreeText": 2
+   },
+   "w": 595,
+   "h": 842,
+   "act": "Maternity Benefit Act, 1961",
+   "id": "P400"
+  },
+  {
+   "page": 6891,
+   "source": "labour_acts",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Maternity Benefit Act, 1961",
+   "id": "P401"
+  },
+  {
+   "page": 6893,
+   "source": "labour_acts",
+   "n_marks": 14,
+   "kinds": {
+    "Highlight": 14
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {
+    "FreeText": 2
+   },
+   "w": 595,
+   "h": 842,
+   "act": "Maternity Benefit Act, 1961",
+   "id": "P402"
+  },
+  {
+   "page": 6907,
+   "source": "labour_acts",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]",
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Payment of Bonus Act, 1965",
+   "id": "P403"
+  },
+  {
+   "page": 6914,
+   "source": "labour_acts",
+   "n_marks": 22,
+   "kinds": {
+    "Highlight": 22
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Payment of Bonus Act, 1965",
+   "id": "P404"
+  },
+  {
+   "page": 6937,
+   "source": "labour_acts",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Contract Labour (R&A) Act, 1970",
+   "id": "P405"
+  },
+  {
+   "page": 6944,
+   "source": "labour_acts",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Contract Labour (R&A) Act, 1970",
+   "id": "P406"
+  },
+  {
+   "page": 6949,
+   "source": "labour_acts",
+   "n_marks": 3,
+   "kinds": {
+    "Underline": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Payment of Gratuity Act, 1972",
+   "id": "P407"
+  },
+  {
+   "page": 6967,
+   "source": "labour_acts",
+   "n_marks": 1,
+   "kinds": {
+    "Underline": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Equal Remuneration Act, 1976",
+   "id": "P408"
+  },
+  {
+   "page": 6969,
+   "source": "labour_acts",
+   "n_marks": 1,
+   "kinds": {
+    "Underline": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Equal Remuneration Act, 1976",
+   "id": "P409"
+  },
+  {
+   "page": 6983,
+   "source": "labour_acts",
+   "n_marks": 2,
+   "kinds": {
+    "Underline": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": "Inter-State Migrant Workmen Act, 1979",
+   "id": "P410"
+  },
+  {
+   "page": 7072,
+   "source": "icsi_pp_llp",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 4,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P411"
+  },
+  {
+   "page": 7076,
+   "source": "icsi_pp_llp",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P412"
+  },
+  {
+   "page": 7080,
+   "source": "icsi_pp_llp",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P413"
+  },
+  {
+   "page": 7088,
+   "source": "icsi_pp_llp",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 5,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P414"
+  },
+  {
+   "page": 7090,
+   "source": "icsi_pp_llp",
+   "n_marks": 33,
+   "kinds": {
+    "Highlight": 33
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 9,
+   "other": {
+    "Ink": 4
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P415"
+  },
+  {
+   "page": 7095,
+   "source": "icsi_pp_llp",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 5,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P416"
+  },
+  {
+   "page": 7104,
+   "source": "icsi_pp_llp",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P417"
+  },
+  {
+   "page": 7108,
+   "source": "icsi_pp_llp",
+   "n_marks": 15,
+   "kinds": {
+    "Highlight": 15
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 6,
+   "other": {
+    "Ink": 14
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P418"
+  },
+  {
+   "page": 7120,
+   "source": "icsi_pp_llp",
+   "n_marks": 40,
+   "kinds": {
+    "Highlight": 40
+   },
+   "colors": [
+    "[0.49, 0.94, 0.4]",
+    "[0.92, 0.29, 0.29]",
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 8,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P419"
+  },
+  {
+   "page": 7123,
+   "source": "icsi_pp_llp",
+   "n_marks": 32,
+   "kinds": {
+    "Highlight": 32
+   },
+   "colors": [
+    "[0.92, 0.29, 0.29]",
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 8,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P420"
+  },
+  {
+   "page": 7131,
+   "source": "icsi_pp_llp",
+   "n_marks": 15,
+   "kinds": {
+    "Highlight": 15
+   },
+   "colors": [
+    "[0.49, 0.94, 0.4]",
+    "[0.92, 0.29, 0.29]",
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 6,
+   "other": {
+    "Ink": 3,
+    "FreeText": 1
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P421"
+  },
+  {
+   "page": 7135,
+   "source": "icsi_pp_llp",
+   "n_marks": 18,
+   "kinds": {
+    "Highlight": 18
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 12,
+   "other": {
+    "Ink": 6
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P422"
+  },
+  {
+   "page": 7141,
+   "source": "icsi_pp_llp",
+   "n_marks": 12,
+   "kinds": {
+    "Highlight": 12
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 7,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P423"
+  },
+  {
+   "page": 7142,
+   "source": "icsi_pp_llp",
+   "n_marks": 15,
+   "kinds": {
+    "Highlight": 15
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 6,
+   "other": {
+    "Ink": 1
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P424"
+  },
+  {
+   "page": 7148,
+   "source": "icsi_pp_llp",
+   "n_marks": 20,
+   "kinds": {
+    "Highlight": 20
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 3,
+   "other": {
+    "Ink": 7
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P425"
+  },
+  {
+   "page": 7153,
+   "source": "icsi_pp_llp",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P426"
+  },
+  {
+   "page": 7158,
+   "source": "icsi_pp_llp",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 4,
+   "other": {
+    "Ink": 1
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P427"
+  },
+  {
+   "page": 7163,
+   "source": "icsi_pp_llp",
+   "n_marks": 13,
+   "kinds": {
+    "Highlight": 13
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 4,
+   "other": {
+    "Ink": 3
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P428"
+  },
+  {
+   "page": 7166,
+   "source": "icsi_pp_llp",
+   "n_marks": 26,
+   "kinds": {
+    "Highlight": 26
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 9,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P429"
+  },
+  {
+   "page": 7174,
+   "source": "icsi_pp_llp",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P430"
+  },
+  {
+   "page": 7300,
+   "source": "icsi_pp_llp",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 5,
+   "other": {
+    "Ink": 1
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P431"
+  },
+  {
+   "page": 7305,
+   "source": "icsi_pp_llp",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P432"
+  },
+  {
+   "page": 7310,
+   "source": "icsi_pp_llp",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 6,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P433"
+  },
+  {
+   "page": 7316,
+   "source": "icsi_pp_llp",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 4,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P434"
+  },
+  {
+   "page": 7320,
+   "source": "icsi_pp_llp",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P435"
+  },
+  {
+   "page": 7326,
+   "source": "icsi_pp_llp",
+   "n_marks": 10,
+   "kinds": {
+    "Highlight": 10
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P436"
+  },
+  {
+   "page": 7398,
+   "source": "icsi_pp_llp",
+   "n_marks": 25,
+   "kinds": {
+    "Highlight": 25
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 12,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P437"
+  },
+  {
+   "page": 7406,
+   "source": "icsi_pp_llp",
+   "n_marks": 9,
+   "kinds": {
+    "Highlight": 9
+   },
+   "colors": [
+    "[0.92, 0.29, 0.29]",
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 6,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P438"
+  },
+  {
+   "page": 7412,
+   "source": "icsi_pp_llp",
+   "n_marks": 25,
+   "kinds": {
+    "Highlight": 25
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P439"
+  },
+  {
+   "page": 7414,
+   "source": "icsi_pp_llp",
+   "n_marks": 23,
+   "kinds": {
+    "Highlight": 23
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 8,
+   "other": {
+    "Ink": 1
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P440"
+  },
+  {
+   "page": 7420,
+   "source": "icsi_pp_llp",
+   "n_marks": 25,
+   "kinds": {
+    "Highlight": 25
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 6,
+   "other": {
+    "Ink": 3
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P441"
+  },
+  {
+   "page": 7427,
+   "source": "icsi_pp_llp",
+   "n_marks": 14,
+   "kinds": {
+    "Highlight": 14
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 5,
+   "other": {
+    "Ink": 5
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P442"
+  },
+  {
+   "page": 7435,
+   "source": "icsi_pp_llp",
+   "n_marks": 24,
+   "kinds": {
+    "Highlight": 24
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 10,
+   "other": {
+    "Ink": 5
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P443"
+  },
+  {
+   "page": 7442,
+   "source": "icsi_pp_llp",
+   "n_marks": 15,
+   "kinds": {
+    "Highlight": 15
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 9,
+   "other": {
+    "Ink": 5
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P444"
+  },
+  {
+   "page": 7446,
+   "source": "icsi_pp_llp",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P445"
+  },
+  {
+   "page": 7452,
+   "source": "icsi_pp_llp",
+   "n_marks": 15,
+   "kinds": {
+    "Highlight": 15
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 6,
+   "other": {
+    "Ink": 7
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P446"
+  },
+  {
+   "page": 7460,
+   "source": "icsi_pp_llp",
+   "n_marks": 26,
+   "kinds": {
+    "Highlight": 26
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 11,
+   "other": {
+    "Ink": 17
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P447"
+  },
+  {
+   "page": 7462,
+   "source": "icsi_pp_llp",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 2,
+   "other": {
+    "Ink": 3
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P448"
+  },
+  {
+   "page": 7467,
+   "source": "icsi_pp_llp",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P449"
+  },
+  {
+   "page": 7474,
+   "source": "icsi_pp_llp",
+   "n_marks": 26,
+   "kinds": {
+    "Highlight": 26
+   },
+   "colors": [
+    "[0.92, 0.29, 0.29]",
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 9,
+   "other": {
+    "Ink": 4
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P450"
+  },
+  {
+   "page": 7480,
+   "source": "icsi_pp_llp",
+   "n_marks": 29,
+   "kinds": {
+    "Highlight": 29
+   },
+   "colors": [
+    "[0.92, 0.29, 0.29]",
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 10,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P451"
+  },
+  {
+   "page": 7484,
+   "source": "icsi_pp_llp",
+   "n_marks": 15,
+   "kinds": {
+    "Highlight": 15
+   },
+   "colors": [
+    "[0.92, 0.29, 0.29]",
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 4,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P452"
+  },
+  {
+   "page": 7491,
+   "source": "icsi_pp_llp",
+   "n_marks": 28,
+   "kinds": {
+    "Highlight": 28
+   },
+   "colors": [
+    "[0.92, 0.29, 0.29]",
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 11,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P453"
+  },
+  {
+   "page": 7493,
+   "source": "icsi_pp_llp",
+   "n_marks": 31,
+   "kinds": {
+    "Highlight": 31
+   },
+   "colors": [
+    "[0.92, 0.29, 0.29]",
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 8,
+   "other": {
+    "Ink": 6
+   },
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P454"
+  },
+  {
+   "page": 7501,
+   "source": "icsi_pp_llp",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 4,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P455"
+  },
+  {
+   "page": 7506,
+   "source": "icsi_pp_llp",
+   "n_marks": 11,
+   "kinds": {
+    "Highlight": 11
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 6,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P456"
+  },
+  {
+   "page": 7515,
+   "source": "icsi_pp_llp",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 595,
+   "h": 842,
+   "act": null,
+   "id": "P457"
+  },
+  {
+   "page": 8293,
+   "source": "ir_pearson",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 576,
+   "h": 720,
+   "act": null,
+   "id": "P458"
+  },
+  {
+   "page": 8297,
+   "source": "ir_pearson",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[0.56, 0.87, 0.98]",
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 576,
+   "h": 720,
+   "act": null,
+   "id": "P459"
+  },
+  {
+   "page": 8301,
+   "source": "ir_pearson",
+   "n_marks": 4,
+   "kinds": {
+    "Highlight": 4
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 576,
+   "h": 720,
+   "act": null,
+   "id": "P460"
+  },
+  {
+   "page": 8308,
+   "source": "ir_pearson",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 576,
+   "h": 720,
+   "act": null,
+   "id": "P461"
+  },
+  {
+   "page": 8322,
+   "source": "ir_pearson",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 576,
+   "h": 720,
+   "act": null,
+   "id": "P462"
+  },
+  {
+   "page": 8326,
+   "source": "ir_pearson",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 576,
+   "h": 720,
+   "act": null,
+   "id": "P463"
+  },
+  {
+   "page": 8327,
+   "source": "ir_pearson",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 576,
+   "h": 720,
+   "act": null,
+   "id": "P464"
+  },
+  {
+   "page": 8332,
+   "source": "ir_pearson",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 576,
+   "h": 720,
+   "act": null,
+   "id": "P465"
+  },
+  {
+   "page": 8374,
+   "source": "ir_pearson",
+   "n_marks": 7,
+   "kinds": {
+    "Highlight": 7
+   },
+   "colors": [
+    "[0.49, 0.94, 0.4]",
+    "[1.0, 0.94, 0.4]"
+   ],
+   "multi_line": 6,
+   "other": {
+    "Ink": 1
+   },
+   "w": 576,
+   "h": 720,
+   "act": null,
+   "id": "P466"
+  },
+  {
+   "page": 8804,
+   "source": "ir_pearson",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 576,
+   "h": 720,
+   "act": null,
+   "id": "P467"
+  },
+  {
+   "page": 9004,
+   "source": "ir_pearson",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 576,
+   "h": 720,
+   "act": null,
+   "id": "P468"
+  },
+  {
+   "page": 9008,
+   "source": "ir_pearson",
+   "n_marks": 5,
+   "kinds": {
+    "Highlight": 5
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 576,
+   "h": 720,
+   "act": null,
+   "id": "P469"
+  },
+  {
+   "page": 9105,
+   "source": "ir_ghosh",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P470"
+  },
+  {
+   "page": 9112,
+   "source": "ir_ghosh",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 4,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P471"
+  },
+  {
+   "page": 9115,
+   "source": "ir_ghosh",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P472"
+  },
+  {
+   "page": 9126,
+   "source": "ir_ghosh",
+   "n_marks": 2,
+   "kinds": {
+    "Highlight": 2
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P473"
+  },
+  {
+   "page": 9132,
+   "source": "ir_ghosh",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P474"
+  },
+  {
+   "page": 9136,
+   "source": "ir_ghosh",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P475"
+  },
+  {
+   "page": 9140,
+   "source": "ir_ghosh",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 5,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P476"
+  },
+  {
+   "page": 9149,
+   "source": "ir_ghosh",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P477"
+  },
+  {
+   "page": 9152,
+   "source": "ir_ghosh",
+   "n_marks": 6,
+   "kinds": {
+    "Highlight": 6
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P478"
+  },
+  {
+   "page": 9156,
+   "source": "ir_ghosh",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P479"
+  },
+  {
+   "page": 9164,
+   "source": "ir_ghosh",
+   "n_marks": 8,
+   "kinds": {
+    "Highlight": 8
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 5,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P480"
+  },
+  {
+   "page": 9172,
+   "source": "ir_ghosh",
+   "n_marks": 1,
+   "kinds": {
+    "Highlight": 1
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P481"
+  },
+  {
+   "page": 9411,
+   "source": "ir_ghosh",
+   "n_marks": 5,
+   "kinds": {
+    "Underline": 5
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P482"
+  },
+  {
+   "page": 9417,
+   "source": "ir_ghosh",
+   "n_marks": 4,
+   "kinds": {
+    "Underline": 4
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 4,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P483"
+  },
+  {
+   "page": 9423,
+   "source": "ir_ghosh",
+   "n_marks": 3,
+   "kinds": {
+    "Underline": 3
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P484"
+  },
+  {
+   "page": 9436,
+   "source": "ir_ghosh",
+   "n_marks": 6,
+   "kinds": {
+    "Underline": 6
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 4,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P485"
+  },
+  {
+   "page": 9441,
+   "source": "ir_ghosh",
+   "n_marks": 4,
+   "kinds": {
+    "Underline": 4
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P486"
+  },
+  {
+   "page": 9451,
+   "source": "ir_ghosh",
+   "n_marks": 1,
+   "kinds": {
+    "Underline": 1
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P487"
+  },
+  {
+   "page": 9453,
+   "source": "ir_ghosh",
+   "n_marks": 2,
+   "kinds": {
+    "Underline": 2
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P488"
+  },
+  {
+   "page": 9548,
+   "source": "ir_ghosh",
+   "n_marks": 3,
+   "kinds": {
+    "Underline": 3
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P489"
+  },
+  {
+   "page": 9549,
+   "source": "ir_ghosh",
+   "n_marks": 1,
+   "kinds": {
+    "Underline": 1
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P490"
+  },
+  {
+   "page": 9557,
+   "source": "ir_ghosh",
+   "n_marks": 2,
+   "kinds": {
+    "Underline": 2
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P491"
+  },
+  {
+   "page": 9601,
+   "source": "ir_ghosh",
+   "n_marks": 3,
+   "kinds": {
+    "Underline": 3
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P492"
+  },
+  {
+   "page": 9608,
+   "source": "ir_ghosh",
+   "n_marks": 6,
+   "kinds": {
+    "Underline": 6
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 3,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P493"
+  },
+  {
+   "page": 9678,
+   "source": "ir_ghosh",
+   "n_marks": 3,
+   "kinds": {
+    "Highlight": 3
+   },
+   "colors": [
+    "[1.0, 0.83, 0.0]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P494"
+  },
+  {
+   "page": 9699,
+   "source": "ir_ghosh",
+   "n_marks": 1,
+   "kinds": {
+    "Underline": 1
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P495"
+  },
+  {
+   "page": 9703,
+   "source": "ir_ghosh",
+   "n_marks": 6,
+   "kinds": {
+    "Underline": 6
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P496"
+  },
+  {
+   "page": 9712,
+   "source": "ir_ghosh",
+   "n_marks": 1,
+   "kinds": {
+    "Underline": 1
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P497"
+  },
+  {
+   "page": 9738,
+   "source": "ir_ghosh",
+   "n_marks": 2,
+   "kinds": {
+    "Underline": 2
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 2,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P498"
+  },
+  {
+   "page": 9824,
+   "source": "ir_ghosh",
+   "n_marks": 1,
+   "kinds": {
+    "Underline": 1
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 0,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P499"
+  },
+  {
+   "page": 9832,
+   "source": "ir_ghosh",
+   "n_marks": 3,
+   "kinds": {
+    "Underline": 3
+   },
+   "colors": [
+    "[1.0, 0.4, 0.4]"
+   ],
+   "multi_line": 1,
+   "other": {},
+   "w": 490,
+   "h": 652,
+   "act": null,
+   "id": "P500"
+  }
+ ]
+}

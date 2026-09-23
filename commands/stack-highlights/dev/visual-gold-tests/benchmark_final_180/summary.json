@@ -1,0 +1,932 @@
+{
+  "overall_score": 91.06,
+  "comparisons": 900,
+  "status_counts": {
+    "PASS": 755,
+    "FAIL": 114,
+    "REVIEW": 10,
+    "DANGEROUS": 21
+  },
+  "by_profile": {
+    "default_structured": {
+      "score": 91.01,
+      "status_counts": {
+        "PASS": 148,
+        "FAIL": 26,
+        "REVIEW": 3,
+        "DANGEROUS": 3
+      }
+    },
+    "highlight_exact_flat": {
+      "score": 97.2,
+      "status_counts": {
+        "PASS": 175,
+        "DANGEROUS": 5
+      }
+    },
+    "safe_sentence_flat": {
+      "score": 91.39,
+      "status_counts": {
+        "PASS": 151,
+        "FAIL": 21,
+        "REVIEW": 3,
+        "DANGEROUS": 5
+      }
+    },
+    "clause_structured": {
+      "score": 87.04,
+      "status_counts": {
+        "PASS": 133,
+        "FAIL": 40,
+        "REVIEW": 4,
+        "DANGEROUS": 3
+      }
+    },
+    "window12_flat": {
+      "score": 88.68,
+      "status_counts": {
+        "PASS": 148,
+        "FAIL": 27,
+        "DANGEROUS": 5
+      }
+    }
+  },
+  "by_pdf": {
+    "00_The_Constitution_of_India.pdf": {
+      "score": 88.4,
+      "status_counts": {
+        "PASS": 113,
+        "FAIL": 34,
+        "REVIEW": 3
+      }
+    },
+    "01_A_Brief_History_of_Modern_India.pdf": {
+      "score": 80.74,
+      "status_counts": {
+        "PASS": 110,
+        "DANGEROUS": 21,
+        "FAIL": 16,
+        "REVIEW": 3
+      }
+    },
+    "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf": {
+      "score": 96.75,
+      "status_counts": {
+        "FAIL": 7,
+        "PASS": 140,
+        "REVIEW": 3
+      }
+    },
+    "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf": {
+      "score": 95.23,
+      "status_counts": {
+        "PASS": 135,
+        "FAIL": 15
+      }
+    },
+    "01_Indian_Polity_Laxmikanth.pdf": {
+      "score": 95.89,
+      "status_counts": {
+        "PASS": 141,
+        "FAIL": 9
+      }
+    },
+    "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf": {
+      "score": 89.38,
+      "status_counts": {
+        "PASS": 116,
+        "FAIL": 33,
+        "REVIEW": 1
+      }
+    }
+  },
+  "by_kind": {
+    "footnote": {
+      "score": 93.69,
+      "n": 15,
+      "status_counts": {
+        "PASS": 13,
+        "FAIL": 2
+      }
+    },
+    "heading": {
+      "score": 96.76,
+      "n": 95,
+      "status_counts": {
+        "PASS": 89,
+        "FAIL": 5,
+        "REVIEW": 1
+      }
+    },
+    "legal_clause": {
+      "score": 87.39,
+      "n": 95,
+      "status_counts": {
+        "PASS": 71,
+        "FAIL": 24
+      }
+    },
+    "legal_list_item": {
+      "score": 98.75,
+      "n": 15,
+      "status_counts": {
+        "PASS": 15
+      }
+    },
+    "legal_section": {
+      "score": 99.28,
+      "n": 10,
+      "status_counts": {
+        "PASS": 10
+      }
+    },
+    "list_item": {
+      "score": 93.57,
+      "n": 70,
+      "status_counts": {
+        "PASS": 60,
+        "REVIEW": 3,
+        "FAIL": 7
+      }
+    },
+    "prose": {
+      "score": 90.23,
+      "n": 580,
+      "status_counts": {
+        "PASS": 484,
+        "FAIL": 69,
+        "DANGEROUS": 21,
+        "REVIEW": 6
+      }
+    },
+    "runin_list": {
+      "score": 72.71,
+      "n": 5,
+      "status_counts": {
+        "FAIL": 3,
+        "PASS": 2
+      }
+    },
+    "table_cell": {
+      "score": 100.0,
+      "n": 5,
+      "status_counts": {
+        "PASS": 5
+      }
+    },
+    "toc_item": {
+      "score": 83.6,
+      "n": 10,
+      "status_counts": {
+        "FAIL": 4,
+        "PASS": 6
+      }
+    }
+  },
+  "dangerous": [
+    {
+      "case_id": "VG017",
+      "profile": "default_structured",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 157,
+      "score": 8.0,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled; substantial unrelated/unsafe text"
+    },
+    {
+      "case_id": "VG018",
+      "profile": "default_structured",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 214,
+      "score": 12.5,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled"
+    },
+    {
+      "case_id": "VG100",
+      "profile": "default_structured",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 240,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG015",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 124,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG017",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 157,
+      "score": 0.0,
+      "reason": "highlight missing/altered"
+    },
+    {
+      "case_id": "VG018",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 214,
+      "score": 16.67,
+      "reason": "highlight missing/altered"
+    },
+    {
+      "case_id": "VG090",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 136,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG100",
+      "profile": "highlight_exact_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 240,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG015",
+      "profile": "safe_sentence_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 124,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG017",
+      "profile": "safe_sentence_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 157,
+      "score": 8.0,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled; substantial unrelated/unsafe text"
+    },
+    {
+      "case_id": "VG018",
+      "profile": "safe_sentence_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 214,
+      "score": 23.25,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled; substantial unrelated/unsafe text"
+    },
+    {
+      "case_id": "VG090",
+      "profile": "safe_sentence_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 136,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG100",
+      "profile": "safe_sentence_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 240,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG017",
+      "profile": "clause_structured",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 157,
+      "score": 8.0,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled; substantial unrelated/unsafe text"
+    },
+    {
+      "case_id": "VG018",
+      "profile": "clause_structured",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 214,
+      "score": 12.5,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled"
+    },
+    {
+      "case_id": "VG100",
+      "profile": "clause_structured",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 240,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG015",
+      "profile": "window12_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 124,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG017",
+      "profile": "window12_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 157,
+      "score": 7.5,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled; substantial unrelated/unsafe text"
+    },
+    {
+      "case_id": "VG018",
+      "profile": "window12_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 214,
+      "score": 21.79,
+      "reason": "highlight missing/altered; insufficient correct context; context order scrambled; substantial unrelated/unsafe text"
+    },
+    {
+      "case_id": "VG090",
+      "profile": "window12_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 136,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    },
+    {
+      "case_id": "VG100",
+      "profile": "window12_flat",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 240,
+      "score": 0.0,
+      "reason": "no matching entry on page"
+    }
+  ],
+  "worst_cases": [
+    {
+      "case_id": "VG100",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 240,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 0.0,
+      "min_score": 0.0,
+      "statuses": {
+        "DANGEROUS": 5
+      },
+      "dangerous_profiles": [
+        "default_structured",
+        "highlight_exact_flat",
+        "safe_sentence_flat",
+        "clause_structured",
+        "window12_flat"
+      ],
+      "fail_profiles": []
+    },
+    {
+      "case_id": "VG017",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 157,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 6.3,
+      "min_score": 0.0,
+      "statuses": {
+        "DANGEROUS": 5
+      },
+      "dangerous_profiles": [
+        "default_structured",
+        "highlight_exact_flat",
+        "safe_sentence_flat",
+        "clause_structured",
+        "window12_flat"
+      ],
+      "fail_profiles": []
+    },
+    {
+      "case_id": "VG015",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 124,
+      "kind": "prose",
+      "density": "high",
+      "avg_score": 37.65,
+      "min_score": 0.0,
+      "statuses": {
+        "PASS": 2,
+        "DANGEROUS": 3
+      },
+      "dangerous_profiles": [
+        "highlight_exact_flat",
+        "safe_sentence_flat",
+        "window12_flat"
+      ],
+      "fail_profiles": []
+    },
+    {
+      "case_id": "VG090",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 136,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 40.0,
+      "min_score": 0.0,
+      "statuses": {
+        "PASS": 2,
+        "DANGEROUS": 3
+      },
+      "dangerous_profiles": [
+        "highlight_exact_flat",
+        "safe_sentence_flat",
+        "window12_flat"
+      ],
+      "fail_profiles": []
+    },
+    {
+      "case_id": "VG018",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 214,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 17.34,
+      "min_score": 12.5,
+      "statuses": {
+        "DANGEROUS": 5
+      },
+      "dangerous_profiles": [
+        "default_structured",
+        "highlight_exact_flat",
+        "safe_sentence_flat",
+        "clause_structured",
+        "window12_flat"
+      ],
+      "fail_profiles": []
+    },
+    {
+      "case_id": "VG002",
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "page": 9,
+      "kind": "toc_item",
+      "density": "medium",
+      "avg_score": 67.2,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 4,
+        "PASS": 1
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured",
+        "window12_flat"
+      ]
+    },
+    {
+      "case_id": "VG073",
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "page": 99,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 67.2,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 4,
+        "PASS": 1
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured",
+        "window12_flat"
+      ]
+    },
+    {
+      "case_id": "VG076",
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "page": 182,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 67.2,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 4,
+        "PASS": 1
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured",
+        "window12_flat"
+      ]
+    },
+    {
+      "case_id": "VG086",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 99,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 67.2,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 4,
+        "PASS": 1
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured",
+        "window12_flat"
+      ]
+    },
+    {
+      "case_id": "VG021",
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "page": 18,
+      "kind": "list_item",
+      "density": "medium",
+      "avg_score": 67.2,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 4,
+        "PASS": 1
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured",
+        "window12_flat"
+      ]
+    },
+    {
+      "case_id": "VG167",
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "page": 26,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 72.6,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG037",
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "page": 352,
+      "kind": "runin_list",
+      "density": "high",
+      "avg_score": 72.71,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG009",
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "page": 198,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 72.84,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG063",
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "page": 23,
+      "kind": "heading",
+      "density": "medium",
+      "avg_score": 72.89,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "window12_flat"
+      ]
+    },
+    {
+      "case_id": "VG067",
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "page": 54,
+      "kind": "prose",
+      "density": "high",
+      "avg_score": 72.9,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG169",
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "page": 38,
+      "kind": "prose",
+      "density": "high",
+      "avg_score": 73.4,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG170",
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "page": 41,
+      "kind": "legal_clause",
+      "density": "high",
+      "avg_score": 73.49,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG095",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 202,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 73.53,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG171",
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "page": 47,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 73.65,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG157",
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "page": 754,
+      "kind": "legal_clause",
+      "density": "medium",
+      "avg_score": 73.73,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG168",
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "page": 33,
+      "kind": "legal_clause",
+      "density": "high",
+      "avg_score": 73.9,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG166",
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "page": 25,
+      "kind": "prose",
+      "density": "high",
+      "avg_score": 74.0,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG174",
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "page": 56,
+      "kind": "legal_clause",
+      "density": "medium",
+      "avg_score": 74.0,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG080",
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "page": 345,
+      "kind": "legal_clause",
+      "density": "medium",
+      "avg_score": 74.52,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG163",
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "page": 12,
+      "kind": "prose",
+      "density": "high",
+      "avg_score": 75.4,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG173",
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "page": 50,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 75.4,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 3,
+        "PASS": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "safe_sentence_flat",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG078",
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "page": 234,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 78.43,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 2,
+        "PASS": 3
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "clause_structured"
+      ]
+    },
+    {
+      "case_id": "VG172",
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "page": 49,
+      "kind": "prose",
+      "density": "medium",
+      "avg_score": 79.78,
+      "min_score": 59.0,
+      "statuses": {
+        "FAIL": 2,
+        "PASS": 3
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "default_structured",
+        "window12_flat"
+      ]
+    },
+    {
+      "case_id": "VG161",
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "page": 6,
+      "kind": "prose",
+      "density": "high",
+      "avg_score": 81.49,
+      "min_score": 59.0,
+      "statuses": {
+        "PASS": 3,
+        "FAIL": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "clause_structured",
+        "window12_flat"
+      ]
+    },
+    {
+      "case_id": "VG088",
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "page": 119,
+      "kind": "prose",
+      "density": "high",
+      "avg_score": 82.99,
+      "min_score": 59.0,
+      "statuses": {
+        "PASS": 3,
+        "FAIL": 2
+      },
+      "dangerous_profiles": [],
+      "fail_profiles": [
+        "clause_structured",
+        "window12_flat"
+      ]
+    }
+  ]
+}

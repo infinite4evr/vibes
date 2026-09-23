@@ -1,0 +1,159 @@
+{
+  "highlights": 4,
+  "entries": [
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "CHAPTER VA"
+        },
+        {
+          "level": 2,
+          "text": "LAY-OFF AND RETRENCHMENT"
+        },
+        {
+          "level": 4,
+          "text": "25C. Right of workmen laid-off for compensation"
+        }
+      ],
+      "page": 1,
+      "page_label": "1",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Rightofworkmenlaid-offforcompensation.—"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "CHAPTER VA"
+        },
+        {
+          "level": 2,
+          "text": "LAY-OFF AND RETRENCHMENT"
+        },
+        {
+          "level": 4,
+          "text": "25C. Right of workmen laid-off for compensation"
+        }
+      ],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(1) Whenever a workman whose name is borne on the muster rolls is laid-off, he shall be ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "paid compensation",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " for all days of lay-off.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "paidcompensation"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "CHAPTER VA"
+        },
+        {
+          "level": 2,
+          "text": "STATE AMENDMENT"
+        }
+      ],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "In section 25C, for the words “all days”, substitute ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "“forty-five days”.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "“forty-fivedays”."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "CHAPTER VA"
+        },
+        {
+          "level": 4,
+          "text": "26. Penalty for illegal strikes"
+        }
+      ],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(1) Any workman who commences an illegal strike shall be punishable with imprisonment for a term which may extend to ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "one month.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "onemonth."
+        }
+      ]
+    }
+  ]
+}

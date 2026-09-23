@@ -1,0 +1,2635 @@
+#!/usr/bin/env python3
+"""
+stack-highlights -- turn the highlights in a PDF into structured notes.
+
+Only what you marked (highlights, and underlines by default) ends up in bold;
+everything else in the output is context the tool adds around your marks so
+they make sense on their own: the rest of the sentence, the heading path they
+sit under, the lead-in line of a list, the row and column of a table cell.
+It never adds content from outside the book.
+
+HOW IT WORKS
+    Every character on a page is tagged with the annotation covering it (if
+    any). Paragraphs, headings, list items and table rows are rebuilt from
+    those characters, so a highlight is carried through exactly -- no text
+    searching, so ligatures, footnote markers, hyphenation and line breaks
+    can't make a highlight silently disappear. At the end a coverage check
+    reports any mark that did not make it into the output.
+
+WHAT YOU GET (Markdown by default, next to each PDF)
+    # / ## / ### headings   only the headings that have marked content under
+                            them (chapter > section > subsection > run-in)
+    snippets                the sentence around each mark, marks in **bold**;
+                            long sentences are trimmed to the clauses around
+                            the marks, with "…" where text was cut
+    list items              prefixed with the sentence that introduces the
+                            list ("The features ... are:"), consecutive items
+                            under one lead-in grouped into one entry
+    table rows              "Column: value · Column: value", with the row
+                            label filled down for sub-rows (Chapter I under
+                            Part V, etc.) and the table caption as heading
+    > fn 7: ...             a highlighted footnote, placed under the snippet
+                            that cites it
+    > Note: ...             your own typed notes / annotation comments,
+                            placed under the nearest snippet
+
+USAGE
+    stack-highlights book.pdf                   # -> book.md next to it
+    stack-highlights book.pdf --out notes.md
+    stack-highlights folder/                    # every PDF, recursively
+    stack-highlights folder/ --combine          # one combined_highlights.md
+    stack-highlights book.pdf --context clause  # tighter snippets
+    stack-highlights book.pdf --max-words 30    # trim long sentences sooner
+    stack-highlights book.pdf --kinds highlight # ignore underlines
+    stack-highlights book.pdf --colors red      # only the red highlights
+    stack-highlights book.pdf --page-refs       # "(p. 64)" after each entry
+    stack-highlights book.pdf --format json     # structured output
+    stack-highlights book.pdf --pages 10-40     # only part of the PDF
+
+Run with --help for every option.
+"""
+import argparse
+import json
+import os
+import re
+import sys
+from collections import Counter
+from pathlib import Path
+
+try:
+    import pymupdf
+except ImportError:  # older package name
+    import fitz as pymupdf
+
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+ANNOT_KINDS = {8: "highlight", 9: "underline", 10: "squiggly", 11: "strikeout"}
+NOTE_TYPES = {0, 2}  # Text (sticky note), FreeText
+
+NAMED_COLORS = {
+    "yellow": (1.0, 0.9, 0.0), "orange": (1.0, 0.6, 0.0), "red": (1.0, 0.35, 0.35),
+    "pink": (1.0, 0.5, 0.8), "green": (0.3, 0.85, 0.3), "blue": (0.2, 0.6, 1.0),
+    "purple": (0.6, 0.4, 0.9), "gray": (0.6, 0.6, 0.6),
+}
+
+ABBREVIATIONS = {
+    "mr", "mrs", "ms", "dr", "prof", "sr", "jr", "st", "vs", "viz", "no", "nos",
+    "art", "arts", "sec", "secs", "cl", "cls", "sub", "govt", "rs", "co", "ltd",
+    "inc", "vol", "vols", "ch", "fig", "para", "paras", "approx", "cf", "al", "hon",
+    "regn", "ord", "pp", "ss", "ibid", "sch", "cr", "lt", "gen", "col", "capt",
+    "sri", "smt", "shri", "hon'ble", "u/s", "wef", "resp", "min", "max",
+}
+
+SENT_PUNCT = ".!?"
+CLOSERS = "\"'”’)]"
+OPENERS = "\"'“‘(["
+DASHES = "—–"
+
+LIST_RE = re.compile(r"^\s*\[*(\(?\d{1,3}(?:[a-z]|-?[A-Z]{1,3})?[.)]|\((?:[a-zA-Z]{1,4}|[ivxlc]{1,6}|\d{1,3}[A-Za-z]{0,2})\)\]?|[ivxlc]{1,6}[.)]|[a-hA-H][.)]|[•●▪■◦▸►\-–])\s")
+FN_MARK_RE = re.compile(r"^\d{1,3}[a-z]?$")
+FOOTNOTE_START_RE = re.compile(r"^\s*(\d{1,3}[a-z]?)[.)]?\s")
+CAPTION_RE = re.compile(r"^\s*(Table|Figure|Fig\.|Chart|Box)\s+[\dIVX]+([.\-]\d+)*\b", re.I)
+
+# ---------------------------------------------------------------------------
+# Layout thresholds
+#
+# Heuristics for turning geometry back into structure. Values are in points
+# unless the name ends in _FRACTION (a fraction of page width/height, line
+# height, or body font size). They are collected here -- rather than scattered
+# as bare numbers -- so a publisher whose layout differs can be tuned in one
+# place. Several are also exposed as CLI flags (see build_parser); those
+# defaults live on the argument, not here. Numbers that happen to share a
+# value below are DIFFERENT knobs -- do not merge them.
+# ---------------------------------------------------------------------------
+# Running headers / footers and page numbers
+PAGENUM_BOTTOM_FRACTION = 0.5        # a page number sits below this fraction of page height
+RUNNING_MIN_PAGE_FRACTION = 0.3      # a header/footer must repeat on >= this fraction of pages
+RUNNING_LOCAL_MIN_REPEAT = 3            # repeated text in the physical margin is also a running head
+# Page-numbered running heads that change per chapter ("Advent of the Europeans
+# in India * 23" on odd pages) never repeat on 30% of pages, and may sit below
+# the --margin band. They are caught by their page number instead: the topmost
+# or bottommost line of a page, within this band, that starts or ends with a
+# number tracking the PDF page index at the book's usual offset.
+EDGE_BAND_FRACTION = 0.2             # top/bottom page fraction searched for such heads
+EDGE_MIN_REPEAT = 3                  # ... and the same head must occur on >= this many pages
+
+# Highlighter-colour detection (a coloured fill counts as a highlight)
+HILITE_MIN_BRIGHTNESS = 0.75         # brightest RGB channel at least this
+HILITE_MIN_SATURATION = 0.3          # (max-min)/max at least this (excludes grey boxes)
+HILITE_MIN_HEIGHT = 5                # fill height in points: floor ...
+HILITE_MAX_HEIGHT = 40               # ... and ceiling (excludes full-page tints)
+MARK_HIT_SLOP = 0.5                  # pt of slack when testing a glyph centre against a mark rect
+
+# Headings
+ALLCAPS_HEADING_FRACTION = 0.85      # >= this share of letters upper-case -> an all-caps heading
+ALLCAPS_MIN_LETTERS = 3              # ... but only if it has more than this many letters
+HEADING_STACK_X_SLOP = 2            # pt of indent slack when popping the heading stack
+SMALL_STYLE_SIZE_DELTA = 0.5         # a run this many pt smaller than its paragraph is a style shift
+
+# Tables and columns
+ROW_OVERLAP_FRACTION = 0.5           # vertical overlap (of line height) for two blocks to share a row
+NARROW_COLUMN_FRACTION = 0.3         # a block narrower than this fraction of page width may be a column
+SIDE_BY_SIDE_GAP_FRACTION = 0.5      # horizontal gap (of line height) that splits side-by-side lines
+TABLE_CONTINUATION_GAP_FRACTION = 0.6  # vertical gap (of line height) a table row may span to continue
+TABLE_ALIGN_SLOP = 12                  # column starts must repeat this closely across rows
+TABLE_MAX_ROW_GAP = 28                 # pt: a new row much farther away ends the table
+
+# Common publisher boilerplate that must never become structural context.  It
+# is intentionally tiny and conservative: these lines carry no study content,
+# but if they are promoted to headings they can incorrectly own many pages.
+BOILERPLATE_RE = re.compile(r"^this page is intentionally (?:left )?blank[.!]?$", re.I)
+STRUCTURAL_HEADING_RE = re.compile(r"^(?:CHAPTER|PART)\s+[A-Z0-9IVXLC]+(?:[-–—][A-Z0-9IVXLC]+)?\b", re.I)
+STATE_AMEND_RE = re.compile(r"^STATE\s+AMENDMENTS?$", re.I)
+SECTION_RUNIN_RE = re.compile(r"^[\[\(\"'“‘]*\d+[A-Z]*(?:-[A-Z])?\.\s*", re.I)
+
+# List items
+LIST_LINE_SHORT_FRACTION = 0.2       # a line ending this fraction of the block short ends the item
+LIST_INDENT_SLOP = 6                 # pt a continuation line may sit left of the item's text
+
+# ---------------------------------------------------------------------------
+# Small helpers
+# ---------------------------------------------------------------------------
+def color_name(rgb):
+    if not rgb or len(rgb) < 3:
+        return "yellow"
+    return min(NAMED_COLORS, key=lambda n: sum((a - b) ** 2 for a, b in zip(rgb, NAMED_COLORS[n])))
+
+
+def word_count(s):
+    return len(s.split())
+
+
+def rect_dist(a, b):
+    dx = max(0.0, max(a.x0 - b.x1, b.x0 - a.x1))
+    dy = max(0.0, max(a.y0 - b.y1, b.y0 - a.y1))
+    return (dx * dx + dy * dy) ** 0.5
+
+
+def parse_pages(spec, n):
+    if not spec:
+        return list(range(n))
+    out = []
+    for part in spec.split(","):
+        part = part.strip()
+        if "-" in part:
+            a, b = part.split("-", 1)
+            a = int(a) if a else 1
+            b = int(b) if b else n
+            out.extend(range(a - 1, min(b, n)))
+        elif part:
+            out.append(int(part) - 1)
+    return [p for p in out if 0 <= p < n]
+
+
+# ---------------------------------------------------------------------------
+# Data model
+# ---------------------------------------------------------------------------
+class Mark:
+    __slots__ = ("id", "page", "kind", "color", "rects", "comment", "text", "used", "co", "raw", "skipped")
+
+    def __init__(self, mid, page, kind, color, rects, comment):
+        self.id, self.page, self.kind, self.color = mid, page, kind, color
+        self.rects, self.comment = rects, comment
+        self.text, self.used, self.co, self.raw = [], False, set(), False
+        self.skipped = False
+
+
+class Token:
+    __slots__ = ("chars", "size", "bold", "sup", "glue", "line_start", "x0", "y0", "x1", "y1")
+
+    def __init__(self):
+        self.chars = []  # (c, mark_id, rect, bold)
+        self.glue = False
+        self.line_start = False
+
+    @property
+    def text(self):
+        return "".join(c[0] for c in self.chars)
+
+
+class Para:
+    """A run of text as parallel arrays: characters, the mark on each
+    character (-1 = unmarked) and the character's box (None for inserted
+    spaces). Everything downstream works on these arrays."""
+
+    def __init__(self, page):
+        self.page = page
+        self.chars, self.marks, self.boxes = [], [], []
+        self.kind = "para"      # para | list | footnote | heading | cell
+        self.x0 = 0.0
+        self.size = 0.0
+        self.fn = None          # footnote number, for footnote paragraphs
+        self.refs = []          # (char position, marker) footnote references
+        self.leadin = None      # Para introducing a list item
+        self.amend = set()      # positions of "[" opened by an amendment marker
+        self.item_index = None
+
+    @property
+    def text(self):
+        return "".join(self.chars)
+
+    def has_marks(self):
+        return any(m >= 0 for m in self.marks)
+
+    def append_space(self):
+        if self.chars and self.chars[-1] != " ":
+            self.chars.append(" ")
+            self.marks.append(-1)
+            self.boxes.append(None)
+
+    def extend(self, other):
+        base = len(self.chars)
+        if base and other.chars:
+            self.append_space()
+            base = len(self.chars)
+        self.chars += other.chars
+        self.marks += other.marks
+        self.boxes += other.boxes
+        self.refs += [(p + base, n) for p, n in other.refs]
+        self.amend |= {p + base for p in other.amend}
+
+    def finalize(self):
+        # strip, then let spaces between two chars of the same mark join it,
+        # so one highlight spanning several words renders as one bold run
+        while self.chars and self.chars[0] == " ":
+            for a in (self.chars, self.marks, self.boxes):
+                a.pop(0)
+            self.refs = [(p - 1, n) for p, n in self.refs]
+        while self.chars and self.chars[-1] == " ":
+            for a in (self.chars, self.marks, self.boxes):
+                a.pop()
+        i = 1
+        while i < len(self.chars):   # collapse double spaces
+            if self.chars[i] == " " and self.chars[i - 1] == " ":
+                for a in (self.chars, self.marks, self.boxes):
+                    del a[i]
+                self.refs = [(q - 1 if q > i else q, n) for q, n in self.refs]
+                self.amend = {q - 1 if q > i else q for q in self.amend}
+            else:
+                i += 1
+        for i, c in enumerate(self.chars):
+            if c == " " and 0 < i < len(self.chars) - 1:
+                l, r = self.marks[i - 1], self.marks[i + 1]
+                if l >= 0 and l == r:
+                    self.marks[i] = l
+
+
+class Item:
+    __slots__ = ("type", "level", "para", "cells", "page", "table", "bottoms")
+
+    def __init__(self, type_, page, para=None, level=0, cells=None, table=None):
+        self.type, self.page, self.para, self.level = type_, page, para, level
+        self.cells, self.table = cells, table
+
+
+class Entry:
+    def __init__(self, kind, crumbs, page):
+        self.kind = kind          # snippet | row | heading | note | group
+        self.crumbs = crumbs      # list of (level, rendered heading)
+        self.page = page
+        self.lines = []           # list of rendered pieces (list of (text, mark or -1))
+        self.subs = []            # (label, pieces)  footnotes / notes
+        self.bbox = None
+        self.mark_ids = set()
+        self.leadin_key = None
+
+
+# ---------------------------------------------------------------------------
+# Document context: body size, running headers/footers, page labels
+# ---------------------------------------------------------------------------
+class DocContext:
+    def __init__(self, doc, pages, cfg):
+        self.doc, self.cfg = doc, cfg
+        self.pages = pages
+        self.marks = []
+        self.notes = []  # (page, rect, text)
+        self.running = set()
+        self.edge_running = {}  # pno -> keys of page-numbered running heads
+        self.edge_hit = None    # "top"/"bottom" when is_running matched one
+        self.page_labels = {}
+        self.body_size = 11.0
+        self.table = None     # active table state across rows/pages
+        self.stats = Counter()
+        self._survey()
+
+    def _survey(self):
+        sizes = Counter()
+        margin_keys = Counter()
+        edge_cands = []           # (pno, key, offset of its page number)
+        allp = list(range(self.doc.page_count))
+        sample = set(allp if len(allp) <= 60 else allp[:: max(1, len(allp) // 60)])
+        for pno in range(self.doc.page_count):
+            page = self.doc[pno]
+            h = page.rect.height
+            d = page.get_text("dict", flags=0)
+            edge_lines = []
+            for b in d["blocks"]:
+                for l in b.get("lines", []):
+                    txt = "".join(s["text"] for s in l["spans"]).strip()
+                    if pno in sample:
+                        for s in l["spans"]:
+                            sizes[round(s["size"], 1)] += len(s["text"].strip())
+                    if not txt:
+                        continue
+                    y0, y1 = l["bbox"][1], l["bbox"][3]
+                    edge_lines.append((y0, y1, txt))
+                    if y1 < h * self.cfg.margin or y0 > h * (1 - self.cfg.margin):
+                        margin_keys[self._key(txt)] += 1
+                        if re.fullmatch(r"\d{1,4}", txt) and y0 > h * PAGENUM_BOTTOM_FRACTION:
+                            self.page_labels.setdefault(pno, txt)
+                        elif re.fullmatch(r"\d{1,4}", txt):
+                            self.page_labels.setdefault(pno, txt)
+            if edge_lines:
+                top = min(edge_lines, key=lambda x: x[0])
+                bot = max(edge_lines, key=lambda x: x[1])
+                for y0, y1, txt in {top, bot}:
+                    if not (y1 < h * EDGE_BAND_FRACTION or y0 > h * (1 - EDGE_BAND_FRACTION)):
+                        continue
+                    m = re.match(r"^(\d{1,4})\s", txt) or re.search(r"\s(\d{1,4})$", txt)
+                    if m:
+                        edge_cands.append((pno, self._key(txt), int(m.group(1)) - pno))
+        if sizes:
+            self.body_size = sizes.most_common(1)[0][0]
+        need = max(3, int(self.doc.page_count * RUNNING_MIN_PAGE_FRACTION))
+        # A fixed book title often repeats on half the pages, while a chapter
+        # title may repeat only on the odd (or even) pages of that chapter.
+        # Requiring 30% of the *whole book* therefore misses chapter-name
+        # running heads.  Text physically inside the margin is safe to strip
+        # after a few exact repeats; structural labels such as STATE AMENDMENT
+        # are excluded because, in legislation, they can legitimately start at
+        # the very top of a page.
+        self.running = {
+            k for k, v in margin_keys.items()
+            if k == "#" or v >= need or (
+                v >= RUNNING_LOCAL_MIN_REPEAT
+                and re.search(r"[a-z]", k)
+                and not k.startswith(("stateamendment", "chapter", "part"))
+            )
+        }
+        # page-numbered running heads: the page number must follow the book's
+        # dominant page offset (so a stray number in body text never qualifies)
+        offsets = Counter(off for _p, _k, off in edge_cands)
+        if offsets:
+            best, n_best = offsets.most_common(1)[0]
+            if n_best >= need:
+                hits = [(p, k) for p, k, off in edge_cands if off == best]
+                reps = Counter(k for _p, k in hits)
+                for p, k in hits:
+                    if reps[k] >= EDGE_MIN_REPEAT:
+                        self.edge_running.setdefault(p, set()).add(k)
+
+    @staticmethod
+    def _key(txt):
+        return re.sub(r"\d+", "#", re.sub(r"\s+", "", txt)).strip().lower()
+
+    def is_running(self, page, rect, txt):
+        self.edge_hit = None
+        if not self.cfg.strip_running:
+            return False
+        h = page.rect.height
+        if rect.y1 < h * self.cfg.margin or rect.y0 > h * (1 - self.cfg.margin):
+            if self._key(txt) in self.running:
+                return True
+        edge = self.edge_running.get(page.number)
+        if edge and (rect.y1 < h * EDGE_BAND_FRACTION or rect.y0 > h * (1 - EDGE_BAND_FRACTION)):
+            if self._key(txt) in edge:
+                self.edge_hit = "top" if rect.y1 < h * EDGE_BAND_FRACTION else "bottom"
+                return True
+        return False
+
+    def label(self, pno):
+        return self.page_labels.get(pno, str(pno + 1))
+
+
+# ---------------------------------------------------------------------------
+# Annotations -> marks
+# ---------------------------------------------------------------------------
+def collect_marks(ctx, page, pno, use_fills):
+    cfg = ctx.cfg
+    marks = []
+    if not use_fills:
+        for a in page.annots() or []:
+            t = a.type[0]
+            if t in NOTE_TYPES:
+                content = (a.info.get("content") or "").strip()
+                if content and cfg.notes:
+                    ctx.notes.append((pno, a.rect, content))
+                continue
+            kind = ANNOT_KINDS.get(t)
+            if kind is None or kind not in cfg.kinds:
+                continue
+            col = a.colors.get("stroke") or a.colors.get("fill")
+            cname = color_name(col)
+            if cfg.colors and cname not in cfg.colors:
+                continue
+            v = a.vertices
+            if v:
+                rects = [pymupdf.Quad(v[i:i + 4]).rect for i in range(0, len(v) - 3, 4)]
+            else:
+                rects = [a.rect]
+            comment = (a.info.get("content") or "").strip() if cfg.notes else ""
+            m = Mark(len(ctx.marks), pno, kind, cname, rects, comment)
+            ctx.marks.append(m)
+            marks.append(m)
+    else:
+        for d in page.get_drawings():
+            if d.get("type") != "f" or not d.get("fill"):
+                continue
+            fill = d["fill"]
+            for it in d.get("items") or []:
+                if it[0] != "re":
+                    continue
+                r = pymupdf.Rect(it[1])
+                if looks_like_highlighter(fill, r):
+                    cname = color_name(fill)
+                    if cfg.colors and cname not in cfg.colors:
+                        continue
+                    m = Mark(len(ctx.marks), pno, "highlight", cname, [r], "")
+                    ctx.marks.append(m)
+                    marks.append(m)
+    return marks
+
+
+def looks_like_highlighter(fill, r):
+    if not fill or len(fill) != 3:
+        return False
+    mx, mn = max(fill), min(fill)
+    sat = 0 if mx == 0 else (mx - mn) / mx
+    return (mx >= HILITE_MIN_BRIGHTNESS and sat >= HILITE_MIN_SATURATION
+            and HILITE_MIN_HEIGHT <= r.height <= HILITE_MAX_HEIGHT)
+
+
+def doc_has_annotation_marks(doc, pages):
+    for p in pages:
+        for a in doc[p].annots() or []:
+            if a.type[0] in ANNOT_KINDS:
+                return True
+    return False
+
+
+# ---------------------------------------------------------------------------
+# Page -> lines of tokens (character level, with marks)
+# ---------------------------------------------------------------------------
+RAW_FLAGS = pymupdf.TEXTFLAGS_RAWDICT & ~pymupdf.TEXT_PRESERVE_LIGATURES
+
+
+def char_mark(cx, cy, marks):
+    """Primary mark covering the point, plus any others that also cover it
+    (the same words underlined twice, a highlight inside an underlined
+    row ...). Only the primary one is shown; all of them count as placed."""
+    hit = []
+    for m in marks:
+        for r in m.rects:
+            if r.x0 - MARK_HIT_SLOP <= cx <= r.x1 + MARK_HIT_SLOP and r.y0 <= cy <= r.y1:
+                hit.append(m)
+                break
+    if not hit:
+        return -1
+    for other in hit[1:]:
+        hit[0].co.add(other.id)
+    return hit[0].id
+
+
+def line_tokens(line, marks, ctx):
+    body = ctx.body_size
+    toks = []
+    cur = None
+    space_pending = True
+    for s in line["spans"]:
+        size = s["size"]
+        bold = bool(s["flags"] & 16) or "bold" in s["font"].lower()
+        sup = bool(s["flags"] & 1) or size <= body * ctx.cfg.sup_ratio
+        for ch in s["chars"]:
+            c = ch["c"]
+            if not c or c.isspace():
+                cur = None
+                space_pending = True
+                continue
+            if c in "\ufb01\ufb02\ufb00\ufb03\ufb04":
+                c = {"\ufb01": "fi", "\ufb02": "fl", "\ufb00": "ff", "\ufb03": "ffi", "\ufb04": "ffl"}[c]
+            box = pymupdf.Rect(ch["bbox"])
+            if cur is None or cur.sup != sup:
+                cur = Token()
+                cur.size, cur.sup, cur.bold = size, sup, True
+                cur.glue = bool(toks) and not space_pending
+                cur.x0, cur.y0, cur.x1, cur.y1 = box.x0, box.y0, box.x1, box.y1
+                toks.append(cur)
+            space_pending = False
+            mid = char_mark((box.x0 + box.x1) / 2, (box.y0 + box.y1) / 2, marks) if marks else -1
+            cur.chars.append((c, mid, box, bold))
+            cur.x1, cur.y1 = max(cur.x1, box.x1), max(cur.y1, box.y1)
+            cur.y0 = min(cur.y0, box.y0)
+            if c in DASHES and len(cur.chars) > 1:
+                cur = None  # "operation].—A" -> split after the dash
+    for t in toks:
+        t.bold = all(ch[3] for ch in t.chars if ch[0].isalnum()) and any(ch[0].isalnum() for ch in t.chars)
+    if toks:
+        toks[0].line_start = True
+    return toks
+
+
+def snap_token_marks(tok, mode):
+    """--snap word: a word counts as marked when more than half of its
+    letters/digits are covered (so a highlight that clips one letter of the
+    next word doesn't drag it in, and one that misses the last letter doesn't
+    lose the word). --snap char keeps the exact characters."""
+    if mode == "char":
+        return
+    alnum = [ch for ch in tok.chars if ch[0].isalnum()] or tok.chars
+    marked = [ch[1] for ch in alnum if ch[1] >= 0]
+    digits = [ch for ch in alnum if ch[0].isdigit()]
+    all_digits = bool(digits) and all(ch[1] >= 0 for ch in digits)   # "42" of "42nd"
+    if len(marked) * 2 > len(alnum) or (all_digits and marked):
+        mid = Counter(marked).most_common(1)[0][0]
+        tok.chars = [(c, mid, b, bo) for c, _, b, bo in tok.chars]
+    else:
+        tok.chars = [(c, -1, b, bo) for c, _, b, bo in tok.chars]
+
+
+# ---------------------------------------------------------------------------
+# Tokens -> Para (footnote markers, amendment brackets, hyphenation)
+# ---------------------------------------------------------------------------
+def tokens_to_para(tokens, pno, cfg, kind="para"):
+    p = Para(pno)
+    p.kind = kind
+    amend_open = []  # char positions of "[" that belong to an amendment marker
+    drop_bracket = False
+    sizes = []
+    first_content = True
+    for i, t in enumerate(tokens):
+        txt = t.text
+        if t.sup and FN_MARK_RE.match(txt):
+            nxt = tokens[i + 1] if i + 1 < len(tokens) else None
+            if nxt is not None and nxt.glue and nxt.text.startswith("["):
+                drop_bracket = not cfg.keep_markers  # "4[(1) ..." amendment marker
+                if not cfg.keep_markers:
+                    if not t.glue and nxt.glue:
+                        nxt.glue = False
+                    continue
+            elif first_content and p.fn is None and nxt is not None and \
+                    (nxt.text[:1].isalpha() or nxt.text[:1] in "“‘\"'"):
+                p.fn = txt              # "7Westminster is a place ..." footnote body
+                if not cfg.keep_markers:
+                    if nxt is not None:
+                        nxt.glue = False
+                    continue
+            else:
+                p.refs.append((len(p.chars), txt))
+                if not cfg.keep_markers:
+                    if nxt is not None and not t.glue and nxt.glue:
+                        nxt.glue = False
+                    continue
+        if p.chars:
+            prev_last = p.chars[-1]
+            hyphen_join = (t.line_start and prev_last == "-" and len(p.chars) > 1
+                           and p.chars[-2].isalpha() and txt[:1].isalpha())
+            if hyphen_join:
+                # word broken at a line-end hyphen: always glue ("Travancore-Cochin");
+                # --dehyphenate drops the hyphen only before a lowercase letter
+                # ("co-operation" -> "cooperation"), never in a Capital-Capital compound
+                if cfg.dehyphenate and txt[:1].islower():
+                    for a in (p.chars, p.marks, p.boxes):
+                        a.pop()
+            elif not t.glue:
+                p.append_space()
+        first_content = False
+        for j, (c, mid, box, _) in enumerate(t.chars):
+            if j == 0 and drop_bracket and c == "[":
+                amend_open.append(len(p.chars))
+            p.chars.append(c)
+            p.marks.append(mid)
+            p.boxes.append(box)
+        drop_bracket = False
+        sizes.append(t.size)
+        if t.sup and not FN_MARK_RE.match(txt):
+            pass
+    p.amend = set(amend_open)
+    p.size = sorted(sizes)[len(sizes) // 2] if sizes else 0
+    p.x0 = tokens[0].x0 if tokens else 0
+    p.finalize()
+    return p
+
+
+def strip_amendments(items, cfg):
+    """Remove the brackets of amendment markers ("⁴[(1) This Act ... ]"),
+    pairing them across paragraphs: an amendment often opens in a section
+    title and closes several paragraphs later."""
+    if cfg.keep_markers:
+        return
+    carry = 0
+    for it in items:
+        if it.type == "heading" and it.level <= 2:
+            carry = 0
+        paras = [it.para] if it.para is not None else [p for _, p, filled in (it.cells or []) if not filled]
+        for p in paras:
+            carry = _strip_para(p, carry)
+        carry = min(carry, 6)
+
+
+def _strip_para(p, carry):
+    keep = [True] * len(p.chars)
+    near = [False] * len(p.chars)
+    stack = ["A"] * carry
+    for i, c in enumerate(p.chars):
+        if c == "[":
+            if i in p.amend:
+                stack.append("A")
+                keep[i] = False
+            else:
+                stack.append("N")
+        elif c == "]" and stack:
+            if stack.pop() == "A":
+                keep[i] = False
+        if not keep[i]:
+            for k in (i - 1, i + 1):
+                if 0 <= k < len(near):
+                    near[k] = True
+    carry = stack.count("A")
+    if all(keep):
+        return carry
+    chars, marks, boxes, nr = [], [], [], []
+    remap = {}
+    for i, k in enumerate(keep):
+        if not k:
+            continue
+        # " ," left behind by "funds [,pension" -> "funds,"
+        if p.chars[i] in ",;" and chars and chars[-1] == " " and (near[i] or (nr and nr[-1])):
+            chars.pop(); marks.pop(); boxes.pop(); nr.pop()
+        remap[i] = len(chars)
+        chars.append(p.chars[i]); marks.append(p.marks[i]); boxes.append(p.boxes[i]); nr.append(near[i])
+        # ",pension" -> ", pension"
+        if p.chars[i] in ",;" and i + 1 < len(p.chars) and near[i]:
+            j = i + 1
+            while j < len(p.chars) and not keep[j]:
+                j += 1
+            if j < len(p.chars) and p.chars[j].isalpha():
+                chars.append(" "); marks.append(-1); boxes.append(None); nr.append(False)
+    p.chars, p.marks, p.boxes = chars, marks, boxes
+    p.refs = [(remap.get(pos, len(chars)), n) for pos, n in p.refs]
+    p.amend = set()
+    p.finalize()
+    return carry
+
+
+# ---------------------------------------------------------------------------
+# Page structure: headings, paragraphs, list items, table rows
+# ---------------------------------------------------------------------------
+class TableState:
+    def __init__(self):
+        self.columns = []   # list of [x0, x1, name]
+        self.header = False
+        self.fill = {}      # column index -> last Para seen (fill-down)
+        self.header_paras = []
+        self.caption = None
+        self.id = 0
+        self.last_bottom = None
+        self.last_page = None
+
+
+def line_is_heading(toks, ctx):
+    words = [t for t in toks if any(ch[0].isalnum() for ch in t.chars) and not (t.sup and FN_MARK_RE.match(t.text))]
+    if not words:
+        return 0
+    text = " ".join(t.text for t in words)
+    size = max(t.size for t in words)
+    body = ctx.body_size
+    all_bold = all(t.bold for t in words)
+    # Legal / reference PDFs frequently typeset CHAPTER II or PART IVA in the
+    # same font as body text.  Treat the explicit structural label as a real
+    # heading even without bold/large-font evidence so it resets stale state
+    # (for example a preceding STATE AMENDMENT block).
+    if STRUCTURAL_HEADING_RE.match(text) and len(words) <= 8:
+        return 1
+    if text.rstrip().endswith(":") or text.rstrip().endswith(":—"):
+        return 0  # a bold lead-in line ("The features ... are:") is not a heading
+    if size >= body * 1.6:
+        return 1
+    if size >= body * 1.2 and len(words) <= 20:
+        return 2
+    if CAPTION_RE.match(text) and len(words) <= 25:
+        return 3
+    if all_bold and len(words) <= ctx.cfg.heading_max_words:
+        letters = [c for c in text if c.isalpha()]
+        if letters and sum(c.isupper() for c in letters) / len(letters) > ALLCAPS_HEADING_FRACTION and len(letters) > ALLCAPS_MIN_LETTERS:
+            return 2
+        return 3
+    return 0
+
+
+def split_runin(toks):
+    """Bold words at the very start of a paragraph followed by normal text
+    ("Maharashtra and Gujarat In 1960, ...", "1. Short title, extent and
+    application.—(1) This Act ...") -> (heading tokens, body tokens)."""
+    n = 0
+    for t in toks:
+        if t.sup and FN_MARK_RE.match(t.text):
+            if all(x.sup for x in toks[:n]):
+                n += 1       # "¹[5A. Central Board.—" : marker before the title
+                continue
+            break
+        if t.bold:
+            n += 1
+        elif not any(ch[0].isalnum() for ch in t.chars) and n:
+            n += 1  # punctuation between bold words
+        else:
+            break
+    while n and not toks[n - 1].bold:
+        n -= 1
+    if n and all(t.sup for t in toks[:n]):
+        return None, toks
+    if n == 0 or n >= len(toks):
+        return None, toks
+    head = toks[:n]
+    htxt = " ".join(t.text for t in head).strip()
+    # A bold possessive opening word is commonly an attribution inside a
+    # sentence ("Kohler’s dictionary ..."), not a run-in heading.  Promoting
+    # it to the heading stack can attach a later highlight to the wrong label.
+    if len(head) == 1 and re.search(r"(?:['’]s|s['’])$", htxt, re.I):
+        return None, toks
+    if htxt.endswith(":") or len(head) > 14 or sum(ch[0].isalpha() for t in head for ch in t.chars) < 3:
+        return None, toks
+    rest = toks[n:]
+    # drop the ".—" / ":—" / "—" joining heading and text
+    while rest and all(not ch[0].isalnum() and ch[0] not in "([“‘\"'" for ch in rest[0].chars):
+        rest = rest[1:]
+    if not rest:
+        return None, toks
+    rest[0].glue = False
+    return head, rest
+
+
+def _block_text(b):
+    return " ".join(" ".join(t.text for t in toks) for toks, _ in b.get("_lines", []))
+
+
+def _attach_subscript_blocks(blocks):
+    """Attach small digit-only *subscript* lines to the neighbouring text line.
+
+    Some PDFs store M₁ as a normal-size ``M`` on one text line and the small
+    ``1`` as a completely separate line.  The old code classified every small
+    digit as a footnote marker, so M₁..M₄ became just M.  Only lower-positioned
+    digit lines are joined here; upper-positioned superscripts remain footnote
+    candidates.  Plain digits are used in the reconstructed text (M1), which is
+    semantically unambiguous and portable across Markdown/PDF fonts.
+    """
+    remove = set()
+    for i, sb in enumerate(blocks):
+        if len(sb.get("_lines", [])) != 1:
+            continue
+        stoks, sr = sb["_lines"][0]
+        if not stoks or not all(t.sup for t in stoks):
+            continue
+        raw = "".join(t.text for t in stoks).strip()
+        if not re.fullmatch(r"[0-9]{1,3}", raw):
+            continue
+        scy = (sr.y0 + sr.y1) / 2
+        best = None
+        best_score = None
+        for j, hb in enumerate(blocks):
+            if j == i:
+                continue
+            for li, (htoks, hr) in enumerate(hb.get("_lines", [])):
+                if not htoks:
+                    continue
+                hcy = (hr.y0 + hr.y1) / 2
+                # Subscripts sit lower than the host line centre but still
+                # overlap it vertically.  Superscript footnote markers sit up.
+                if scy <= hcy + 1.0 or sr.y0 >= hr.y1 + 3 or sr.y1 <= hr.y0:
+                    continue
+                prevs = [t for t in htoks if t.x1 <= sr.x0 + 2.5]
+                if not prevs:
+                    continue
+                prev = max(prevs, key=lambda t: t.x1)
+                gap = sr.x0 - prev.x1
+                if gap > 3.5 or gap < -4.0 or not prev.text[-1:].isalnum():
+                    continue
+                score = abs(gap) + abs(scy - hcy) * 0.15
+                if best_score is None or score < best_score:
+                    best_score = score
+                    best = (hb, li, htoks, prev)
+        if best is None:
+            continue
+        hb, li, htoks, prev = best
+        for t in stoks:
+            t.sup = False
+            t.line_start = False
+            t.glue = True
+        # Insert immediately after the host token rather than globally sorting
+        # by x: a small glyph can overlap the right edge of the host character.
+        k = max(k for k, t in enumerate(htoks) if t is prev) + 1
+        htoks[k:k] = stoks
+        remove.add(i)
+    if remove:
+        blocks[:] = [b for i, b in enumerate(blocks) if i not in remove]
+
+
+def _looks_like_split_heading(real):
+    """Two PDF blocks that are really ``7.5`` + ``LIQUIDITY RATIOS``.
+
+    Treating this common section-title layout as a table row can keep a table
+    state alive into the following prose and scramble the paragraph.
+    """
+    if len(real) != 2:
+        return False
+    left, right = sorted(real, key=lambda b: b["x0"])
+    a = re.sub(r"\s+", " ", _block_text(left)).strip()
+    b = re.sub(r"\s+", " ", _block_text(right)).strip()
+    if not re.fullmatch(r"(?:\d+|[IVXLC]+)(?:\.[0-9A-ZIVXLC]+)*\.?", a, re.I):
+        return False
+    letters = [c for c in b if c.isalpha()]
+    mostly_caps = bool(letters) and sum(c.isupper() for c in letters) / len(letters) >= 0.75
+    return word_count(b) <= 14 and (mostly_caps or len(b) <= 80)
+
+
+def _bands_align(a, b):
+    """High-confidence evidence that two multi-block bands are table rows."""
+    ra = [x for x in a if x.get("alnum")]
+    rb = [x for x in b if x.get("alnum")]
+    if len(ra) < 2 or len(rb) < 2:
+        return False
+    ax = [x["x0"] for x in ra]
+    bx = [x["x0"] for x in rb]
+    # One-to-one column matching: two nearby blocks in one band must not both
+    # "match" the same x-position in the other band (that exact pattern occurs
+    # when a section number + title follows a two-column prose block).
+    used = set()
+    matches = 0
+    for x in ax:
+        choices = [(abs(x - y), j) for j, y in enumerate(bx)
+                   if j not in used and abs(x - y) <= TABLE_ALIGN_SLOP]
+        if choices:
+            _d, j = min(choices)
+            used.add(j)
+            matches += 1
+    if matches < 2:
+        return False
+    # Rows of one table are near each other.  This prevents an outline near the
+    # top of a page from turning an unrelated section heading below into a row.
+    atop, abot = min(x["y0"] for x in ra), max(x["y1"] for x in ra)
+    btop, bbot = min(x["y0"] for x in rb), max(x["y1"] for x in rb)
+    gap = max(0.0, max(atop, btop) - min(abot, bbot))
+    return gap <= TABLE_MAX_ROW_GAP
+
+
+def page_items(ctx, page, pno, marks):
+    cfg = ctx.cfg
+    rd = page.get_text("rawdict", flags=RAW_FLAGS)
+    pw = page.rect.width
+    blocks = []
+    edge_top = edge_bottom = False   # a page-numbered running head was dropped
+    for b in rd["blocks"]:
+        if b["type"] != 0:
+            continue
+        lines = []
+        for l in b["lines"]:
+            toks = line_tokens(l, marks, ctx)
+            if not toks:
+                continue
+            txt = " ".join(t.text for t in toks)
+            lr = pymupdf.Rect(l["bbox"])
+            has_raw_mark = any(ch[1] >= 0 for t in toks for ch in t.chars)
+            if BOILERPLATE_RE.match(txt.strip()) and not has_raw_mark:
+                continue
+            if ctx.is_running(page, lr, txt):
+                # the head used to be an ordinary block that ended any table
+                # running across the page break; keep that boundary
+                if ctx.edge_hit == "top":
+                    edge_top = True
+                elif ctx.edge_hit == "bottom":
+                    edge_bottom = True
+                for t in toks:
+                    for ch in t.chars:
+                        if ch[1] >= 0:
+                            ctx.stats["marks_in_running"] += 1
+                continue
+            for t in toks:
+                for ch in t.chars:
+                    if ch[1] >= 0:
+                        ctx.marks[ch[1]].raw = True
+                snap_token_marks(t, cfg.snap)
+                for ch in t.chars:
+                    if ch[1] >= 0:
+                        pm = ctx.marks[ch[1]]
+                        pm.text.append(ch[0])
+                        for o in pm.co:
+                            ctx.marks[o].text.append(ch[0])
+            lines.append((toks, lr))
+        for sub in split_side_by_side(lines):
+            lines = sub
+            x0 = min(r.x0 for _, r in lines)
+            x1 = max(r.x1 for _, r in lines)
+            y0 = min(r.y0 for _, r in lines)
+            y1 = max(r.y1 for _, r in lines)
+            has_alnum = any(ch[0].isalnum() for toks, _ in lines for t in toks for ch in t.chars)
+            blocks.append({"_lines": lines, "x0": x0, "x1": x1, "y0": y0, "y1": y1,
+                           "top": lines[0][1].y0, "alnum": has_alnum})
+
+    # Repair detached small subscript digits before layout classification.
+    _attach_subscript_blocks(blocks)
+
+    # --- group blocks sharing a top edge into bands (table rows) ---------
+    blocks.sort(key=lambda b: (round(b["top"]), b["x0"]))
+    bands = []
+    for b in blocks:
+        placed = False
+        for band in bands[-3:]:
+            h = min(b["y1"] - b["y0"], band[0]["y1"] - band[0]["y0"]) or 1
+            ov = min(b["y1"], band[0]["y1"]) - max(b["y0"], band[0]["y0"])
+            if (abs(band[0]["top"] - b["top"]) <= cfg.row_tolerance or ov >= ROW_OVERLAP_FRACTION * h) and all(
+                    b["x0"] >= o["x1"] - 1 or b["x1"] <= o["x0"] + 1 for o in band):
+                band.append(b)
+                placed = True
+                break
+        if not placed:
+            bands.append([b])
+    for band in bands:
+        band.sort(key=lambda b: b["x0"])
+
+    items = []
+    if edge_top:
+        ctx.table = None
+
+    # A band is a table row only when another nearby band repeats at least two
+    # column starts.  The previous "two blocks + one narrow block" rule was
+    # intentionally permissive, but it could interpret ordinary prose / a
+    # section number plus title as a table and then reorder the sentence.
+    confident = set()
+    if cfg.tables:
+        for i in range(len(bands)):
+            if i > 0 and _bands_align(bands[i - 1], bands[i]):
+                confident.update((i - 1, i))
+            if i + 1 < len(bands) and _bands_align(bands[i], bands[i + 1]):
+                confident.update((i, i + 1))
+
+    for bi, band in enumerate(bands):
+        real = [b for b in band if b["alnum"]]
+        split_heading = _looks_like_split_heading(real)
+        is_row = cfg.tables and len(real) >= 2 and bi in confident and not split_heading
+        if split_heading:
+            ctx.table = None
+        if cfg.tables and len(real) == 1 and ctx.table is not None:
+            b = real[0]
+            is_row = continues_table(ctx.table, b, pw, pno)
+        if is_row:
+            if len(real) == 1 and items and items[-1].type == "row" and wraps_into_last_row(items[-1], real[0]):
+                if ctx.table is not None:
+                    ctx.table.last_bottom = max(ctx.table.last_bottom or 0, real[0]["y1"])
+                    ctx.table.last_page = pno
+                continue
+            new = make_row(ctx, real, pno)
+            if ctx.table is not None:
+                ctx.table.last_bottom = max(b["y1"] for b in real)
+                ctx.table.last_page = pno
+            for it in new:
+                if it.type != "row":
+                    continue
+                it.bottoms = {id(col): max((bx.y1 for bx in p.boxes if bx is not None), default=None)
+                              for col, p, filled in it.cells if not filled}
+            items.extend(new)
+            continue
+        if not real:
+            continue
+        # Any ordinary block is a hard boundary for the conservative table
+        # state.  Losing fancy row reconstruction is preferable to scrambling
+        # a sentence and presenting it as authoritative study material.
+        ctx.table = None
+        for b in band:
+            items.extend(text_block_items(ctx, b, pno))
+    if edge_bottom:
+        ctx.table = None
+    return items
+
+
+def split_side_by_side(lines):
+    """PyMuPDF sometimes returns a whole table row (cells side by side) as
+    one block. Re-split it into one group of lines per cell. A line that
+    sits below existing text continues it; when several groups are above it
+    (cells side by side), it goes to the one it overlaps most -- and if it
+    overlaps several, they were one paragraph line PyMuPDF had split."""
+    groups = []
+    for toks, r in lines:
+        # same line, ordinary word gap -> PyMuPDF split one line in two
+        same = [g for g in groups if abs(g[-1][1].y0 - r.y0) < 2 and 0 <= r.x0 - g[-1][1].x1 < r.height * SIDE_BY_SIDE_GAP_FRACTION]
+        if same:
+            same[0].append((toks, r))
+            continue
+        above = [g for g in groups if r.y0 >= g[-1][1].y1 - 3]
+        if not above:
+            groups.append([(toks, r)])
+            continue
+
+        def overlap(g):
+            gx0 = min(x.x0 for _, x in g)
+            gx1 = max(x.x1 for _, x in g)
+            return min(r.x1, gx1) - max(r.x0, gx0)
+
+        if len(above) == 1:
+            target = above[0]
+        else:
+            ov = [(overlap(g), g) for g in above]
+            hits = [g for o, g in ov if o > 2]
+            if len(hits) > 1:
+                target = hits[0]
+                for g in hits[1:]:
+                    target.extend(g)
+                    groups.remove(g)
+                target.sort(key=lambda lr: (round(lr[1].y0 / 3), lr[1].x0))
+            else:
+                target = max(ov, key=lambda t: t[0])[1]
+        target.append((toks, r))
+    return groups
+
+
+def items_ended_with_row(items):
+    return bool(items) and items[-1].type == "row"
+
+
+def wraps_into_last_row(row, b):
+    """A lone line directly under a cell of the previous row (no row gap) is
+    that cell's text wrapping onto a new PDF block -- append it there."""
+    st = row.table
+    col = st.columns[column_for_x(st.columns, b["x0"])]
+    bottom = getattr(row, "bottoms", {}).get(id(col))
+    if bottom is None:
+        return False
+    line_h = b["_lines"][0][1].height or 10
+    if 0 <= b["top"] - bottom <= line_h * TABLE_CONTINUATION_GAP_FRACTION:
+        for c, p, filled in row.cells:
+            if c is col and not filled:
+                toks = [t for toks, _ in b["_lines"] for t in toks]
+                extra = tokens_to_para(toks, p.page, st.cfg, kind="cell")
+                p.extend(extra)
+                p.finalize()
+                row.bottoms[id(col)] = b["y1"]
+                return True
+    return False
+
+
+def continues_table(st, b, pw, pno=None):
+    """A lone block inside an active table is a row if it starts at a
+    column edge and every piece of it starts at a column edge
+    ("Chapter I – The Executive", "Chapter III – ... Suits 294 to 300")."""
+    cols = st.columns
+    if len(cols) < 2:
+        return False
+    # A table must remain spatially contiguous.  Previously a table detected
+    # near the top of a page could stay "active" and swallow an ordinary prose
+    # paragraph much farther down, scrambling its word order.
+    if st.last_bottom is not None and pno is not None:
+        if st.last_page == pno:
+            if b["top"] - st.last_bottom > TABLE_MAX_ROW_GAP:
+                return False
+        elif st.last_page is not None and pno != st.last_page + 1:
+            return False
+    toks = [t for toks, _ in b["_lines"] for t in toks]
+    first_line = " ".join(t.text for t in b["_lines"][0][0])
+    if CAPTION_RE.match(first_line):
+        return False  # "Table 6.5 ..." starts something new
+    k = column_for_x(cols, b["x0"])
+    if abs(cols[k][0] - b["x0"]) > 8:
+        return False
+    groups = {}
+    for t in toks:
+        groups.setdefault(column_for_x(cols, t.x0), []).append(t)
+    for ci, g in groups.items():
+        if abs(min(t.x0 for t in g) - cols[ci][0]) > 12:
+            return False
+    return k > 0 or len(groups) >= 2
+
+
+def column_for_x(cols, x):
+    k = 0
+    for i, c in enumerate(cols):
+        if x >= c[0] - 6:
+            k = i
+    return k
+
+
+def relabel_columns(st):
+    """Split the header cells' characters at the column positions -- the
+    header may be stored as fewer, wider pieces than the data columns."""
+    if not st.header_paras:
+        return
+    names = [[] for _ in st.columns]
+    for hp in st.header_paras:
+        for c, box in zip(hp.chars, hp.boxes):
+            if box is None:
+                for n in names:
+                    if n and n[-1] != " ":
+                        n.append(" ")
+                continue
+            names[column_for_x(st.columns, box.x0)].append(c)
+        for n in names:
+            if n and n[-1] != " ":
+                n.append(" ")
+    for col, n in zip(st.columns, names):
+        col[2] = re.sub(r"\s+", " ", "".join(n)).strip() or None
+
+
+def make_row(ctx, blocks, pno):
+    cfg = ctx.cfg
+    st = ctx.table
+    if st is None:
+        st = ctx.table = TableState()
+        st.cfg = cfg
+    # cells, split further at known column positions ("XIV-A Tribunals")
+    specs = []
+    for b in blocks:
+        toks = [t for toks, _ in b["_lines"] for t in toks]
+        if len(st.columns) >= 2:
+            groups = {}
+            for t in toks:
+                groups.setdefault(column_for_x(st.columns, t.x0), []).append(t)
+            if len(groups) > 1:
+                for ci in sorted(groups):
+                    g = groups[ci]
+                    g[0].glue = False
+                    specs.append((min(t.x0 for t in g), max(t.x1 for t in g), g))
+                continue
+        specs.append((b["x0"], b["x1"], toks))
+    cells = []
+    all_bold = True
+    for x0, x1, toks in specs:
+        para = tokens_to_para(toks, pno, cfg, kind="cell")
+        para.x0 = x0
+        cells.append((x0, x1, para))
+        words = [t for t in toks if any(ch[0].isalpha() for ch in t.chars)]
+        if not words or not all(t.bold for t in words):
+            all_bold = False
+    marked = any(p.has_marks() for _, _, p in cells)
+    if all_bold and len(cells) >= 2 and (not marked or not st.header_paras):
+        # a header row. If it lines up with the columns already known (the
+        # same table continuing on a new page), keep them and just relabel.
+        same = len(st.columns) >= len(cells) and all(
+            any(abs(col[0] - x0) <= 8 for col in st.columns) for x0, _, _ in cells)
+        if not same:
+            st.columns = [[x0, x1, p.text] for x0, x1, p in cells]
+            st.fill = {}
+        st.header_paras = [p for _, _, p in cells]
+        relabel_columns(st)
+        if marked:  # you marked the header itself: keep it visible
+            hp = Para(pno)
+            for _, _, p in cells:
+                hp.extend(p)
+                hp.append_space()
+                hp.chars[-1:] = [" "]
+            hp.finalize()
+            return [Item("para", pno, para=hp)]
+        return []
+    placed = []
+    for x0, x1, p in cells:
+        best, bestd = None, None
+        for col in st.columns:
+            d = abs(col[0] - x0)
+            if bestd is None or d < bestd:
+                best, bestd = col, d
+        if best is None or bestd > cfg.column_tolerance:
+            best = [x0, x1, None]
+            st.columns.append(best)
+            st.columns.sort(key=lambda c: c[0])
+            relabel_columns(st)
+        placed.append((best, p))
+    first = st.columns[0]
+    row = []
+    for col in st.columns:
+        hit = [p for c, p in placed if c is col]
+        if hit:
+            row.append((col, hit[0], False))
+            if col is first:
+                st.fill[0] = hit[0]
+        elif col is first and 0 in st.fill and cfg.fill_down:
+            row.append((col, st.fill[0], True))
+    return [Item("row", pno, cells=row, table=st)]
+
+
+def text_block_items(ctx, b, pno):
+    cfg = ctx.cfg
+    items = []
+    cur = []
+    cur_x0 = None
+    cont_x0 = None
+    prev_lr = None
+    block_x0 = min(r.x0 for _, r in b["_lines"])
+    block_x1 = max(r.x1 for _, r in b["_lines"])
+
+    def flush():
+        nonlocal cur, cur_x0
+        if cur:
+            p = tokens_to_para(cur, pno, cfg)
+            p.x0 = cur_x0 if cur_x0 is not None else p.x0
+            classify_para(p, ctx)
+            if p.chars:
+                items.append(Item("para", pno, para=p))
+        cur = []
+        cur_x0 = None
+
+    first = True
+    lines = list(b["_lines"])
+    li = 0
+    while li < len(lines):
+        toks, lr = lines[li]
+        li += 1
+        level = line_is_heading(toks, ctx) if cfg.headings else 0
+        # a bold title that wraps and then runs into the text:
+        # "3. Power to apply Act ... with another" / "establishment.—Where ..."
+        if level == 3 and cfg.runin and li < len(lines):
+            head2, body2 = split_runin(lines[li][0])
+            if head2:
+                toks = toks + head2
+                lines[li] = (body2, lines[li][1])
+                hp = tokens_to_para(toks, pno, cfg, kind="heading")
+                htxt = hp.text.rstrip(" .—:")
+                for a in (hp.chars, hp.marks, hp.boxes):
+                    del a[len(htxt):]
+                flush()
+                items.append(Item("heading", pno, para=hp, level=4))
+                continue
+        if level:
+            flush()
+            hp = tokens_to_para(toks, pno, cfg, kind="heading")
+            if items and items[-1].type == "heading" and items[-1].level == level and items[-1].page == pno \
+                    and not items[-1].para.text.endswith((".", ":")):
+                items[-1].para.extend(hp)   # heading wrapped onto a second line
+                items[-1].para.finalize()
+            elif hp.chars:
+                items.append(Item("heading", pno, para=hp, level=level))
+            first = False
+            continue
+        text = " ".join(t.text for t in toks)
+        if cur and LIST_RE.match(text) and not toks[0].glue:
+            flush()
+        elif cur and prev_lr is not None and text[:1].isupper() and \
+                prev_lr.x1 < block_x1 - (block_x1 - block_x0) * LIST_LINE_SHORT_FRACTION and \
+                LIST_RE.match(" ".join(t.text for t in cur[:3])):
+            # a list item whose line stops well short of the margin has ended
+            # ("(iii) Lower growth but higher development" / "The above-given ...")
+            flush()
+        elif cur and cur_x0 is not None and cont_x0 is not None and lr.x0 < cur_x0 - LIST_INDENT_SLOP \
+                and lr.x0 < cont_x0 - LIST_INDENT_SLOP and LIST_RE.match(" ".join(t.text for t in cur[:3])):
+            # a line starting left of a list item's first line is not part of
+            # that item ("2. This time ..." / "The major changes ... below:")
+            flush()
+        if not cur and cfg.headings and cfg.runin:
+            head, body = split_runin(toks)
+            if head:
+                hp = tokens_to_para(head, pno, cfg, kind="heading")
+                htxt = hp.text.rstrip(" .—:")
+                cut = len(hp.text) - len(htxt)
+                if cut:
+                    for a in (hp.chars, hp.marks, hp.boxes):
+                        del a[len(htxt):]
+                items.append(Item("heading", pno, para=hp, level=4))
+                toks = body
+        if not cur:
+            cur_x0 = lr.x0
+            cont_x0 = None
+        elif cont_x0 is None:
+            cont_x0 = lr.x0
+        toks[0].line_start = True
+        cur.extend(toks)
+        prev_lr = lr
+        first = False
+    flush()
+    return items
+
+
+def classify_para(p, ctx):
+    text = p.text
+    if p.fn is not None:
+        p.kind = "footnote"
+    elif p.size and p.size <= ctx.body_size * ctx.cfg.footnote_ratio and FOOTNOTE_START_RE.match(text):
+        p.kind = "footnote"
+        p.fn = FOOTNOTE_START_RE.match(text).group(1)
+    elif LIST_RE.match(text):
+        p.kind = "list"
+
+
+# ---------------------------------------------------------------------------
+# Document-level passes
+# ---------------------------------------------------------------------------
+TERMINAL = ".!?:;"
+DANGLING = {"the", "a", "an", "of", "to", "with", "and", "or", "in", "for", "by", "on", "at",
+            "from", "as", "that", "which", "is", "are", "was", "were", "its", "their", "into",
+            "under", "between", "than", "whose", "who", "has", "have", "been", "be", "this", "these"}
+
+
+def join_continuations(items, cfg):
+    """A paragraph cut by a page break ("... not a sovereign body" |
+    "like the British Parliament.") is joined back into one."""
+    if not cfg.join_pages:
+        return items
+    out = []
+    for it in items:
+        first = it.para.text.lstrip("‘“\"'([") if it.type == "para" else ""
+        prev_open = False
+        if out and out[-1].type == "para" and out[-1].para.kind in ("para", "list"):
+            # previous text stops on a word no sentence ends with ("... in
+            # consultation with the" | "RBI, decided ...") -> it continues
+            last_word = (out[-1].para.text.split() or [""])[-1].lower()
+            prev_open = last_word in DANGLING
+        if it.type == "para" and it.para.kind in ("para", "list") and (first[:1].islower() or
+                (prev_open and first[:1].isalnum() and not LIST_RE.match(it.para.text))):
+            j = len(out) - 1
+            while j >= 0 and out[j].type == "para" and out[j].para.kind == "footnote":
+                j -= 1
+            if j >= 0 and out[j].type == "para" and out[j].para.kind in ("para", "list") \
+                    and out[j].para.text.rstrip()[-1:] not in TERMINAL \
+                    and (out[j].page != it.page or it.para.kind == "para"):
+                out[j].para.extend(it.para)
+                out[j].para.finalize()
+                continue
+        out.append(it)
+    return out
+
+
+def merge_footnote_continuations(items):
+    """A footnote can run over several paragraphs or contain a list
+    (footnote 12: Referendum / Initiative / Recall / Plebiscite). Paragraphs
+    after a footnote that don't start a new footnote belong to it -- until
+    the next heading, or, for small-print page-bottom footnotes, until the
+    text is no longer small."""
+    out = []
+    cur = None
+    for it in items:
+        if it.type == "heading" or it.type == "row":
+            cur = None
+            out.append(it)
+            continue
+        p = it.para
+        if p.kind == "footnote":
+            cur = p
+            out.append(it)
+            continue
+        if cur is not None:
+            small_style = cur.size and cur.size < p.size - SMALL_STYLE_SIZE_DELTA
+            same_run = it.page in (cur.page, cur.page + 1) and not small_style
+            if same_run:
+                cur.chars.append(" ")
+                cur.marks.append(-1)
+                cur.boxes.append(None)
+                cur.extend(p)
+                cur.finalize()
+                continue
+            cur = None
+        out.append(it)
+    return out
+
+
+def attach_table_headers(items):
+    """A bold line right above a table's rows ("Parts Subject Matter
+    Articles Covered") is its header row even when the PDF stores it as one
+    line: split it at the rows' column positions and use it for the names."""
+    out = []
+    for i, it in enumerate(items):
+        nxt = items[i + 1] if i + 1 < len(items) else None
+        if it.type == "heading" and it.level in (2, 3) and nxt is not None and nxt.type == "row" \
+                and nxt.page == it.page and len(nxt.table.columns) >= 2 and not it.para.has_marks() \
+                and not CAPTION_RE.match(it.para.text):
+            st = nxt.table
+            xs = {column_for_x(st.columns, b.x0) for b in it.para.boxes if b is not None}
+            if len(xs) >= 2:
+                st.header_paras = [it.para]
+                relabel_columns(st)
+                continue
+        out.append(it)
+    return out
+
+
+def demote_titles(items):
+    """--plain-titles: stop treating headings specially. Every heading becomes
+    an ordinary paragraph, so a highlighted heading turns into a normal snippet
+    and an un-highlighted one is dropped (no big-font clutter, no breadcrumbs)."""
+    for it in items:
+        if it.type == "heading":
+            it.type = "para"
+            it.para.kind = "para"
+
+
+def assign_leadins(items, cfg):
+    stack = []  # (x0, para) of paragraphs ending in ':' / '—'
+    for it in items:
+        if it.type == "heading":
+            stack = []
+            continue
+        if it.type != "para":
+            continue
+        p = it.para
+        if not any(c.isalnum() for c in p.chars):
+            continue  # "* * * * *" (omitted text) doesn't end a list
+        tail = p.text.rstrip().lower()
+        ends_intro = tail.endswith((":", "—", ":—", ":-")) or bool(re.search(r"\b(viz|namely|as follows|following)[,.:]?$", tail))
+        if p.kind == "list":
+            while stack and stack[-1][0] >= p.x0 - HEADING_STACK_X_SLOP:
+                stack.pop()
+            if stack and cfg.leadins:
+                p.leadin = stack[-1][1]
+            if ends_intro:
+                stack.append((p.x0, p))
+        elif p.kind == "para":
+            stack = [(p.x0, p)] if ends_intro else []
+
+
+# ---------------------------------------------------------------------------
+# Sentence / clause segmentation on a paragraph string
+# ---------------------------------------------------------------------------
+def is_abbrev(text, i):
+    j = i - 1
+    while j >= 0 and (text[j].isalnum() or text[j] in "'/"):
+        j -= 1
+    word = text[j + 1:i]
+    if not word:
+        return False
+    if len(word) == 1 and word.isalpha():
+        return True          # initials, "s.", "e.g", "i.e"
+    return word.lower() in ABBREVIATIONS
+
+
+def sentence_bounds(text):
+    """Return the end positions (exclusive) of sentences in text."""
+    ends = []
+    n = len(text)
+    for i, ch in enumerate(text):
+        if ch not in SENT_PUNCT:
+            continue
+        j = i + 1
+        while j < n and text[j] in CLOSERS:
+            j += 1
+        if j < n and text[j] in DASHES:          # "operation].—A woman ..."
+            ends.append(j + 1)
+            continue
+        if j < n and not text[j].isspace():
+            continue                              # 3.5, U.S.A, w.e.f.
+        if ch == "." and is_abbrev(text, i):
+            continue
+        k = j
+        while k < n and text[k].isspace():
+            k += 1
+        if k >= n:
+            ends.append(j)
+            continue
+        nx = text[k]
+        if nx.isupper() or nx.isdigit() or nx in OPENERS or nx in "•":
+            ends.append(j)
+    if not ends or ends[-1] < n:
+        ends.append(n)
+    return sorted(set(ends))
+
+
+def clause_bounds(text, s, e):
+    ends = []
+    for i in range(s, e):
+        ch = text[i]
+        if ch in ",;:" and i + 1 < e and text[i + 1].isspace():
+            ends.append(i + 1)
+        elif ch in DASHES and i > s:
+            ends.append(i + 1)
+        elif ch == "(" and i > s and text[i - 1] == " ":
+            pass
+    ends.append(e)
+    return sorted(set(x for x in ends if s < x <= e))
+
+
+def comma_bounds(text, s, e):
+    """Like clause_bounds but only commas (not ; : or dashes) cut a unit --
+    the tightest 'context' setting short of the highlight itself."""
+    ends = [i + 1 for i in range(s, e) if text[i] == "," and i + 1 < e and text[i + 1].isspace()]
+    ends.append(e)
+    return sorted(set(x for x in ends if s < x <= e))
+
+
+def units_from_ends(s, ends):
+    out, prev = [], s
+    for e in ends:
+        if e > prev:
+            out.append((prev, e))
+        prev = e
+    return out
+
+
+def trim_ws(text, s, e):
+    while s < e and text[s].isspace():
+        s += 1
+    while e > s and text[e - 1].isspace():
+        e -= 1
+    return s, e
+
+
+def mark_runs(marks):
+    runs, i, n = [], 0, len(marks)
+    while i < n:
+        if marks[i] >= 0:
+            j = i
+            while j < n and marks[j] >= 0:
+                j += 1
+            runs.append((i, j))
+            i = j
+        else:
+            i += 1
+    return runs
+
+
+_WORD_RE = re.compile(r"\S+")
+
+
+def _word_window_ranges(p, runs, cfg):
+    """Keep a fixed number of context words around each highlight instead of
+    a sentence/clause. --word-window 6 --word-side both -> 3 words before +
+    the highlight + 3 after; --word-side left -> 6 words before, highlight at
+    the end; right -> highlight then 6 words after."""
+    text = p.text
+    words = [(m.start(), m.end()) for m in _WORD_RE.finditer(text)]
+    if not words:
+        return [(s, e, s > 0, e < len(text)) for s, e in runs]
+    n = cfg.word_window
+    if cfg.word_side == "left":
+        left_n, right_n = n, 0
+    elif cfg.word_side == "right":
+        left_n, right_n = 0, n
+    else:
+        left_n, right_n = n // 2, n - n // 2
+    out = []
+    for rs, re_ in runs:
+        idx = [i for i, (a, b) in enumerate(words) if a < re_ and b > rs]
+        if not idx:
+            idx = [min(range(len(words)), key=lambda i: abs(words[i][0] - rs))]
+        lo = max(0, idx[0] - left_n)
+        hi = min(len(words) - 1, idx[-1] + right_n)
+        s, e = words[lo][0], words[hi][1]
+        out.append([s, e, s > 0, e < len(text)])
+    out.sort()
+    merged = []
+    for c in out:
+        if merged and c[0] <= merged[-1][1] + 1:
+            m = merged[-1]
+            if c[1] > m[1]:
+                m[1], m[3] = c[1], c[3]
+        else:
+            merged.append(c)
+    return [tuple(m) for m in merged]
+
+
+def snippet_ranges(p, cfg):
+    """Ranges of p.text to show, each with a flag for 'starts mid-sentence'
+    / 'ends mid-sentence'. Based only on where the marks are."""
+    text = p.text
+    runs = mark_runs(p.marks)
+    if not runs:
+        return []
+    if cfg.word_window > 0:
+        return _word_window_ranges(p, runs, cfg)
+    if cfg.context == "paragraph" or p.kind == "footnote" and cfg.context != "highlight":
+        return [(0, len(text), False, False)] if p.kind != "footnote" or word_count(text) <= cfg.max_words * 2 \
+            else _sentence_ranges(p, runs, cfg)
+    if cfg.context == "highlight":
+        return [(s, e, s > 0, e < len(text)) for s, e in runs]
+    return _sentence_ranges(p, runs, cfg)
+
+
+def _sentence_ranges(p, runs, cfg):
+    text = p.text
+    ends = sentence_bounds(text)
+    lm = LIST_RE.match(text)
+    if lm:
+        ends = [x for x in ends if x > lm.end()]
+    sents = units_from_ends(0, ends)
+    chosen = []
+    for rs, re_ in runs:
+        # a run may span several sentences
+        covering = [(s, e) for s, e in sents if s < re_ and e > rs]
+        if not covering:
+            continue
+        ss, se = covering[0][0], covering[-1][1]
+        ss, se = trim_ws(text, ss, se)
+        if cfg.context in ("clause", "comma") or word_count(text[ss:se]) > cfg.max_words:
+            seg = comma_bounds(text, ss, se) if cfg.context == "comma" else clause_bounds(text, ss, se)
+            cls = [trim_ws(text, a, b) for a, b in units_from_ends(ss, seg)]
+            cls = [c for c in cls if c[1] > c[0]]
+            idx = [i for i, (a, b) in enumerate(cls) if a < re_ and b > rs]
+            if idx:
+                lo, hi = idx[0], idx[-1]
+                while word_count(text[cls[lo][0]:cls[hi][1]]) < cfg.min_words and (lo > 0 or hi < len(cls) - 1):
+                    if hi < len(cls) - 1:
+                        hi += 1
+                    if word_count(text[cls[lo][0]:cls[hi][1]]) < cfg.min_words and lo > 0:
+                        lo -= 1
+                cs, ce = cls[lo][0], cls[hi][1]
+                chosen.append([cs, ce, cs > ss, ce < se])
+                continue
+        chosen.append([ss, se, False, False])
+    chosen.sort()
+    merged = []
+    for c in chosen:
+        if merged and c[0] <= merged[-1][1] + 1:
+            m = merged[-1]
+            if c[1] > m[1]:
+                m[1], m[3] = c[1], c[3]
+            m[2] = m[2] and c[2] if c[0] == m[0] else m[2]
+        else:
+            merged.append(c)
+    return [tuple(m) for m in merged]
+
+
+# ---------------------------------------------------------------------------
+# Rendering
+# ---------------------------------------------------------------------------
+def md_escape(s):
+    s = s.replace("\\", "\\\\").replace("*", "\\*").replace("_", "\\_")
+    s = s.replace("<", "\\<").replace("[", "\\[").replace("]", "\\]").replace("`", "\\`")
+    return s
+
+
+_PAREN_RE = re.compile(r"^(\s*)\((?:[0-9]{1,3}|[a-zA-Z]|[ivxlcdmIVXLCDM]{1,7})\)(?=\s)")
+_ORDERED_RE = re.compile(r"^(\s*)([0-9]{1,3}|[a-zA-Z]|[ivxlcdmIVXLCDM]{1,7})([.)])(\s)")
+
+
+def md_guard(line):
+    """Neutralise Markdown block markers at the very start of a rendered
+    line so a snippet prints exactly as written. In particular an ordered
+    list marker like "3." keeps its real number: pandoc would otherwise
+    renumber it (changing the very fact you highlighted), and an older
+    version of this guard turned "3." into "\\3". We escape the dot/paren,
+    never the number -- "3." -> "3\\.". recall-sheet's parser strips the
+    backslash again, so this only ever affects the direct notes->PDF path."""
+    m = re.match(r"^(\s*)([#>+]|-(?!-)|=+\s*$)", line)
+    if m:
+        pre = m.group(1)
+        return pre + "\\" + line[len(pre):]
+    m = _ORDERED_RE.match(line)
+    if m:
+        pre, tok, punct, _sp = m.groups()
+        return f"{pre}{tok}\\{punct}{line[m.end() - 1:]}"
+    # "(a)", "(i)", "(1)" -- pandoc would renumber these too ("(i)" after
+    # "(b)" printed as "(c)"), so escape the opening bracket
+    m = _PAREN_RE.match(line)
+    if m:
+        pre = m.group(1)
+        return pre + "\\" + line[len(pre):]
+    return line
+
+
+MARK_STYLES = ("bold", "italic", "skip")   # 'underline' waits on the JSON model (needs raw LaTeX; soul is not portable)
+
+
+def mark_style(cols, cfg):
+    """Which emphasis a marked run gets, from its highlight colour(s).
+    A --color-map wins; otherwise --italic-colors makes non-yellow italic;
+    otherwise everything is bold."""
+    cmap = getattr(cfg, "color_map", None)
+    if cmap:
+        for c in sorted(cols):
+            if c in cmap:
+                return cmap[c]
+        return cmap.get("*", "bold")
+    if getattr(cfg, "italic_colors", False) and cols and "yellow" not in cols:
+        return "italic"
+    return "bold"
+
+
+def render_range(p, s, e, fmt, ctx, head=False, tail=False):
+    """Render p.text[s:e] with marked characters emphasised (bold by default).
+    Returns the string and records which marks were rendered (coverage)."""
+    text, marks = p.text, p.marks
+    parts = []
+    i = s
+    while i < e:
+        m = marks[i]
+        j = i
+        while j < e and (marks[j] >= 0) == (m >= 0):
+            j += 1
+        seg = text[i:j]
+        if m >= 0:
+            lead = seg[:len(seg) - len(seg.lstrip())]
+            trail = seg[len(seg.rstrip()):]
+            core = seg.strip()
+            ids = [marks[k] for k in range(i, j) if marks[k] >= 0]
+            if fmt == "md":
+                cols = {ctx.marks[k].color for k in ids}
+                style = mark_style(cols, ctx.cfg) if core else "bold"
+                if not core:
+                    piece = ""
+                elif style == "skip":
+                    # intentionally not emphasised: keep the text as plain
+                    # context and record that the mark was shown, not lost
+                    piece = md_escape(core)
+                    for k in ids:
+                        ctx.marks[k].used = True
+                        ctx.marks[k].skipped = True
+                else:
+                    esc = md_escape(core)
+                    if style == "italic":
+                        piece = f"***{esc}***"
+                    else:
+                        piece = f"**{esc}**"
+                    if getattr(ctx.cfg, "color_tags", False) and cols and cols != {"yellow"}:
+                        piece += "{" + ",".join(sorted(cols)) + "}"
+                    for k in ids:
+                        ctx.marks[k].used = True
+            else:
+                piece = core
+                for k in ids:
+                    ctx.marks[k].used = True
+            parts.append(lead + piece + trail)
+        else:
+            parts.append(md_escape(seg) if fmt == "md" else seg)
+        i = j
+    out = "".join(parts).strip()
+    if head:
+        out = "… " + out
+    if tail:
+        out = out.rstrip(",;:—– ") + " …"
+    return out
+
+
+def leadin_text(p, cfg):
+    """The sentence of the lead-in paragraph that introduces the list."""
+    text = p.text
+    ends = sentence_bounds(text[:-1] + "." if text.endswith((":", "—")) else text)
+    starts = [0] + ends[:-1]
+    s = starts[-1] if starts else 0
+    s, e = trim_ws(text, s, len(text))
+    words = text[s:e].split()
+    head = False
+    # with --word-window the lead-in is held to the same number of words
+    limit = cfg.word_window if getattr(cfg, "word_window", 0) > 0 else cfg.max_words
+    if len(words) > limit:
+        cut = s + len(" ".join(words[:-limit])) + 1
+        marked = [i for i in range(s, e) if p.marks[i] >= 0]
+        if marked and marked[0] < cut:
+            # a highlight inside the lead-in must stay visible: start a few
+            # words before it instead
+            back = max(1, limit // 2) if limit != cfg.max_words else 0
+            k = marked[0]
+            while k > s and text[k - 1] != " ":
+                k -= 1
+            for _ in range(back):
+                j = k - 1
+                while j > s and text[j - 1] == " ":
+                    j -= 1
+                while j > s and text[j - 1] != " ":
+                    j -= 1
+                if j <= s:
+                    break
+                k = j
+            cut = min(cut, k)
+        head = cut > s
+        s = cut
+    return s, e, head
+
+
+# ---------------------------------------------------------------------------
+# Build entries
+# ---------------------------------------------------------------------------
+def build_entries(ctx, items):
+    cfg = ctx.cfg
+    fmt = cfg.fmt_render
+    entries = []
+    stack = []  # [(level, Para)]
+    consumed_fn = set()
+
+    def crumbs():
+        out = []
+        for lvl, hp in stack:
+            if cfg.heading_depth and lvl > cfg.heading_depth:
+                continue
+            out.append((lvl, render_range(hp, 0, len(hp.chars), fmt, ctx), id(hp)))
+        return out
+
+    def find_footnote(start, n):
+        for j in range(start + 1, min(len(items), start + 4000)):
+            it = items[j]
+            if it.type == "para" and it.para.kind == "footnote" and it.para.fn == n:
+                return j
+        return None
+
+    last_group = None
+    for idx, it in enumerate(items):
+        if it.type == "heading":
+            # State-amendment material is interleaved with the central Act.
+            # A following unquoted numbered run-in ("12. Duties ...") is the
+            # central section resuming, not a child of the state amendment.
+            # Quoted amended section text does not become a run-in heading in
+            # split_runin(), so this reset remains conservative.
+            if SECTION_RUNIN_RE.match(it.para.text):
+                cut = next((i for i, (_l, hp) in enumerate(stack)
+                            if STATE_AMEND_RE.match(hp.text.strip())), None)
+                if cut is not None:
+                    stack = stack[:cut]
+            stack = [(l, hp) for l, hp in stack if l < it.level]
+            stack.append((it.level, it.para))
+            last_group = None
+            if it.para.has_marks():
+                if cfg.heading_depth and it.level > cfg.heading_depth:
+                    # Too deep to render as a heading: keep its highlighted
+                    # text as an ordinary snippet so the highlight isn't lost.
+                    e = Entry("snippet", crumbs(), it.page)
+                    for (s, en, h, t) in snippet_ranges(it.para, cfg):
+                        e.lines.append(render_range(it.para, s, en, fmt, ctx, h, t))
+                        bb = mark_bbox(it.para, s, en)
+                        e.bbox = bb if e.bbox is None else (e.bbox | bb if bb else e.bbox)
+                    if not e.lines:
+                        e.lines.append(render_range(it.para, 0, len(it.para.chars), fmt, ctx))
+                    e.mark_ids = {m for m in it.para.marks if m >= 0}
+                    for m in e.mark_ids:
+                        ctx.marks[m].used = True
+                    entries.append(e)
+                else:
+                    e = Entry("heading", crumbs(), it.page)
+                    e.mark_ids = {m for m in it.para.marks if m >= 0}
+                    for m in e.mark_ids:
+                        ctx.marks[m].used = True
+                    e.bbox = mark_bbox(it.para, 0, len(it.para.chars))
+                    entries.append(e)
+            continue
+        if it.type == "row":
+            if not any(p.has_marks() for _, p, filled in it.cells if not filled):
+                continue
+            e = Entry("row", crumbs(), it.page)
+            parts = []
+            for col, p, filled in it.cells:
+                name = col[2]
+                if filled:
+                    val = render_range(p, 0, len(p.chars), fmt, ctx) if not p.has_marks() else \
+                        md_escape(p.text) if fmt == "md" else p.text
+                elif p.has_marks() and word_count(p.text) > cfg.cell_words:
+                    rngs = snippet_ranges(p, cfg)
+                    val = " ".join(render_range(p, s, en, fmt, ctx, h, t) for s, en, h, t in rngs)
+                    e.mark_ids |= {m for m in p.marks if m >= 0}
+                elif word_count(p.text) > cfg.cell_words:
+                    words = p.text.split()
+                    val = (md_escape(" ".join(words[:cfg.cell_words])) if fmt == "md" else " ".join(words[:cfg.cell_words])) + " …"
+                else:
+                    val = render_range(p, 0, len(p.chars), fmt, ctx)
+                    e.mark_ids |= {m for m in p.marks if m >= 0}
+                name_s = re.sub(r"\s+", " ", name).strip() if (name and cfg.table_style == "kv") else ""
+                parts.append(f"{md_escape(name_s) if fmt == 'md' else name_s}: {val}" if name_s else val)
+                bb = mark_bbox(p, 0, len(p.chars))
+                if bb is not None:
+                    e.bbox = bb if e.bbox is None else e.bbox | bb
+            e.lines.append(" · ".join(x for x in parts if x))
+            entries.append(e)
+            last_group = None
+            continue
+        p = it.para
+        if p.kind == "footnote":
+            if idx in consumed_fn or not p.has_marks():
+                continue
+            chap = [(l, hp) for l, hp in stack if l <= 1]
+            saved = stack
+            stack = chap
+            base = crumbs()
+            stack = saved
+            fn_crumbs = [] if cfg.plain_titles else base + [(2, "Footnotes", "fn")]
+            e = Entry("snippet", fn_crumbs, it.page)
+            for k, (s, en, h, t) in enumerate(snippet_ranges(p, cfg)):
+                e.lines.append((f"fn {p.fn}: " if p.fn and k == 0 else "") + render_range(p, s, en, fmt, ctx, h, t))
+                bb = mark_bbox(p, s, en)
+                e.bbox = bb if e.bbox is None else (e.bbox | bb if bb else e.bbox)
+            e.mark_ids = {m for m in p.marks if m >= 0}
+            entries.append(e)
+            continue
+        if not p.has_marks():
+            continue
+        rngs = snippet_ranges(p, cfg)
+        if len(rngs) > 1 and cfg.context != "highlight":
+            s0, en0 = rngs[0][0], rngs[-1][1]
+            pieces = [render_range(p, a, b, fmt, ctx, h if k == 0 else False, t if k == len(rngs) - 1 else False)
+                      for k, (a, b, h, t) in enumerate(rngs)]
+            joined = pieces[0]
+            for (a, b, h, t), (pa, pb, ph, pt), piece in zip(rngs[1:], rngs[:-1], pieces[1:]):
+                gap = p.text[pb:a].strip()
+                joined += (" … " if gap else " ") + piece
+            rngs = [(s0, en0, rngs[0][2], rngs[-1][3], joined)]
+        for rg in rngs:
+            s, en, h, t = rg[:4]
+            body = rg[4] if len(rg) > 4 else render_range(p, s, en, fmt, ctx, h, t)
+            ids = {m for m in p.marks[s:en] if m >= 0}
+            bb = mark_bbox(p, s, en)
+            if p.kind == "list" and p.leadin is not None:
+                key = id(p.leadin)
+                if last_group is not None and cfg.group_lists and (
+                        key in last_group.keys or getattr(last_group, "last_src", None) is p.leadin):
+                    last_group.keys.add(key)
+                    last_group.lines.append(body)
+                    last_group.last_src = p
+                    last_group.mark_ids |= ids
+                    if bb is not None:
+                        last_group.bbox = bb if last_group.bbox is None else last_group.bbox | bb
+                    e = last_group
+                else:
+                    ls, le, lh = leadin_text(p.leadin, cfg)
+                    all_leadin_ids = {m for m in p.leadin.marks if m >= 0}
+                    shown_leadin_ids = {m for m in p.leadin.marks[ls:le] if m >= 0}
+                    # Only replace the lead-in's standalone highlighted snippet
+                    # when every one of its marks is present in the lead-in text
+                    # we are about to emit.  Otherwise keep the standalone
+                    # snippet too: a little duplication is far safer than a
+                    # silently missing highlighted sentence.
+                    if entries and getattr(entries[-1], "src", None) is p.leadin and not entries[-1].subs \
+                            and all_leadin_ids <= shown_leadin_ids:
+                        entries.pop()
+                    e = Entry("snippet", crumbs(), it.page)
+                    e.lines.append(render_range(p.leadin, ls, le, fmt, ctx, lh, False))
+                    e.lines.append(body)
+                    e.leadin_key = key
+                    e.keys = {key}
+                    e.last_src = p
+                    e.mark_ids |= ids | shown_leadin_ids
+                    e.bbox = bb
+                    entries.append(e)
+                    last_group = e
+            else:
+                e = Entry("snippet", crumbs(), it.page)
+                e.lines.append(body)
+                e.mark_ids = ids
+                e.bbox = bb
+                e.src = p
+                entries.append(e)
+                last_group = None
+            # footnotes cited inside this snippet
+            if cfg.footnotes == "inline":
+                for pos, n in p.refs:
+                    if s <= pos <= en:
+                        j = find_footnote(idx, n)
+                        if j is not None and j not in consumed_fn and items[j].para.has_marks():
+                            fp = items[j].para
+                            consumed_fn.add(j)
+                            for fs, fe, fh, ft in snippet_ranges(fp, cfg):
+                                e.subs.append((f"fn {n}", render_range(fp, fs, fe, fmt, ctx, fh, ft)))
+                            e.mark_ids |= {m for m in fp.marks if m >= 0}
+            e.page_label = ctx.label(it.page)
+    # highlight comments and free-text notes -> nearest entry
+    if cfg.notes:
+        for m in ctx.marks:
+            if m.comment:
+                target = next((e for e in entries if m.id in e.mark_ids), None)
+                if target:
+                    target.subs.append(("Note", md_escape(m.comment) if fmt == "md" else m.comment))
+        for pno, rect, content in ctx.notes:
+            cands = [e for e in entries if e.page == pno and e.bbox is not None]
+            txt = md_escape(content) if fmt == "md" else content
+            if cands:
+                best = min(cands, key=lambda e: rect_dist(rect, e.bbox))
+                best.subs.append(("Note", txt))
+            else:
+                e = Entry("note", [], pno)
+                e.lines.append(f"Note (p. {ctx.label(pno)}): {txt}")
+                entries.append(e)
+    for e in entries:
+        if not hasattr(e, "page_label"):
+            e.page_label = ctx.label(e.page)
+    return entries
+
+
+def finalize_coverage(entries, ctx):
+    """Recompute coverage from entries that actually survived build_entries.
+
+    render_range() is also used while constructing temporary entries.  An
+    earlier version therefore counted a mark as placed even when that entry was
+    later removed (notably list lead-ins), yielding a misleading 100% report.
+    Entry.mark_ids is now the source of truth for final-output coverage.
+    """
+    for m in ctx.marks:
+        m.used = False
+    for e in entries:
+        for mid in e.mark_ids:
+            if 0 <= mid < len(ctx.marks):
+                ctx.marks[mid].used = True
+
+
+def mark_bbox(p, s, e):
+    bb = None
+    for k in range(s, e):
+        if p.marks[k] >= 0 and p.boxes[k] is not None:
+            bb = pymupdf.Rect(p.boxes[k]) if bb is None else bb | p.boxes[k]
+    return bb
+
+
+# ---------------------------------------------------------------------------
+# Writers
+# ---------------------------------------------------------------------------
+def write_markdown(entries, cfg, level_shift=0):
+    out = []
+    shown = []
+    last_text = None
+    n_since = 0
+    for e in entries:
+        path = e.crumbs
+        if cfg.headings:
+            k = 0
+            while k < len(path) and k < len(shown) and path[k][2] == shown[k][2] and path[k][1] == shown[k][1]:
+                k += 1
+            for lvl, htxt, _ in path[k:]:
+                if e.kind == "heading" and (lvl, htxt, _) == path[-1]:
+                    break
+                n = min(6, max(1, lvl + level_shift))
+                out.append("#" * n + " " + htxt)
+                out.append("")
+            shown = path
+        if e.kind == "heading":
+            if not path:          # heading filtered out by --heading-depth; nothing to emit
+                continue
+            lvl, htxt, _ = path[-1]
+            n = min(6, max(1, lvl + level_shift))
+            out.append("#" * n + " " + htxt)
+            out.append("")
+            continue
+        body_lines = [md_guard(l) for l in e.lines]
+        if cfg.page_refs:
+            body_lines[-1] += f" (p. {e.page_label})"
+        text = "\\\n".join(body_lines)
+        if text == last_text and not e.subs:
+            continue
+        last_text = text
+        out.append(text)
+        out.append("")
+        for label, sub in e.subs:
+            out.append(f"> {label}: {sub}")
+            out.append("")
+        n_since += 1
+        if cfg.space_n and n_since % cfg.space_n == 0:
+            # raw LaTeX so the space survives (pandoc collapses blank lines)
+            style = getattr(cfg, "space_style", "blank")
+            out.append("```{=latex}")
+            if style in ("ruled", "dotted"):
+                fill = r"\rule{\linewidth}{0.2pt}" if style == "ruled" else r"\leavevmode\dotfill"
+                line = r"\par\noindent\textcolor[gray]{0.72}{%s}\vspace{\baselineskip}" % fill
+                out.append(r"\par\vspace{0.5\baselineskip}" + line * cfg.space_m)
+            else:
+                out.append(f"\\vspace{{{cfg.space_m}\\baselineskip}}")
+            out.append("```")
+            out.append("")
+    return "\n".join(out).rstrip() + "\n"
+
+
+def write_text(entries, cfg):
+    out = []
+    shown = []
+    for e in entries:
+        path = e.crumbs
+        if cfg.headings:
+            k = 0
+            while k < len(path) and k < len(shown) and path[k][2] == shown[k][2]:
+                k += 1
+            for lvl, htxt, _ in path[k:]:
+                out.append(("=" * max(1, 4 - lvl)) + " " + htxt + " " + ("=" * max(1, 4 - lvl)))
+                out.append("")
+            shown = path
+        if e.kind == "heading":
+            continue
+        lines = list(e.lines)
+        if cfg.page_refs:
+            lines[-1] += f" (p. {e.page_label})"
+        out.append("\n".join(lines))
+        for label, sub in e.subs:
+            out.append(f"    {label}: {sub}")
+        out.append("")
+    return "\n".join(out).rstrip() + "\n"
+
+
+def runs_from_md(line):
+    """Tokenise one rendered Markdown line into runs -- the single source of
+    truth for what recall-sheet (and any JSON consumer) needs, so no one has
+    to re-parse Markdown or undo escaping. Each run is
+    {"text": unescaped, "mark": bool, "italic": bool}; **bold** is a mark,
+    ***bold+italic*** a non-yellow mark, plain text is context."""
+    runs, buf, bold, ital, i, n = [], [], False, False, 0, len(line)
+
+    def flush():
+        if buf:
+            runs.append({"text": "".join(buf), "mark": bold, "italic": ital})
+            buf.clear()
+
+    while i < n:
+        c = line[i]
+        if c == "\\" and i + 1 < n:          # escaped char: keep the char, drop the backslash
+            buf.append(line[i + 1]); i += 2
+        elif line.startswith("***", i):
+            flush(); bold = not bold; ital = not ital; i += 3
+        elif line.startswith("**", i):
+            flush(); bold = not bold; i += 2
+        elif c == "*":
+            flush(); ital = not ital; i += 1
+        else:
+            buf.append(c); i += 1
+    flush()
+    return runs
+
+
+def write_json(entries, ctx):
+    data = {
+        "highlights": len(ctx.marks),
+        "entries": [
+            {
+                "kind": e.kind,
+                "headings": [{"level": lvl, "text": "".join(r["text"] for r in runs_from_md(h))}
+                             for lvl, h, _ in e.crumbs],
+                "page": e.page + 1,
+                "page_label": e.page_label,
+                "lines": [{"runs": runs_from_md(ln)} for ln in e.lines],
+                "subs": [{"label": l, "runs": runs_from_md(t)} for l, t in e.subs],
+                "marks": [{"kind": ctx.marks[m].kind, "color": ctx.marks[m].color,
+                           "text": "".join(ctx.marks[m].text)} for m in sorted(e.mark_ids)],
+            }
+            for e in entries
+        ],
+    }
+    return json.dumps(data, ensure_ascii=False, indent=2) + "\n"
+
+
+# ---------------------------------------------------------------------------
+# Driver
+# ---------------------------------------------------------------------------
+def process_pdf(path, cfg, log=True):
+    doc = pymupdf.open(path)
+    try:
+        pages = parse_pages(cfg.pages, doc.page_count)
+        ctx = DocContext(doc, pages, cfg)
+        use_fills = not doc_has_annotation_marks(doc, pages)
+        items = []
+        skipped_pages = []
+        for n, pno in enumerate(pages):
+            try:
+                page = doc[pno]
+                marks = collect_marks(ctx, page, pno, use_fills)
+                items.extend(page_items(ctx, page, pno, marks))
+            except Exception as ex:  # one malformed page must not sink the book
+                skipped_pages.append(pno + 1)
+                if log:
+                    sys.stderr.write("\r\033[K")
+                    print(f"  warning  {path.name}: skipped page {pno + 1} ({type(ex).__name__}: {ex})",
+                          file=sys.stderr)
+            if log and cfg.progress:
+                sys.stderr.write(f"\r  scanning {path.name}: page {n + 1}/{len(pages)}")
+                sys.stderr.flush()
+        if log and cfg.progress:
+            sys.stderr.write("\r\033[K")
+        ctx.stats["skipped_pages"] = skipped_pages
+        def _stage(fn, label, *a):
+            # An optional transform that must never sink the run: on failure
+            # warn and carry the items through unchanged.
+            nonlocal items
+            try:
+                out = fn(items, *a)
+                if out is not None:
+                    items = out
+            except Exception as ex:
+                if log:
+                    print(f"  warning  {path.name}: {label} step skipped ({type(ex).__name__}: {ex})",
+                          file=sys.stderr)
+
+        _stage(attach_table_headers, "table-header")
+        _stage(merge_footnote_continuations, "footnote-merge")
+        _stage(join_continuations, "paragraph-join", cfg)
+        _stage(strip_amendments, "marker-strip", cfg)
+        _stage(assign_leadins, "list-leadin", cfg)
+        if cfg.plain_titles:
+            _stage(demote_titles, "plain-titles")
+        try:
+            entries = build_entries(ctx, items)
+        except Exception as ex:            # last resort: no traceback, empty result
+            if log:
+                print(f"  warning  {path.name}: could not build entries ({type(ex).__name__}: {ex})",
+                      file=sys.stderr)
+            entries = []
+        finalize_coverage(entries, ctx)
+        report = coverage_report(ctx, path, use_fills)
+        return entries, ctx, report
+    finally:
+        doc.close()
+
+
+def coverage_report(ctx, path, use_fills):
+    for m in ctx.marks:
+        if m.used:
+            for o in m.co:
+                ctx.marks[o].used = True
+    total = len(ctx.marks)
+    clipped = [m for m in ctx.marks if m.raw and not "".join(m.text).strip()]
+    empty = [m for m in ctx.marks if not m.raw and not "".join(m.text).strip()]
+    missing = [m for m in ctx.marks if "".join(m.text).strip() and not m.used]
+    dropped = [m for m in ctx.marks if getattr(m, "skipped", False)]
+    lines = [f"  {path.name}: {total} mark(s)"
+             + (" (from coloured fills -- no annotations found)" if use_fills else "")
+             + f", {total - len(empty) - len(missing) - len(clipped)} placed in notes"]
+    if dropped:
+        lines.append(f"    {len(dropped)} mark(s) shown as plain text by --color-map skip")
+    if clipped:
+        lines.append(f"    {len(clipped)} mark(s) cover less than half of a word and were dropped by --snap word "
+                     f"(use --snap char to keep exact characters): pages "
+                     + ", ".join(sorted({str(m.page + 1) for m in clipped}, key=int)))
+    if empty:
+        lines.append(f"    {len(empty)} mark(s) cover no extractable text (image/scan?): pages "
+                     + ", ".join(sorted({str(m.page + 1) for m in empty}, key=int)))
+    if missing:
+        lines.append(f"    {len(missing)} mark(s) could not be placed:")
+        for m in missing[:15]:
+            lines.append(f"      p.{m.page + 1} {m.kind}: {''.join(m.text)[:60]!r}")
+    if ctx.stats["marks_in_running"]:
+        lines.append(f"    note: {ctx.stats['marks_in_running']} marked character(s) were in running "
+                     f"headers/footers and dropped (use --keep-running to keep them)")
+    skipped = ctx.stats.get("skipped_pages") if hasattr(ctx.stats, "get") else None
+    if skipped:
+        lines.append(f"    warning: {len(skipped)} page(s) could not be parsed and were skipped: "
+                     + ", ".join(str(p) for p in skipped))
+    return "\n".join(lines)
+
+
+def render(entries, ctx, cfg, level_shift=0):
+    if cfg.format == "json":
+        return write_json(entries, ctx)
+    if cfg.format == "txt":
+        return write_text(entries, cfg)
+    return write_markdown(entries, cfg, level_shift)
+
+
+def find_pdfs(folder, recursive):
+    walker = folder.rglob("*") if recursive else folder.glob("*")
+    return sorted(p for p in walker if p.is_file() and p.suffix.lower() == ".pdf")
+
+
+# ---------------------------------------------------------------------------
+# Config file, presets and publisher profiles
+#
+# Resolution order, lowest precedence first:
+#   built-in defaults  <  config [defaults]  <  --profile  <  --preset  <  CLI flags
+# so an explicit flag always wins, and "no config, no preset" is byte-for-byte
+# identical to the built-in defaults. Config is TOML; keys are the long flag
+# names (hyphens or underscores both work), e.g. context, plain-titles, margin.
+# ---------------------------------------------------------------------------
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover  (Python < 3.11)
+    tomllib = None
+
+# Named flag bundles. Editable/extendable in the config file under
+# [preset.<name>]; a preset there overrides the built-in of the same name.
+BUILTIN_PRESETS = {
+    "print":  {"context": "sentence"},                     # clean full sentences to print
+    "revise": {"context": "clause", "max_words": 25},      # tighter, for revision
+    "dense":  {"context": "comma"},                        # tightest snippets
+    "act":    {"context": "clause"},                       # bare acts read better clause-tight
+}
+# Publisher layout tuning. Left empty on purpose: good values must be measured
+# per book. Define your own in the config under [profile.<name>], e.g.
+#   [profile.laxmikanth]
+#   margin = 0.08
+#   column-tolerance = 24
+BUILTIN_PROFILES = {}
+
+
+def _norm_key(k):
+    return k.strip().lstrip("-").replace("-", "_")
+
+
+def _config_files(explicit, input_path):
+    """Config files to read, lowest precedence first. Personal defaults from
+    ~/.config/stack-highlights.toml, then a notes.toml sitting next to the
+    book (which overrides personal settings for that book)."""
+    if explicit:
+        p = Path(explicit).expanduser()
+        if not p.is_file():
+            sys.exit(f"error: --config file not found: {p}")
+        return [p]
+    out = []
+    xdg = os.environ.get("XDG_CONFIG_HOME")
+    base = Path(xdg).expanduser() if xdg else Path.home() / ".config"
+    personal = base / "stack-highlights.toml"
+    if personal.is_file():
+        out.append(personal)
+    if input_path:
+        ip = Path(input_path).expanduser()
+        book_dir = ip if ip.is_dir() else ip.parent
+        book_cfg = book_dir / "notes.toml"
+        if book_cfg.is_file():
+            out.append(book_cfg)
+    return out
+
+
+def _load_toml(path):
+    if tomllib is None:
+        sys.exit("error: reading a config file needs Python 3.11+ (tomllib)")
+    try:
+        with open(path, "rb") as fh:
+            return tomllib.load(fh)
+    except Exception as ex:
+        sys.exit(f"error: could not read config {path}: {ex}")
+
+
+def _valid_dests(parser):
+    return {a.dest: a for a in parser._actions if a.dest not in ("help", "input")}
+
+
+def _coerce(dest, value, action, where):
+    """Light validation of a config-supplied value against the flag it maps to."""
+    if action.choices is not None and value not in action.choices:
+        sys.exit(f"error: {where}: {dest} must be one of {list(action.choices)}, got {value!r}")
+    if action.type is float and isinstance(value, int):
+        value = float(value)
+    return value
+
+
+def _apply_table(dst, table, valid, where):
+    """Merge a TOML table of flag=value into dst (a dest->value dict)."""
+    for raw, value in table.items():
+        dest = _norm_key(raw)
+        if dest not in valid:
+            print(f"  warning  {where}: unknown setting {raw!r} ignored", file=sys.stderr)
+            continue
+        dst[dest] = _coerce(dest, value, valid[dest], where)
+
+
+def resolve_args(argv=None):
+    """Parse argv, then layer config, profile and preset underneath the
+    explicit flags, and return the final namespace for config_from_args."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    valid = _valid_dests(parser)
+
+    # which flags were given explicitly on the command line (they win)
+    given = set()
+    optmap = parser._option_string_actions
+    for tok in (argv if argv is not None else sys.argv[1:]):
+        key = tok.split("=", 1)[0]
+        if key in optmap:
+            given.add(optmap[key].dest)
+
+    # collect config: [defaults], and preset/profile registries
+    presets = {k: dict(v) for k, v in BUILTIN_PRESETS.items()}
+    profiles = {k: dict(v) for k, v in BUILTIN_PROFILES.items()}
+    conf_defaults = {}
+    for path in _config_files(args.config, args.input):
+        data = _load_toml(path)
+        where = str(path)
+        _apply_table(conf_defaults, data.get("defaults", {}), valid, f"{where} [defaults]")
+        for name, tbl in (data.get("preset", {}) or {}).items():
+            reg = {}
+            _apply_table(reg, tbl, valid, f"{where} [preset.{name}]")
+            presets.setdefault(name, {}).update(reg)
+        for name, tbl in (data.get("profile", {}) or {}).items():
+            reg = {}
+            _apply_table(reg, tbl, valid, f"{where} [profile.{name}]")
+            profiles.setdefault(name, {}).update(reg)
+
+    # build the layered value set (low -> high precedence), tracking where
+    # each setting's final value came from (for --explain)
+    source = {dest: "default" for dest in valid}
+    for dest in conf_defaults:
+        source[dest] = "config"
+    if args.profile:
+        if args.profile not in profiles:
+            sys.exit(f"error: unknown profile {args.profile!r} "
+                     f"(define [profile.{args.profile}] in your config)")
+        for dest in profiles[args.profile]:
+            source[dest] = f"profile:{args.profile}"
+    if args.preset:
+        if args.preset not in presets:
+            sys.exit(f"error: unknown preset {args.preset!r} "
+                     f"(define [preset.{args.preset}] in your config)")
+        for dest in presets[args.preset]:
+            source[dest] = f"preset:{args.preset}"
+
+    layered = dict(conf_defaults)
+    if args.profile:
+        layered.update(profiles[args.profile])
+    if args.preset:
+        layered.update(presets[args.preset])
+    # apply config/profile/preset only where the user did NOT pass the flag
+    for dest, value in layered.items():
+        if dest not in given:
+            setattr(args, dest, value)
+    for dest in given:
+        if dest in valid:
+            source[dest] = "flag"
+
+    args._source = source
+    args._presets, args._profiles = presets, profiles
+    return args
+
+
+def explain(args):
+    """Print the settings actually in effect (with where each came from) plus
+    a small sample, without generating the full output. Answers --dry-run."""
+    src = getattr(args, "_source", {})
+    interesting = [
+        "input", "format", "out", "context", "word_window", "word_side",
+        "max_words", "min_words", "kinds", "colors", "plain_titles",
+        "italic_colors", "color_tags", "headings", "heading_depth", "tables",
+        "table_style", "footnotes", "dehyphenate", "keep_markers", "snap",
+        "space_every", "page_refs", "margin", "sup_ratio", "footnote_ratio",
+        "row_tolerance", "column_tolerance",
+    ]
+    print("Settings in effect:", file=sys.stderr)
+    for dest in interesting:
+        if not hasattr(args, dest):
+            continue
+        val = getattr(args, dest)
+        origin = src.get(dest, "default")
+        tag = "" if origin == "default" else f"   [{origin}]"
+        print(f"  {dest:18} = {val!r}{tag}", file=sys.stderr)
+    if args.preset:
+        print(f"\n  preset  : {args.preset}", file=sys.stderr)
+    if args.profile:
+        print(f"  profile : {args.profile}", file=sys.stderr)
+
+    # a small sample so a setup can be sanity-checked before a long run
+    cfg = config_from_args(args)
+    src_path = Path(cfg.input).expanduser()
+    if src_path.is_dir():
+        pdfs = find_pdfs(src_path, not cfg.no_recursive)
+        src_path = pdfs[0] if pdfs else None
+    if src_path and src_path.suffix.lower() == ".pdf":
+        try:
+            entries, ctx, _ = process_pdf(src_path, cfg, log=False)
+        except Exception as ex:
+            print(f"\n  (could not build sample: {ex})", file=sys.stderr)
+            return
+        print(f"\nSample -- first entries of {src_path.name}:", file=sys.stderr)
+        shown = render(entries[:3], ctx, cfg) if entries else "(no highlighted entries found)"
+        for line in shown.splitlines()[:24]:
+            print("  " + line, file=sys.stderr)
+
+
+def build_parser():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("input", help="A PDF, or a folder of PDFs")
+    g = ap.add_argument_group("config & presets")
+    g.add_argument("--config", metavar="FILE",
+                   help="TOML config file (default: ~/.config/stack-highlights.toml plus notes.toml next to the book)")
+    g.add_argument("--preset", metavar="NAME",
+                   help="Apply a named bundle of flags (built-in: print, revise, dense, act; add your own in config)")
+    g.add_argument("--profile", metavar="NAME",
+                   help="Apply a named publisher layout profile from your config (e.g. laxmikanth)")
+    g.add_argument("--dry-run", "--explain", dest="dry_run", action="store_true",
+                   help="Print the settings actually in effect (after config, profile, preset and flags) "
+                        "plus a small sample, then exit -- check a setup before a long run")
+    # Groups are ordered the way you decide about a run: what to include ->
+    # how much context -> structure -> looks -> where it goes -> fine tuning.
+    g = ap.add_argument_group("1. which marks count")
+    g.add_argument("--kinds", default="highlight,underline",
+                   help="Annotation kinds to use: highlight,underline,squiggly,strikeout (default: highlight,underline)")
+    g.add_argument("--colors", help="Only marks of these colours: yellow,orange,red,pink,green,blue,purple,gray")
+    g.add_argument("--snap", choices=["word", "char"], default="word",
+                   help="word (default): a word is marked if >50%% of its letters are covered; char: exact characters")
+    g.add_argument("--no-notes", action="store_true", help="Ignore typed notes and annotation comments")
+    g = ap.add_argument_group("2. context around each mark")
+    g.add_argument("--context", choices=["sentence", "clause", "comma", "paragraph", "highlight"], default="sentence",
+                   help="sentence (default), clause, comma (commas only), paragraph, or highlight (marked text only)")
+    g.add_argument("--word-window", type=int, default=0, metavar="N",
+                   help="Instead of sentence/clause context, keep N context words around each highlight "
+                        "(e.g. 6 = 3 before + 3 after). 0 = off (default)")
+    g.add_argument("--word-side", choices=["both", "left", "right"], default="both",
+                   help="With --word-window: take the words on both sides (default), only the left, or only the right")
+    g.add_argument("--max-words", type=int, default=40,
+                   help="Sentences longer than this are trimmed to the clauses around the marks (default: 40)")
+    g.add_argument("--min-words", type=int, default=8,
+                   help="Trimmed snippets are widened clause by clause to at least this many words (default: 8)")
+    g.add_argument("--no-leadins", action="store_true", help="Don't prefix list items with the sentence introducing the list")
+    g.add_argument("--no-group-lists", action="store_true", help="One entry per list item instead of grouping items under one lead-in")
+    g.add_argument("--footnotes", choices=["inline", "section"], default="inline",
+                   help="inline (default): a marked footnote goes under the snippet citing it; section: under a Footnotes heading")
+    g.add_argument("--no-join-pages", action="store_true", help="Don't rejoin paragraphs split by a page break")
+    g = ap.add_argument_group("3. structure")
+    g.add_argument("--no-headings", action="store_true", help="Flat list, no heading structure")
+    g.add_argument("--heading-depth", type=int, default=0, help="Only keep heading levels up to N (1=chapter ... 4=run-in/caption)")
+    g.add_argument("--no-runin", action="store_true", help="Don't treat bold words opening a paragraph as a heading")
+    g.add_argument("--heading-max-words", type=int, default=16, help="Longest all-bold line still treated as a heading (default: 16)")
+    g.add_argument("--no-tables", action="store_true", help="Treat table cells as ordinary paragraphs")
+    g.add_argument("--table-style", choices=["kv", "plain"], default="kv",
+                   help="kv (default): 'Column: value · ...'; plain: values only")
+    g.add_argument("--cell-words", type=int, default=30, help="Longer unmarked table cells are shortened to this many words (default: 30)")
+    g.add_argument("--no-fill-down", action="store_true", help="Don't repeat the row label for sub-rows with an empty first cell")
+    g = ap.add_argument_group("4. looks")
+    g.add_argument("--page-refs", action="store_true", help="Add (p. N) after each entry, using the book's printed page number when found")
+    g.add_argument("--color-tags", action="store_true", help="Tag non-yellow marks, e.g. **K.C. Wheare**{red}")
+    g.add_argument("--italic-colors", action="store_true",
+                   help="Render non-yellow highlights as bold+italic (***...***) so they stand out from ordinary yellow ones")
+    g.add_argument("--color-map", metavar="MAP",
+                   help="Per-colour emphasis, e.g. 'red=italic,blue=underline,green=skip'. "
+                        "Styles: bold, italic, underline, skip. Use '*' for a catch-all. Overrides --italic-colors")
+    g.add_argument("--plain-titles", action="store_true",
+                   help="Don't treat headings specially: a highlighted heading becomes an ordinary snippet, "
+                        "an un-highlighted one is dropped (uncluttered notes, no big-font headings)")
+    g.add_argument("--space-every", metavar="N:M",
+                   help="Notes PDF only: after every N entries insert M blank lines of writing space (e.g. 5:10)")
+    g.add_argument("--space-style", choices=["blank", "ruled", "dotted"], default="blank",
+                   help="With --space-every: leave the gap blank (default), or fill it with faint ruled or dotted lines")
+    g = ap.add_argument_group("5. output")
+    g.add_argument("--out", help="Output file (single PDF only). Default: <pdf name>.<ext> next to the PDF")
+    g.add_argument("--format", choices=["md", "txt", "json"], default="md", help="Default: md")
+    g.add_argument("--combine", action="store_true", help="Folder mode: one combined file instead of one per PDF")
+    g.add_argument("--combine-out", help="Path of the combined file (implies --combine)")
+    g.add_argument("--no-recursive", action="store_true", help="Folder mode: top level only")
+    g.add_argument("--pages", help="Only these pages, e.g. 1-20,35")
+    g = ap.add_argument_group("6. clean-up")
+    g.add_argument("--keep-running", action="store_true", help="Keep running headers/footers (book title, page numbers)")
+    g.add_argument("--keep-markers", action="store_true", help="Keep footnote numbers and amendment brackets like 4[ ... ]")
+    g.add_argument("--dehyphenate", action="store_true", help="Join 'co-' + 'operation' as 'cooperation' (default keeps the hyphen)")
+    g = ap.add_argument_group("7. advanced tuning (per-publisher; see --profile)")
+    g.add_argument("--margin", type=float, default=0.09, help="Top/bottom page fraction searched for running headers/footers (default: 0.09)")
+    g.add_argument("--sup-ratio", type=float, default=0.75, help="Text at or below this fraction of body size counts as superscript (default: 0.75)")
+    g.add_argument("--footnote-ratio", type=float, default=0.9, help="Paragraphs at or below this fraction of body size starting with a number are footnotes (default: 0.9)")
+    g.add_argument("--row-tolerance", type=float, default=3.0, help="Max top-edge difference (pt) for blocks to form one table row (default: 3)")
+    g.add_argument("--column-tolerance", type=float, default=20.0, help="Max x difference (pt) to match a cell to a column (default: 20)")
+    g.add_argument("--no-progress", action="store_true", help="No progress line")
+    return ap
+
+
+def config_from_args(a):
+    a.kinds = {k.strip() for k in a.kinds.split(",") if k.strip()}
+    a.colors = {c.strip() for c in a.colors.split(",")} if a.colors else None
+    raw_cmap = a.color_map        # the --color-map string, or None
+    a.color_map = None
+    if raw_cmap:
+        cmap = {}
+        for pair in raw_cmap.split(","):
+            pair = pair.strip()
+            if not pair:
+                continue
+            if "=" not in pair:
+                sys.exit(f"error: --color-map entry must be colour=style, got {pair!r}")
+            col, style = (x.strip() for x in pair.split("=", 1))
+            if style not in MARK_STYLES:
+                sys.exit(f"error: --color-map style must be one of {list(MARK_STYLES)}, got {style!r}")
+            cmap[col] = style
+        a.color_map = cmap or None
+    a.notes = not a.no_notes
+    a.leadins = not a.no_leadins
+    a.group_lists = not a.no_group_lists
+    a.join_pages = not a.no_join_pages
+    a.headings = not a.no_headings
+    a.runin = not a.no_runin
+    a.tables = not a.no_tables
+    a.fill_down = not a.no_fill_down
+    a.strip_running = not a.keep_running
+    a.progress = not a.no_progress and sys.stderr.isatty()
+    a.fmt_render = "txt" if a.format == "txt" else "md"  # json tokenises the md runs
+    a.space_n = a.space_m = 0
+    if a.space_every:
+        m = re.match(r"^\s*(\d+)\s*[:, ]\s*(\d+)\s*$", a.space_every)
+        if not m:
+            sys.exit("error: --space-every must look like N:M, e.g. 5:10")
+        a.space_n, a.space_m = int(m.group(1)), int(m.group(2))
+    if a.word_window < 0:
+        sys.exit("error: --word-window can't be negative")
+    return a
+
+
+def main():
+    args = resolve_args()
+    if args.dry_run:
+        explain(args)
+        return
+    cfg = config_from_args(args)
+    src = Path(cfg.input).expanduser()
+    if not src.exists():
+        sys.exit(f"error: {src} does not exist")
+    ext = {"md": ".md", "txt": ".txt", "json": ".json"}[cfg.format]
+
+    if src.is_dir():
+        pdfs = find_pdfs(src, not cfg.no_recursive)
+        if not pdfs:
+            sys.exit(f"No PDFs found under {src}")
+        combine = cfg.combine or cfg.combine_out
+        combined = []
+        for pdf in pdfs:
+            try:
+                entries, ctx, report = process_pdf(pdf, cfg)
+            except Exception as ex:  # keep going through a folder
+                print(f"  error    {pdf.name}: {ex}", file=sys.stderr)
+                continue
+            print(report, file=sys.stderr)
+            if not entries:
+                continue
+            if combine:
+                label = str(pdf.relative_to(src))
+                combined.append(("# " + (md_escape(label) if cfg.format == "md" else label) + "\n\n"
+                                 + render(entries, ctx, cfg, level_shift=1)) if cfg.format != "json"
+                                else render(entries, ctx, cfg))
+            else:
+                out = pdf.with_suffix(ext)
+                out.write_text(render(entries, ctx, cfg), encoding="utf-8")
+                print(f"  wrote    {out}", file=sys.stderr)
+        if combine and combined:
+            out = Path(cfg.combine_out) if cfg.combine_out else src / ("combined_highlights" + ext)
+            out.write_text("\n".join(combined), encoding="utf-8")
+            print(f"  wrote    {out}", file=sys.stderr)
+        return
+
+    if src.suffix.lower() != ".pdf":
+        sys.exit("error: input must be a PDF or a folder")
+    try:
+        entries, ctx, report = process_pdf(src, cfg)
+    except Exception as ex:
+        sys.exit(f"error: could not process {src.name}: {type(ex).__name__}: {ex}")
+    print(report, file=sys.stderr)
+    if not entries:
+        print("  no highlights found", file=sys.stderr)
+        return
+    out = Path(cfg.out).expanduser() if cfg.out else src.with_suffix(ext)
+    out.write_text(render(entries, ctx, cfg), encoding="utf-8")
+    print(f"  wrote    {out}", file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()

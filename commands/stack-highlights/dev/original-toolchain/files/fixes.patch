@@ -1,0 +1,242 @@
+--- orig/stack-highlights	2026-09-22 10:47:10.201627288 +0000
++++ tool/stack-highlights	2026-09-22 10:49:43.730365745 +0000
+@@ -105,6 +105,13 @@
+ # Running headers / footers and page numbers
+ PAGENUM_BOTTOM_FRACTION = 0.5        # a page number sits below this fraction of page height
+ RUNNING_MIN_PAGE_FRACTION = 0.3      # a header/footer must repeat on >= this fraction of pages
++# Page-numbered running heads that change per chapter ("Advent of the Europeans
++# in India * 23" on odd pages) never repeat on 30% of pages, and may sit below
++# the --margin band. They are caught by their page number instead: the topmost
++# or bottommost line of a page, within this band, that starts or ends with a
++# number tracking the PDF page index at the book's usual offset.
++EDGE_BAND_FRACTION = 0.2             # top/bottom page fraction searched for such heads
++EDGE_MIN_REPEAT = 3                  # ... and the same head must occur on >= this many pages
+ 
+ # Highlighter-colour detection (a coloured fill counts as a highlight)
+ HILITE_MIN_BRIGHTNESS = 0.75         # brightest RGB channel at least this
+@@ -287,6 +294,8 @@
+         self.marks = []
+         self.notes = []  # (page, rect, text)
+         self.running = set()
++        self.edge_running = {}  # pno -> keys of page-numbered running heads
++        self.edge_hit = None    # "top"/"bottom" when is_running matched one
+         self.page_labels = {}
+         self.body_size = 11.0
+         self.table = None     # active table state across rows/pages
+@@ -296,12 +305,14 @@
+     def _survey(self):
+         sizes = Counter()
+         margin_keys = Counter()
++        edge_cands = []           # (pno, key, offset of its page number)
+         allp = list(range(self.doc.page_count))
+         sample = set(allp if len(allp) <= 60 else allp[:: max(1, len(allp) // 60)])
+         for pno in range(self.doc.page_count):
+             page = self.doc[pno]
+             h = page.rect.height
+             d = page.get_text("dict", flags=0)
++            edge_lines = []
+             for b in d["blocks"]:
+                 for l in b.get("lines", []):
+                     txt = "".join(s["text"] for s in l["spans"]).strip()
+@@ -311,27 +322,55 @@
+                     if not txt:
+                         continue
+                     y0, y1 = l["bbox"][1], l["bbox"][3]
++                    edge_lines.append((y0, y1, txt))
+                     if y1 < h * self.cfg.margin or y0 > h * (1 - self.cfg.margin):
+                         margin_keys[self._key(txt)] += 1
+                         if re.fullmatch(r"\d{1,4}", txt) and y0 > h * PAGENUM_BOTTOM_FRACTION:
+                             self.page_labels.setdefault(pno, txt)
+                         elif re.fullmatch(r"\d{1,4}", txt):
+                             self.page_labels.setdefault(pno, txt)
++            if edge_lines:
++                top = min(edge_lines, key=lambda x: x[0])
++                bot = max(edge_lines, key=lambda x: x[1])
++                for y0, y1, txt in {top, bot}:
++                    if not (y1 < h * EDGE_BAND_FRACTION or y0 > h * (1 - EDGE_BAND_FRACTION)):
++                        continue
++                    m = re.match(r"^(\d{1,4})\s", txt) or re.search(r"\s(\d{1,4})$", txt)
++                    if m:
++                        edge_cands.append((pno, self._key(txt), int(m.group(1)) - pno))
+         if sizes:
+             self.body_size = sizes.most_common(1)[0][0]
+         need = max(3, int(self.doc.page_count * RUNNING_MIN_PAGE_FRACTION))
+         self.running = {k for k, v in margin_keys.items() if v >= need or k == "#"}
++        # page-numbered running heads: the page number must follow the book's
++        # dominant page offset (so a stray number in body text never qualifies)
++        offsets = Counter(off for _p, _k, off in edge_cands)
++        if offsets:
++            best, n_best = offsets.most_common(1)[0]
++            if n_best >= need:
++                hits = [(p, k) for p, k, off in edge_cands if off == best]
++                reps = Counter(k for _p, k in hits)
++                for p, k in hits:
++                    if reps[k] >= EDGE_MIN_REPEAT:
++                        self.edge_running.setdefault(p, set()).add(k)
+ 
+     @staticmethod
+     def _key(txt):
+         return re.sub(r"\d+", "#", re.sub(r"\s+", "", txt)).strip().lower()
+ 
+     def is_running(self, page, rect, txt):
++        self.edge_hit = None
+         if not self.cfg.strip_running:
+             return False
+         h = page.rect.height
+         if rect.y1 < h * self.cfg.margin or rect.y0 > h * (1 - self.cfg.margin):
+-            return self._key(txt) in self.running
++            if self._key(txt) in self.running:
++                return True
++        edge = self.edge_running.get(page.number)
++        if edge and (rect.y1 < h * EDGE_BAND_FRACTION or rect.y0 > h * (1 - EDGE_BAND_FRACTION)):
++            if self._key(txt) in edge:
++                self.edge_hit = "top" if rect.y1 < h * EDGE_BAND_FRACTION else "bottom"
++                return True
+         return False
+ 
+     def label(self, pno):
+@@ -687,6 +726,7 @@
+     rd = page.get_text("rawdict", flags=RAW_FLAGS)
+     pw = page.rect.width
+     blocks = []
++    edge_top = edge_bottom = False   # a page-numbered running head was dropped
+     for b in rd["blocks"]:
+         if b["type"] != 0:
+             continue
+@@ -698,6 +738,12 @@
+             txt = " ".join(t.text for t in toks)
+             lr = pymupdf.Rect(l["bbox"])
+             if ctx.is_running(page, lr, txt):
++                # the head used to be an ordinary block that ended any table
++                # running across the page break; keep that boundary
++                if ctx.edge_hit == "top":
++                    edge_top = True
++                elif ctx.edge_hit == "bottom":
++                    edge_bottom = True
+                 for t in toks:
+                     for ch in t.chars:
+                         if ch[1] >= 0:
+@@ -744,6 +790,8 @@
+         band.sort(key=lambda b: b["x0"])
+ 
+     items = []
++    if edge_top:
++        ctx.table = None
+     for band in bands:
+         real = [b for b in band if b["alnum"]]
+         is_row = False
+@@ -770,6 +818,8 @@
+         for b in band:
+             items.extend(text_block_items(ctx, b, pno))
+             ctx.table = None
++    if edge_bottom:
++        ctx.table = None
+     return items
+ 
+ 
+--- orig/md-to-pdf	2026-09-22 10:47:10.202169826 +0000
++++ tool/md-to-pdf	2026-09-22 11:03:07.296413360 +0000
+@@ -137,7 +137,12 @@
+     fi
+ fi
+ 
+-markdown_format="markdown+lists_without_preceding_blankline"
++# -smart: the notes already carry typographic quotes from the book. With
++# smart quotes on, pandoc pairs a book's ‘...’ as a quotation and a **mark**
++# that starts or ends inside it breaks (literal ** or bold on the wrong words).
++# The typography smart used to supply for plain ASCII " ' -- --- ... is done
++# instead by a small filter (see smart_tmp below) that never pairs quotes.
++markdown_format="markdown-smart+lists_without_preceding_blankline"
+ if [ "$preserve_lines" = "true" ]; then
+     markdown_format="${markdown_format}+hard_line_breaks"
+ fi
+@@ -258,12 +263,81 @@
+     header_args+=(-H "$greyctx_tmp")
+ fi
+ 
++# ------------------------------------------------------------------
++# ASCII typography without -smart: turn " ' -- --- ... inside words into
++# curly quotes / dashes / ellipsis, one token at a time. Unlike pandoc's
++# smart extension it never pairs quotes, so it can't cut across **marks**.
++# A quote opens at the start of a word or after ( [ { / or a dash;
++# anywhere else it closes (which also makes apostrophes: days' don't).
++# ------------------------------------------------------------------
++smart_tmp="$(mktemp --suffix=.lua)"
++cat > "$smart_tmp" <<'LUA'
++local OPEN_AFTER = { ["("] = true, ["["] = true, ["{"] = true, ["/"] = true }
++local function curl(s)
++  local out, prev = {}, ""
++  for ch in s:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
++    if ch == '"' or ch == "'" then
++      local opening = prev == "" or OPEN_AFTER[prev] or prev == "\u{2013}" or prev == "\u{2014}"
++      if ch == '"' then
++        ch = opening and "\u{201C}" or "\u{201D}"
++      else
++        ch = opening and "\u{2018}" or "\u{2019}"
++      end
++    end
++    out[#out + 1] = ch
++    prev = ch
++  end
++  return table.concat(out)
++end
++-- smart also kept "Dr. Rao", "vs. State", "p. 5" together with a non-breaking
++-- space (pandoc's own abbreviation list); keep doing that
++local ABBR = {}
++for w in ([[aet. aetat. al. Apr. Aug. bk. Bros. c. Capt. cf. ch. chap. chs. Co. col.
++  Corp. cp. d. Dec. Dr. e.g. ed. eds. esp. f. fasc. Feb. ff. fig. fl. fol. fols. Fr.
++  Gen. Gov. Hon. i.e. ill. Inc. incl. Jan. Jr. Jul. Jun. Ltd. M.A. M.D. Mar. Mr. Mrs.
++  Ms. n. n.b. nn. No. Nov. Oct. p. Ph.D. pp. Pres. Prof. pt. q.v. Rep. Rev. s.v. s.vv.
++  saec. sec. Sen. Sep. Sept. Sgt. Sr. St. univ. viz. vol. vs.]]):gmatch("%S+") do
++  ABBR[w] = true
++end
++local function is_abbr(t)
++  -- the word the token ends with: "(Dr." -> "Dr.", "1788\u{2013}Nov." -> "Nov."
++  local core = t:match("([%w%.]+)$")
++  return core ~= nil and ABBR[core] == true
++end
++local function join_abbr(inlines)
++  local out, i = pandoc.List(), 1
++  while i <= #inlines do
++    local el = inlines[i]
++    if el.t == "Str" and is_abbr(el.text) and inlines[i + 1] and inlines[i + 1].t == "Space"
++        and inlines[i + 2] then
++      -- the space after the abbreviation becomes non-breaking
++      out:insert(pandoc.Str(el.text .. "\u{00A0}"))
++      i = i + 2
++    else
++      out:insert(el)
++      i = i + 1
++    end
++  end
++  return out
++end
++local function typo(el)
++  local t = el.text
++  if not (t:find('["\']') or t:find("%-%-") or t:find("%.%.%.")) then
++    return nil
++  end
++  t = t:gsub("%-%-%-", "\u{2014}"):gsub("%-%-", "\u{2013}"):gsub("%.%.%.", "\u{2026}")
++  return pandoc.Str(curl(t))
++end
++return { { Inlines = join_abbr }, { Str = typo } }
++LUA
++
+ # Clean up any temp header files on exit
+ cleanup() {
+     [ -n "$fontsize_tmp" ] && rm -f "$fontsize_tmp"
+     [ -n "$spacing_tmp" ] && rm -f "$spacing_tmp"
+     [ -n "$pagenum_tmp" ] && rm -f "$pagenum_tmp"
+     [ -n "$greyctx_tmp" ] && rm -f "$greyctx_tmp"
++    [ -n "$smart_tmp" ] && rm -f "$smart_tmp"
+     return 0
+ }
+ trap cleanup EXIT
+@@ -271,6 +345,7 @@
+ pandoc -f "$markdown_format" "$input" -o "$output" \
+     --pdf-engine=xelatex \
+     --lua-filter="$SCRIPT_DIR/hr-fullwidth.lua" \
++    --lua-filter="$smart_tmp" \
+     -V mainfont="Latin Modern Roman" \
+     -V geometry:margin=1in \
+     -V colorlinks=true \

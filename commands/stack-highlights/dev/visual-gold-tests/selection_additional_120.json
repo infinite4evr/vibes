@@ -1,0 +1,3059 @@
+{
+  "interpretation": "120 additional unique highlighted pages = 20 new pages per each of 6 PDFs; all excluded from the original 60-page suite.",
+  "pages": [
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 7,
+      "annotation_count": 12,
+      "density_bucket": "high",
+      "image": "images/00_The_Constitution_of_India/page_0007.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        212.6,
+        230.2,
+        265.3,
+        240.3
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0007_focus_annotated.png",
+      "focus_quads": [
+        [
+          212.5540008544922,
+          230.19000244140625,
+          265.25799560546875,
+          240.28497314453125
+        ]
+      ],
+      "focus_marked_text": "Right to work"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 17,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/00_The_Constitution_of_India/page_0017.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        211.5,
+        398.9,
+        418.7,
+        409.0
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0017_focus_annotated.png",
+      "focus_quads": [
+        [
+          211.47000122070312,
+          398.9079895019531,
+          418.656005859375,
+          409.0039978027344
+        ]
+      ],
+      "focus_marked_text": "THE STATES IN PART B OF THE FIRST SCHEDULE"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 23,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/00_The_Constitution_of_India/page_0023.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        311.0,
+        346.8,
+        384.6,
+        356.9
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0023_focus_annotated.png",
+      "focus_quads": [
+        [
+          310.9519958496094,
+          346.8290100097656,
+          384.6210021972656,
+          356.92498779296875
+        ]
+      ],
+      "focus_marked_text": "RIGHT TO PROPERTY"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 27,
+      "annotation_count": 9,
+      "density_bucket": "high",
+      "image": "images/00_The_Constitution_of_India/page_0027.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        213.0,
+        265.0,
+        356.1,
+        275.1
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0027_focus_annotated.png",
+      "focus_quads": [
+        [
+          212.97300720214844,
+          264.989990234375,
+          356.1189880371094,
+          275.08599853515625
+        ]
+      ],
+      "focus_marked_text": "Special Officer for linguistic minorities."
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 40,
+      "annotation_count": 6,
+      "density_bucket": "high",
+      "image": "images/00_The_Constitution_of_India/page_0040.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        321.0,
+        539.5,
+        420.1,
+        549.9
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0040_focus_annotated.png",
+      "focus_quads": [
+        [
+          321.0050048828125,
+          539.4520263671875,
+          420.07598876953125,
+          549.885009765625
+        ]
+      ],
+      "focus_marked_text": "2[or co-operative societies];"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 43,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/00_The_Constitution_of_India/page_0043.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        317.0,
+        354.5,
+        404.8,
+        364.6
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0043_focus_annotated.png",
+      "focus_quads": [
+        [
+          316.9670104980469,
+          354.510986328125,
+          404.7829895019531,
+          364.60699462890625
+        ]
+      ],
+      "focus_marked_text": "Judges of a High Court"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 54,
+      "annotation_count": 8,
+      "density_bucket": "high",
+      "image": "images/00_The_Constitution_of_India/page_0054.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        255.2,
+        215.7,
+        357.2,
+        226.1
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0054_focus_annotated.png",
+      "focus_quads": [
+        [
+          255.2050018310547,
+          215.6929931640625,
+          357.1679992675781,
+          226.1290283203125
+        ]
+      ],
+      "focus_marked_text": "of co-operative societies.—"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 61,
+      "annotation_count": 5,
+      "density_bucket": "high",
+      "image": "images/00_The_Constitution_of_India/page_0061.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        280.6,
+        446.7,
+        311.0,
+        456.8
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0061_focus_annotated.png",
+      "focus_quads": [
+        [
+          280.61700439453125,
+          446.6730041503906,
+          310.9859924316406,
+          456.7690124511719
+        ]
+      ],
+      "focus_marked_text": "electoral"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 66,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/00_The_Constitution_of_India/page_0066.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        186.3,
+        288.0,
+        310.4,
+        298.1
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0066_focus_annotated.png",
+      "focus_quads": [
+        [
+          186.30599975585938,
+          288.0320129394531,
+          310.41900634765625,
+          298.12799072265625
+        ]
+      ],
+      "focus_marked_text": "76. Attorney-General for India"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 70,
+      "annotation_count": 12,
+      "density_bucket": "high",
+      "image": "images/00_The_Constitution_of_India/page_0070.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        391.9,
+        284.9,
+        424.6,
+        295.0
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0070_focus_annotated.png",
+      "focus_quads": [
+        [
+          391.85699462890625,
+          284.90899658203125,
+          424.5790100097656,
+          295.0050048828125
+        ]
+      ],
+      "focus_marked_text": "one-third"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 81,
+      "annotation_count": 6,
+      "density_bucket": "high",
+      "image": "images/00_The_Constitution_of_India/page_0081.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        323.0,
+        236.0,
+        352.8,
+        246.0
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0081_focus_annotated.png",
+      "focus_quads": [
+        [
+          323.0469970703125,
+          235.9520263671875,
+          352.8420104980469,
+          246.0479736328125
+        ]
+      ],
+      "focus_marked_text": "fourteen"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 84,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/00_The_Constitution_of_India/page_0084.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        185.4,
+        274.6,
+        220.3,
+        284.7
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0084_focus_annotated.png",
+      "focus_quads": [
+        [
+          185.40899658203125,
+          274.59197998046875,
+          220.26600646972656,
+          284.68798828125
+        ]
+      ],
+      "focus_marked_text": "President."
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 99,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/00_The_Constitution_of_India/page_0099.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        204.6,
+        308.7,
+        370.0,
+        318.8
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0099_focus_annotated.png",
+      "focus_quads": [
+        [
+          204.6009979248047,
+          308.6719970703125,
+          370.0270080566406,
+          318.76800537109375
+        ]
+      ],
+      "focus_marked_text": "Comptroller and Auditor-General of India."
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 144,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/00_The_Constitution_of_India/page_0144.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        162.3,
+        241.5,
+        452.3,
+        263.6
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0144_focus_annotated.png",
+      "focus_quads": [
+        [
+          355.59600830078125,
+          241.4739990234375,
+          452.2850036621094,
+          251.57000732421875
+        ],
+        [
+          162.3090057373047,
+          253.469970703125,
+          191.93899536132812,
+          263.56597900390625
+        ]
+      ],
+      "focus_marked_text": "National Capital Territory of Delhi"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 174,
+      "annotation_count": 7,
+      "density_bucket": "high",
+      "image": "images/00_The_Constitution_of_India/page_0174.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        214.1,
+        230.7,
+        396.3,
+        240.8
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0174_focus_annotated.png",
+      "focus_quads": [
+        [
+          214.11099243164062,
+          230.6710205078125,
+          396.3450012207031,
+          240.7659912109375
+        ]
+      ],
+      "focus_marked_text": "THE SCHEDULED AND TRIBAL AREAS"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 182,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/00_The_Constitution_of_India/page_0182.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        204.8,
+        324.0,
+        255.1,
+        334.1
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0182_focus_annotated.png",
+      "focus_quads": [
+        [
+          204.76499938964844,
+          324.02899169921875,
+          255.09800720214844,
+          334.125
+        ]
+      ],
+      "focus_marked_text": "Adjudication"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 214,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/00_The_Constitution_of_India/page_0214.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        247.2,
+        603.3,
+        331.0,
+        612.0
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0214_focus_annotated.png",
+      "focus_quads": [
+        [
+          247.15199279785156,
+          603.27099609375,
+          331.010009765625,
+          612.0390014648438
+        ]
+      ],
+      "focus_marked_text": "(Forty-second Amendment"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 234,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/00_The_Constitution_of_India/page_0234.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        260.0,
+        228.5,
+        352.1,
+        238.6
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0234_focus_annotated.png",
+      "focus_quads": [
+        [
+          259.9960021972656,
+          228.510986328125,
+          352.135009765625,
+          238.60699462890625
+        ]
+      ],
+      "focus_marked_text": "OFFICIAL LANGUAGE"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 253,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/00_The_Constitution_of_India/page_0253.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        220.4,
+        433.2,
+        270.2,
+        443.3
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0253_focus_annotated.png",
+      "focus_quads": [
+        [
+          220.35800170898438,
+          433.22698974609375,
+          270.2070007324219,
+          443.322998046875
+        ]
+      ],
+      "focus_marked_text": "“major port”"
+    },
+    {
+      "pdf": "00_The_Constitution_of_India.pdf",
+      "pdf_stem": "00_The_Constitution_of_India",
+      "page": 345,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/00_The_Constitution_of_India/page_0345.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        195.9,
+        533.0,
+        241.2,
+        541.0
+      ],
+      "focus_annotation_image": "focus_annotated/00_The_Constitution_of_India/page_0345_focus_annotated.png",
+      "focus_quads": [
+        [
+          195.86700439453125,
+          533.0,
+          241.18299865722656,
+          541.010009765625
+        ]
+      ],
+      "focus_marked_text": "Emoluments"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 57,
+      "annotation_count": 8,
+      "density_bucket": "high",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0057.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        239.4,
+        355.0,
+        307.5,
+        366.0
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0057_focus_annotated.png",
+      "focus_quads": [
+        [
+          239.39300537109375,
+          354.97802734375,
+          307.5149841308594,
+          366.04803466796875
+        ]
+      ],
+      "focus_marked_text": "Vasco da Gama"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 64,
+      "annotation_count": 13,
+      "density_bucket": "high",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0064.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        95.9,
+        154.3,
+        215.5,
+        165.4
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0064_focus_annotated.png",
+      "focus_quads": [
+        [
+          95.90399932861328,
+          154.3370361328125,
+          215.50399780273438,
+          165.4110107421875
+        ]
+      ],
+      "focus_marked_text": "slave girls of Mumtaz Mahal"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 74,
+      "annotation_count": 11,
+      "density_bucket": "high",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0074.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        170.6,
+        224.4,
+        223.9,
+        235.5
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0074_focus_annotated.png",
+      "focus_quads": [
+        [
+          170.57199096679688,
+          224.41702270507812,
+          223.9119873046875,
+          235.49102783203125
+        ]
+      ],
+      "focus_marked_text": "amalgamated"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 80,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0080.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        234.3,
+        479.8,
+        274.9,
+        490.8
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0080_focus_annotated.png",
+      "focus_quads": [
+        [
+          234.281005859375,
+          479.77801513671875,
+          274.9329833984375,
+          490.8480224609375
+        ]
+      ],
+      "focus_marked_text": "succeeded"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 85,
+      "annotation_count": 13,
+      "density_bucket": "high",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0085.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        304.0,
+        260.7,
+        347.9,
+        271.7
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0085_focus_annotated.png",
+      "focus_quads": [
+        [
+          303.9989929199219,
+          260.6570129394531,
+          347.92498779296875,
+          271.73101806640625
+        ]
+      ],
+      "focus_marked_text": "missionary"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 99,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0099.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        240.5,
+        254.2,
+        278.6,
+        261.6
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0099_focus_annotated.png",
+      "focus_quads": [
+        [
+          240.54598999023438,
+          254.22402954101562,
+          278.572998046875,
+          261.6240234375
+        ]
+      ],
+      "focus_marked_text": "reimposing"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 105,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0105.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        96.0,
+        229.2,
+        347.9,
+        250.8
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0105_focus_annotated.png",
+      "focus_quads": [
+        [
+          253.06399536132812,
+          229.218017578125,
+          347.8789978027344,
+          240.28802490234375
+        ],
+        [
+          96.0040054321289,
+          239.77801513671875,
+          248.15798950195312,
+          250.8480224609375
+        ]
+      ],
+      "focus_marked_text": "Ahmad Shah Abdali in the Third Battle of Panipat (1761)."
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 119,
+      "annotation_count": 6,
+      "density_bucket": "high",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0119.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        184.0,
+        178.6,
+        232.5,
+        189.6
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0119_focus_annotated.png",
+      "focus_quads": [
+        [
+          184.00399780273438,
+          178.5780029296875,
+          232.458984375,
+          189.64801025390625
+        ]
+      ],
+      "focus_marked_text": "nationalism."
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 131,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0131.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        258.0,
+        190.6,
+        324.1,
+        201.6
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0131_focus_annotated.png",
+      "focus_quads": [
+        [
+          257.9909973144531,
+          190.5780029296875,
+          324.13299560546875,
+          201.64801025390625
+        ]
+      ],
+      "focus_marked_text": "Tipu’s two sons"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 136,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0136.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        151.9,
+        419.8,
+        205.0,
+        430.8
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0136_focus_annotated.png",
+      "focus_quads": [
+        [
+          151.885009765625,
+          419.77801513671875,
+          205.01998901367188,
+          430.8480224609375
+        ]
+      ],
+      "focus_marked_text": "twenty years."
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 144,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0144.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        210.4,
+        198.5,
+        301.9,
+        209.6
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0144_focus_annotated.png",
+      "focus_quads": [
+        [
+          210.39599609375,
+          198.49700927734375,
+          301.92999267578125,
+          209.57101440429688
+        ]
+      ],
+      "focus_marked_text": "Ranjit Singh in Punjab"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 150,
+      "annotation_count": 5,
+      "density_bucket": "high",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0150.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        95.9,
+        301.7,
+        133.1,
+        312.8
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0150_focus_annotated.png",
+      "focus_quads": [
+        [
+          95.90399932861328,
+          301.697021484375,
+          133.14401245117188,
+          312.7710266113281
+        ]
+      ],
+      "focus_marked_text": "treachery"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 156,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0156.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        296.7,
+        446.4,
+        347.9,
+        457.5
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0156_focus_annotated.png",
+      "focus_quads": [
+        [
+          296.67999267578125,
+          446.4170227050781,
+          347.9449768066406,
+          457.49102783203125
+        ]
+      ],
+      "focus_marked_text": "adopted son"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 174,
+      "annotation_count": 5,
+      "density_bucket": "high",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0174.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        95.9,
+        130.6,
+        165.0,
+        141.7
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0174_focus_annotated.png",
+      "focus_quads": [
+        [
+          95.90399932861328,
+          130.5770263671875,
+          165.00201416015625,
+          141.6510009765625
+        ]
+      ],
+      "focus_marked_text": "Warren Hastings"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 202,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0202.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        95.9,
+        130.6,
+        115.9,
+        141.7
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0202_focus_annotated.png",
+      "focus_quads": [
+        [
+          95.90399932861328,
+          130.5770263671875,
+          115.90999603271484,
+          141.6510009765625
+        ]
+      ],
+      "focus_marked_text": "1857"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 213,
+      "annotation_count": 7,
+      "density_bucket": "high",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0213.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        189.1,
+        187.7,
+        249.5,
+        198.8
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0213_focus_annotated.png",
+      "focus_quads": [
+        [
+          189.11898803710938,
+          187.697998046875,
+          249.45599365234375,
+          198.76800537109375
+        ]
+      ],
+      "focus_marked_text": "Bahadur Shah,"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 215,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0215.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        111.3,
+        440.2,
+        198.0,
+        451.2
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0215_focus_annotated.png",
+      "focus_quads": [
+        [
+          111.28899383544922,
+          440.17803955078125,
+          197.98699951171875,
+          451.2480163574219
+        ]
+      ],
+      "focus_marked_text": "September 20, 1857"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 224,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0224.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        96.2,
+        239.3,
+        233.6,
+        250.4
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0224_focus_annotated.png",
+      "focus_quads": [
+        [
+          96.15399932861328,
+          239.29803466796875,
+          233.62799072265625,
+          250.36801147460938
+        ]
+      ],
+      "focus_marked_text": "Indian Civil Service Act of 1861"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 232,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0232.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        96.2,
+        493.0,
+        192.6,
+        504.0
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0232_focus_annotated.png",
+      "focus_quads": [
+        [
+          96.2040023803711,
+          492.97802734375,
+          192.58099365234375,
+          504.04803466796875
+        ]
+      ],
+      "focus_marked_text": "The reform movements"
+    },
+    {
+      "pdf": "01_A_Brief_History_of_Modern_India.pdf",
+      "pdf_stem": "01_A_Brief_History_of_Modern_India",
+      "page": 240,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/01_A_Brief_History_of_Modern_India/page_0240.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        176.7,
+        120.5,
+        240.6,
+        131.6
+      ],
+      "focus_annotation_image": "focus_annotated/01_A_Brief_History_of_Modern_India/page_0240_focus_annotated.png",
+      "focus_quads": [
+        [
+          176.66098022460938,
+          120.498046875,
+          240.55999755859375,
+          131.56805419921875
+        ]
+      ],
+      "focus_marked_text": "Sarojini Naidu"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 24,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0024.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        45.8,
+        266.0,
+        372.1,
+        294.0
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0024_focus_annotated.png",
+      "focus_quads": [
+        [
+          45.84000015258789,
+          265.9520263671875,
+          95.15299987792969,
+          276.12701416015625
+        ],
+        [
+          45.84000015258789,
+          285.23004150390625,
+          372.1109924316406,
+          294.02001953125
+        ]
+      ],
+      "focus_marked_text": "Vouchers Any written document in support of a business transaction is known as a voucher."
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 34,
+      "annotation_count": 7,
+      "density_bucket": "high",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0034.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        45.8,
+        406.9,
+        159.9,
+        417.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0034_focus_annotated.png",
+      "focus_quads": [
+        [
+          45.84000015258789,
+          406.93701171875,
+          159.85299682617188,
+          417.1120300292969
+        ]
+      ],
+      "focus_marked_text": "Business Transaction"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 40,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0040.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        45.8,
+        538.1,
+        133.6,
+        548.3
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0040_focus_annotated.png",
+      "focus_quads": [
+        [
+          45.84000015258789,
+          538.0810546875,
+          133.552001953125,
+          548.2560424804688
+        ]
+      ],
+      "focus_marked_text": "Accrual Concept"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 45,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0045.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        73.4,
+        349.0,
+        215.9,
+        359.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0045_focus_annotated.png",
+      "focus_quads": [
+        [
+          73.36199951171875,
+          348.9520263671875,
+          215.85400390625,
+          359.12701416015625
+        ]
+      ],
+      "focus_marked_text": "ACCOUNTING EQUATIONS"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 52,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0052.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        73.4,
+        239.5,
+        260.4,
+        249.6
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0052_focus_annotated.png",
+      "focus_quads": [
+        [
+          73.36500549316406,
+          239.4520263671875,
+          260.3739929199219,
+          249.62701416015625
+        ]
+      ],
+      "focus_marked_text": "INDIAN ACCOUNTING STANDARDS"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 58,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0058.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        73.4,
+        513.8,
+        158.7,
+        524.0
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0058_focus_annotated.png",
+      "focus_quads": [
+        [
+          73.36500549316406,
+          513.8260498046875,
+          158.7139892578125,
+          524.0010375976562
+        ]
+      ],
+      "focus_marked_text": "ACCOUNTANCY"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 63,
+      "annotation_count": 15,
+      "density_bucket": "high",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0063.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        57.8,
+        140.4,
+        100.6,
+        149.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0063_focus_annotated.png",
+      "focus_quads": [
+        [
+          57.84000015258789,
+          140.3590087890625,
+          100.58200073242188,
+          149.1490478515625
+        ]
+      ],
+      "focus_marked_text": "Cash book"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 64,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0064.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        45.8,
+        458.0,
+        146.1,
+        468.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0064_focus_annotated.png",
+      "focus_quads": [
+        [
+          45.84000015258789,
+          457.9520263671875,
+          146.08099365234375,
+          468.12701416015625
+        ]
+      ],
+      "focus_marked_text": "Source Documents"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 85,
+      "annotation_count": 6,
+      "density_bucket": "high",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0085.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        60.8,
+        270.2,
+        231.2,
+        279.0
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0085_focus_annotated.png",
+      "focus_quads": [
+        [
+          60.8380012512207,
+          270.23004150390625,
+          231.156982421875,
+          279.02001953125
+        ]
+      ],
+      "focus_marked_text": "Journal is considered to be more authentic"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 86,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0086.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        68.3,
+        105.2,
+        477.8,
+        126.0
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0086_focus_annotated.png",
+      "focus_quads": [
+        [
+          68.33999633789062,
+          105.23004150390625,
+          477.82598876953125,
+          114.02001953125
+        ],
+        [
+          68.33999633789062,
+          117.23004150390625,
+          346.9580078125,
+          126.02001953125
+        ]
+      ],
+      "focus_marked_text": "Recording of transaction into the journal is in chronological order, i.e., in ascending date-wise manner; while in the ledger, recording of the transaction is in analytical order."
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 98,
+      "annotation_count": 12,
+      "density_bucket": "high",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0098.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        45.8,
+        182.8,
+        142.4,
+        192.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0098_focus_annotated.png",
+      "focus_quads": [
+        [
+          45.84000015258789,
+          182.79901123046875,
+          142.39498901367188,
+          192.1490478515625
+        ]
+      ],
+      "focus_marked_text": "Capital Expenditure"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 105,
+      "annotation_count": 8,
+      "density_bucket": "high",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0105.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        45.8,
+        389.0,
+        328.9,
+        399.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0105_focus_annotated.png",
+      "focus_quads": [
+        [
+          45.84000015258789,
+          388.9520263671875,
+          328.8609924316406,
+          399.12701416015625
+        ]
+      ],
+      "focus_marked_text": "Policies and Various Methods Related to Depreciation"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 108,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0108.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        91.8,
+        118.9,
+        433.5,
+        141.9
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0108_focus_annotated.png",
+      "focus_quads": [
+        [
+          91.7550048828125,
+          118.87103271484375,
+          301.0149841308594,
+          127.6600341796875
+        ],
+        [
+          99.16499328613281,
+          124.52105712890625,
+          433.5469970703125,
+          141.90899658203125
+        ]
+      ],
+      "focus_marked_text": "Remaining expected life (including the current year) Sum of all the digits of the expected life in years Cost of acq × uisition of the asset"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 115,
+      "annotation_count": 12,
+      "density_bucket": "high",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0115.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        57.8,
+        123.2,
+        128.9,
+        132.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0115_focus_annotated.png",
+      "focus_quads": [
+        [
+          57.84000015258789,
+          123.21905517578125,
+          128.9189910888672,
+          132.1490478515625
+        ]
+      ],
+      "focus_marked_text": "Trading account"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 123,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0123.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        45.8,
+        138.0,
+        374.3,
+        148.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0123_focus_annotated.png",
+      "focus_quads": [
+        [
+          45.84000015258789,
+          137.9520263671875,
+          374.2969970703125,
+          148.12701416015625
+        ]
+      ],
+      "focus_marked_text": "Items Written on the Debit Side of the Profit and Loss Account"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 128,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0128.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        45.8,
+        110.7,
+        477.8,
+        132.0
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0128_focus_annotated.png",
+      "focus_quads": [
+        [
+          45.84000015258789,
+          110.6700439453125,
+          477.82598876953125,
+          120.02001953125
+        ],
+        [
+          45.84000015258789,
+          123.23004150390625,
+          172.78399658203125,
+          132.02001953125
+        ]
+      ],
+      "focus_marked_text": "Bad debts Bad debts are the debts due from the customers that could not be recovered mainly due to the economic or financial hardship."
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 131,
+      "annotation_count": 10,
+      "density_bucket": "high",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0131.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        295.7,
+        150.2,
+        452.8,
+        159.0
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0131_focus_annotated.png",
+      "focus_quads": [
+        [
+          295.7099914550781,
+          150.23004150390625,
+          452.7720031738281,
+          159.02001953125
+        ]
+      ],
+      "focus_marked_text": "Such contingent liabilities occur when:"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 191,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0191.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        78.7,
+        170.0,
+        241.0,
+        180.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0191_focus_annotated.png",
+      "focus_quads": [
+        [
+          78.67999267578125,
+          169.9520263671875,
+          241.02499389648438,
+          180.12701416015625
+        ]
+      ],
+      "focus_marked_text": "ACCOUNTING FOR INFLATION"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 259,
+      "annotation_count": 6,
+      "density_bucket": "high",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0259.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        73.4,
+        411.0,
+        168.8,
+        421.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0259_focus_annotated.png",
+      "focus_quads": [
+        [
+          73.36199951171875,
+          410.9520263671875,
+          168.80599975585938,
+          421.12701416015625
+        ]
+      ],
+      "focus_marked_text": "TREND ANALYSIS"
+    },
+    {
+      "pdf": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_--_2006.pdf",
+      "pdf_stem": "01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006",
+      "page": 300,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0300.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        45.8,
+        349.9,
+        477.8,
+        370.7
+      ],
+      "focus_annotation_image": "focus_annotated/01_Fundamentals_of_Accounting_and_Financial_Analysis_Anil_Chowdhury_2006/page_0300_focus_annotated.png",
+      "focus_quads": [
+        [
+          45.84000015258789,
+          349.9060363769531,
+          477.8249816894531,
+          358.6960144042969
+        ],
+        [
+          45.84000015258789,
+          361.9060363769531,
+          139.84500122070312,
+          370.6960144042969
+        ]
+      ],
+      "focus_marked_text": "Funds flow statement can be used to ascertain changes in the financial position of a business entity between two accounting periods"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 46,
+      "annotation_count": 5,
+      "density_bucket": "high",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0046.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        108.5,
+        331.7,
+        507.3,
+        342.2
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0046_focus_annotated.png",
+      "focus_quads": [
+        [
+          108.49700164794922,
+          331.739990234375,
+          507.2909851074219,
+          342.1960144042969
+        ]
+      ],
+      "focus_marked_text": "China, by mid-1980s, announced its Open-Door Policy embracing mixed economy"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 56,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0056.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        93.6,
+        121.3,
+        316.9,
+        132.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0056_focus_annotated.png",
+      "focus_quads": [
+        [
+          93.56199645996094,
+          121.343994140625,
+          316.8599853515625,
+          132.14300537109375
+        ]
+      ],
+      "focus_marked_text": "STANDING COMMITTEE ON ECONOMIC STATISTICS"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 61,
+      "annotation_count": 5,
+      "density_bucket": "high",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0061.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        72.0,
+        404.3,
+        398.2,
+        414.8
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0061_focus_annotated.png",
+      "focus_quads": [
+        [
+          72.0,
+          404.3399963378906,
+          398.1549987792969,
+          414.7959899902344
+        ]
+      ],
+      "focus_marked_text": "Thus, we may have some diverse cases of growth and development:"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 75,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0075.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        72.0,
+        351.7,
+        202.6,
+        362.5
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0075_focus_annotated.png",
+      "focus_quads": [
+        [
+          72.0,
+          351.7439880371094,
+          202.57200622558594,
+          362.5429992675781
+        ]
+      ],
+      "focus_marked_text": "Values and Economics"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 85,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0085.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        142.1,
+        421.1,
+        417.9,
+        431.6
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0085_focus_annotated.png",
+      "focus_quads": [
+        [
+          142.1439971923828,
+          421.1400146484375,
+          417.91900634765625,
+          431.59600830078125
+        ]
+      ],
+      "focus_marked_text": "(France had gone for a mixed economy by 1944–45)."
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 96,
+      "annotation_count": 9,
+      "density_bucket": "high",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0096.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        77.0,
+        196.7,
+        168.6,
+        207.2
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0096_focus_annotated.png",
+      "focus_quads": [
+        [
+          76.99700164794922,
+          196.739990234375,
+          168.5959930419922,
+          207.19598388671875
+        ]
+      ],
+      "focus_marked_text": ". Imperative Planning"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 101,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0101.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        220.8,
+        152.7,
+        391.2,
+        174.3
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0101_focus_annotated.png",
+      "focus_quads": [
+        [
+          220.8280029296875,
+          152.68798828125,
+          391.1700134277344,
+          174.2860107421875
+        ]
+      ],
+      "focus_marked_text": "PLANNING IN INDIA"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 114,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0114.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        93.6,
+        564.7,
+        252.9,
+        575.5
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0114_focus_annotated.png",
+      "focus_quads": [
+        [
+          93.56199645996094,
+          564.7440185546875,
+          252.9429931640625,
+          575.54296875
+        ]
+      ],
+      "focus_marked_text": "NATIONAL DEVELOPMENT COUNCIL"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 125,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0125.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        72.0,
+        653.5,
+        276.5,
+        664.3
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0125_focus_annotated.png",
+      "focus_quads": [
+        [
+          72.0,
+          653.5440063476562,
+          276.4880065917969,
+          664.343017578125
+        ]
+      ],
+      "focus_marked_text": "Third Strata: District-Level Planning"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 140,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0140.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        72.0,
+        387.1,
+        206.6,
+        397.9
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0140_focus_annotated.png",
+      "focus_quads": [
+        [
+          72.0,
+          387.1440124511719,
+          206.5709991455078,
+          397.9429931640625
+        ]
+      ],
+      "focus_marked_text": "Phase-IV (1991 onward)"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 194,
+      "annotation_count": 7,
+      "density_bucket": "high",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0194.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        93.6,
+        373.9,
+        206.5,
+        384.7
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0194_focus_annotated.png",
+      "focus_quads": [
+        [
+          93.56199645996094,
+          373.9440002441406,
+          206.49899291992188,
+          384.7430114746094
+        ]
+      ],
+      "focus_marked_text": "CONSUMER PRICE INDEX"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 341,
+      "annotation_count": 5,
+      "density_bucket": "high",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0341.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        328.3,
+        400.7,
+        481.8,
+        411.2
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0341_focus_annotated.png",
+      "focus_quads": [
+        [
+          328.29400634765625,
+          400.739990234375,
+          481.75299072265625,
+          411.1960144042969
+        ]
+      ],
+      "focus_marked_text": "As banks in India were weak"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 353,
+      "annotation_count": 5,
+      "density_bucket": "high",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0353.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        144.1,
+        550.7,
+        318.2,
+        561.2
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0353_focus_annotated.png",
+      "focus_quads": [
+        [
+          144.11199951171875,
+          550.739990234375,
+          318.17999267578125,
+          561.1959838867188
+        ]
+      ],
+      "focus_marked_text": "monetary policy committee (MPC)"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 358,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0358.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        72.0,
+        463.7,
+        539.9,
+        488.6
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0358_focus_annotated.png",
+      "focus_quads": [
+        [
+          454.52801513671875,
+          463.739990234375,
+          539.8770141601562,
+          474.1960144042969
+        ],
+        [
+          72.0,
+          478.1400146484375,
+          243.4149932861328,
+          488.59600830078125
+        ]
+      ],
+      "focus_marked_text": "MCLR (Marginal Cost of funds based Lending Rate)"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 370,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0370.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        460.2,
+        190.1,
+        539.8,
+        200.6
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0370_focus_annotated.png",
+      "focus_quads": [
+        [
+          460.1610107421875,
+          190.1400146484375,
+          539.8469848632812,
+          200.59600830078125
+        ]
+      ],
+      "focus_marked_text": "SARFAESI Act"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 375,
+      "annotation_count": 8,
+      "density_bucket": "high",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0375.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        227.6,
+        585.5,
+        476.5,
+        596.0
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0375_focus_annotated.png",
+      "focus_quads": [
+        [
+          227.5590057373047,
+          585.5399780273438,
+          476.531005859375,
+          595.9959716796875
+        ]
+      ],
+      "focus_marked_text": "central banking bodies of the developed economies"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 382,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0382.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        193.7,
+        134.9,
+        327.8,
+        145.4
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0382_focus_annotated.png",
+      "focus_quads": [
+        [
+          193.67799377441406,
+          134.94000244140625,
+          327.78900146484375,
+          145.39599609375
+        ]
+      ],
+      "focus_marked_text": "M is called narrow money 1"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 399,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0399.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        202.6,
+        362.3,
+        491.0,
+        372.8
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0399_focus_annotated.png",
+      "focus_quads": [
+        [
+          202.6219940185547,
+          362.3399963378906,
+          491.0459899902344,
+          372.7959899902344
+        ]
+      ],
+      "focus_marked_text": "Export Credit Guarantee Corporation of India Ltd. (ECGC)"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 413,
+      "annotation_count": 6,
+      "density_bucket": "high",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0413.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        72.0,
+        245.3,
+        129.9,
+        255.8
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0413_focus_annotated.png",
+      "focus_quads": [
+        [
+          72.0,
+          245.34002685546875,
+          129.94200134277344,
+          255.7960205078125
+        ]
+      ],
+      "focus_marked_text": "Market-Maker"
+    },
+    {
+      "pdf": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES__UNIVERSITIES_AND_OTHER_EXAMINATIONS_-_Ramesh_Singh.pdf",
+      "pdf_stem": "01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh",
+      "page": 416,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0416.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        72.0,
+        692.9,
+        124.5,
+        703.4
+      ],
+      "focus_annotation_image": "focus_annotated/01_INDIAN_ECONOMY_FOR_CIVIL_SERVICES_UNIVERSITIES_AND_OTHER_EXAMINATIONS_Ramesh_Singh/page_0416_focus_annotated.png",
+      "focus_quads": [
+        [
+          72.0,
+          692.9400024414062,
+          124.45099639892578,
+          703.39599609375
+        ]
+      ],
+      "focus_marked_text": "Public Issue"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 54,
+      "annotation_count": 6,
+      "density_bucket": "high",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0054.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        72.0,
+        130.5,
+        159.6,
+        141.5
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0054_focus_annotated.png",
+      "focus_quads": [
+        [
+          72.02400207519531,
+          130.46002197265625,
+          159.62899780273438,
+          141.5
+        ]
+      ],
+      "focus_marked_text": "11. A Secular State"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 70,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0070.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        72.4,
+        223.3,
+        132.3,
+        235.2
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0070_focus_annotated.png",
+      "focus_quads": [
+        [
+          72.35800170898438,
+          223.280029296875,
+          132.29400634765625,
+          235.219970703125
+        ]
+      ],
+      "focus_marked_text": "7Westminster"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 139,
+      "annotation_count": 9,
+      "density_bucket": "high",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0139.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        246.2,
+        311.3,
+        280.9,
+        322.4
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0139_focus_annotated.png",
+      "focus_quads": [
+        [
+          246.21299743652344,
+          311.3299865722656,
+          280.8940124511719,
+          322.3699951171875
+        ]
+      ],
+      "focus_marked_text": "criminal"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 189,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0189.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        342.6,
+        266.2,
+        389.6,
+        277.2
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0189_focus_annotated.png",
+      "focus_quads": [
+        [
+          342.625,
+          266.21002197265625,
+          389.5669860839844,
+          277.25
+        ]
+      ],
+      "focus_marked_text": "Federalism"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 229,
+      "annotation_count": 7,
+      "density_bucket": "high",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0229.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        281.4,
+        324.8,
+        399.2,
+        335.8
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0229_focus_annotated.png",
+      "focus_quads": [
+        [
+          281.3919982910156,
+          324.7699890136719,
+          399.2330017089844,
+          335.80999755859375
+        ]
+      ],
+      "focus_marked_text": "Chancellors of Universities"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 282,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0282.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        131.4,
+        292.5,
+        229.1,
+        303.5
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0282_focus_annotated.png",
+      "focus_quads": [
+        [
+          131.4199981689453,
+          292.489990234375,
+          229.1020050048828,
+          303.5299987792969
+        ]
+      ],
+      "focus_marked_text": "The President of India"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 321,
+      "annotation_count": 11,
+      "density_bucket": "high",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0321.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        304.5,
+        117.0,
+        351.6,
+        128.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0321_focus_annotated.png",
+      "focus_quads": [
+        [
+          304.47100830078125,
+          117.02001953125,
+          351.6449890136719,
+          128.05999755859375
+        ]
+      ],
+      "focus_marked_text": "Parliament"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 386,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0386.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        168.9,
+        261.0,
+        214.1,
+        272.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0386_focus_annotated.png",
+      "focus_quads": [
+        [
+          168.8520050048828,
+          261.04998779296875,
+          214.0500030517578,
+          272.09002685546875
+        ]
+      ],
+      "focus_marked_text": "assistance"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 403,
+      "annotation_count": 12,
+      "density_bucket": "high",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0403.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        418.7,
+        324.8,
+        467.2,
+        335.8
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0403_focus_annotated.png",
+      "focus_quads": [
+        [
+          418.7239990234375,
+          324.7699890136719,
+          467.20098876953125,
+          335.80999755859375
+        ]
+      ],
+      "focus_marked_text": "Parliament"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 453,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0453.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        79.0,
+        389.9,
+        96.8,
+        401.0
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0453_focus_annotated.png",
+      "focus_quads": [
+        [
+          78.96199798583984,
+          389.92999267578125,
+          96.78099822998047,
+          400.9700012207031
+        ]
+      ],
+      "focus_marked_text": "153."
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 518,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0518.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        128.2,
+        318.2,
+        164.2,
+        329.2
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0518_focus_annotated.png",
+      "focus_quads": [
+        [
+          128.24000549316406,
+          318.1700134277344,
+          164.1750030517578,
+          329.2099914550781
+        ]
+      ],
+      "focus_marked_text": "National"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 523,
+      "annotation_count": 12,
+      "density_bucket": "high",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0523.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        72.2,
+        140.4,
+        120.9,
+        151.5
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0523_focus_annotated.png",
+      "focus_quads": [
+        [
+          72.21199798583984,
+          140.41998291015625,
+          120.93099975585938,
+          151.46002197265625
+        ]
+      ],
+      "focus_marked_text": "Article 39A"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 566,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0566.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        72.0,
+        445.6,
+        175.6,
+        456.7
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0566_focus_annotated.png",
+      "focus_quads": [
+        [
+          72.02400207519531,
+          445.6300048828125,
+          175.57699584960938,
+          456.6700134277344
+        ]
+      ],
+      "focus_marked_text": "unlike the municipality,"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 621,
+      "annotation_count": 9,
+      "density_bucket": "high",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0621.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        261.1,
+        277.8,
+        314.6,
+        288.9
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0621_focus_annotated.png",
+      "focus_quads": [
+        [
+          261.10101318359375,
+          277.8499755859375,
+          314.6340026855469,
+          288.8900146484375
+        ]
+      ],
+      "focus_marked_text": "philosopher"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 657,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0657.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        326.3,
+        80.2,
+        392.6,
+        91.2
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0657_focus_annotated.png",
+      "focus_quads": [
+        [
+          326.3190002441406,
+          80.17999267578125,
+          392.57000732421875,
+          91.219970703125
+        ]
+      ],
+      "focus_marked_text": "two main hubs"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 699,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0699.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        250.1,
+        80.2,
+        319.7,
+        91.2
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0699_focus_annotated.png",
+      "focus_quads": [
+        [
+          250.14300537109375,
+          80.17999267578125,
+          319.70599365234375,
+          91.219970703125
+        ]
+      ],
+      "focus_marked_text": "Supreme Court"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 754,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0754.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        131.3,
+        184.2,
+        228.5,
+        195.3
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0754_focus_annotated.png",
+      "focus_quads": [
+        [
+          131.29200744628906,
+          184.219970703125,
+          228.46400451660156,
+          195.260009765625
+        ]
+      ],
+      "focus_marked_text": "co-operative societies"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 780,
+      "annotation_count": 10,
+      "density_bucket": "high",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0780.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        472.4,
+        345.0,
+        513.9,
+        356.1
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0780_focus_annotated.png",
+      "focus_quads": [
+        [
+          472.4230041503906,
+          345.04998779296875,
+          513.8889770507812,
+          356.0899963378906
+        ]
+      ],
+      "focus_marked_text": "backward"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 814,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0814.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        159.2,
+        130.5,
+        390.6,
+        141.5
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0814_focus_annotated.png",
+      "focus_quads": [
+        [
+          159.2220001220703,
+          130.46002197265625,
+          390.6189880371094,
+          141.5
+        ]
+      ],
+      "focus_marked_text": "Prevention of Insults to National Honour Act of 1971"
+    },
+    {
+      "pdf": "01_Indian_Polity_Laxmikanth.pdf",
+      "pdf_stem": "01_Indian_Polity_Laxmikanth",
+      "page": 937,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/01_Indian_Polity_Laxmikanth/page_0937.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        128.3,
+        546.2,
+        310.2,
+        557.2
+      ],
+      "focus_annotation_image": "focus_annotated/01_Indian_Polity_Laxmikanth/page_0937_focus_annotated.png",
+      "focus_quads": [
+        [
+          128.26199340820312,
+          546.1900024414062,
+          310.1679992675781,
+          557.22998046875
+        ]
+      ],
+      "focus_marked_text": "legislative, executive and judicial powers"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 6,
+      "annotation_count": 11,
+      "density_bucket": "high",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0006.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        108.0,
+        277.0,
+        539.9,
+        299.7
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0006_focus_annotated.png",
+      "focus_quads": [
+        [
+          507.5769958496094,
+          277.03900146484375,
+          539.9130249023438,
+          287.07501220703125
+        ],
+        [
+          108.0199966430664,
+          289.63897705078125,
+          163.03199768066406,
+          299.67498779296875
+        ]
+      ],
+      "focus_marked_text": "Central Government"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 10,
+      "annotation_count": 13,
+      "density_bucket": "high",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0010.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        136.5,
+        217.9,
+        204.3,
+        229.1
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0010_focus_annotated.png",
+      "focus_quads": [
+        [
+          136.4600067138672,
+          217.9169921875,
+          204.27200317382812,
+          229.0880126953125
+        ]
+      ],
+      "focus_marked_text": "“retrenchment”"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 12,
+      "annotation_count": 14,
+      "density_bucket": "high",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0012.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        116.4,
+        253.8,
+        161.0,
+        265.0
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0012_focus_annotated.png",
+      "focus_quads": [
+        [
+          116.41200256347656,
+          253.82696533203125,
+          160.99099731445312,
+          264.99798583984375
+        ]
+      ],
+      "focus_marked_text": "Dismissal"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 21,
+      "annotation_count": 5,
+      "density_bucket": "high",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0021.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        109.1,
+        420.6,
+        189.9,
+        430.6
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0021_focus_annotated.png",
+      "focus_quads": [
+        [
+          109.08999633789062,
+          420.5789794921875,
+          189.88999938964844,
+          430.61798095703125
+        ]
+      ],
+      "focus_marked_text": "Notice of change."
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 24,
+      "annotation_count": 3,
+      "density_bucket": "medium",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0024.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        365.8,
+        74.5,
+        406.4,
+        83.5
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0024_focus_annotated.png",
+      "focus_quads": [
+        [
+          365.7569885253906,
+          74.47796630859375,
+          406.3739929199219,
+          83.531005859375
+        ]
+      ],
+      "focus_marked_text": "individual"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 25,
+      "annotation_count": 5,
+      "density_bucket": "high",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0025.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        116.6,
+        555.0,
+        340.1,
+        567.2
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0025_focus_annotated.png",
+      "focus_quads": [
+        [
+          116.63200378417969,
+          554.9530029296875,
+          340.07598876953125,
+          567.1749877929688
+        ]
+      ],
+      "focus_marked_text": ". Voluntary reference of disputes to arbitration"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 26,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0026.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        383.0,
+        86.0,
+        439.3,
+        97.2
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0026_focus_annotated.png",
+      "focus_quads": [
+        [
+          382.989990234375,
+          86.0369873046875,
+          439.3269958496094,
+          97.2049560546875
+        ]
+      ],
+      "focus_marked_text": "[one month]"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 33,
+      "annotation_count": 13,
+      "density_bucket": "high",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0033.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        328.6,
+        131.2,
+        377.0,
+        141.2
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0033_focus_annotated.png",
+      "focus_quads": [
+        [
+          328.5830078125,
+          131.208984375,
+          377.0039978027344,
+          141.2449951171875
+        ]
+      ],
+      "focus_marked_text": "thirty days"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 38,
+      "annotation_count": 10,
+      "density_bucket": "high",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0038.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        123.1,
+        405.2,
+        339.8,
+        416.3
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0038_focus_annotated.png",
+      "focus_quads": [
+        [
+          123.1240005493164,
+          405.1669921875,
+          339.7900085449219,
+          416.3379821777344
+        ]
+      ],
+      "focus_marked_text": "Right of workmen laid-off for compensation."
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 41,
+      "annotation_count": 9,
+      "density_bucket": "high",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0041.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        140.5,
+        277.0,
+        183.9,
+        287.1
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0041_focus_annotated.png",
+      "focus_quads": [
+        [
+          140.48300170898438,
+          277.03900146484375,
+          183.89199829101562,
+          287.07501220703125
+        ]
+      ],
+      "focus_marked_text": "ordinarily"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 47,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0047.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        123.2,
+        240.6,
+        372.3,
+        251.8
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0047_focus_annotated.png",
+      "focus_quads": [
+        [
+          123.24500274658203,
+          240.626953125,
+          372.30999755859375,
+          251.7979736328125
+        ]
+      ],
+      "focus_marked_text": "Conditions precedent to retrenchment of workmen."
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 49,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0049.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        93.5,
+        645.2,
+        334.4,
+        656.4
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0049_focus_annotated.png",
+      "focus_quads": [
+        [
+          93.50399780273438,
+          645.1969604492188,
+          334.3900146484375,
+          656.3679809570312
+        ]
+      ],
+      "focus_marked_text": "[25-O. Procedure for closing down an undertaking."
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 50,
+      "annotation_count": 4,
+      "density_bucket": "medium",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0050.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        260.3,
+        225.6,
+        370.6,
+        235.7
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0050_focus_annotated.png",
+      "focus_quads": [
+        [
+          260.31500244140625,
+          225.64898681640625,
+          370.55999755859375,
+          235.68499755859375
+        ]
+      ],
+      "focus_marked_text": "said period of sixty days."
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 56,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0056.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        107.3,
+        489.5,
+        328.0,
+        499.5
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0056_focus_annotated.png",
+      "focus_quads": [
+        [
+          107.29100036621094,
+          489.458984375,
+          328.0480041503906,
+          499.49798583984375
+        ]
+      ],
+      "focus_marked_text": "Penalty for disclosing confidential information"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 61,
+      "annotation_count": 7,
+      "density_bucket": "high",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0061.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        308.2,
+        236.5,
+        407.0,
+        245.6
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0061_focus_annotated.png",
+      "focus_quads": [
+        [
+          308.1700134277344,
+          236.49798583984375,
+          406.9599914550781,
+          245.56396484375
+        ]
+      ],
+      "focus_marked_text": "a “protected workman”,"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 66,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0066.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        86.5,
+        117.8,
+        404.5,
+        127.8
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0066_focus_annotated.png",
+      "focus_quads": [
+        [
+          86.54399871826172,
+          117.75799560546875,
+          404.48699951171875,
+          127.80499267578125
+        ]
+      ],
+      "focus_marked_text": "INDUSTRIES WHICH MAY BE DECLARED TO BE PUBLIC UTILITY SERVICES"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 68,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0068.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        178.1,
+        136.4,
+        433.9,
+        146.4
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0068_focus_annotated.png",
+      "focus_quads": [
+        [
+          178.10000610351562,
+          136.36895751953125,
+          433.9360046386719,
+          146.40496826171875
+        ]
+      ],
+      "focus_marked_text": "MATTERS WITHIN THE JURISDICTION OF LABOUR COURTS"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 69,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0069.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        162.4,
+        111.9,
+        449.6,
+        121.9
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0069_focus_annotated.png",
+      "focus_quads": [
+        [
+          162.3800048828125,
+          111.88897705078125,
+          449.5539855957031,
+          121.92498779296875
+        ]
+      ],
+      "focus_marked_text": "MATTERS WITHIN THE JURISDICTION OF INDUSTRIAL TRIBUNALS"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 70,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0070.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        146.2,
+        111.9,
+        465.8,
+        121.9
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0070_focus_annotated.png",
+      "focus_quads": [
+        [
+          146.17999267578125,
+          111.88897705078125,
+          465.80499267578125,
+          121.92498779296875
+        ]
+      ],
+      "focus_marked_text": "CONDITIONS OF SERVICE FOR CHANGE OF WHICH NOTICE IS TO BE GIVEN"
+    },
+    {
+      "pdf": "05 THE INDUSTRIAL DISPUTES ACT, 1947.pdf",
+      "pdf_stem": "05_THE_INDUSTRIAL_DISPUTES_ACT_1947",
+      "page": 71,
+      "annotation_count": 2,
+      "density_bucket": "medium",
+      "image": "images/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0071.png",
+      "focus_kind": "highlight",
+      "focus_rect": [
+        243.5,
+        111.9,
+        368.5,
+        121.9
+      ],
+      "focus_annotation_image": "focus_annotated/05_THE_INDUSTRIAL_DISPUTES_ACT_1947/page_0071_focus_annotated.png",
+      "focus_quads": [
+        [
+          243.52999877929688,
+          111.88897705078125,
+          368.49798583984375,
+          121.92498779296875
+        ]
+      ],
+      "focus_marked_text": "UNFAIR LABOUR PRACTICES"
+    }
+  ]
+}

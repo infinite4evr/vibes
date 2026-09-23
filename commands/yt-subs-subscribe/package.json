@@ -1,0 +1,10 @@
+{
+	"name": "yt-subs-subscribe",
+	"version": "1.0.0",
+	"private": true,
+	"bin": { "yt-subs-subscribe": "./yt-subs-subscribe" },
+	"dependencies": {
+		"googleapis": "^144.0.0",
+		"@google-cloud/local-auth": "^3.0.1"
+	}
+}

@@ -1,0 +1,4 @@
+# Python packages for the highlight-to-notes tools.
+# The version is pinned on purpose: notes can shift slightly between PyMuPDF
+# versions. If you change it, run `make coverage` before trusting the output.
+pymupdf==1.28.2

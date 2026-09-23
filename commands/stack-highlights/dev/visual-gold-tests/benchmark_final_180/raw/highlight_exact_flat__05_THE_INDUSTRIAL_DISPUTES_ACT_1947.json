@@ -1,0 +1,8235 @@
+{
+  "highlights": 243,
+  "entries": [
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "THE INDUSTRIAL DISPUTES ACT, 1947",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "THEINDUSTRIALDISPUTESACT,1947"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "AUTHORITIES UNDER THIS ACT",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "AUTHORITIESUNDERTHISACT"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Works Committee.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "WorksCommittee."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Conciliation officers.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Conciliationofficers."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Board of Conciliation.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "BoardofConciliation."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Courts of Inquiry",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CourtsofInquiry"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Labour Courts.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "LabourCourts."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Tribunals",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Tribunals"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "National Tribunals.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "NationalTribunals."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1,
+      "page_label": "1",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Grievance Settlement Authorities",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "GrievanceSettlementAuthorities"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 6,
+      "page_label": "6",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Central Government",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CentralGovernment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 6,
+      "page_label": "6",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "the State Government:",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "theStateGovernment:"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 6,
+      "page_label": "6",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "“arbitrator”",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "“arbitrator”"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 6,
+      "page_label": "6",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "umpire",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "umpire"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 6,
+      "page_label": "6",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "“average pay”",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "]“averagepay”"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 6,
+      "page_label": "6",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "monthly",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "monthly"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 6,
+      "page_label": "6",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "three complete",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "threecomplete"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 6,
+      "page_label": "6",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "weekly",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "weekly"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 6,
+      "page_label": "6",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "four complete weeks,",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "fourcompleteweeks,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 6,
+      "page_label": "6",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "daily",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "daily"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 6,
+      "page_label": "6",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "twelve full working days,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "twelvefullworkingdays,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "“Board”",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "“Board”"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Board of Conciliatio",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "BoardofConciliatio"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "conciliation officer",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "conciliationofficer"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "conciliation proceeding",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "conciliationproceeding"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "conciliation",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "conciliation"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Board",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Board"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "controlled industry",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "controlledindustry"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Union",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Union"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "public interest;",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "publicinterest;]"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "“executive”",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "“executive”"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "trade union",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "tradeunion"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "“independent”",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "“independent”"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "unconnected",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "unconnected"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "industrial dispute",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "industrialdispute"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "he",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "he"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "shareholder",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "shareholder"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "First Schedule",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "FirstSchedule"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 7,
+      "page_label": "7",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "appropriate Government",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "appropriateGovernment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 10,
+      "page_label": "10",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "“retrenchment”",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "“retrenchment”"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 10,
+      "page_label": "10",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "termination",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "termination"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 10,
+      "page_label": "10",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "does not include",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "doesnotinclude"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 10,
+      "page_label": "10",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "voluntary retirement",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "voluntaryretirement"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 10,
+      "page_label": "10",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "superannuation",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "superannuation"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 10,
+      "page_label": "10",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "non-renewal of the contract",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "non-renewalofthecontract"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 10,
+      "page_label": "10",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "continued ill-health",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "continuedill-health"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 10,
+      "page_label": "10",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "unfair labour practice",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "unfairlabourpractice"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 10,
+      "page_label": "10",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Fifth Schedule;",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "FifthSchedule;"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 10,
+      "page_label": "10",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "“wages” means all remuneration capable of being expressed in terms of money",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "“wages”meansallremunerationcapableofbeingexpressedintermsofmoney"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 10,
+      "page_label": "10",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "and includes—",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "andincludes—"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Dismissal",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Dismissal"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "deemed",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "deemed"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "industrial dispute",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "industrialdispute"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "may",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "may"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "application",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "application"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Labour Court",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "LabourCourt"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Tribunal",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Tribunal"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "after",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "after"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "expiry",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "expiry"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "forty-five days",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "forty-fivedays"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Conciliation Officer",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "ConciliationOfficer"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "before",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "before"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "three years",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "threeyears"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 12,
+      "page_label": "12",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "date of discharge,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "dateofdischarge,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 15,
+      "page_label": "15",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "AUTHORITIES UNDER THIS ACT",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "AUTHORITIESUNDERTHISACT"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 15,
+      "page_label": "15",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "3",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "3"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 15,
+      "page_label": "15",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Works Committee.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "WorksCommittee."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 15,
+      "page_label": "15",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "one hundred",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "onehundred"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 15,
+      "page_label": "15",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "more",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "more"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 15,
+      "page_label": "15",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "twelve months,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "twelvemonths,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 15,
+      "page_label": "15",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Works Committee",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "WorksCommittee"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 15,
+      "page_label": "15",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "number",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "number"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 15,
+      "page_label": "15",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "representatives",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "representatives"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 15,
+      "page_label": "15",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "workmen",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "workmen"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 15,
+      "page_label": "15",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Committee",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Committee"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 15,
+      "page_label": "15",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "not be less than the number of representatives",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "notbelessthanthenumberofrepresentatives"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 15,
+      "page_label": "15",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "employer",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "employer"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Conciliation",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Conciliation"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "officers",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "officers"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "appropriate",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "appropriate"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Government",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Government"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Board of Conciliation.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "BoardofConciliation."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "appropriate",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "appropriate"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Government",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Government"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "chairman",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "chairman"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "two",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "two"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "four",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "four"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "chairman",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "chairman"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "independent person",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "independentperson"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "other members",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "othermembers"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "shall",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "shall"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "appointed",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "appointed"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "represent",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "represent"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 17,
+      "page_label": "17",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "parties to the dispute",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "partiestothedispute"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 19,
+      "page_label": "19",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Second Schedule",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "SecondSchedule"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 19,
+      "page_label": "19",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Third Schedule",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "ThirdSchedule"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 19,
+      "page_label": "19",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The Industrial Tribunal constituted",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "TheIndustrialTribunalconstituted"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 19,
+      "page_label": "19",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "exercise",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "exercise"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 19,
+      "page_label": "19",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Finance Act, 2017,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "FinanceAct,2017,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 19,
+      "page_label": "19",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Employees' Provident Funds and Miscellaneous Provisions Act, 1952",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Employees'ProvidentFundsandMiscellaneousProvisionsAct,1952"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 19,
+      "page_label": "19",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "one person only",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "onepersononly"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 19,
+      "page_label": "19",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "two persons as assessors",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "twopersonsasassessors"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 19,
+      "page_label": "19",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "advise",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "advise"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 19,
+      "page_label": "19",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Tribunal",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Tribunal"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 21,
+      "page_label": "21",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Notice of change.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Noticeofchange."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 21,
+      "page_label": "21",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "matter",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "matter"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 21,
+      "page_label": "21",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "specified",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "specified"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 21,
+      "page_label": "21",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Fourth Schedule,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "FourthSchedule,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 21,
+      "page_label": "21",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "exempt",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "exempt"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 24,
+      "page_label": "24",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "individual",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "individual"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 24,
+      "page_label": "24",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "period",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "period"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 24,
+      "page_label": "24",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "three months",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "threemonths"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 25,
+      "page_label": "25",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": ". Voluntary reference of disputes to arbitration",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": ".Voluntaryreferenceofdisputestoarbitration"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 25,
+      "page_label": "25",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "arbitration agreemen",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "arbitrationagreemen"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 25,
+      "page_label": "25",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "shall",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "shall"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 25,
+      "page_label": "25",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "be",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "be"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 25,
+      "page_label": "25",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "parties",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "parties"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 26,
+      "page_label": "26",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "one month",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "[onemonth]"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 26,
+      "page_label": "26",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Official Gazette.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "OfficialGazette."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 31,
+      "page_label": "31",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "12",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "12"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 31,
+      "page_label": "31",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Duties of conciliation officers.—",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Dutiesofconciliationofficers.—"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 31,
+      "page_label": "31",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "apprehended",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "apprehended"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 31,
+      "page_label": "31",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "conciliation",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "conciliation"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 31,
+      "page_label": "31",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "hold",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "hold"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 31,
+      "page_label": "31",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "conciliation proceedings",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "conciliationproceedings"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 31,
+      "page_label": "31",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "send",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "send"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 31,
+      "page_label": "31",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "report",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "report"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 31,
+      "page_label": "31",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "appropriate Government",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "appropriateGovernment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 33,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Publication",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Publication"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 33,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "awards",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "awards"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 33,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "period",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "period"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 33,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "thirty days",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "thirtydays"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 33,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "manner",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "manner"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 33,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "appropriate Government thinks fit.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "appropriateGovernmentthinksfit."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 33,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "award",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "award"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 33,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "enforceable",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "enforceable"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 33,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "thirty days",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "thirtydays"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 33,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "publication",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "publication"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 33,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "within ninety days",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "withinninetydays"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 33,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "lay the award together with a copy of the order before the Legislature of the State, if the order has been made by a State Government, or before Parliament, if the order has been made by the Central Government.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "laytheawardtogetherwithacopyoftheorderbeforetheLegislatureoftheState,iftheorderhasbeenmadebyaStateGovernment,orbeforeParliament,iftheorderhasbeenmadebytheCentralGovernment."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 33,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "such award shall become enforceable on the expiry of fifteen days from the date on which it is so laid;",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "suchawardshallbecomeenforceableontheexpiryoffifteendaysfromthedateonwhichitissolaid;"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 34,
+      "page_label": "34",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "settlements",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "settlements"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 34,
+      "page_label": "34",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "settlement",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "settlement"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 34,
+      "page_label": "34",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "binding",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "binding"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 34,
+      "page_label": "34",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "period of six months",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "periodofsixmonths"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 34,
+      "page_label": "34",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "remain",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "remain"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 34,
+      "page_label": "34",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "operation",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "operation"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 34,
+      "page_label": "34",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "one year",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "oneyear"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 34,
+      "page_label": "34",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "extend",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "extend"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 34,
+      "page_label": "34",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "not exceeding one year",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "notexceedingoneyear"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 34,
+      "page_label": "34",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "award does not exceed three years",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "awarddoesnotexceedthreeyears"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Prohibition of strikes and lock-outs",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Prohibitionofstrikesandlock-outs"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "No person employed in a public utility service shall go on strike in breach of contract—",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Nopersonemployedinapublicutilityserviceshallgoonstrikeinbreachofcontract—"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "without giving to the employer notice of strike, as hereinafter provided, within six weeks before striking; or",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "withoutgivingtotheemployernoticeofstrike,ashereinafterprovided,withinsixweeksbeforestriking;or"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "within fourteen days of giving such notice; or",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "withinfourteendaysofgivingsuchnotice;or"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "during the pendency of any conciliation proceedings before a conciliation officer and seven days after the conclusion of such proceedings.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "duringthependencyofanyconciliationproceedingsbeforeaconciliationofficerandsevendaysaftertheconclusionofsuchproceedings."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "No employer carrying on any public utility service shall lock-out any of his workmen—",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Noemployercarryingonanypublicutilityserviceshalllock-outanyofhisworkmen—"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "without giving them notice of lock-out as hereinafter provided, within six weeks before locking out; or",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "withoutgivingthemnoticeoflock-outashereinafterprovided,withinsixweeksbeforelockingout;or"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "within fourteen days of giving such notice; or",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "withinfourteendaysofgivingsuchnotice;or"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "during the pendency of any conciliation proceedings before a conciliation officer and seven days after the conclusion of such proceedings.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "duringthependencyofanyconciliationproceedingsbeforeaconciliationofficerandsevendaysaftertheconclusionofsuchproceedings."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "If on any day an employer receives from any persons employed by him any such notices as are referred to in sub-section",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Ifonanydayanemployerreceivesfromanypersonsemployedbyhimanysuchnoticesasarereferredtoinsub-section"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "he shall within five days thereof report to the appropriate Government",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "heshallwithinfivedaysthereofreporttotheappropriateGovernment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "General prohibition of strikes and lock-outs.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Generalprohibitionofstrikesandlock-outs."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "during the pendency of conciliation proceedings before a Board and seven days after the conclusion of such proceedings;",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "duringthependencyofconciliationproceedingsbeforeaBoardandsevendaysaftertheconclusionofsuchproceedings;"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": ") during the pendency of proceedings before a Labour Court, Tribunal or National Tribunal and two months after the conclusion of such proceedings;",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": ")duringthependencyofproceedingsbefore1[aLabourCourt,TribunalorNationalTribunal]andtwomonthsaftertheconclusionofsuchproceedings;2"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "during the pendency of arbitration proceedings before an arbitrator and two months after the conclusion of",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "duringthependencyofarbitrationproceedingsbeforeanarbitratorandtwomonthsaftertheconclusionof"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 36,
+      "page_label": "36",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "for a period of one year, if the workman, during a period of twelve calendar months preceding the date with reference to which calculation is to be made, has actually worked under the employer for not less than— (i) one hundred and ninety days in the case of a workman employed below ground in a mine; and (ii) two hundred and forty days, in any other case;",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "foraperiodofoneyear,iftheworkman,duringaperiodoftwelvecalendarmonthsprecedingthedatewithreferencetowhichcalculationistobemade,hasactuallyworkedundertheemployerfornotlessthan—(i)onehundredandninetydaysinthecaseofaworkmanemployedbelowgroundinamine;and(ii)twohundredandfortydays,inanyothercase;"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 38,
+      "page_label": "38",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Right of workmen laid-off for compensation.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Rightofworkmenlaid-offforcompensation."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 38,
+      "page_label": "38",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "compensation",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "compensation"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 38,
+      "page_label": "38",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "fifty per cent.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "fiftypercent."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 38,
+      "page_label": "38",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "basic",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "basic"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 38,
+      "page_label": "38",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "wages",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "wages"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 38,
+      "page_label": "38",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "forty-five days,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "forty-fivedays,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 38,
+      "page_label": "38",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "no",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "no"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 38,
+      "page_label": "38",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "compensation",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "compensation"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 38,
+      "page_label": "38",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "forty-five days,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "forty-fivedays,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Sixty",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Sixty"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "undertaking",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "undertaking"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "sixty days",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "sixtydays"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "nothing",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "nothing"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "undertaking",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "undertaking"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "less",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "less"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "fifty workmen",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "fiftyworkmen"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "less",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "less"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "fifty workmen",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "fiftyworkmen"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "undertaking",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "undertaking"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "construction",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "construction"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "buildings",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "buildings"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "bridges",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "bridges"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "roads",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "roads"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 40,
+      "page_label": "40",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "canals",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "canals"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "ordinarily",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ordinarily"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "retrench",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "retrench"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "last person",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "lastperson"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Re-employment of retrenched workmen.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Re-employmentofretrenchedworkmen."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Effect of laws inconsistent with this Chapter.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "EffectoflawsinconsistentwiththisChapter."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The provisions of this Chapter shall have effect notwithstanding anything inconsistent therewith contained in any other law [including standing orders made under the Industrial Employment (Standing Orders) Act, 1946 (20 of 1946)]:",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "TheprovisionsofthisChaptershallhaveeffectnotwithstandinganythinginconsistenttherewithcontainedinanyotherlaw[includingstandingordersmadeundertheIndustrialEmployment(StandingOrders)Act,1946(20of1946)]:"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Chapter VB.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ChapterVB."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "apply",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "apply"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "which not less than one hundred workmen",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "whichnotlessthan5[onehundred]workmen"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 45,
+      "page_label": "45",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Prohibition",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Prohibition"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 45,
+      "page_label": "45",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "lay-off.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "lay-off."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 45,
+      "page_label": "45",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "except",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "except"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 45,
+      "page_label": "45",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "prior",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "prior"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 45,
+      "page_label": "45",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "permission",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "permission"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 45,
+      "page_label": "45",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Government",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Government"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 45,
+      "page_label": "45",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Government",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Government"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 45,
+      "page_label": "45",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "does",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "does"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 45,
+      "page_label": "45",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "communicate",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "communicate"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 45,
+      "page_label": "45",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "sixty days",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "sixtydays"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 45,
+      "page_label": "45",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "deemed",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "deemed"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 45,
+      "page_label": "45",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "granted",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "granted"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 47,
+      "page_label": "47",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Conditions precedent to retrenchment of workmen.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Conditionsprecedenttoretrenchmentofworkmen."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 47,
+      "page_label": "47",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": ") the workman has been given three months’ notice in writing",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": ")theworkmanhasbeengiventhreemonths’noticeinwriting"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 47,
+      "page_label": "47",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "or the workman has been paid in lieu of such notice, wages for the period of the notice; and",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ortheworkmanhasbeenpaidinlieuofsuchnotice,wagesfortheperiodofthenotice;and"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 47,
+      "page_label": "47",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "the prior permission of the appropriate Government",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "thepriorpermissionoftheappropriateGovernment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 49,
+      "page_label": "49",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "25-O. Procedure for closing down an undertaking.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "[25-O.Procedureforclosingdownanundertaking."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 49,
+      "page_label": "49",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "permission",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "permission"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 49,
+      "page_label": "49",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "least ninety days",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "leastninetydays"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 49,
+      "page_label": "49",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Government",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Government"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 50,
+      "page_label": "50",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Provided that nothing in this sub-section shall apply to an undertaking set up for the construction of buildings, bridges, roads, canals, dams or for other construction work.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Providedthatnothinginthissub-sectionshallapplytoanundertakingsetupfortheconstructionofbuildings,bridges,roads,canals,damsorforotherconstructionwork."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 50,
+      "page_label": "50",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "deemed",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "deemed"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 50,
+      "page_label": "50",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "said period of sixty days.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "saidperiodofsixtydays."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 50,
+      "page_label": "50",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "period of thirty days from the date of such reference.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "periodofthirtydaysfromthedateofsuchreference."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 56,
+      "page_label": "56",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Penalty for disclosing confidential information",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Penaltyfordisclosingconfidentialinformation"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 56,
+      "page_label": "56",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "which may extend to six months,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "whichmayextendtosixmonths,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "a “protected workman”,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "a“protectedworkman”,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "workman who, being a member of the executive or other office bearer",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "workmanwho,being1[amemberoftheexecutiveorotherofficebearer]"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "shall be one per cent.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "shallbeonepercent."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "minimum",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "minimum"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "five protected workmen",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "fiveprotectedworkmen"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "maximum number",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "maximumnumber"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "one hundred protected workmen",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "onehundredprotectedworkmen"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 66,
+      "page_label": "66",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "THE FIRST SCHEDULE",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "1[THEFIRSTSCHEDULE"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 66,
+      "page_label": "66",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "INDUSTRIES WHICH MAY BE DECLARED TO BE PUBLIC UTILITY SERVICES",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "INDUSTRIESWHICHMAYBEDECLAREDTOBEPUBLICUTILITYSERVICES"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 68,
+      "page_label": "68",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "THE SECOND SCHEDULE",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "THESECONDSCHEDULE"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 68,
+      "page_label": "68",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "MATTERS WITHIN THE JURISDICTION OF LABOUR COURTS",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "MATTERSWITHINTHEJURISDICTIONOFLABOURCOURTS"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 69,
+      "page_label": "69",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "THE THIRD SCHEDULE",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "THETHIRDSCHEDULE"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 69,
+      "page_label": "69",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "MATTERS WITHIN THE JURISDICTION OF INDUSTRIAL TRIBUNALS",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "MATTERSWITHINTHEJURISDICTIONOFINDUSTRIALTRIBUNALS"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 70,
+      "page_label": "70",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "THE FOURTH SCHEDULE",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "THEFOURTHSCHEDULE"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 70,
+      "page_label": "70",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "CONDITIONS OF SERVICE FOR CHANGE OF WHICH NOTICE IS TO BE GIVEN",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CONDITIONSOFSERVICEFORCHANGEOFWHICHNOTICEISTOBEGIVEN"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 71,
+      "page_label": "71",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "THE FIFTH SCHEDULE",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "1[THEFIFTHSCHEDULE"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 71,
+      "page_label": "71",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "UNFAIR LABOUR PRACTICES",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "UNFAIRLABOURPRACTICES"
+        }
+      ]
+    }
+  ]
+}

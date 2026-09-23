@@ -1,0 +1,4370 @@
+{
+  "highlights": 143,
+  "entries": [
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ DEFINING ECONOMICS"
+        }
+      ],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Economics",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " is the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "study",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " of ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "‘how society uses its scarce resources’",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " is probably the most used definition which is catchy as well as concise also .",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Economics"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "study"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "‘howsocietyusesitsscarceresources’"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ MICRO AND MACRO"
+        }
+      ],
+      "page": 41,
+      "page_label": "41",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "John Maynard Keynes",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " is considered the father of ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "macroeconomics",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " (the branch came into being after the publication of his seminal work, ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The General Theory of Employment, Interest and Money,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " in 1936).",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "JohnMaynardKeynes"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "macroeconomics"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "TheGeneralTheoryofEmployment,InterestandMoney,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ MICRO AND MACRO"
+        }
+      ],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "While there are no competing schools of thought in micro, macro has schools like New ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Keynesian",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " or ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "New Classical.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Keynesian"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "NewClassical."
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ WHAT IS AN ECONOMY?"
+        },
+        {
+          "level": 3,
+          "text": "Sectors & Types of Economies"
+        }
+      ],
+      "page": 42,
+      "page_label": "42",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Sectors&TypesofEconomies"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ WHAT IS AN ECONOMY?"
+        },
+        {
+          "level": 3,
+          "text": "Sectors & Types of Economies"
+        }
+      ],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Primary Sector:",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " The economic activities which take place while exploiting the natural resources fall under it, such as mining, agricultural activities, oil exploration, etc. When agriculture sector (one of the sub-sectors of the primary sector) contribute minimum half of the national income and livelihood in a country it is called an ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "agrarian",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "economy.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "PrimarySector:"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "agrarian"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "economy."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ WHAT IS AN ECONOMY?"
+        },
+        {
+          "level": 3,
+          "text": "Sectors & Types of Economies"
+        }
+      ],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Secondary Sector:",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " It contains all of the economic activities under which the raw materials extracted out of the primary sector are processed (also called industrial sector). One of its ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "sub-sectors,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "manufacturing,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " has proved to be the largest employer across the western developed Economies.When secondary sector brings in minimum half of the national income and employment in a country it is called an industrial economy.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "SecondarySector:"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "sub-sectors,"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "manufacturing,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ WHAT IS AN ECONOMY?"
+        },
+        {
+          "level": 3,
+          "text": "Sectors & Types of Economies"
+        }
+      ],
+      "page": 42,
+      "page_label": "42",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Tertiary Sector: All of the economic activities where services are produced falls in this sector, such as education, healthcare, banking, communication, etc.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "TertiarySector:Alloftheeconomicactivitieswhereservicesareproducedfallsinthissector,suchaseducation,healthcare,banking,communication,etc."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ WHAT IS AN ECONOMY?"
+        },
+        {
+          "level": 3,
+          "text": "Sectors & Types of Economies"
+        }
+      ],
+      "page": 46,
+      "page_label": "46",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "At last by mid-1980s state economies moved to modify their economic systems by including certain traits of the market economy—",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "text": "■ ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "China, by mid-1980s, announced its Open-Door Policy embracing mixed economy",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " with fundamental traits of the market economy.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "China,bymid-1980s,announceditsOpen-DoorPolicyembracingmixedeconomy"
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ WHAT IS AN ECONOMY?"
+        },
+        {
+          "level": 3,
+          "text": "Mixed Economy"
+        }
+      ],
+      "page": 46,
+      "page_label": "46",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "MixedEconomy"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ WHAT IS AN ECONOMY?"
+        },
+        {
+          "level": 3,
+          "text": "Mixed Economy"
+        }
+      ],
+      "page": 46,
+      "page_label": "46",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "In practice, mixed economic system was already there (by late 1930s) once the market ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "economies adopted certain policy changes (borrowing from the non-market economy) to recover out of the Depression.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " But ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "first country to announce adopting this system was France (in 1944- 45, with the announcement to adopt national planning).",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "economiesadoptedcertainpolicychanges(borrowingfromthenon-marketeconomy)torecoveroutoftheDepression."
+        },
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "firstcountrytoannounceadoptingthissystemwasFrance(in1944-45,withtheannouncementtoadoptnationalplanning)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ WHAT IS AN ECONOMY?"
+        },
+        {
+          "level": 3,
+          "text": "Mixed Economy"
+        }
+      ],
+      "page": 46,
+      "page_label": "46",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "It was with few reports of the World Bank that helped world agree on the best model of the economic system—",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "text": "■ ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "World Bank accepted the need of ‘state intervention’ in the economy",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " (i.e., the market economy) which used to be an ardent advocate of12 the free market economy.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "WorldBankacceptedtheneedof‘stateintervention’intheeconomy"
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ STANDING COMMITTEE ON ECONOMIC STATISTICS"
+        }
+      ],
+      "page": 56,
+      "page_label": "56",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "STANDINGCOMMITTEEONECONOMICSTATISTICS"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ STANDING COMMITTEE ON ECONOMIC STATISTICS"
+        }
+      ],
+      "page": 56,
+      "page_label": "56",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "As per the report of the IMF, India did show the following three types of deviations from the SDDS—",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "AsperthereportoftheIMF,IndiadidshowthefollowingthreetypesofdeviationsfromtheSDDS—33"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ INCOME ESTIMATES FOR 2019–20"
+        }
+      ],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Thus, we may have some diverse cases of growth and development:",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "Thus,wemayhavesomediversecasesofgrowthanddevelopment:"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ INCOME ESTIMATES FOR 2019–20"
+        }
+      ],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(i) Higher growth and higher development",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "(i)Highergrowthandhigherdevelopment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ INCOME ESTIMATES FOR 2019–20"
+        }
+      ],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(ii) Higher growth but lower development",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "(ii)Highergrowthbutlowerdevelopment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ INCOME ESTIMATES FOR 2019–20"
+        }
+      ],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(iii) Lower growth but higher development",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "(iii)Lowergrowthbuthigherdevelopment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ INCOME ESTIMATES FOR 2019–20"
+        }
+      ],
+      "page": 61,
+      "page_label": "61",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Here started the branch of economics which came to be be known as ‘development economics’.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "Herestartedthebranchofeconomicswhichcametobebeknownas‘developmenteconomics’."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ INCOME ESTIMATES FOR 2019–20"
+        }
+      ],
+      "page": 75,
+      "page_label": "75",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "There is a growing literature in economics arguing that pro-social behaviour, which includes altruism and trustworthiness,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " is innate to human beings and, moreover, forms an essential ingredient for the efficient functioning of economies.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "Thereisagrowingliteratureineconomicsarguingthatpro-socialbehaviour,whichincludesaltruismandtrustworthiness,24"
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 2,
+          "text": "▷ INCOME ESTIMATES FOR 2019–20"
+        },
+        {
+          "level": 3,
+          "text": "Values and Economics"
+        }
+      ],
+      "page": 75,
+      "page_label": "75",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "ValuesandEconomics"
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "EVOLUTION OF THE INDIAN ECONOMY"
+        }
+      ],
+      "page": 79,
+      "page_label": "79",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "EVOLUTIONOFTHEINDIANECONOMY"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "EVOLUTION OF THE INDIAN ECONOMY"
+        },
+        {
+          "level": 2,
+          "text": "▷ THE BACKGROUND"
+        }
+      ],
+      "page": 79,
+      "page_label": "79",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "There was not only the unilateral transfer of investible capital to Britain by the colonial state (the ‘drain of wealth’),",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " but the unequal exchange was day by day crippling India’s commerce, trade and the thriving handloom industry, too.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "TherewasnotonlytheunilateraltransferofinvestiblecapitaltoBritainbythecolonialstate(the‘drainofwealth’),"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "EVOLUTION OF THE INDIAN ECONOMY"
+        },
+        {
+          "level": 2,
+          "text": "▷ THE BACKGROUND"
+        }
+      ],
+      "page": 79,
+      "page_label": "79",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Industrialisation of India was also neglected by the colonisers—the infrastructure was not built to industrialise India but to exploit its raw materials.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "IndustrialisationofIndiawasalsoneglectedbythecolonisers—theinfrastructurewasnotbuilttoindustrialiseIndiabuttoexploititsrawmaterials."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "EVOLUTION OF THE INDIAN ECONOMY"
+        },
+        {
+          "level": 2,
+          "text": "▷ THE BACKGROUND"
+        }
+      ],
+      "page": 85,
+      "page_label": "85",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Though there was an example of a capitalistic-democratic system going for planning, France by that time (1947), it had little experience to offer the Indian policymakers ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "(France had gone for a mixed economy by 1944–45).",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "(Francehadgoneforamixedeconomyby1944–45)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "EVOLUTION OF THE INDIAN ECONOMY"
+        },
+        {
+          "level": 2,
+          "text": "▷ THE BACKGROUND"
+        }
+      ],
+      "page": 85,
+      "page_label": "85",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "It will be suitable to note here that as 1950s and 1960s made the world experts favour",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Itwillbesuitabletonoteherethatas1950sand1960smadetheworldexpertsfavour"
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "EVOLUTION OF THE INDIAN ECONOMY"
+        },
+        {
+          "level": 2,
+          "text": "▷ TYPES OF PLANNING"
+        }
+      ],
+      "page": 96,
+      "page_label": "96",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "TYPESOFPLANNING"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "EVOLUTION OF THE INDIAN ECONOMY"
+        },
+        {
+          "level": 2,
+          "text": "▷ TYPES OF PLANNING"
+        }
+      ],
+      "page": 96,
+      "page_label": "96",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "1. ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Imperative Planning",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " The planning process followed by the state economies (i.e., the socialist or communist) is known as the imperative planning. ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Such planning is also called as directive or target planning.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " … ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "In the socialist system, all economic decisions were centralised in the hands of the state with collective ownership of resources (except labour). In the communist system (i.e., China of the past) all resources were to be owned and utilised by the state (including labour).",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "ImperativePlanning"
+        },
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Suchplanningisalsocalledasdirectiveortargetplanning."
+        },
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Inthesocialistsystem,alleconomicdecisionswerecentralisedinthehandsofthestatewithcollectiveownershipofresources(exceptlabour).Inthecommunistsystem(i.e.,Chinaofthepast)allresourcesweretobeownedandutilisedbythestate(includinglabour)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "EVOLUTION OF THE INDIAN ECONOMY"
+        },
+        {
+          "level": 2,
+          "text": "▷ TYPES OF PLANNING"
+        }
+      ],
+      "page": 96,
+      "page_label": "96",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Basic features of such planning are as under:",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "text": "The Command Economies followed this kind of planning. That is why such economies are also known as the Centrally Planned Economies—the USSR, Poland, Hungary, Austria, Romania, etc., and finally China.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " … One among them was ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Oskar Lange,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " the famous Polish economist, who after returning home to serve as the Chairman of the Polish State Economic Council (as India has the Planning Commission) suggested and ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "coined the concept of ‘market socialism’ in the 1950s.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "TheCommandEconomiesfollowedthiskindofplanning.ThatiswhysucheconomiesarealsoknownastheCentrallyPlannedEconomies—theUSSR,Poland,Hungary,Austria,Romania,etc.,andfinallyChina."
+        },
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "OskarLange,"
+        },
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "coinedtheconceptof‘marketsocialism’inthe1950s."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "EVOLUTION OF THE INDIAN ECONOMY"
+        },
+        {
+          "level": 2,
+          "text": "▷ TYPES OF PLANNING"
+        }
+      ],
+      "page": 96,
+      "page_label": "96",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The peak of this type of planning was reached in China after the Cultural Revolution (1966– 69), which led to an economic slowdown in the country, which had adopted a soviet-style central planning system after 1949.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Under Deng Xiaoping (1977–97), China decentralised a great deal of economic power with its announcement of the open door policy in 1985 to save the economy.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "ThepeakofthistypeofplanningwasreachedinChinaaftertheCulturalRevolution(1966–69),whichledtoaneconomicslowdowninthecountry,whichhadadoptedasoviet-stylecentralplanningsystemafter1949."
+        },
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "UnderDengXiaoping(1977–97),Chinadecentralisedagreatdealofeconomicpowerwithitsannouncementoftheopendoorpolicyin1985tosavetheeconomy."
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        }
+      ],
+      "page": 101,
+      "page_label": "101",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "PLANNINGININDIA"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INTRODUCTION"
+        }
+      ],
+      "page": 101,
+      "page_label": "101",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "It was the Soviet Union which explored and adopted national planning for the first time in the world.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "ItwastheSovietUnionwhichexploredandadoptednationalplanningforthefirsttimeintheworld."
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INTRODUCTION"
+        },
+        {
+          "level": 3,
+          "text": "The Gandhian Plan"
+        }
+      ],
+      "page": 105,
+      "page_label": "105",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "TheGandhianPlan"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INTRODUCTION"
+        },
+        {
+          "level": 3,
+          "text": "The Gandhian Plan"
+        }
+      ],
+      "page": 105,
+      "page_label": "105",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Espousing the spirit of the Gandhian economic thinking, ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Sriman Narayan Agarwal formulated The Gandhian Plan in 1944.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The plan laid more emphasis on agriculture.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "SrimanNarayanAgarwalformulatedTheGandhianPlanin1944."
+        },
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Theplanlaidmoreemphasisonagriculture."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INTRODUCTION"
+        },
+        {
+          "level": 3,
+          "text": "The Gandhian Plan"
+        }
+      ],
+      "page": 105,
+      "page_label": "105",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "It needs to be noted here that the Gandhians did not agree with the views of the NPC or the Bombay Plan, particularly on issues like centralised planning, dominant role of the state in the economy and the emphasis on industrialisation being the major ones.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " … It was industrialism itself, ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Gandhi argued, rather than the inability to industrialise, which was the root cause of Indian poverty.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " … ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "But it was in the NPC that the Congress tried to articulate a different view on these issues, almost taking a break from Gandhi’s ideas.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " … ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "He said on the occasion that the national priority as adopted by the Congress was to restrict and eliminate modern industrialism. The impasse was normalised after Nehru intervened and declared that most members of the NPC felt that large-scale industry ought to be promoted as long as it did not ‘come into conflict with the cottage industries’.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "ItneedstobenotedherethattheGandhiansdidnotagreewiththeviewsoftheNPCortheBombayPlan,particularlyonissueslikecentralisedplanning,dominantroleofthestateintheeconomyandtheemphasisonindustrialisationbeingthemajorones."
+        },
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Gandhiargued,ratherthantheinabilitytoindustrialise,whichwastherootcauseofIndianpoverty."
+        },
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "ButitwasintheNPCthattheCongresstriedtoarticulateadifferentviewontheseissues,almosttakingabreakfromGandhi’sideas."
+        },
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "HesaidontheoccasionthatthenationalpriorityasadoptedbytheCongresswastorestrictandeliminatemodernindustrialism.TheimpassewasnormalisedafterNehruintervenedanddeclaredthatmostmembersoftheNPCfeltthatlarge-scaleindustryoughttobepromotedaslongasitdidnot‘comeintoconflictwiththecottageindustries’."
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INTRODUCTION"
+        },
+        {
+          "level": 3,
+          "text": "The people’s Plan"
+        }
+      ],
+      "page": 105,
+      "page_label": "105",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Thepeople’sPlan"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INTRODUCTION"
+        },
+        {
+          "level": 3,
+          "text": "The people’s Plan"
+        }
+      ],
+      "page": 105,
+      "page_label": "105",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "In 1945, yet another plan was formulated by the radical humanist leader M.N. Roy, Chairman of the Post-War Reconstruction Committee of Indian Trade Union.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The plan was based on Marxist socialism and advocated the need of providing the people with the ‘basic necessities of life’.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "In1945,yetanotherplanwasformulatedbytheradicalhumanistleaderM.N.Roy,ChairmanofthePost-WarReconstructionCommitteeofIndianTradeUnion."
+        },
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "TheplanwasbasedonMarxistsocialismandadvocatedtheneedofprovidingthepeoplewiththe‘basicnecessitiesoflife’."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INTRODUCTION"
+        },
+        {
+          "level": 3,
+          "text": "The people’s Plan"
+        }
+      ],
+      "page": 114,
+      "page_label": "114",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "‘Economic reforms with the human face’, the slogan with which the economic reforms the major recommendations of IEO on the PC are as follows:",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "text": "Meanwhile, ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "we can visibly find some of the recommendations of the IEO resonating in the newly created body, the NITI Aayog, the replacement for the PC.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "wecanvisiblyfindsomeoftherecommendationsoftheIEOresonatinginthenewlycreatedbody,theNITIAayog,thereplacementforthePC."
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ NATIONAL DEVELOPMENT COUNCIL"
+        }
+      ],
+      "page": 114,
+      "page_label": "114",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "NATIONALDEVELOPMENTCOUNCIL"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ NATIONAL DEVELOPMENT COUNCIL"
+        }
+      ],
+      "page": 114,
+      "page_label": "114",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The National Development Council (NDC) was set up on August 6, 1952 by a Resolution issued from the Cabinet Secretariat.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "TheNationalDevelopmentCouncil(NDC)wassetuponAugust6,1952byaResolutionissuedfromtheCabinetSecretariat."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ NATIONAL DEVELOPMENT COUNCIL"
+        }
+      ],
+      "page": 116,
+      "page_label": "116",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "A phase of tussle between the Centre and the states started worsening from here onward with a degradation in principles of the co-operative federalism, with every five-year plans which followed. It was only by the mid-1990s that we see the revival of the lost glory of NDC as well as that of the spirit of decentralised planning.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "AphaseoftusslebetweentheCentreandthestatesstartedworseningfromhereonwardwithadegradationinprinciplesoftheco-operativefederalism,witheveryfive-yearplanswhichfollowed.Itwasonlybythemid-1990sthatweseetherevivalofthelostgloryofNDCaswellasthatofthespiritofdecentralisedplanning."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ NATIONAL DEVELOPMENT COUNCIL"
+        }
+      ],
+      "page": 116,
+      "page_label": "116",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "NDC had its last meeting (57th) in December 2012 and since the new policy think tank Niti Aayog was set up has not been assigned any work. It is believed that in coming times it will be either abolished or merged with the Niti.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "NDChaditslastmeeting(57th)inDecember2012andsincethenewpolicythinktankNitiAayogwassetuphasnotbeenassignedanywork.ItisbelievedthatincomingtimesitwillbeeitherabolishedormergedwiththeNiti."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ NATIONAL DEVELOPMENT COUNCIL"
+        }
+      ],
+      "page": 116,
+      "page_label": "116",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "This rationale gets doubly vetted by the Government’s belief that the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Niti is ‘State’s best friend at the Centre’ (the 3rd function of the Niti).",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Nitiis‘State’sbestfriendattheCentre’(the3rdfunctionoftheNiti)."
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CENTRAL PLANNING"
+        }
+      ],
+      "page": 116,
+      "page_label": "116",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "▷CENTRALPLANNING"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CENTRAL PLANNING"
+        }
+      ],
+      "page": 116,
+      "page_label": "116",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The three central plans are:",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "text": "1. Five-Year Plans,",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "text": "2. Twenty-Point Programme, and",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " (ii) In order to encourage trusts and societies to work for the betterment of tribal people …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Thethreecentralplansare:1.Five-YearPlans,2.Twenty-PointProgramme,and65"
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ MULTI-LEVEL PLANNING"
+        },
+        {
+          "level": 3,
+          "text": "Third Strata: District-Level Planning"
+        }
+      ],
+      "page": 125,
+      "page_label": "125",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "ThirdStrata:District-LevelPlanning"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ MULTI-LEVEL PLANNING"
+        },
+        {
+          "level": 3,
+          "text": "Third Strata: District-Level Planning"
+        }
+      ],
+      "page": 125,
+      "page_label": "125",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "By the late 1960s all the",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "89",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " districts of the states were having their own plans with their respective ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "District Planning Boards with the respective District Magistrate being the de-facto chairman.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "DistrictPlanningBoardswiththerespectiveDistrictMagistratebeingthede-factochairman.89"
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ MULTI-LEVEL PLANNING"
+        },
+        {
+          "level": 3,
+          "text": "Phase-IV (1991 onward)"
+        }
+      ],
+      "page": 140,
+      "page_label": "140",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Phase-IV(1991onward)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ MULTI-LEVEL PLANNING"
+        },
+        {
+          "level": 3,
+          "text": "Phase-IV (1991 onward)"
+        }
+      ],
+      "page": 140,
+      "page_label": "140",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(i) ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The hitherto monopoly sectors of the industry were opened up for private investment—",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "barring Nuclear Research, Nuclear power and Railways (latter two areas are partially opened)—in all of them direct foreign investments have also been allowed (between 26 to 100 per cent). We see the ‘investment model’ for ‘infrastructure sector’ shifting from ‘government-led’ to ‘private-led’.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Thehithertomonopolysectorsoftheindustrywereopenedupforprivateinvestment—"
+        },
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "barringNuclearResearch,NuclearpowerandRailways(lattertwoareasarepartiallyopened)—inallofthemdirectforeigninvestmentshavealsobeenallowed(between26to100percent).Weseethe‘investmentmodel’for‘infrastructuresector’shiftingfrom‘government-led’to‘private-led’."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ MULTI-LEVEL PLANNING"
+        },
+        {
+          "level": 3,
+          "text": "Phase-IV (1991 onward)"
+        }
+      ],
+      "page": 140,
+      "page_label": "140",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(ii) ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "In coming times, GoI articulated the idea of the Public Private Partnership (PPP) model",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " of investment for this sector …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "red",
+          "text": "Incomingtimes,GoIarticulatedtheideaofthePublicPrivatePartnership(PPP)model"
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CONSUMER PRICE INDEX"
+        }
+      ],
+      "page": 194,
+      "page_label": "194",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CONSUMERPRICEINDEX"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CONSUMER PRICE INDEX"
+        }
+      ],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… people’s choices of consumption and their purchasing ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "power).Though, in 2011-12, the government announced a new set of consumer indices (i.e., CPI-R, CPI-U and CPI-C),",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "power).Though,in2011-12,thegovernmentannouncedanewsetofconsumerindices(i.e.,CPI-R,CPI-UandCPI-C),"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CONSUMER PRICE INDEX"
+        }
+      ],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "1. ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "CPI-IW",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The Consumer Price Index for the industrial workers (CPI-IW) has 260 items",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " (plus the services) in its basket with 2001 as the base year (the first base year was 1958–59).",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CPI-IW"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "TheConsumerPriceIndexfortheindustrialworkers(CPI-IW)has260items"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CONSUMER PRICE INDEX"
+        }
+      ],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Basically, this index specifies the government employees (other than banks’ and embassies’ personnel). The wages/salaries of the central government employees are revised on the basis of the changes occurring in this index, the dearness allowance (DA) is announced twice a year. When the Pay Commission recommends pay revisions, the base is the CPI (IW).",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Basically,thisindexspecifiesthegovernmentemployees(otherthanbanks’andembassies’personnel).Thewages/salariesofthecentralgovernmentemployeesarerevisedonthebasisofthechangesoccurringinthisindex,thedearnessallowance(DA)isannouncedtwiceayear.WhenthePayCommissionrecommendspayrevisions,thebaseistheCPI(IW)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CONSUMER PRICE INDEX"
+        }
+      ],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "2. ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "CPI-UNME The Consumer Price Index for the Urban Non-Manual Employees (CPI-UNME) has 1984–85 (first base year was 1958–59)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " as the base year and 146 …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CPI-UNMETheConsumerPriceIndexfortheUrbanNon-ManualEmployees(CPI-UNME)has1984–85(firstbaseyearwas1958–59)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CONSUMER PRICE INDEX"
+        }
+      ],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "This price index has limited use and it is basically used for determining dearness allowances",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Thispriceindexhaslimiteduseanditisbasicallyusedfordeterminingdearnessallowances(DAs)ofemployeesofsomeforeigncompaniesoperatinginIndia"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CONSUMER PRICE INDEX"
+        }
+      ],
+      "page": 194,
+      "page_label": "194",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(DAs) of employees of some foreign companies operating in India",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " (i.e., airlines, (ii) to impart liquidity to the instruments of the money market prevalent in the economy. ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "In 2004, the RBI transferred its total holding in the DFHI to the State Bank of India arm SBI",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Thispriceindexhaslimiteduseanditisbasicallyusedfordeterminingdearnessallowances(DAs)ofemployeesofsomeforeigncompaniesoperatinginIndia"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "In2004,theRBItransferreditstotalholdingintheDFHItotheStateBankofIndiaarmSBIGiltsLimited."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CONSUMER PRICE INDEX"
+        }
+      ],
+      "page": 341,
+      "page_label": "341",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Gilts Limited.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "In2004,theRBItransferreditstotalholdingintheDFHItotheStateBankofIndiaarmSBIGiltsLimited."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INDIAN CAPITAL MARKET"
+        }
+      ],
+      "page": 341,
+      "page_label": "341",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "As banks in India were weak,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " small and geographically unevenly distributed they were not in a position to play the pivotal role they played in case of the industrialising Western economies. ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "This is why the government decided to set up ‘financial institutions’",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " which could play the role of banks (till banks gain strength and presence) and carry on the responsibilities of ‘project financing’.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "AsbanksinIndiawereweak,"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Thisiswhythegovernmentdecidedtosetup‘financialinstitutions’"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INDIAN CAPITAL MARKET"
+        },
+        {
+          "level": 3,
+          "text": "Project Financing"
+        }
+      ],
+      "page": 341,
+      "page_label": "341",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "For capital requirement, the government decided to depend upon internal and external sources and the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "government decided to set up financial institutions (FIs).",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "governmentdecidedtosetupfinancialinstitutions(FIs)."
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INDIAN CAPITAL MARKET"
+        },
+        {
+          "level": 3,
+          "text": "1. Financial Institutions"
+        }
+      ],
+      "page": 341,
+      "page_label": "341",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "FinancialInstitutions"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INDIAN CAPITAL MARKET"
+        },
+        {
+          "level": 3,
+          "text": "1. Financial Institutions"
+        }
+      ],
+      "page": 351,
+      "page_label": "351",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "1949 the RBI was nationalised.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " … The RBI has been given quite complex and challenging functions which has been summarised in its ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Preamble",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " as given below—",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "1949theRBIwasnationalised."
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Preamble"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INDIAN CAPITAL MARKET"
+        },
+        {
+          "level": 3,
+          "text": "1. Financial Institutions"
+        }
+      ],
+      "page": 351,
+      "page_label": "351",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(iv) ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Manager of Foreign Exchange:",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " In includes broad functions like—managing the FEMA",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ManagerofForeignExchange:"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INDIAN CAPITAL MARKET"
+        },
+        {
+          "level": 3,
+          "text": "1. Financial Institutions"
+        }
+      ],
+      "page": 351,
+      "page_label": "351",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The broad objectives are enabling governments and the banks mobilise enough liquidity for their functioning under which it lends or manages borrowing plans of the governments and provides short-term and long-term loans to the banks ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "(as Lender of Last Resort).",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "(asLenderofLastResort)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INDIAN CAPITAL MARKET"
+        },
+        {
+          "level": 3,
+          "text": "1. Financial Institutions"
+        }
+      ],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "(vii) ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Developmental Functions:",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " Unlike most of the central banks in the world, the RBI was given some developmental functions also. … The RBI operates today with its 27 regional offices, most of them situated in state capitals and its affairs are governed by a ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "central board of directors.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "DevelopmentalFunctions:"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "centralboardofdirectors."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INDIAN CAPITAL MARKET"
+        },
+        {
+          "level": 3,
+          "text": "1. Financial Institutions"
+        }
+      ],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "RBI’s Subsidiaries: There are 4 fully-owned ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "subsidiaries",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " of the RBI, namely—Deposit Insurance and Credit Guarantee Corporation of India ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "(DICGC),",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " Bharatiya Reserve Bank Note Mudran Private",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "subsidiaries"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "(DICGC),"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INDIAN CAPITAL MARKET"
+        },
+        {
+          "level": 3,
+          "text": "1. Financial Institutions"
+        }
+      ],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Limited ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "(BRBNMPL),",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " Reserve Bank Information Technology Private Limited ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "(ReBIT),",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " and Indian Financial Technology and Allied Services ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "(IFTAS).",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "(BRBNMPL),"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "(ReBIT),"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "(IFTAS)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INDIAN CAPITAL MARKET"
+        },
+        {
+          "level": 3,
+          "text": "1. Financial Institutions"
+        }
+      ],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "New Financial Year: Aimed at aligning its financial year with the government’s financial year, in February 2020, the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "RBI decided to shift to April-March as its new financial year",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " from 2020-21 (from its existing financial year July-June).",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "RBIdecidedtoshifttoApril-Marchasitsnewfinancialyear7"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ INDIAN CAPITAL MARKET"
+        },
+        {
+          "level": 3,
+          "text": "RBI’s Reserves & Surplus Capital"
+        }
+      ],
+      "page": 352,
+      "page_label": "352",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "To look into the issue, an expert committee on Economic Capital Framework was set up by the RBI (headed by Bimal Jalan) in 2019, ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "which could advise the manner in which it should share surplus capital with the Government.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "whichcouldadvisethemannerinwhichitshouldsharesurpluscapitalwiththeGovernment."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ MONETARY POLICY"
+        }
+      ],
+      "page": 353,
+      "page_label": "353",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "From being announced twice a year (before slack and busy seasons) today the policy is a bi-monthly affair announced 6 times in a financial year after the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "monetary policy committee (MPC)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " came into being in ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "2016.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " … The MPC (has to meet 4 times minimum every year) has a ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "total of 6 members",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " nominated by RBI and the Ministry of Finance in equal numbers including the RBI ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Governor as its Chairman who avails the right of casting vote in case of a tie in decisions.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " … There are few types of monetary policy ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "stances",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " which keep coming into media from time to time—",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "monetarypolicycommittee(MPC)"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "2016."
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "totalof6members"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "GovernorasitsChairmanwhoavailstherightofcastingvoteincaseofatieindecisions."
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "stances"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ MCLR"
+        }
+      ],
+      "page": 358,
+      "page_label": "358",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The new methodology—",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "MCLR (Marginal Cost of funds based Lending Rate)—",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": "which was articulated by the RBI in December 2015.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "MCLR(MarginalCostoffundsbasedLendingRate)—"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ MCLR"
+        }
+      ],
+      "page": 358,
+      "page_label": "358",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "As per the RBI, ‘for monetary transmission to occur, lending rates have to be sensitive to the policy rate’.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "AspertheRBI,‘formonetarytransmissiontooccur,lendingrateshavetobesensitivetothepolicyrate’."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ MCLR"
+        }
+      ],
+      "page": 370,
+      "page_label": "370",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "ARCs (Asset Reconstruction Companies): ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "ARCs",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " were introduced to India under the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "SARFAESI Act",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ARCs"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "SARFAESIAct"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ PUBLIC SECTOR ASSET REHABILITATION AGENCY (PARA)"
+        }
+      ],
+      "page": 370,
+      "page_label": "370",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… 17 ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "has suggested",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " the Government to set up a ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "public sector asset rehabilitation agency",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " (PARA) …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [
+        {
+          "label": "Note",
+          "runs": [
+            {
+              "text": "No such agency till now",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "hassuggested"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "publicsectorassetrehabilitationagency"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CAPITAL ADEQUACY RATIO"
+        }
+      ],
+      "page": 375,
+      "page_label": "375",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Providing cushion/shock-absorbers to banks has seen three major developments:",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "text": "1. The provision of keeping a cash ratio of total deposits mobilised by the banks (known as the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "CRR",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " in India);",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "text": "2. the provision of maintaining some assets of the deposits mobilised by the banks with the banks themselves in non-cash form (known as the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "SLR",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " in India); and",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "text": "3. The provision of the capital adequacy ratio ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "(CAR)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "norm.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CRR"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "SLR"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "(CAR)"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "norm."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CAPITAL ADEQUACY RATIO"
+        }
+      ],
+      "page": 375,
+      "page_label": "375",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "It was in 1988 that the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "central banking bodies of the developed economies",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " agreed upon such a provision, ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "the CAR—also known as the Basel Accord.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " The accord was45 agreed upon at ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Basel, Switzerland",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " at a meeting of the Bank for International Settlements (BIS). … ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "It means that if the total investments and loans forwarded by a bank amounts to ₹100, the bank needs to maintain a free capital of ₹8 at that particular time.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "centralbankingbodiesofthedevelopedeconomies"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "theCAR—alsoknownastheBaselAccord."
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Basel,Switzerland"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Itmeansthatifthetotalinvestmentsandloansforwardedbyabankamountsto₹100,thebankneedstomaintainafreecapitalof₹8atthatparticulartime.47"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CAPITAL ADEQUACY RATIO"
+        }
+      ],
+      "page": 382,
+      "page_label": "382",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "As we move from ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "M1 to M4 the liquidity (inertia, stability, spendability) of the money goes on decreasing",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " and in the opposite direction, the liquidity increases.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "MtoMtheliquidity(inertia,stability,spendability)ofthemoneygoesondecreasing14"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CAPITAL ADEQUACY RATIO"
+        },
+        {
+          "level": 3,
+          "text": "Narrow Money"
+        }
+      ],
+      "page": 382,
+      "page_label": "382",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "In banking terminology, ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "M1 is called narrow money",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " as it is highly liquid and banks cannot run their lending programmes with this money.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Miscallednarrowmoney1"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CAPITAL ADEQUACY RATIO"
+        },
+        {
+          "level": 3,
+          "text": "Broad Money"
+        }
+      ],
+      "page": 382,
+      "page_label": "382",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The money component ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "M3 is called broad money",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " in the banking terminology.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Miscalledbroadmoney3"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ CAPITAL ADEQUACY RATIO"
+        },
+        {
+          "level": 3,
+          "text": "High Power Money"
+        }
+      ],
+      "page": 382,
+      "page_label": "382",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "RBI issues currency notes",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " of rupees 2, 5, 10, 20, 50, 100, 500 and 2000 denominations corporate entities, mutual funds, and exchange-traded funds were already allowed to deposit gold under the scheme. ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The aim of the scheme was to mobilise idle gold lying with households and temples into the system, and consequently, reduce imports.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "RBIissuescurrencynotes"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Theaimoftheschemewastomobiliseidlegoldlyingwithhouseholdsandtemplesintothesystem,andconsequently,reduceimports."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ MUDRA BANK"
+        }
+      ],
+      "page": 391,
+      "page_label": "391",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Looking at the importance of these enterprises, the Government of India launched (April 2015) the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Micro Units Development and Refinance Agency Bank (MUDRA Bank)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " with the aim of funding these unfunded non-corporate enterprises. This was launched as the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "PMMY (Prime Minister Mudra Yojana).",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [
+        {
+          "label": "Note",
+          "runs": [
+            {
+              "text": "under sidbi",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "MicroUnitsDevelopmentandRefinanceAgencyBank(MUDRABank)"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "PMMY(PrimeMinisterMudraYojana)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ EXPORT CREDIT GUARANTEE CORPORATION (ECGC)"
+        }
+      ],
+      "page": 399,
+      "page_label": "399",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "To provide adequate credit insurance cover to such firms, the government has set up the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Export Credit Guarantee Corporation of India Ltd. (ECGC)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " under the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Ministry of Commerce and Industry,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "for medium- and long-term exports.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ExportCreditGuaranteeCorporationofIndiaLtd.(ECGC)"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "MinistryofCommerceandIndustry,"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "formedium-andlong-termexports."
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ NATIONAL EXPORT INSURANCE ACCOUNT (NEIA)"
+        }
+      ],
+      "page": 399,
+      "page_label": "399",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "NATIONALEXPORTINSURANCEACCOUNT"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ NATIONAL EXPORT INSURANCE ACCOUNT (NEIA)"
+        }
+      ],
+      "page": 413,
+      "page_label": "413",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Jobber",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " A jobber is a ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "broker’s broker",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " or one who specialises in specific securities catering to the need of other brokers—in India also known as ‘Taravaniwallah’ (in the BSE).",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Jobber"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "broker’sbroker"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ NATIONAL EXPORT INSURANCE ACCOUNT (NEIA)"
+        }
+      ],
+      "page": 413,
+      "page_label": "413",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Market-Maker",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " Functions as an intermediary in the market ready to buy and sell securities.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Market-Maker"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ SEBI"
+        }
+      ],
+      "page": 413,
+      "page_label": "413",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… set up under the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Security and Exchange Board of India Act, 1992",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "(as a non-statutory body set on 12 April, 1988",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " through a government resolution in an effort to give the Indian stock market an organised structure) with its head office in Mumbai.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "SecurityandExchangeBoardofIndiaAct,1992"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "(asanon-statutorybodyseton12April,1988"
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ COMMODITY TRADING"
+        }
+      ],
+      "page": 413,
+      "page_label": "413",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "COMMODITYTRADING"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ COMMODITY TRADING"
+        }
+      ],
+      "page": 416,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "contracts—",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "it means that all outstanding positions at the end of the day are marked for delivery,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " which implies that seller has to give delivery and buyer has to take the delivery.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "itmeansthatalloutstandingpositionsattheendofthedayaremarkedfordelivery,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ COMMODITY TRADING"
+        },
+        {
+          "level": 3,
+          "text": "Raising Capital in the Primary Market"
+        }
+      ],
+      "page": 416,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Public Issue",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " A public offer is open for all Indian citizens, the most broad-based method of raising capital and the most prestigious, too (the Reliance Industries Ltd. is the biggest company of India",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "PublicIssue"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ COMMODITY TRADING"
+        },
+        {
+          "level": 3,
+          "text": "Raising Capital in the Primary Market"
+        }
+      ],
+      "page": 423,
+      "page_label": "423",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Category I:",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " The government entities/institutions investing in Indian security market on behalf of the Central Bank.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CategoryI:"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ COMMODITY TRADING"
+        },
+        {
+          "level": 3,
+          "text": "Raising Capital in the Primary Market"
+        }
+      ],
+      "page": 423,
+      "page_label": "423",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Category II:",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " The financial institutions, mutual funds, etc., which duly regulated in the countries of their origin.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CategoryII:"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ COMMODITY TRADING"
+        },
+        {
+          "level": 3,
+          "text": "Raising Capital in the Primary Market"
+        }
+      ],
+      "page": 423,
+      "page_label": "423",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Category III:",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " The financial institutions which do not fall either of the above-given categories.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CategoryIII:"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ ANGEL INVESTOR"
+        }
+      ],
+      "page": 423,
+      "page_label": "423",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "A new term in India’s financial market, introduced in the Union Budget 2013–14 which announced that SEBI will soon prescribe the provisions by which the ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "angel investor",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " can be recognised as Category I AIF venture capital funds.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "angelinvestor"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ ANGEL INVESTOR"
+        }
+      ],
+      "page": 423,
+      "page_label": "423",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Angel investor is an investor who provides financial backing to entrepreneurs for ‘starting their business’.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " … Other than investible capital, these investors ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "provide technical advices",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " and also help the ‘start-up’ business with their lucrative contacts.",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Angelinvestorisaninvestorwhoprovidesfinancialbackingtoentrepreneursfor‘startingtheirbusiness’."
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "providetechnicaladvices"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ ANGEL INVESTOR"
+        }
+      ],
+      "page": 423,
+      "page_label": "423",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Angel investors are essentially the exact opposite of a venture capitalist",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " in their ‘intention’ (who has high profit prospects as their prime focus).",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Angelinvestorsareessentiallytheexactoppositeofaventurecapitalist"
+        }
+      ]
+    },
+    {
+      "kind": "heading",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ QFIS SCHEME"
+        },
+        {
+          "level": 3,
+          "text": "Financial Action Task Force (FATF)"
+        }
+      ],
+      "page": 438,
+      "page_label": "438",
+      "lines": [],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "FinancialActionTaskForce(FATF)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 1,
+          "text": "PLANNING IN INDIA"
+        },
+        {
+          "level": 2,
+          "text": "▷ QFIS SCHEME"
+        },
+        {
+          "level": 3,
+          "text": "Financial Action Task Force (FATF)"
+        }
+      ],
+      "page": 438,
+      "page_label": "438",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The FATF is an ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "inter-governmental policy",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " making body that has a ministerial mandate to establish international standards for ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "combating money laundering and terrorist financing.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "inter-governmentalpolicy"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "combatingmoneylaunderingandterroristfinancing."
+        }
+      ]
+    }
+  ]
+}

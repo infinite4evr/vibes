@@ -1,0 +1,136 @@
+#!/usr/bin/env node
+/**
+ * YouTube Subscription Export Script (Node.js)
+ * ---------------------------------------------
+ * Exports every channel you're subscribed to (on whichever account you
+ * authenticate with) into a CSV, using the official YouTube Data API v3.
+ *
+ * Cheap on quota: subscriptions.list costs 1 unit per call, and each call
+ * returns up to 50 results, so exporting even 1000+ subscriptions costs
+ * well under 100 units total.
+ *
+ * SETUP:
+ * 1. https://console.cloud.google.com/ -> create/select a project
+ * 2. Enable "YouTube Data API v3" (APIs & Services > Library)
+ * 3. APIs & Services > Credentials > Create Credentials > OAuth client ID
+ *    -> Application type: Desktop app -> download JSON -> rename to
+ *    `client_secret.json`, put next to this script
+ * 4. APIs & Services > OAuth consent screen -> add the account you want
+ *    to export FROM as a test user
+ * 5. npm install googleapis @google-cloud/local-auth
+ *
+ * USAGE:
+ *    yt-subs-export
+ *    (log in with the account whose subscriptions you want to export)
+ *
+ * Produces `subscriptions_export.csv` with columns:
+ *    channel_title, channel_id, channel_url, subscribed_at
+ */
+
+const fs = require("fs");
+const path = require("path");
+const { authenticate } = require("@google-cloud/local-auth");
+const { google } = require("googleapis");
+
+const SCOPES = ["https://www.googleapis.com/auth/youtube.readonly"];
+const CLIENT_SECRET_FILE = path.join(__dirname, "client_secret.json");
+const TOKEN_FILE = path.join(__dirname, "token_export.json");
+const OUTPUT_FILE = path.join(__dirname, "subscriptions_export.csv");
+
+async function getAuthenticatedClient() {
+	// Reuse a saved token if we have one
+	if (fs.existsSync(TOKEN_FILE)) {
+		const savedCreds = JSON.parse(fs.readFileSync(TOKEN_FILE, "utf-8"));
+		const client = google.auth.fromJSON(savedCreds);
+		return client;
+	}
+
+	// Otherwise run the OAuth flow (opens a browser)
+	const client = await authenticate({
+		scopes: SCOPES,
+		keyfilePath: CLIENT_SECRET_FILE,
+	});
+
+	// Save the token for next time
+	if (client.credentials) {
+		const keys = JSON.parse(fs.readFileSync(CLIENT_SECRET_FILE, "utf-8"));
+		const key = keys.installed || keys.web;
+		const payload = {
+			type: "authorized_user",
+			client_id: key.client_id,
+			client_secret: key.client_secret,
+			refresh_token: client.credentials.refresh_token,
+		};
+		fs.writeFileSync(TOKEN_FILE, JSON.stringify(payload));
+	}
+
+	return client;
+}
+
+async function fetchAllSubscriptions(auth) {
+	const youtube = google.youtube({ version: "v3", auth });
+	const subscriptions = [];
+	let nextPageToken = undefined;
+
+	do {
+		const res = await youtube.subscriptions.list({
+			part: ["snippet"],
+			mine: true,
+			maxResults: 50,
+			pageToken: nextPageToken,
+			order: "alphabetical",
+		});
+
+		const items = res.data.items || [];
+		for (const item of items) {
+			const snippet = item.snippet;
+			const channelId = snippet.resourceId.channelId;
+			subscriptions.push({
+				channel_title: snippet.title,
+				channel_id: channelId,
+				channel_url: `https://www.youtube.com/channel/${channelId}`,
+				subscribed_at: snippet.publishedAt || "",
+			});
+		}
+
+		nextPageToken = res.data.nextPageToken;
+		console.log(`Fetched ${subscriptions.length} so far...`);
+	} while (nextPageToken);
+
+	return subscriptions;
+}
+
+function escapeCsvField(value) {
+	const str = String(value ?? "");
+	if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+		return `"${str.replace(/"/g, '""')}"`;
+	}
+	return str;
+}
+
+function writeCsv(subscriptions) {
+	const header = "channel_title,channel_id,channel_url,subscribed_at\n";
+	const rows = subscriptions
+		.map((s) =>
+			[s.channel_title, s.channel_id, s.channel_url, s.subscribed_at]
+				.map(escapeCsvField)
+				.join(","),
+		)
+		.join("\n");
+
+	fs.writeFileSync(OUTPUT_FILE, header + rows + "\n", "utf-8");
+}
+
+async function main() {
+	const auth = await getAuthenticatedClient();
+	const subscriptions = await fetchAllSubscriptions(auth);
+	writeCsv(subscriptions);
+	console.log(
+		`\nDone. Exported ${subscriptions.length} subscriptions to ${OUTPUT_FILE}`,
+	);
+}
+
+main().catch((err) => {
+	console.error("Error:", err.message || err);
+	process.exit(1);
+});

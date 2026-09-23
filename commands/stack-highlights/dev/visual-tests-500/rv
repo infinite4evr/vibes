@@ -1,0 +1,4 @@
+#!/bin/bash
+# rv P241-P244 : print the tool's output next to each numbered mark (book-by-book run)
+HERE="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+python3 "$HERE/review_print.py" "$HERE/outputs/default_books.json" "$@"

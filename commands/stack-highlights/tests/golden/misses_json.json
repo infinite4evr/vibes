@@ -1,0 +1,62 @@
+{
+  "highlights": 3,
+  "entries": [
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "LIMITED GOVERNMENT"
+        }
+      ],
+      "page": 1,
+      "page_label": "57",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Constitutionalism means a government ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "limited by a written charter.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "limitedbyawrittencharter."
+        }
+      ]
+    }
+  ],
+  "check_in_book": [
+    {
+      "page": 1,
+      "page_label": "57",
+      "reason": "part_word",
+      "kind": "highlight",
+      "color": "yellow",
+      "text": "",
+      "comment": "",
+      "message": "p. 1 (printed page 57): A highlight covers less than half of a word, so it was left out by the default --snap word. Rerun with --snap char to keep it."
+    },
+    {
+      "page": 1,
+      "page_label": "57",
+      "reason": "no_text",
+      "kind": "highlight",
+      "color": "yellow",
+      "text": "",
+      "comment": "see the map",
+      "message": "p. 1 (printed page 57): A highlight has no text under it (an image, figure or scanned area). Read it in the book. Your note there: “see the map”."
+    }
+  ]
+}

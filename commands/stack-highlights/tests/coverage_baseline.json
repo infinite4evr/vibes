@@ -1,0 +1,475 @@
+{
+ "pymupdf": "1.28.2",
+ "settings": "default",
+ "pdf": "Test-Merged-All.pdf",
+ "pdf_pages": 9916,
+ "pages": "merged-PDF page numbers",
+ "books": {
+  "modern_india": {
+   "title": "A Brief History of Modern India (Spectrum, Rajiv Ahir)",
+   "pages": [
+    1,
+    920
+   ],
+   "found": 648,
+   "placed": 647,
+   "unplaced": [
+    [
+     102,
+     "no_text"
+    ]
+   ]
+  },
+  "constitution": {
+   "title": "The Constitution of India (2024 diglot)",
+   "pages": [
+    921,
+    1322
+   ],
+   "found": 567,
+   "placed": 567,
+   "unplaced": []
+  },
+  "acc_chowdhry": {
+   "title": "Fundamentals of Accounting & Financial Analysis (Chowdhry)",
+   "pages": [
+    1323,
+    1730
+   ],
+   "found": 453,
+   "placed": 453,
+   "unplaced": []
+  },
+  "econ_ramesh": {
+   "title": "Indian Economy (Ramesh Singh)",
+   "pages": [
+    1731,
+    2530
+   ],
+   "found": 773,
+   "placed": 773,
+   "unplaced": []
+  },
+  "polity_laxmi": {
+   "title": "Indian Polity (M. Laxmikanth, 8th ed.)",
+   "pages": [
+    2531,
+    3716
+   ],
+   "found": 5648,
+   "placed": 5646,
+   "unplaced": [
+    [
+     2645,
+     "part_word"
+    ],
+    [
+     2880,
+     "part_word"
+    ]
+   ]
+  },
+  "act_empcomp": {
+   "title": "Employee's Compensation Act, 1923",
+   "pages": [
+    3717,
+    3798
+   ],
+   "found": 460,
+   "placed": 460,
+   "unplaced": []
+  },
+  "acc_jain_panda": {
+   "title": "Fundamentals of Accounting for CA-CPT (Jain & Panda)",
+   "pages": [
+    3799,
+    4567
+   ],
+   "found": 191,
+   "placed": 188,
+   "unplaced": [
+    [
+     3818,
+     "not_placed"
+    ],
+    [
+     3864,
+     "not_placed"
+    ],
+    [
+     3864,
+     "not_placed"
+    ]
+   ]
+  },
+  "act_tu": {
+   "title": "Trade Unions Act, 1926",
+   "pages": [
+    4568,
+    4591
+   ],
+   "found": 236,
+   "placed": 236,
+   "unplaced": []
+  },
+  "acc_tmh_cpt": {
+   "title": "Accountancy for CA-CPT (Tata McGraw Hill)",
+   "pages": [
+    4592,
+    5710
+   ],
+   "found": 27,
+   "placed": 27,
+   "unplaced": []
+  },
+  "econ_vivek": {
+   "title": "Indian Economy (Vivek Singh, 7th ed.)",
+   "pages": [
+    5711,
+    6185
+   ],
+   "found": 1623,
+   "placed": 1617,
+   "unplaced": [
+    [
+     5745,
+     "part_word"
+    ],
+    [
+     5784,
+     "part_word"
+    ],
+    [
+     5787,
+     "part_word"
+    ],
+    [
+     5789,
+     "part_word"
+    ],
+    [
+     5798,
+     "part_word"
+    ],
+    [
+     5857,
+     "part_word"
+    ]
+   ]
+  },
+  "labour_acts": {
+   "title": "Labour Acts: Payment of Wages 1936 ... Unorganised Workers 2008",
+   "pages": [
+    6186,
+    7035
+   ],
+   "found": 4033,
+   "placed": 4031,
+   "unplaced": [
+    [
+     6240,
+     "part_word"
+    ],
+    [
+     6313,
+     "part_word"
+    ]
+   ]
+  },
+  "icsi_pp_llp": {
+   "title": "ICSI Professional Programme: Labour Laws & Practice",
+   "pages": [
+    7036,
+    7635
+   ],
+   "found": 3434,
+   "placed": 3368,
+   "unplaced": [
+    [
+     7037,
+     "part_word"
+    ],
+    [
+     7037,
+     "part_word"
+    ],
+    [
+     7081,
+     "part_word"
+    ],
+    [
+     7083,
+     "part_word"
+    ],
+    [
+     7085,
+     "part_word"
+    ],
+    [
+     7087,
+     "part_word"
+    ],
+    [
+     7087,
+     "part_word"
+    ],
+    [
+     7089,
+     "part_word"
+    ],
+    [
+     7095,
+     "not_placed"
+    ],
+    [
+     7095,
+     "no_text"
+    ],
+    [
+     7095,
+     "part_word"
+    ],
+    [
+     7095,
+     "not_placed"
+    ],
+    [
+     7095,
+     "not_placed"
+    ],
+    [
+     7095,
+     "not_placed"
+    ],
+    [
+     7095,
+     "not_placed"
+    ],
+    [
+     7096,
+     "part_word"
+    ],
+    [
+     7100,
+     "not_placed"
+    ],
+    [
+     7100,
+     "not_placed"
+    ],
+    [
+     7100,
+     "not_placed"
+    ],
+    [
+     7106,
+     "part_word"
+    ],
+    [
+     7109,
+     "part_word"
+    ],
+    [
+     7109,
+     "part_word"
+    ],
+    [
+     7109,
+     "part_word"
+    ],
+    [
+     7121,
+     "part_word"
+    ],
+    [
+     7124,
+     "part_word"
+    ],
+    [
+     7126,
+     "part_word"
+    ],
+    [
+     7129,
+     "part_word"
+    ],
+    [
+     7129,
+     "part_word"
+    ],
+    [
+     7131,
+     "part_word"
+    ],
+    [
+     7150,
+     "part_word"
+    ],
+    [
+     7151,
+     "no_text"
+    ],
+    [
+     7160,
+     "part_word"
+    ],
+    [
+     7161,
+     "part_word"
+    ],
+    [
+     7165,
+     "part_word"
+    ],
+    [
+     7166,
+     "no_text"
+    ],
+    [
+     7166,
+     "part_word"
+    ],
+    [
+     7303,
+     "not_placed"
+    ],
+    [
+     7304,
+     "not_placed"
+    ],
+    [
+     7304,
+     "not_placed"
+    ],
+    [
+     7308,
+     "part_word"
+    ],
+    [
+     7317,
+     "part_word"
+    ],
+    [
+     7325,
+     "part_word"
+    ],
+    [
+     7396,
+     "part_word"
+    ],
+    [
+     7404,
+     "part_word"
+    ],
+    [
+     7418,
+     "part_word"
+    ],
+    [
+     7428,
+     "part_word"
+    ],
+    [
+     7428,
+     "part_word"
+    ],
+    [
+     7431,
+     "part_word"
+    ],
+    [
+     7435,
+     "part_word"
+    ],
+    [
+     7446,
+     "part_word"
+    ],
+    [
+     7458,
+     "part_word"
+    ],
+    [
+     7464,
+     "part_word"
+    ],
+    [
+     7469,
+     "part_word"
+    ],
+    [
+     7472,
+     "no_text"
+    ],
+    [
+     7476,
+     "part_word"
+    ],
+    [
+     7477,
+     "part_word"
+    ],
+    [
+     7478,
+     "part_word"
+    ],
+    [
+     7483,
+     "part_word"
+    ],
+    [
+     7483,
+     "part_word"
+    ],
+    [
+     7488,
+     "part_word"
+    ],
+    [
+     7490,
+     "part_word"
+    ],
+    [
+     7492,
+     "part_word"
+    ],
+    [
+     7493,
+     "part_word"
+    ],
+    [
+     7494,
+     "part_word"
+    ],
+    [
+     7495,
+     "part_word"
+    ],
+    [
+     7495,
+     "no_text"
+    ]
+   ]
+  },
+  "ir_pearson": {
+   "title": "Industrial Relations, Trade Unions & Labour Legislation (Pearson, 3e)",
+   "pages": [
+    8259,
+    9083
+   ],
+   "found": 154,
+   "placed": 154,
+   "unplaced": []
+  },
+  "ir_ghosh": {
+   "title": "Industrial Relations and Labour Laws (Ghosh & Nanda)",
+   "pages": [
+    9084,
+    9916
+   ],
+   "found": 400,
+   "placed": 400,
+   "unplaced": []
+  }
+ }
+}

@@ -1,0 +1,261 @@
+#!/usr/bin/env node
+/**
+ * YouTube Bulk Subscribe Script (Node.js)
+ * -----------------------------------------
+ * Reads channels from a CSV (either the export CSV with channel_id column,
+ * or the handle-based CSV with channel_url column) and subscribes to each
+ * one on the YOUTUBE ACCOUNT YOU AUTHENTICATE WITH (i.e. your new account).
+ *
+ * SETUP:
+ * 1. Reuse the same client_secret.json from the export script
+ *    (same Google Cloud project is fine).
+ * 2. On the OAuth consent screen / Audience page, make sure the account
+ *    you're subscribing FROM (your new account) is added as a test user.
+ * 3. npm install googleapis @google-cloud/local-auth
+ *
+ * USAGE:
+ *    yt-subs-subscribe subscriptions_export.csv
+ *    (log in with your NEW account when the browser opens)
+ *
+ * QUOTA:
+ * - subscriptions.insert costs 50 units per call.
+ * - Default daily quota is 10,000 units -> ~190-200 subscriptions per day.
+ * - Progress is saved to progress.json so you can stop/resume across
+ *   multiple days without re-subscribing or losing your place.
+ */
+
+const fs = require("fs");
+const path = require("path");
+const readline = require("readline");
+const { authenticate } = require("@google-cloud/local-auth");
+const { google } = require("googleapis");
+
+const SCOPES = ["https://www.googleapis.com/auth/youtube"];
+const CLIENT_SECRET_FILE = path.join(__dirname, "client_secret.json");
+const TOKEN_FILE = path.join(__dirname, "token_subscribe.json"); // separate token from export script
+const PROGRESS_FILE = path.join(__dirname, "progress.json");
+
+async function getAuthenticatedClient() {
+	if (fs.existsSync(TOKEN_FILE)) {
+		const savedCreds = JSON.parse(fs.readFileSync(TOKEN_FILE, "utf-8"));
+		return google.auth.fromJSON(savedCreds);
+	}
+
+	const client = await authenticate({
+		scopes: SCOPES,
+		keyfilePath: CLIENT_SECRET_FILE,
+	});
+
+	if (client.credentials) {
+		const keys = JSON.parse(fs.readFileSync(CLIENT_SECRET_FILE, "utf-8"));
+		const key = keys.installed || keys.web;
+		const payload = {
+			type: "authorized_user",
+			client_id: key.client_id,
+			client_secret: key.client_secret,
+			refresh_token: client.credentials.refresh_token,
+		};
+		fs.writeFileSync(TOKEN_FILE, JSON.stringify(payload));
+	}
+
+	return client;
+}
+
+function loadProgress() {
+	if (fs.existsSync(PROGRESS_FILE)) {
+		return JSON.parse(fs.readFileSync(PROGRESS_FILE, "utf-8"));
+	}
+	return { subscribed: [], failed: [] };
+}
+
+function saveProgress(progress) {
+	fs.writeFileSync(PROGRESS_FILE, JSON.stringify(progress, null, 2));
+}
+
+// Very small CSV parser good enough for our own generated files
+// (handles quoted fields with commas, but assumes no embedded newlines in fields)
+function parseCsvLine(line) {
+	const fields = [];
+	let current = "";
+	let inQuotes = false;
+	for (let i = 0; i < line.length; i++) {
+		const char = line[i];
+		if (inQuotes) {
+			if (char === '"' && line[i + 1] === '"') {
+				current += '"';
+				i++;
+			} else if (char === '"') {
+				inQuotes = false;
+			} else {
+				current += char;
+			}
+		} else {
+			if (char === '"') {
+				inQuotes = true;
+			} else if (char === ",") {
+				fields.push(current);
+				current = "";
+			} else {
+				current += char;
+			}
+		}
+	}
+	fields.push(current);
+	return fields;
+}
+
+async function parseEntries(csvPath) {
+	const fileStream = fs.createReadStream(csvPath);
+	const rl = readline.createInterface({
+		input: fileStream,
+		crlfDelay: Infinity,
+	});
+
+	const entries = [];
+	let headerCols = null;
+
+	for await (const line of rl) {
+		if (!line.trim()) continue;
+		const fields = parseCsvLine(line);
+
+		if (!headerCols) {
+			headerCols = fields.map((f) => f.trim().toLowerCase());
+			continue;
+		}
+
+		const row = {};
+		headerCols.forEach((col, idx) => {
+			row[col] = fields[idx];
+		});
+
+		// Prefer a direct channel_id column (from the export script)
+		if (row.channel_id) {
+			entries.push({ kind: "channel_id", value: row.channel_id.trim() });
+			continue;
+		}
+
+		// Otherwise fall back to parsing a URL column
+		const url = row.channel_url || row["channel url"] || fields[0] || "";
+		const handleMatch = url.match(/youtube\.com\/(@[\w\-.]+)/);
+		const channelMatch = url.match(/youtube\.com\/channel\/([\w\-]+)/);
+
+		if (handleMatch) {
+			entries.push({ kind: "handle", value: handleMatch[1] });
+		} else if (channelMatch) {
+			entries.push({ kind: "channel_id", value: channelMatch[1] });
+		}
+	}
+
+	return entries;
+}
+
+async function resolveHandleToId(youtube, handle) {
+	try {
+		const res = await youtube.channels.list({
+			part: ["id"],
+			forHandle: handle,
+		});
+		const items = res.data.items || [];
+		if (items.length) return items[0].id;
+	} catch (err) {
+		console.log(`  Error resolving ${handle}: ${err.message}`);
+	}
+	return null;
+}
+
+async function subscribe(youtube, channelId) {
+	try {
+		await youtube.subscriptions.insert({
+			part: ["snippet"],
+			requestBody: {
+				snippet: {
+					resourceId: {
+						kind: "youtube#channel",
+						channelId: channelId,
+					},
+				},
+			},
+		});
+		return { ok: true };
+	} catch (err) {
+		const msg = err.message || String(err);
+		if (msg.includes("quotaExceeded")) {
+			return { ok: false, quotaExceeded: true };
+		}
+		if (msg.includes("subscriptionDuplicate")) {
+			return { ok: true }; // already subscribed, treat as success
+		}
+		console.log(`  Error subscribing to ${channelId}: ${msg}`);
+		return { ok: false };
+	}
+}
+
+function sleep(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function main() {
+	const csvPath = process.argv[2];
+	if (!csvPath) {
+		console.log("Usage: yt-subs-subscribe <csv_file>");
+		process.exit(1);
+	}
+
+	const entries = await parseEntries(csvPath);
+	console.log(`Loaded ${entries.length} channels from ${csvPath}`);
+
+	const auth = await getAuthenticatedClient();
+	const youtube = google.youtube({ version: "v3", auth });
+
+	const progress = loadProgress();
+	const doneSet = new Set(progress.subscribed);
+
+	const remaining = entries.filter((e) => !doneSet.has(e.value));
+	console.log(
+		`${remaining.length} channels remaining to process (${doneSet.size} already done in previous runs)\n`,
+	);
+
+	for (let i = 0; i < remaining.length; i++) {
+		const { kind, value } = remaining[i];
+		console.log(`[${i + 1}/${remaining.length}] ${value}`);
+
+		let channelId = value;
+		if (kind === "handle") {
+			channelId = await resolveHandleToId(youtube, value);
+			if (!channelId) {
+				progress.failed.push(value);
+				saveProgress(progress);
+				continue;
+			}
+		}
+
+		const result = await subscribe(youtube, channelId);
+
+		if (result.quotaExceeded) {
+			console.log(
+				"\nDaily quota exceeded. Run the script again tomorrow to continue.",
+			);
+			process.exit(0);
+		}
+
+		if (result.ok) {
+			progress.subscribed.push(value);
+		} else {
+			progress.failed.push(value);
+		}
+		saveProgress(progress);
+		await sleep(500); // be gentle on the API
+	}
+
+	console.log("\nDone with this run.");
+	console.log(`Subscribed: ${progress.subscribed.length}`);
+	console.log(`Failed: ${progress.failed.length}`);
+	if (progress.failed.length) {
+		console.log("Failed entries:", progress.failed);
+	}
+}
+
+main().catch((err) => {
+	console.error("Error:", err.message || err);
+	process.exit(1);
+});

@@ -1,0 +1,8073 @@
+{
+  "highlights": 239,
+  "entries": [
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Government of India Act of 1935",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "yellow",
+          "text": "GovernmentofIndiaActof1935"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The features of this Act were as follows:",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "yellow",
+          "text": "ThefeaturesofthisActwereasfollows:"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Residuary",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Residuary"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Viceroy (Governor-General).",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Viceroy(Governor-General)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "abolished dyarchy",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "abolisheddyarchy"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "federal",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "federal"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "reserved",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "reserved"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "transferred",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "transferred"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "introduced bicameralism",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "introducedbicameralism"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "in",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "in"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "six",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "six"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "eleven",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "eleven"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "reserved",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "reserved"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "seats",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "seats"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "depressed",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "depressed"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "14",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "14"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "voting",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "voting"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 20,
+      "page_label": "33",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "establishment of a Reserve Bank of India",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "establishmentofaReserveBankofIndia"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 22,
+      "page_label": "35",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "designated",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "designated"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 22,
+      "page_label": "35",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Governor-General",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Governor-General"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 22,
+      "page_label": "35",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "(nominal) heads of the states.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "(nominal)headsofthestates."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 22,
+      "page_label": "35",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Jawaharlal Nehru as the first Prime Minister of independent India",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "JawaharlalNehruasthefirstPrimeMinisterofindependentIndia"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 22,
+      "page_label": "35",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Constituent Assembly",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ConstituentAssembly"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 22,
+      "page_label": "35",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "became the Parliament",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "becametheParliament"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 22,
+      "page_label": "35",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Jawaharlal Nehru",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "JawaharlalNehru"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 22,
+      "page_label": "35",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Vice-President of the Council;",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Vice-PresidentoftheCouncil;"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 54,
+      "page_label": "67",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "11. A Secular State",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "underline",
+          "color": "yellow",
+          "text": "11.ASecularState"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 54,
+      "page_label": "67",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "‘secular’",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "‘secular’"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 54,
+      "page_label": "67",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "42",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "42"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 54,
+      "page_label": "67",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Uniform Civil Code",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "UniformCivilCode"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 54,
+      "page_label": "67",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Article",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Article"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 54,
+      "page_label": "67",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "44",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "44"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [
+        {
+          "level": 2,
+          "text": "Footnotes"
+        }
+      ],
+      "page": 70,
+      "page_label": "83",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "fn 7: ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Westminster",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "place",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "London",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "7Westminster"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "place"
+        },
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "London"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 139,
+      "page_label": "152",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "apply",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "apply"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 139,
+      "page_label": "152",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "only",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "only"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 139,
+      "page_label": "152",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "criminal",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "criminal"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 139,
+      "page_label": "152",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "quasi-criminal",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "quasi-criminal"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 139,
+      "page_label": "152",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "preventive detention law.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "preventivedetentionlaw."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 139,
+      "page_label": "152",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "44th Amendment Act of 1978",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "44thAmendmentActof1978"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 139,
+      "page_label": "152",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "two months.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "twomonths."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 139,
+      "page_label": "152",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "three months",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "threemonths"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 139,
+      "page_label": "152",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "continues",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "continues"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 189,
+      "page_label": "202",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Bommai",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Bommai"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 189,
+      "page_label": "202",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Federalism",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Federalism"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 189,
+      "page_label": "202",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Coelho",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Coelho"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 189,
+      "page_label": "202",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "IX Schedule Case",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "IXScheduleCase"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 200,
+      "page_label": "213",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Britain, France, Japan, China, Italy, Norway, Sweden",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Britain,France,Japan,China,Italy,Norway,Sweden"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 200,
+      "page_label": "213",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "unitary",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "unitary"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 200,
+      "page_label": "213",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "US, Switzerland, Australia, Canada, Russia, Brazil, Argentina",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "US,Switzerland,Australia,Canada,Russia,Brazil,Argentina"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 200,
+      "page_label": "213",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "federal",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "federal"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 200,
+      "page_label": "213",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "formed",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "formed"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 200,
+      "page_label": "213",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "integration",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "integration"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 200,
+      "page_label": "213",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "disintegration",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "disintegration"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 200,
+      "page_label": "213",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "US",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "US"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 200,
+      "page_label": "213",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "first",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "first"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 200,
+      "page_label": "213",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "oldest",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "oldest"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 200,
+      "page_label": "213",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "federation",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "federation"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 200,
+      "page_label": "213",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "1787",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "1787"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Union",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Union"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "State",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "State"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Concurrent",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Concurrent"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Seventh",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Seventh"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "98",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "98"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "originally",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "originally"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "97",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "97"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "59",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "59"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "66",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "66"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Concurrent",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Concurrent"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "52",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "52"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "47",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "47"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "residuary",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "residuary"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Centre.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Centre."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 202,
+      "page_label": "215",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Independent Judiciary",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "IndependentJudiciary"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 229,
+      "page_label": "242",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Chancellors of Universities",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "ChancellorsofUniversities"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 229,
+      "page_label": "242",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "should be done away with",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "shouldbedoneawaywith"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 229,
+      "page_label": "242",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Article 263",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "Article263"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 229,
+      "page_label": "242",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Inter-State Council",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "Inter-StateCouncil"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 229,
+      "page_label": "242",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Zonal Councils",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ZonalCouncils"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 229,
+      "page_label": "242",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "meet",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "meet"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 229,
+      "page_label": "242",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "least twice a year",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "leasttwiceayear"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 282,
+      "page_label": "295",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The President of India",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ThePresidentofIndia"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 282,
+      "page_label": "295",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "61.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "61."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 321,
+      "page_label": "334",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "cannot",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "cannot"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 321,
+      "page_label": "334",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Parliament",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Parliament"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 321,
+      "page_label": "334",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "state legislature",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "statelegislature"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 321,
+      "page_label": "334",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "same",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "same"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 321,
+      "page_label": "334",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Parliament",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Parliament"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 321,
+      "page_label": "334",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "vacant",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "vacant"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 321,
+      "page_label": "334",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "resign",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "resign"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 321,
+      "page_label": "334",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Chairman of Rajya Sabha or Speaker of Lok Sabha,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ChairmanofRajyaSabhaorSpeakerofLokSabha,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 321,
+      "page_label": "334",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "sixty days without its permission",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "sixtydayswithoutitspermission"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 321,
+      "page_label": "334",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "adjourned for more than four consecutive",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "adjournedformorethanfourconsecutive"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 321,
+      "page_label": "334",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "President or some person appointed",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Presidentorsomepersonappointed"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 332,
+      "page_label": "345",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "does not affect the bills",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "doesnotaffectthebills"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 332,
+      "page_label": "345",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "all pending notices",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "allpendingnotices"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 332,
+      "page_label": "345",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "lapse",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "lapse"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 332,
+      "page_label": "345",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Lok Sabha is dissolved",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "LokSabhaisdissolved"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 332,
+      "page_label": "345",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "all business including bills, motions, resolutions, notices, petitions and so on pending before it or its committees lapse",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "allbusinessincludingbills,motions,resolutions,notices,petitionsandsoonpendingbeforeitoritscommitteeslapse"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 332,
+      "page_label": "345",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "position",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "position"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 332,
+      "page_label": "345",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "not lapse.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "notlapse."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 332,
+      "page_label": "345",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "not lapse.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "notlapse."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 332,
+      "page_label": "345",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "one-tenth",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "one-tenth"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 386,
+      "page_label": "399",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "estimates of any one year.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "red",
+          "text": "estimatesofanyoneyear."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 386,
+      "page_label": "399",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "lacks",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "lacks"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 386,
+      "page_label": "399",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "assistance",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "assistance"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 386,
+      "page_label": "399",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "CAG",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CAG"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 403,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "65",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "65"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 403,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Parliament",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Parliament"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 403,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "special majority",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "specialmajority"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 403,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "two—proved misbehaviour or incapacity",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "two—provedmisbehaviourorincapacity"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 403,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "100",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "100"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 403,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "members",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "members"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 403,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "ok Sabha)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "okSabha)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 403,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "50",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "50"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 403,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "members",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "members"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 403,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Rajya Sabha",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "RajyaSabha"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 403,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "three-member committee",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "three-membercommittee"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 403,
+      "page_label": "416",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "investigate",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "investigate"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 453,
+      "page_label": "466",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "153.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "153."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 453,
+      "page_label": "466",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "161.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "161."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "VI",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "VI"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Most",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Most"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "unicameral",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "unicameral"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "(bicameral).",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "(bicameral)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Andhra Pradesh",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "AndhraPradesh"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Telangana,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Telangana,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Uttar",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Uttar"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Pradesh,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Pradesh,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Bihar,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Bihar,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Maharashtra",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Maharashtra"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Karnataka.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Karnataka."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Parishad)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Parishad)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Sabha)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Sabha)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "assembly",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "assembly"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "resolution",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "resolution"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "special majority,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "specialmajority,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "simple",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "simple"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 467,
+      "page_label": "480",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "majority).",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "majority)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 474,
+      "page_label": "487",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "amongst",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "amongst"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 474,
+      "page_label": "487",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Speaker",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Speaker"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 474,
+      "page_label": "487",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "nominates",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "nominates"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 474,
+      "page_label": "487",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "panel",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "panel"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 474,
+      "page_label": "487",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "chairman.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "chairman."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 474,
+      "page_label": "487",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Chairman of Counci",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ChairmanofCounci"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 474,
+      "page_label": "487",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "The Chairman is elected by the council itself from amongst its members.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "TheChairmaniselectedbythecouncilitselffromamongstitsmembers."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 518,
+      "page_label": "531",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "National",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "National"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 518,
+      "page_label": "531",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Commission",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Commission"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 518,
+      "page_label": "531",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "appeals",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "appeals"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 518,
+      "page_label": "531",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Central Consumer Protection Authority (CCPA)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CentralConsumerProtectionAuthority(CCPA)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 523,
+      "page_label": "536",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "Article 39A",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Article39A"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 523,
+      "page_label": "536",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "free legal aid",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "freelegalaid"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 523,
+      "page_label": "536",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "1987,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "1987,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 523,
+      "page_label": "536",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Legal Services Authorities Act",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "LegalServicesAuthoritiesAct"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 523,
+      "page_label": "536",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "National Legal Services Authority (NALSA)",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "NationalLegalServicesAuthority(NALSA)"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 523,
+      "page_label": "536",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "State Legal Services Authority",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "StateLegalServicesAuthority"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 523,
+      "page_label": "536",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "free",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "free"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 523,
+      "page_label": "536",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "legal",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "legal"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 523,
+      "page_label": "536",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "organise",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "organise"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 523,
+      "page_label": "536",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Lok",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Lok"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 523,
+      "page_label": "536",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Adalats",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Adalats"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 523,
+      "page_label": "536",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "free",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "free"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 566,
+      "page_label": "579",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "unlike the municipality,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "unlikethemunicipality,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 566,
+      "page_label": "579",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "entirely nominated body,",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "entirelynominatedbody,"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 566,
+      "page_label": "579",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "body nor a statutory body.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "bodynorastatutorybody."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 621,
+      "page_label": "634",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "friend",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "friend"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 621,
+      "page_label": "634",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "philosopher",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "philosopher"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 621,
+      "page_label": "634",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Public Accounts Committee",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "PublicAccountsCommittee"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 621,
+      "page_label": "634",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "propriety audit",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "proprietyaudit"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 621,
+      "page_label": "634",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "‘wisdom, faithfulness and economy’",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "‘wisdom,faithfulnessandeconomy’"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 621,
+      "page_label": "634",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "comment",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "comment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 621,
+      "page_label": "634",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "on the wastefulness",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "onthewastefulness"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 621,
+      "page_label": "634",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "extravagance",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "extravagance"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 621,
+      "page_label": "634",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "the propriety audit is discretionary.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "theproprietyauditisdiscretionary."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 655,
+      "page_label": "668",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Chairperson",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Chairperson"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 655,
+      "page_label": "668",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "The Prime Minister of India",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ThePrimeMinisterofIndia"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 655,
+      "page_label": "668",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Governing Counci",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "GoverningCounci"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 655,
+      "page_label": "668",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Vice-Chairperson",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Vice-Chairperson"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 655,
+      "page_label": "668",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "rank",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "rank"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 655,
+      "page_label": "668",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Cabinet Minister.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "CabinetMinister."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 655,
+      "page_label": "668",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Ex-Officio Members",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Ex-OfficioMembers"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 655,
+      "page_label": "668",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Maximum",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Maximum"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 655,
+      "page_label": "668",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "4",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "4"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 657,
+      "page_label": "670",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "two main hubs",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "twomainhubs"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 657,
+      "page_label": "670",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Team India",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "TeamIndia"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 657,
+      "page_label": "670",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Knowledge",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Knowledge"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 657,
+      "page_label": "670",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Innovation",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Innovation"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 699,
+      "page_label": "712",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Supreme Court",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "SupremeCourt"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 699,
+      "page_label": "712",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "enquiry.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "enquiry."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 754,
+      "page_label": "767",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "co-operative societies",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "co-operativesocieties"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 754,
+      "page_label": "767",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "subject",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "subject"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 754,
+      "page_label": "767",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "state",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "state"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 754,
+      "page_label": "767",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "list",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "list"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 780,
+      "page_label": "793",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "first",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "first"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 780,
+      "page_label": "793",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "backward",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "backward"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 780,
+      "page_label": "793",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "classes",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "classes"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 780,
+      "page_label": "793",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "commission",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "commission"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 780,
+      "page_label": "793",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "1953",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "1953"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 780,
+      "page_label": "793",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Kaka Kalelkar.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "KakaKalelkar."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 780,
+      "page_label": "793",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "B.P. Mandal",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "B.P.Mandal"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 780,
+      "page_label": "793",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "V.P.",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "V.P."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 780,
+      "page_label": "793",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Singh Government",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "SinghGovernment"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 780,
+      "page_label": "793",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "reservation",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "reservation"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 814,
+      "page_label": "827",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Prevention of Insults to National Honour Act of 1971",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "PreventionofInsultstoNationalHonourActof1971"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 814,
+      "page_label": "827",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "National Flag",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "NationalFlag"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 814,
+      "page_label": "827",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Constitution of India",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "ConstitutionofIndia"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 814,
+      "page_label": "827",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "National Anthem",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "NationalAnthem"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "President",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "President"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "governor",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "governor"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "consultation",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "consultation"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "hief minister",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "hiefminister"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Article",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Article"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "356",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "356"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "not",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "not"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "deleted",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "deleted"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "state bill",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "statebill"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "reserved",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "reserved"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "time-limit",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "time-limit"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "three months",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "threemonths"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "National Judicial Commission",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "NationalJudicialCommission"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "should",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "should"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "be",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "be"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "established",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "established"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "retirement",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "retirement"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "65",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "65"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 861,
+      "page_label": "874",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "68",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "68"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 937,
+      "page_label": "950",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "legislative, executive and judicial powers",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "legislative,executiveandjudicialpowers"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 937,
+      "page_label": "950",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "separated",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "separated"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1010,
+      "page_label": "1023",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Extended",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Extended"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1010,
+      "page_label": "1023",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "6 months to one year.",
+              "mark": true,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "6monthstooneyear."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1010,
+      "page_label": "1023",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Did away",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Didaway"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1010,
+      "page_label": "1023",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "quorum",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "quorum"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1010,
+      "page_label": "1023",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "5 years).",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "5years)."
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1010,
+      "page_label": "1023",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "Restored",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "Restored"
+        }
+      ]
+    },
+    {
+      "kind": "snippet",
+      "headings": [],
+      "page": 1010,
+      "page_label": "1023",
+      "lines": [
+        {
+          "runs": [
+            {
+              "text": "… ",
+              "mark": false,
+              "italic": false
+            },
+            {
+              "text": "regard to quorum",
+              "mark": true,
+              "italic": false
+            },
+            {
+              "text": " …",
+              "mark": false,
+              "italic": false
+            }
+          ]
+        }
+      ],
+      "subs": [],
+      "marks": [
+        {
+          "kind": "highlight",
+          "color": "yellow",
+          "text": "regardtoquorum"
+        }
+      ]
+    }
+  ]
+}

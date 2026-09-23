@@ -1,0 +1,49 @@
+{
+  "package_name": "highlight-notes-FINAL",
+  "description": "Complete source PDFs, exact original upload, original extracted toolchain, current modular toolchain with setup guide, built-in tests (unit, golden, real-book coverage), 180-page visual-gold suite, five-profile benchmark outputs, reports, and development artifacts.",
+  "source_pdfs": 6,
+  "original_upload_preserved": true,
+  "toolchain_tests": {
+    "unit_tests": 12,
+    "golden_cases": 25,
+    "fixture_pdfs": 7,
+    "real_book_coverage": {
+      "books": 6,
+      "highlights_found": 8539,
+      "highlights_placed": 8535,
+      "baseline": "toolchain/tests/coverage_baseline.json"
+    },
+    "status": "PASS"
+  },
+  "visual_gold": {
+    "cases": 180,
+    "profiles": 5,
+    "comparisons": 900,
+    "full_page_pngs": 180,
+    "focus_pngs": 180,
+    "fresh_raw_profile_pdf_outputs": 30,
+    "overall_score": 91.06,
+    "exact_highlight_score": 97.2,
+    "scores_note": "overall_score and exact_highlight_score were recorded with the original single-file script on a machine whose PyMuPDF version was not recorded; see README.md caveats"
+  },
+  "known_remaining_issues": "visual-gold-tests/ISSUES_FINAL_SCRIPT.md (not yet revised; see README.md caveats)",
+  "notes": [
+    "The exact original files.zip is preserved unchanged under original-upload/.",
+    "The original upload referenced but did not contain tests/. A runnable replacement safety net is included under toolchain/tests/.",
+    "No prior wrapper ZIPs or Python cache files are nested, because their substantive contents are present in the structured package.",
+    "toolchain/stack-highlights is now a launcher for toolchain/stackhl/; benchmark_tested_script_sha256 identifies the original single-file script the packaged benchmark results came from."
+  ],
+  "toolchain": {
+    "launcher": "toolchain/stack-highlights",
+    "modules": "toolchain/stackhl/ (22 files)",
+    "setup_guide": "toolchain/SETUP.md",
+    "tested_with": {
+      "python": "3.12.3",
+      "pymupdf": "1.28.2",
+      "pandoc": "3.1.3",
+      "xelatex": "TeX Live 2023"
+    }
+  },
+  "benchmark_tested_script_sha256": "46425c0ee88568f6013512ce4417b6805e5264fd6eafe2d38fa077936ca8821c",
+  "changes": "docs/CHANGES.md"
+}
