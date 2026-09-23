@@ -13,6 +13,7 @@ PDF is only parsed a single time:
     notes book.pdf --context clause --min-words 6   # extraction flags pass through
     notes book.pdf --recall-args="--right cloze --gap 1.5"
     notes book.pdf --md-args="--compact -p br"
+    notes book.pdf -F Roboto                    # body font for both PDFs
     notes folder/ --to recall                   # every PDF in a folder
 
 Targets:
@@ -23,7 +24,8 @@ Targets:
 
 Flag routing: --preset/--profile/--config and any flag stack-highlights knows
 go to the extraction step; --recall-args and --md-args are forwarded verbatim
-to those tools. Run `stack-highlights --help` for the extraction flags.
+to those tools; -F/--font-name goes to both the notes PDF and the recall
+sheet. Run `stack-highlights --help` for the extraction flags.
 """
 import argparse
 import shlex
@@ -66,6 +68,8 @@ def main():
     ap.add_argument("--config", help="Config file, forwarded to stack-highlights")
     ap.add_argument("--recall-args", default="", help="Extra flags for the recall sheet, quoted, as --recall-args=\"...\"")
     ap.add_argument("--md-args", default="", help="Extra flags for md-to-pdf (notes), quoted, as --md-args=\"...\"")
+    ap.add_argument("-F", "--font-name", metavar="NAME",
+                    help="Body font for the notes PDF and the recall sheet (any installed font, e.g. Roboto)")
     # everything else is treated as a stack-highlights extraction flag
     args, extra = ap.parse_known_args()
 
@@ -87,6 +91,14 @@ def main():
 
     recall_extra = shlex.split(args.recall_args)
     md_extra = shlex.split(args.md_args)
+    if args.font_name and any(t in targets for t in ("notes", "recall")):
+        # check the font before extracting anything
+        r = run([tool("md-to-pdf"), "--check-font", args.font_name], stdout=subprocess.PIPE, text=True)
+        if r.returncode != 0:
+            return 1
+        font = r.stdout.strip() or args.font_name
+        md_extra = ["-F", font] + md_extra
+        recall_extra = ["-F", font] + recall_extra
 
     # resolve the list of PDFs (folder mode processes each)
     if inp.is_dir():

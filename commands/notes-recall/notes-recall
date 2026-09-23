@@ -3,11 +3,14 @@
 # recall sheet.
 #
 # Usage: notes-recall [BOOKS] [NAME] [FONT]
-#        notes-recall [-b|--books DIR] [-n|--name NAME] [-f|--font SIZE] [-o|--out-dir DIR]
+#        notes-recall [-b|--books DIR] [-n|--name NAME] [-f|--font SIZE] [-F|--font-name NAME] [-o|--out-dir DIR]
 #   BOOKS / -b   Folder of highlighted PDFs, subfolders included
 #                (default: ~/Documents/Dump)
 #   NAME  / -n   Base name of the output files (default: Dump)
 #   FONT  / -f   Body font size in points for both PDFs (default: 14)
+#   -F           Body font for both PDFs: any installed font, e.g. -F Roboto
+#                or -F "Noto Serif" (default: Latin Modern Roman). Checked
+#                before anything is extracted.
 #   -o           Where to write the outputs (default: the folder that contains
 #                BOOKS). It must not be inside BOOKS: the next run would read
 #                your notes PDFs as books.
@@ -34,12 +37,13 @@ usage() { awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' 
 books="$HOME/Documents/Dump"
 name="Dump"
 font="14"
+font_name=""
 out_dir=""
 positional=()
 
 while [ $# -gt 0 ]; do
     case "$1" in
-        -b|--books|-n|--name|-f|--font|-o|--out-dir)
+        -b|--books|-n|--name|-f|--font|-F|--font-name|-o|--out-dir)
             if [ $# -lt 2 ]; then
                 echo "Error: $1 needs a value" >&2
                 exit 1
@@ -48,6 +52,7 @@ while [ $# -gt 0 ]; do
                 -b|--books) books="$2" ;;
                 -n|--name) name="$2" ;;
                 -f|--font) font="$2" ;;
+                -F|--font-name) font_name="$2" ;;
                 -o|--out-dir) out_dir="$2" ;;
             esac
             shift 2
@@ -112,12 +117,19 @@ stack_cmd="$(tool stack-highlights)"
 recall_cmd="$(tool recall-sheet)"
 md2pdf_cmd="$(tool md-to-pdf)"
 
+# ---- check the font name before the (slow) extraction -----------------------
+font_args=()
+if [ -n "$font_name" ]; then
+    font_name="$("$md2pdf_cmd" --check-font "$font_name")" || exit 1
+    font_args=(-F "$font_name")
+fi
+
 notes_md="$out_dir/$name.md"
 notes_pdf="$out_dir/$name.pdf"
 recall_pdf="$out_dir/${name}_recall.pdf"
 
 echo "Books:  $books"
-echo "Output: $out_dir/$name{.md,.pdf,_recall.pdf}  (font ${font}pt)"
+echo "Output: $out_dir/$name{.md,.pdf,_recall.pdf}  (font ${font}pt${font_name:+, $font_name})"
 echo
 
 # ---- 1. every PDF in the folder -> one combined Markdown file ---------------
@@ -143,13 +155,13 @@ mv -f "$tmp_md" "$notes_md"
 failed=()
 echo
 # (--md2pdf-cmd is split like a shell command line, so quote the path)
-if ! "$recall_cmd" "$notes_md" -o "$recall_pdf" -s "$font" --right bold --md2pdf-cmd "$(printf '%q' "$md2pdf_cmd")"; then
+if ! "$recall_cmd" "$notes_md" -o "$recall_pdf" -s "$font" ${font_args[@]+"${font_args[@]}"} --right bold --md2pdf-cmd "$(printf '%q' "$md2pdf_cmd")"; then
     failed+=("recall sheet ($recall_pdf)")
 fi
 
 # ---- 3. notes PDF ------------------------------------------------------------
 echo
-if ! "$md2pdf_cmd" -s "$font" "$notes_md" "$notes_pdf"; then
+if ! "$md2pdf_cmd" -s "$font" ${font_args[@]+"${font_args[@]}"} "$notes_md" "$notes_pdf"; then
     failed+=("notes PDF ($notes_pdf)")
 fi
 

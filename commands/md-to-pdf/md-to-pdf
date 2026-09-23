@@ -4,6 +4,11 @@
 # Usage: md-to-pdf [options] <input.md|input.txt> [output.pdf]
 #   -i, --italic              Render the whole document in italics
 #   -s, --font-size SIZE      Set body font size in points (e.g. -s 12)
+#   -F, --font-name NAME      Body font, any font installed on this computer
+#                             (e.g. -F Roboto, -F "Noto Serif"); case and spaces
+#                             don't matter. Default: Latin Modern Roman
+#       --check-font NAME     Only check that NAME is installed: prints the
+#                             name it resolves to, or the error and similar fonts
 #   -l, --preserve-lines      Force every newline to be a hard line break
 #   -L, --no-preserve-lines   Force normal markdown reflow (ignore single newlines)
 #   -c, --compact             Less space between entries (each stays on its own line)
@@ -11,6 +16,15 @@
 #   -p, --page-number POS     Page number at bl br bc tl tr tc, or none
 #       --grey-context [SHADE] Context text in grey (default 0.45; 0=black, 1=white);
 #                             bold marks and headings stay black
+#
+# Fonts (-F): the name is looked up with fc-list, so a font that is not
+# installed stops md-to-pdf before pandoc runs, with a list of similar
+# installed fonts. A font with no bold (or italic) of its own gets one drawn
+# from its regular letters, so **marks** stay visibly bold. Characters the
+# font lacks (arrows, check marks ...) are drawn in DejaVu Sans, like the
+# symbols fallback.tex already routes; Greek and Hindi work as before. A
+# font installed only as a variable font is refused with what to install;
+# if its static files are installed too, those are used.
 #
 # Typography: straight quotes, -- --- and ... become curly quotes, dashes and
 # an ellipsis (without pandoc's quote pairing, which breaks **marks**).
@@ -40,6 +54,8 @@ SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 # ------------------------------------------------------------------
 italic=false
 font_size=""
+font_name=""        # "" = Latin Modern Roman (the default font)
+check_font=""       # --check-font NAME: only check the font, make no PDF
 preserve_lines=""   # "" = use extension-based default; "true"/"false" = forced
 compact=false
 par_skip=""         # explicit inter-paragraph space, e.g. "2pt" or "0.2\baselineskip"
@@ -47,7 +63,8 @@ page_number=""      # "" = pandoc default; bl br tl tr bc tc none
 grey_context=""     # "" = off; otherwise a grey shade 0..1 for context text
 positional=()
 
-USAGE="Usage: md-to-pdf [-i|--italic] [-s|--font-size SIZE] [-l|--preserve-lines] [-L|--no-preserve-lines] [-c|--compact] [--par-skip SIZE] [-p|--page-number bl|br|tl|tr|bc|tc|none] [--grey-context [SHADE]] <input.md|input.txt> [output.pdf]"
+USAGE="Usage: md-to-pdf [-i|--italic] [-s|--font-size SIZE] [-F|--font-name NAME] [-l|--preserve-lines] [-L|--no-preserve-lines] [-c|--compact] [--par-skip SIZE] [-p|--page-number bl|br|tl|tr|bc|tc|none] [--grey-context [SHADE]] <input.md|input.txt> [output.pdf]
+       md-to-pdf --check-font NAME"
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -61,6 +78,14 @@ while [ $# -gt 0 ]; do
                 exit 1
             fi
             font_size="$2"
+            shift 2
+            ;;
+        -F|--font-name|--check-font)
+            if [ $# -lt 2 ] || [ -z "$2" ]; then
+                echo "Error: $1 requires a font name (e.g. $1 Roboto)"
+                exit 1
+            fi
+            if [ "$1" = "--check-font" ]; then check_font="$2"; else font_name="$2"; fi
             shift 2
             ;;
         -l|--preserve-lines)
@@ -110,6 +135,69 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
+
+# ------------------------------------------------------------------
+# Font lookup for -F/--font-name and --check-font. The name is matched
+# against the families fc-list reports, ignoring case and spaces, so
+# "roboto" finds "Roboto" and "notoserif" finds "Noto Serif".
+# ------------------------------------------------------------------
+font_families() {
+    # every installed family name, one per line (fc-list gives a font's
+    # alternative names comma-separated on one line)
+    fc-list --format '%{family}\n' 2>/dev/null | tr ',' '\n' | sort -u
+}
+
+squash() {
+    printf '%s' "$1" | tr -d ' ' | tr '[:upper:]' '[:lower:]'
+}
+
+# font_faces NAME -> "weight|slant" for every installed face of that family
+font_faces() {
+    local pat
+    pat="$(printf '%s' "$1" | sed 's/[-\\:,]/\\&/g')"
+    fc-list --format '%{weight}|%{slant}\n' ":family=$pat" 2>/dev/null
+}
+
+# resolve_font NAME: sets resolved_font to the installed family name, or
+# prints the error (and similar installed fonts) and exits.
+resolve_font() {
+    local want similar
+    case "$1" in
+        *[\\{}%#\$\&^~]*|*[[:cntrl:]]*)
+            echo "Error: '$1' is not a usable font name (it contains a character LaTeX treats specially)" >&2
+            exit 1
+            ;;
+    esac
+    if ! command -v fc-list >/dev/null 2>&1; then
+        # no fontconfig (unusual on Linux): pass the name on and let LaTeX look
+        echo "md-to-pdf: fc-list not found, so '$1' can't be checked before LaTeX runs" >&2
+        resolved_font="$1"
+        return
+    fi
+    resolved_font="$(font_families | grep -Fx -- "$1" | head -n 1 || true)"
+    if [ -z "$resolved_font" ]; then
+        want="$(squash "$1")"
+        resolved_font="$(font_families | awk -v w="$want" '
+            { k = tolower($0); gsub(/ /, "", k) } k == w { print; exit }' || true)"
+    fi
+    if [ -z "$resolved_font" ]; then
+        want="$(squash "$1")"
+        similar="$(font_families | awk -v w="$want" '
+            { k = tolower($0); gsub(/ /, "", k) }
+            (index(k, w) || (length(k) > 3 && index(w, k))) { print length($0) "\t" $0 }' \
+            | sort -n | cut -f 2 | head -n 8 | paste -sd ',' - | sed 's/,/, /g' || true)"
+        echo "Error: font '$1' is not installed on this computer." >&2
+        [ -n "$similar" ] && echo "  Similar installed fonts: $similar" >&2
+        echo "  Every font you can use:  fc-list : family | sort -u" >&2
+        exit 1
+    fi
+}
+
+if [ -n "$check_font" ]; then
+    resolve_font "$check_font"
+    echo "$resolved_font"
+    exit 0
+fi
 
 set -- "${positional[@]}"
 
@@ -191,6 +279,201 @@ fi
 # snippet is generated on the fly when -s/--font-size was passed.
 # ------------------------------------------------------------------
 header_args=(-H "$SCRIPT_DIR/fallback.tex")
+
+# ------------------------------------------------------------------
+# Body font (-F/--font-name). fallback.tex sets Latin Modern Roman; the
+# snippet written here comes right after it and replaces it. Without -F
+# nothing is added, so the PDF is exactly as before.
+#   * A font with no bold of its own gets a drawn bold (AutoFakeBold), so
+#     **marks** still stand out; likewise a drawn slant for no italic.
+#   * Variable fonts (one file holding every weight, as Google Fonts ships
+#     them) break XeLaTeX's PDF writer even when named. If the family also
+#     has static files, those are loaded by file name instead; if it has
+#     only variable files, md-to-pdf stops and says what to install.
+#   * microtype reads a per-font settings file for some fonts (Palatino /
+#     TeX Gyre Pagella, Charis SIL, EB Garamond ...). Those files contain
+#     characters that fallback.tex turns into commands, which stops LaTeX,
+#     so while microtype reads them those characters are plain characters
+#     again. The list comes from fallback.tex, so new entries are covered.
+# ------------------------------------------------------------------
+# pick_static_faces FAMILY: "role|file" for the best static (non-variable)
+# regular, bold, italic and bolditalic files; a role is missing if none fits.
+pick_static_faces() {
+    local pat
+    pat="$(printf '%s' "$1" | sed 's/[-\\:,]/\\&/g')"
+    fc-list --format '%{file}|%{weight}|%{slant}|%{variable}\n' ":family=$pat" 2>/dev/null | awk -F'|' '
+        { file[NR] = $1; w[NR] = $2 + 0; sl[NR] = $3 + 0; if ($4 == "True") var[$1] = 1 }
+        function pick(role, italic, target, minw,    i, d, best, bd) {
+            best = ""; bd = 1e9
+            for (i = 1; i <= NR; i++) {
+                if (file[i] in var) continue
+                if ((sl[i] > 0) != italic || w[i] < minw) continue
+                d = w[i] - target; if (d < 0) d = -d
+                if (d < bd) { bd = d; best = file[i] }
+            }
+            if (best != "") print role "|" best
+        }
+        END {
+            pick("regular", 0, 80, 0); pick("bold", 0, 200, 180)
+            pick("italic", 1, 80, 0);  pick("bolditalic", 1, 200, 180)
+        }'
+}
+
+main_font="Latin Modern Roman"
+font_tmp=""
+if [ -n "$font_name" ]; then
+    resolve_font "$font_name"
+    main_font="$resolved_font"
+    font_opts=""
+    font_file=""
+    regular=""
+    has_bold=true
+    has_italic=true
+    if command -v fc-list >/dev/null 2>&1; then
+        pat="$(printf '%s' "$main_font" | sed 's/[-\\:,]/\\&/g')"
+        variable_flags="$(fc-list --format '%{variable}\n' ":family=$pat" 2>/dev/null || true)"
+        if [[ "$variable_flags" == *True* ]]; then
+            faces="$(pick_static_faces "$main_font")"
+            regular="$(printf '%s\n' "$faces" | sed -n 's/^regular|//p')"
+            if [ -z "$regular" ]; then
+                echo "Error: '$main_font' is installed only as a variable font, which XeLaTeX cannot put in a PDF." >&2
+                echo "  Install its static font files instead (in a Google Fonts download they are in" >&2
+                echo "  the 'static' folder), then run this again." >&2
+                exit 1
+            fi
+            font_dir="$(dirname "$regular")"
+            font_file="$(basename "$regular")"
+            font_opts="Path=$font_dir/"
+            for role in bold italic bolditalic; do
+                f="$(printf '%s\n' "$faces" | sed -n "s/^$role|//p")"
+                if [ -n "$f" ] && [ "$(dirname "$f")" = "$font_dir" ]; then
+                    case "$role" in
+                        bold) font_opts="$font_opts,BoldFont=$(basename "$f")" ;;
+                        italic) font_opts="$font_opts,ItalicFont=$(basename "$f")" ;;
+                        bolditalic) font_opts="$font_opts,BoldItalicFont=$(basename "$f")" ;;
+                    esac
+                else
+                    case "$role" in bold) has_bold=false ;; italic) has_italic=false ;; esac
+                fi
+            done
+            case "$font_dir/$font_opts" in
+                *[\\{}%#\$\&^~]*|*[[:cntrl:]]*)
+                    echo "Error: the static files of '$main_font' are in a folder whose name LaTeX can't use:" >&2
+                    echo "  $font_dir" >&2
+                    echo "  Move them to a folder without \\ { } % # \$ & ^ ~ in its path and run fc-cache." >&2
+                    exit 1
+                    ;;
+            esac
+            echo "  note     '$main_font' is also installed as a variable font; using its static files in $font_dir" >&2
+        else
+            faces="$(font_faces "$main_font")"
+            # fontconfig weights: 80 regular, 180 semibold, 200 bold; slant 0 upright
+            printf '%s\n' "$faces" | awk -F'|' '
+                { gsub(/[][]/, "", $1); n = split($1, a, " ")
+                  for (i = 1; i <= n; i++) if (a[i] + 0 >= 180) found = 1 }
+                END { exit !found }' || has_bold=false
+            printf '%s\n' "$faces" | awk -F'|' '
+                { gsub(/[][]/, "", $2); n = split($2, a, " ")
+                  for (i = 1; i <= n; i++) if (a[i] + 0 > 0) found = 1 }
+                END { exit !found }' || has_italic=false
+        fi
+    fi
+    if [ "$has_bold" = false ]; then
+        font_opts="${font_opts:+$font_opts,}AutoFakeBold"
+        echo "  note     '$main_font' has no bold of its own; bold text is drawn by thickening its regular letters" >&2
+    fi
+    if [ "$has_italic" = false ]; then
+        font_opts="${font_opts:+$font_opts,}AutoFakeSlant"
+        echo "  note     '$main_font' has no italic of its own; italic text is drawn by slanting its regular letters" >&2
+    fi
+    # Characters in the input that this font cannot draw go to the fallback
+    # font (DejaVu Sans), the way fallback.tex already does for Latin Modern's
+    # gaps. Needs python3; without it they are listed as blanks, as before.
+    extra_defs=""
+    if command -v python3 >/dev/null 2>&1 && command -v fc-list >/dev/null 2>&1; then
+        extra_defs="$(python3 - "$input" "$SCRIPT_DIR/fallback.tex" "$main_font" "${regular:-}" <<'PY' || true
+import re, subprocess, sys, unicodedata
+src, fallback_tex, family, reg_file = sys.argv[1:5]
+
+def faces(fam):
+    pat = re.sub(r"([-\\:,])", r"\\\1", fam)
+    out = subprocess.run(["fc-list", "--format",
+                          "%{file}|%{weight}|%{slant}|%{width}|%{variable}|%{charset}\n",
+                          ":family=" + pat], capture_output=True, text=True).stdout
+    rows = []
+    for line in out.splitlines():
+        parts = line.split("|", 5)
+        if len(parts) == 6:
+            rows.append(parts)
+    return rows
+
+def num(s, default):
+    m = re.search(r"\d+", s)
+    return int(m.group()) if m else default
+
+def charset_of(rows, want_file=""):
+    """Code points of the upright regular face (or of want_file)."""
+    best, key = None, None
+    for f, w, sl, wd, var, cs in rows:
+        if var == "True" or num(sl, 0) != 0:
+            continue
+        if want_file and f != want_file:
+            continue
+        k = (abs(num(w, 80) - 80), abs(num(wd, 100) - 100))
+        if key is None or k < key:
+            best, key = cs, k
+    points = set()
+    for r in (best or "").split():
+        a, _, b = r.partition("-")
+        try:
+            points.update(range(int(a, 16), int(b or a, 16) + 1))
+        except ValueError:
+            pass
+    return points
+
+main = charset_of(faces(family), reg_file)
+fallback = charset_of(faces("DejaVu Sans"))
+if not main or not fallback:
+    sys.exit(0)
+done = set(re.findall(r"^\\newunicodechar\{(.)\}", open(fallback_tex, encoding="utf-8").read(), re.M))
+data = open(src, "rb").read()
+try:
+    text = data.decode("utf-8")
+except UnicodeDecodeError:
+    text = data.decode("latin-1")
+
+def routed_elsewhere(cp):
+    # fallback.tex already switches Greek, primes and Hindi as whole runs
+    return 0x370 <= cp <= 0x3FF or 0x2032 <= cp <= 0x2034 or 0x900 <= cp <= 0x97F or cp in (0x200C, 0x200D)
+
+moved, blank = [], []
+for ch in sorted(set(text)):
+    cp = ord(ch)
+    if cp < 0xA0 or ch in done or cp in main or routed_elsewhere(cp):
+        continue
+    if unicodedata.category(ch)[0] in "MCZ":   # marks, controls, separators
+        continue
+    (moved if cp in fallback else blank).append(ch)
+for ch in moved:
+    print("\\newunicodechar{%s}{{\\fallbackfont %s}}" % (ch, ch))
+if moved:
+    shown = " ".join(moved[:20]) + (" ..." if len(moved) > 20 else "")
+    print(f"  note     {len(moved)} character(s) '{family}' does not have are drawn "
+          f"in DejaVu Sans: {shown}", file=sys.stderr)
+PY
+)"
+    fi
+    font_tmp="$(mktemp --suffix=.tex)"
+    {
+        printf '\\setmainfont[%s]{%s}\n' "$font_opts" "${font_file:-$main_font}"
+        [ -n "$extra_defs" ] && printf '%s\n' "$extra_defs"
+        printf '%s\n' '\makeatletter' '\ifdefined\MT@cfg@catcodes' '\g@addto@macro\MT@cfg@catcodes{%'
+        { cat "$SCRIPT_DIR/fallback.tex"; printf '%s\n' "$extra_defs"; } \
+            | sed -n 's/^\\newunicodechar{\([^}]*\)}{.*/  \\catcode`\1=12\\relax/p'
+        printf '%s\n' '}' '\fi' '\makeatother'
+    } > "$font_tmp"
+    header_args+=(-H "$font_tmp")
+fi
 
 if [ "$italic" = true ]; then
     header_args+=(-H "$SCRIPT_DIR/italic.tex")
@@ -370,6 +653,7 @@ LUA
 
 # Clean up any temp header files on exit
 cleanup() {
+    [ -n "$font_tmp" ] && rm -f "$font_tmp"
     [ -n "$fontsize_tmp" ] && rm -f "$fontsize_tmp"
     [ -n "$spacing_tmp" ] && rm -f "$spacing_tmp"
     [ -n "$pagenum_tmp" ] && rm -f "$pagenum_tmp"
@@ -379,6 +663,8 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# mainfont stays Latin Modern Roman here; -F replaces it with its own header
+# (font_tmp above), which also works for fonts loaded by file name.
 pandoc_opts=(-f "$markdown_format" \
     --pdf-engine=xelatex \
     --lua-filter="$SCRIPT_DIR/hr-fullwidth.lua" \

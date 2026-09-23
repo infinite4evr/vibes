@@ -34,6 +34,7 @@ USAGE
     recall-sheet input.pdf --right bold         # keep the bold on the right
     recall-sheet input.pdf --context sentence   # passed through to stack-highlights
     recall-sheet input.pdf -s 11 --gap 1.5 --rule
+    recall-sheet input.pdf -F "Noto Serif"     # body font, passed to md-to-pdf -F
     recall-sheet input.pdf --grey-context --right bold   # context grey, marks bold black
     recall-sheet input.pdf --space-every 5:4 --space-style ruled   # ruled writing space
     recall-sheet input.pdf --color-map "red=italic,green=skip"  # per-colour emphasis
@@ -513,6 +514,8 @@ def process(src, out_pdf, args, stack_cmd, md2pdf_cmd):
         cmd = list(md2pdf_cmd)
         if args.font_size:
             cmd += ["-s", str(args.font_size)]
+        if args.font_name:
+            cmd += ["-F", args.font_name]
         if args.page_number:
             cmd += ["-p", args.page_number]
         if args.italic:
@@ -567,6 +570,8 @@ def main():
     ap.add_argument("--rule", action="store_true", help="Draw a thin vertical line between the columns")
     ap.add_argument("--no-headings", action="store_true", help="Leave out the chapter/section headings")
     ap.add_argument("-s", "--font-size", help="Passed to md-to-pdf -s")
+    ap.add_argument("-F", "--font-name", metavar="NAME",
+                    help="Body font, any installed font (e.g. Roboto); passed to md-to-pdf -F")
     ap.add_argument("-i", "--italic", action="store_true", help="Passed to md-to-pdf -i")
     ap.add_argument("-p", "--page-number", choices=["tl", "tr", "tc", "bl", "br", "bc", "none"],
                     help="Page number position, passed to md-to-pdf -p (top/bottom + left/right/centre, or none)")
@@ -596,6 +601,12 @@ def main():
         sys.exit(f"error: {src} does not exist")
 
     md2pdf_cmd = resolve_cmd("md-to-pdf", args.md2pdf_cmd, "RECALL_MD2PDF_CMD")
+    if args.font_name:
+        # check the font now, not after extracting every book
+        r = subprocess.run(md2pdf_cmd + ["--check-font", args.font_name], stdout=subprocess.PIPE, text=True)
+        if r.returncode != 0:
+            sys.exit(1)
+        args.font_name = r.stdout.strip() or args.font_name
 
     if src.is_dir():
         if args.out:
