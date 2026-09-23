@@ -290,6 +290,9 @@ header_args=(-H "$SCRIPT_DIR/fallback.tex")
 #     them) break XeLaTeX's PDF writer even when named. If the family also
 #     has static files, those are loaded by file name instead; if it has
 #     only variable files, md-to-pdf stops and says what to install.
+#   * Contextual alternates are switched off (RawFeature=-calt): fonts such
+#     as Inter otherwise put brackets and colons next to digits into the
+#     PDF's text layer as private codes, so searching for "(1764)" fails.
 #   * microtype reads a per-font settings file for some fonts (Palatino /
 #     TeX Gyre Pagella, Charis SIL, EB Garamond ...). Those files contain
 #     characters that fallback.tex turns into commands, which stops LaTeX,
@@ -378,6 +381,10 @@ if [ -n "$font_name" ]; then
                 END { exit !found }' || has_italic=false
         fi
     fi
+    # contextual alternates off: some fonts (e.g. Inter) swap in variant
+    # brackets, colons and hyphens next to digits, which the PDF's text layer
+    # stores as private codes, so search and copy-paste would miss "(1764)"
+    font_opts="${font_opts:+$font_opts,}RawFeature=-calt"
     if [ "$has_bold" = false ]; then
         font_opts="${font_opts:+$font_opts,}AutoFakeBold"
         echo "  note     '$main_font' has no bold of its own; bold text is drawn by thickening its regular letters" >&2
