@@ -4,6 +4,7 @@ token_*.json
 progress.json
 missing_channels.json
 node_modules/
-# Python caches and test scratch output
+# Python caches, test scratch output, and LaTeX's missing-font log
 __pycache__/
 stack-highlights/tests/.tmp/
+missfont.log

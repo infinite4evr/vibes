@@ -1,7 +1,8 @@
 # dev/ — development archive of stack-highlights
 
-Kept next to the toolchain for testing and provenance. Not tracked by git and not for
-publishing: the test PDF and the reference images contain copyrighted books.
+Kept next to the toolchain for testing and provenance. Tracked in the private repository
+except the test PDF (`source-pdfs/` is git-ignored); not for publishing: the test PDF and
+the reference images contain copyrighted books.
 
 ## What is here
 

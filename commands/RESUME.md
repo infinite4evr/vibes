@@ -1,7 +1,6 @@
-# Handoff — testing of stack-highlights on Test-Merged-All.pdf: COMPLETE
+# Handoff — where stack-highlights stands
 
-All four parts of the agreed plan are done. The tool itself was not changed (owner's choice);
-only tests and docs.
+## Testing on Test-Merged-All.pdf: complete
 
 1. **Visual review of 500 pages** — every highlight on each page (3,725) judged by eye.
    **88.0% fully correct, 99.2% correct or minor, 28 failures on 10 pages** (0.75%).
@@ -13,24 +12,36 @@ only tests and docs.
 4. **Wrap-up** — report, READMEs, Makefiles, change log (`dev/docs/CHANGES.md`, round 4);
    the 180-page legacy suite and the six old PDFs retired.
 
+## The todo.txt list: built
+
+Every item in `../todo.txt` has an option (see `stack-highlights --help`, `md-to-pdf --help`,
+`recall-sheet --help`): `--plain-titles`, `--context clause|comma|paragraph`,
+`--word-window N --word-side both|left|right`, `-p bl|br|tl|tr|bc|tc|none`, `--compact` /
+`--par-skip`, `--space-every N:M`, `--italic-colors` / `--color-map`; the `\1 \2` fix and the
+missing-character fallback are covered by `make pdf-safety`.
+
 ## To run the tests
 
 ```bash
-cd Final-Upload/stack-highlights
+cd commands/stack-highlights
 python3 -m pip install -r requirements.txt pillow     # PyMuPDF 1.28.2 is pinned
-# put Test-Merged-All.pdf (not in the zip, 266 MB) into dev/source-pdfs/
-make quick      # seconds
-make test       # about 5 minutes: + coverage on the merged PDF + PDF safety
-make visual     # 3-4 minutes
-python3 dev/verify_package.py --pdf   # archive files, checksums, and the PDF's SHA-256
+make quick        # seconds, no books needed
+make pdf-safety   # about a minute; needs pandoc and a TeX Live with lmodern
+python3 dev/verify_package.py         # dev/ archive: required files and checksums
+# with Test-Merged-All.pdf (266 MB, not in git) in dev/source-pdfs/:
+make test         # about 5 minutes: + coverage on the merged PDF + PDF safety
+make visual       # 3-4 minutes
+python3 dev/verify_package.py --pdf   # also the PDF's size and SHA-256
 ```
 
-`make pdf-safety` needs pandoc and a TeX Live with the `lmodern` package.
+CI (`.github/workflows/ci.yml`) runs everything that does not need the PDF on every push:
+`make quick`, `make pdf-safety`, `verify_package.py` and syntax checks of all commands.
 
 ## Where things are
 
 | Path | What |
 |---|---|
+| `stack-highlights/stackhl/` | the code — the only copy to edit (`dev/toolchain/` is a frozen, older snapshot) |
 | `stack-highlights/dev/visual-tests-500/REPORT.md` | the answer, per book, the failures with images, minor-issue kinds, findings |
 | `stack-highlights/dev/visual-tests-500/README.md` | the suite, how to re-record verdicts after a tool change, the verdict rules |
 | `stack-highlights/dev/visual-tests-500/gold_cases.json` | the 500 pages' highlights, verdicts and judged notes |
@@ -45,4 +56,5 @@ python3 dev/verify_package.py --pdf   # archive files, checksums, and the PDF's 
   other books distort the notes (REPORT.md, finding 3).
 - Settings that may reduce some minor issues, not tested: `--dehyphenate`, `--max-words`,
   `--context paragraph`, `--no-tables`.
-- The README mentions an `env.sh` that puts the tools on the PATH; it is not in this package.
+- `dev/` is tracked in the (private) repository, apart from the test PDF. Its reference images
+  contain copyrighted books: keep the repository private.
