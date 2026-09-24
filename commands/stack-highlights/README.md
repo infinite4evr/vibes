@@ -114,6 +114,9 @@ with its report), the place for the test PDF (`source-pdfs/`), the original
 upload, fix reports and development artifacts. Its own `README.md` explains it.
 
 - `dev/toolchain/` and `dev/original-toolchain/` are frozen snapshots of earlier
-  versions; make code changes in `stackhl/` here, not there.
-- It is listed in `commands/.gitignore`: it is large, and the test PDF and the
-  reference images contain copyrighted books. Do not publish it.
+  versions; no test runs them and they have drifted from `stackhl/` (no
+  surrogate-safe `write_output`, older tests). Make code changes in `stackhl/`
+  here, not there.
+- It is tracked in this private repository (about 200 MB, mostly reference
+  images); only the test PDF in `dev/source-pdfs/` is git-ignored. The images
+  contain copyrighted books: do not make the repository public.
