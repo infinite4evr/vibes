@@ -31,4 +31,14 @@ though `install.sh` handles `chmod` and `npm install` for it.
 
 A command's folder can hold more than its entry file: `stack-highlights/` also
 has its `stackhl/` code package, `tests/` (`make -C stack-highlights test`) and
-`dev/`, the full development archive it was rebuilt in (git-ignored).
+`dev/`, the full development archive it was rebuilt in (tracked, except the
+266 MB test PDF; see `stack-highlights/dev/source-pdfs/README.md`).
+
+The three `yt-subs-*` commands each keep their own `package.json` and
+`package-lock.json` with the same dependencies. That is on purpose: every
+command folder stands alone, and `install.sh` installs each one separately.
+
+CI (`.github/workflows/ci.yml`) runs on every push and pull request: syntax
+checks of every command, `make quick` and `make pdf-safety` for
+`stack-highlights`, and `verify_package.py` on the test archive. The tests that
+need the 266 MB PDF (`make coverage`, `make visual`) run only locally.

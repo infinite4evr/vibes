@@ -5,4 +5,6 @@ dump_old/
 node_modules/
 client_secret*.json
 token_*.json
-source-pdfs/
+# the 266 MB test PDF; only its README is tracked
+**/source-pdfs/*
+!**/source-pdfs/README.md
