@@ -293,10 +293,48 @@ async function presenceOff() {
   await L.withTimeout(client.sendPresenceUnavailable(), 20000, 'presence update');
 }
 
+let lastScanNote = '';
+
+/** Logs how far back a scan got; repeats of the same outcome go to debug so the log stays quiet. */
+function reportScan(r) {
+  const n = r.messages.length;
+  const back = r.oldest ? L.fmtUnix(r.oldest) : 'n/a';
+  const win = `${settings.maxMessageAgeHours}h`;
+  let level;
+  let msg;
+  switch (r.stop) {
+    case 'window':
+      level = 'info';
+      msg = `Scanned ${n} message(s) back to ${back}: covers the whole ${win} window in which WhatsApp allows "delete for everyone".`;
+      break;
+    case 'start':
+      level = 'info';
+      msg = `Scanned all ${n} message(s) this computer has for the chat (back to ${back}). ` +
+        'If the chat goes back further, WhatsApp may still be syncing older history from your phone; later checks will pick it up.';
+      break;
+    case 'cap':
+      level = 'warn';
+      msg = `Stopped after ${n} message(s) (back to ${back}) because of the scanDepth limit (${settings.scanDepth}). ` +
+        `Older messages still inside the ${win} window were not checked; raise "scanDepth" in config.json to go further.`;
+      break;
+    default:
+      level = 'warn';
+      msg = `Could not load older messages (${r.error || 'unknown reason'}); only the ${n} most recent message(s), back to ${back}, were checked.`;
+  }
+  const key = `${r.stop}:${r.error || ''}`;
+  if (key !== lastScanNote) { lastScanNote = key; log[level](msg); } else log.debug(msg);
+}
+
 function makeAdapter(chatId) {
   // All message access goes through wa.js (tolerant of WhatsApp's internal renames).
   return {
-    fetchMessages: async () => normalizeMessages(await wa.fetchMessages(chatId, settings.scanDepth)),
+    fetchMessages: async () => {
+      // Scroll back through everything that can still be deleted for everyone (and no further).
+      const sinceSec = Math.floor(Date.now() / 1000) - settings.maxMessageAgeHours * 3600;
+      const r = await wa.fetchMessages(chatId, { sinceSec, maxMsgs: settings.scanDepth });
+      reportScan(r);
+      return normalizeMessages(r.messages);
+    },
     checkRevoke: (id) => wa.checkRevoke(id),
     revoke: (id) => wa.revoke(id), // checks permission and deletes in one atomic step
     getType: (id, m) => wa.verifyRevoked(chatId, id, m && m.timestamp),

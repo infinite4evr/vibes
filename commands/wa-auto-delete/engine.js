@@ -31,7 +31,7 @@ const DEFAULT_SETTINGS = Object.freeze({
   maxDeletesPerHour: 60, // hard safety caps (persisted across restarts)
   maxDeletesPerDay: 400,
   maxMessageAgeHours: 58, // WhatsApp's own window is ~60h; stay safely inside it
-  scanDepth: 150, // how many recent messages to inspect
+  scanDepth: 3000, // upper limit when scrolling back; normally stops sooner, once maxMessageAgeHours is covered
   periodicSweepMin: [8, 16], // self-healing re-check interval (catches anything an event missed)
   presenceRefreshMin: [20, 40], // re-assert "offline" so you don't look online 24/7
   recycleAfterHours: [20, 28], // planned browser refresh (only under pm2)
@@ -44,7 +44,7 @@ const DEFAULT_SETTINGS = Object.freeze({
 const BOUNDS = {
   settleDelaySec: [0, 300], settleMaxSec: [0, 600], deleteDelaySec: [1, 120],
   maxDeletesPerHour: [1, 500], maxDeletesPerDay: [1, 5000], maxMessageAgeHours: [1, 720],
-  scanDepth: [20, 1000], periodicSweepMin: [1, 240], presenceRefreshMin: [5, 240],
+  scanDepth: [20, 20000], periodicSweepMin: [1, 240], presenceRefreshMin: [5, 240],
   recycleAfterHours: [1, 168], maxAttemptsPerMessage: [1, 10], circuitBreakerFailures: [1, 50],
   circuitBreakerPauseMin: [1, 1440], incompatiblePauseMin: [5, 1440],
 };
@@ -437,8 +437,8 @@ class Engine {
  * The whole message must be the command, so ordinary notes never trigger anything.
  *   pause | stop | off              pause until you resume
  *   pause 30m | pause 2h | pause 1d  pause for a while, then resume automatically
- *   resume | start | on             resume; messages from while it was paused are kept
- *   resume all                      resume and also clean up what piled up while paused
+ *   resume | start | on             resume; messages you sent while paused are deleted too
+ *   ("resume all" is accepted as the same command)
  *   status                          the script reacts ✅ running, ⏸️ paused, ⚠️ problem
  * An optional leading ! / # . is allowed (e.g. "!pause").
  */
@@ -453,8 +453,7 @@ function parseCommand(body) {
     }
     return ms > 0 || !p[1] ? { cmd: 'pause', ms } : null;
   }
-  if (/^(?:resume|start|on|unpause)$/.test(t)) return { cmd: 'resume', all: false };
-  if (/^(?:resume|start|on|unpause) all$/.test(t)) return { cmd: 'resume', all: true };
+  if (/^(?:resume|start|on|unpause)(?: all)?$/.test(t)) return { cmd: 'resume' };
   if (/^(?:status|\?)$/.test(t)) return { cmd: 'status' };
   return null;
 }

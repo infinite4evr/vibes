@@ -25,7 +25,7 @@
     "maxDeletesPerHour": 60,
     "maxDeletesPerDay": 400,
     "maxMessageAgeHours": 58,
-    "scanDepth": 150,
+    "scanDepth": 3000,
     "periodicSweepMin": [
       8,
       16

@@ -71,15 +71,102 @@ test('finds a chat by phone number', () => {
 
 test('reads messages with the NEW "$1" id format, oldest first, skipping notices', async () => {
   makeWorld();
-  const out = await P.pageFetchMessages(CHAT, 150);
+  const { messages: out } = await P.pageFetchMessages(CHAT, 150);
   assert.deepEqual(out.map((m) => m.id), ['m1', 'm2', 't1', 'm3']);
   assert.deepEqual(out.map((m) => m.fromMe), [true, true, false, true]);
 });
 
 test('still works with the OLD "_serialized" format', async () => {
   makeWorld({ oldIdFormat: true });
-  const out = await P.pageFetchMessages(CHAT, 150);
+  const { messages: out } = await P.pageFetchMessages(CHAT, 150);
   assert.deepEqual(out.map((m) => m.id), ['m1', 'm2', 't1', 'm3']);
+});
+
+// ---------------------------------------------------------------- scrolling back through history
+
+/**
+ * A long chat: one message every `stepSec`, newest at NOW. Only the newest `inMemory`
+ * are loaded at first; each loadEarlierMsgs() call loads the next `page` older ones.
+ */
+function makeLongChat({ total, stepSec, inMemory = 40, page = 50, loader } = {}) {
+  const w = makeWorld();
+  const all = [];
+  for (let i = 0; i < total; i++) {
+    const fromMe = i % 3 !== 0;
+    all.push({ id: { $1: `h${i}`, fromMe, remote: { _serialized: CHAT } }, t: NOW - (total - 1 - i) * stepSec, type: 'chat', ack: 3 });
+  }
+  let loadedFrom = total - inMemory;
+  const chat = w.modules.WAWebCollections.Chat.get(CHAT);
+  chat.msgs = { getModelsArray: () => all.slice(loadedFrom) };
+  let calls = 0;
+  const defaultLoader = async () => {
+    calls++;
+    if (loadedFrom === 0) return [];
+    const next = Math.max(0, loadedFrom - page);
+    const chunk = all.slice(next, loadedFrom);
+    loadedFrom = next;
+    return chunk;
+  };
+  w.modules.WAWebChatLoadMessages = { loadEarlierMsgs: loader ? loader(defaultLoader) : defaultLoader };
+  return { all, calls: () => calls };
+}
+
+test('scrolls back until the whole delete window is covered, then stops', async () => {
+  // 1000 messages, one every 10 min (~7 days). The 58h window needs ~348 of them.
+  const { calls } = makeLongChat({ total: 1000, stepSec: 600 });
+  const sinceSec = NOW - 58 * 3600;
+  const r = await P.pageFetchMessages(CHAT, { sinceSec, maxMsgs: 3000 });
+  assert.equal(r.stop, 'window');
+  assert.ok(r.oldest <= sinceSec, 'reached past the start of the window');
+  assert.ok(r.messages.some((m) => m.timestamp <= sinceSec), 'includes the oldest deletable messages');
+  assert.ok(r.messages.length < 450, `did not load far past the window (${r.messages.length})`);
+  assert.equal(calls(), 7, '40 in memory + 7 pages of 50 = 390 messages ≈ 65h');
+});
+
+test('does not load anything more when memory already covers the window', async () => {
+  const { calls } = makeLongChat({ total: 100, stepSec: 3 * 3600, inMemory: 30 });
+  const r = await P.pageFetchMessages(CHAT, { sinceSec: NOW - 58 * 3600, maxMsgs: 3000 });
+  assert.equal(r.stop, 'window');
+  assert.equal(calls(), 0);
+});
+
+test('reports reaching the start of the chat', async () => {
+  makeLongChat({ total: 120, stepSec: 60 }); // whole chat is 2h old
+  const r = await P.pageFetchMessages(CHAT, { sinceSec: NOW - 58 * 3600, maxMsgs: 3000 });
+  assert.equal(r.stop, 'start');
+  assert.equal(r.messages.length, 120, 'every message was read');
+});
+
+test('stops at the scanDepth cap and says so', async () => {
+  makeLongChat({ total: 5000, stepSec: 10 }); // very busy chat: 58h ≈ 20,000 messages
+  const r = await P.pageFetchMessages(CHAT, { sinceSec: NOW - 58 * 3600, maxMsgs: 500 });
+  assert.equal(r.stop, 'cap');
+  assert.equal(r.messages.length, 500);
+  assert.equal(r.messages[r.messages.length - 1].id, 'h4999', 'kept the newest ones');
+});
+
+test('a failing loader is reported instead of silently checking only recent messages', async () => {
+  makeLongChat({ total: 1000, stepSec: 600, loader: () => async () => { throw new Error('boom'); } });
+  const r = await P.pageFetchMessages(CHAT, { sinceSec: NOW - 58 * 3600, maxMsgs: 3000 });
+  assert.equal(r.stop, 'loader');
+  assert.match(r.error, /boom/);
+  assert.equal(r.messages.length, 40, 'still returns what was already loaded');
+});
+
+test('falls back to the other loadEarlierMsgs call form', async () => {
+  // This loader only accepts the chat itself, not { chat }.
+  makeLongChat({
+    total: 1000,
+    stepSec: 600,
+    loader: (real) => async (arg) => {
+      if (!arg || arg.chat) throw new TypeError('bad argument');
+      return real();
+    },
+  });
+  delete global.window.__wadLoadForm;
+  const r = await P.pageFetchMessages(CHAT, { sinceSec: NOW - 58 * 3600, maxMsgs: 3000 });
+  assert.equal(r.stop, 'window');
+  assert.equal(global.window.__wadLoadForm, 1, 'remembers the form that worked');
 });
 
 test('revoke: checks permission and deletes for everyone in one step', async () => {

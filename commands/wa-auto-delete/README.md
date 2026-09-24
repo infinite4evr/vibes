@@ -18,7 +18,7 @@ Open a terminal in this folder and run:
 
 ```bash
 npm install
-npm test            # optional: 24 checks of the deletion logic against a simulated chat
+npm test            # optional: 52 checks of the deletion logic against a simulated chat
 npm run setup       # scan the QR code, then pick your chat from the list
 ```
 
@@ -69,8 +69,7 @@ The script keeps running on your computer, and your phone works as the remote. O
 |---|---|---|
 | `pause` | Stops deleting until you resume | ⏸️ |
 | `pause 30m` / `pause 2h` / `pause 1d` | Pauses, then resumes by itself | ⏸️, changing to ▶️ when time's up |
-| `resume` | Starts again. Messages you sent while paused are **kept**. | ▶️ |
-| `resume all` | Starts again and also cleans up what piled up while paused | ▶️ |
+| `resume` | Starts again. Messages you sent while paused are **not kept**: they're deleted with the rest after their reply. | ▶️ |
 | `status` | Tells you whether it's running | ✅ running, ⏸️ paused, ⚠️ problem |
 
 Ordinary notes to yourself are ignored. "stop by the shop" does nothing; only a message that is exactly a command counts. Only you can control it: messages from anyone else, or in any other chat, never count as commands. The pause survives restarts and reboots.
@@ -89,7 +88,7 @@ Invalid values are ignored with a warning and the safe default is used. Run `npm
 | `deleteDelaySec` | `[2.5, 7]` | Random gap between individual deletions |
 | `maxDeletesPerHour` / `maxDeletesPerDay` | `60` / `400` | Hard safety caps. They persist across restarts. |
 | `maxMessageAgeHours` | `58` | Never tries messages older than this (WhatsApp's own limit is about 60h) |
-| `scanDepth` | `150` | How many recent messages are checked |
+| `scanDepth` | `3000` | Upper limit on how many messages it scrolls back through. It normally stops sooner, as soon as it has covered `maxMessageAgeHours`, because anything older can't be deleted for everyone anyway. The log says how far back each check reached. |
 | `periodicSweepMin` | `[8, 16]` | Self-healing re-check interval |
 | `maxAttemptsPerMessage` | `3` | Retries before giving up on one message |
 | `circuitBreakerFailures` / `circuitBreakerPauseMin` | `4` / `30` | Pause after repeated failures |

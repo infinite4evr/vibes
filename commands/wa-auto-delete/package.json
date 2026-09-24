@@ -1,6 +1,6 @@
 {
   "name": "wa-autodelete",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "description": "Deletes your earlier WhatsApp messages in one chosen chat (for everyone) as soon as the other person replies.",
   "main": "index.js",
@@ -20,6 +20,7 @@
     "update-lib": "npm install whatsapp-web.js@latest --save-exact"
   },
   "dependencies": {
+    "pm2": "^7.0.4",
     "qrcode": "1.5.4",
     "qrcode-terminal": "0.12.0",
     "whatsapp-web.js": "1.34.7"

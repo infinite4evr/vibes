@@ -318,9 +318,9 @@ test('phone commands are recognised only when the whole note is the command', ()
   assert.deepEqual(parseCommand('pause 2h'), { cmd: 'pause', ms: 2 * 3600e3 });
   assert.deepEqual(parseCommand('pause for 30 min'), { cmd: 'pause', ms: 30 * 60e3 });
   assert.deepEqual(parseCommand('off 1d'), { cmd: 'pause', ms: 86400e3 });
-  assert.deepEqual(parseCommand('resume'), { cmd: 'resume', all: false });
-  assert.deepEqual(parseCommand('#ON'), { cmd: 'resume', all: false });
-  assert.deepEqual(parseCommand('resume all'), { cmd: 'resume', all: true });
+  assert.deepEqual(parseCommand('resume'), { cmd: 'resume' });
+  assert.deepEqual(parseCommand('#ON'), { cmd: 'resume' });
+  assert.deepEqual(parseCommand('resume all'), { cmd: 'resume' }, 'old command still works, same meaning');
   assert.deepEqual(parseCommand('status'), { cmd: 'status' });
   assert.equal(parseCommand('stop by the shop later'), null);
   assert.equal(parseCommand('remember to pause the movie'), null);
@@ -345,10 +345,15 @@ test('paused by you: nothing is deleted, and pausing mid-cleanup stops it', asyn
   assert.equal(chat.calls.revoke.length, 1, 'stopped after the in-flight deletion');
 });
 
-test('resume "fresh": messages sent before the resume time are kept', async () => {
-  const chat = fakeChat([msg('old', true, 300), msg('them', false, 100)]);
+test('messages sent while paused are NOT kept: deleted once resumed', async () => {
+  // me1 before the pause, me2 + me3 sent while paused, then their reply.
+  const chat = fakeChat([msg('me1', true, 400), msg('me2', true, 300), msg('me3', true, 200), msg('them', false, 100)]);
+  let paused = true;
   const { engine } = makeEngine(chat);
-  engine.activeSinceSec = () => NOW_S - 200; // resumed 200s ago
+  engine.isPaused = () => paused;
   await engine.sweep('test');
-  assert.equal(chat.calls.revoke.length, 0);
+  assert.equal(chat.calls.revoke.length, 0, 'nothing while paused');
+  paused = false; // resume
+  await engine.sweep('resumed');
+  assert.deepEqual([...chat.calls.revoke].sort(), ['me1', 'me2', 'me3']);
 });

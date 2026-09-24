@@ -140,30 +140,90 @@ function pageChatInfo(chatId) {
   return { id: W.keyStr(chat.id), name: chat.name || chat.formattedTitle || '' };
 }
 
-async function pageFetchMessages(chatId, limit) {
+/**
+ * Reads the chat, scrolling back (loading earlier messages, like scrolling up in the app)
+ * until it has covered everything since `sinceSec` – the whole "delete for everyone"
+ * window – or reaches the start of the history on this computer, or hits `maxMsgs`.
+ *
+ * Returns { messages (oldest first), oldest, pages, stop, error }, where stop is:
+ *   'window'  everything since sinceSec was covered
+ *   'start'   no earlier messages exist on this computer
+ *   'cap'     hit maxMsgs / maxPages before reaching sinceSec
+ *   'loader'  loading earlier messages failed (see error)
+ */
+async function pageFetchMessages(chatId, opts) {
   const W = window.__wad;
   if (!W || W.v !== 3) throw new Error('WAD_NO_HELPERS');
+  const o = typeof opts === 'number' ? { maxMsgs: opts } : (opts || {});
+  const sinceSec = Number(o.sinceSec) || 0;
+  const maxMsgs = Number(o.maxMsgs) || 3000;
+  const maxPages = Number(o.maxPages) || 300;
   const chat = W.findChat(chatId);
   if (!chat) throw new Error('the configured chat was not found');
+
   const keep = (m) => m && !m.isNotification && W.keyStr(m.id);
   const byId = new Map();
-  const add = (arr) => { for (const m of arr || []) if (keep(m)) byId.set(W.keyStr(m.id), m); };
-  add(chat.msgs && chat.msgs.getModelsArray ? chat.msgs.getModelsArray() : []);
+  let oldest = Infinity; // how far back we have got (any message, notices included)
+  const add = (arr) => {
+    for (const m of Array.isArray(arr) ? arr : []) {
+      if (!m) continue;
+      const t = Number(m.t) || 0;
+      if (t && t < oldest) oldest = t;
+      if (keep(m)) byId.set(W.keyStr(m.id), m);
+    }
+  };
+  const inMemory = () => (chat.msgs && chat.msgs.getModelsArray ? chat.msgs.getModelsArray() : []);
+  add(inMemory());
 
   const loader = W.req('WAWebChatLoadMessages');
-  for (let i = 0; i < 10 && byId.size < limit && loader && typeof loader.loadEarlierMsgs === 'function'; i++) {
-    let more = null;
-    try { more = await loader.loadEarlierMsgs({ chat }); } catch (e) { break; }
-    if (!more || !more.length) break;
+  // WhatsApp has changed this call's signature before; try both known forms and remember which works.
+  const loadEarlier = async () => {
+    const forms = [() => loader.loadEarlierMsgs({ chat }), () => loader.loadEarlierMsgs(chat)];
+    const first = window.__wadLoadForm || 0;
+    let err = null;
+    for (let k = 0; k < forms.length; k++) {
+      const idx = (first + k) % forms.length;
+      try {
+        const r = await forms[idx]();
+        window.__wadLoadForm = idx;
+        return r;
+      } catch (e) { err = e; }
+    }
+    throw err;
+  };
+
+  let pages = 0;
+  let stop = null;
+  let error = null;
+  while (!stop) {
+    if (oldest <= sinceSec) { stop = 'window'; break; }
+    if (byId.size >= maxMsgs || pages >= maxPages) { stop = 'cap'; break; }
+    if (!loader || typeof loader.loadEarlierMsgs !== 'function') {
+      stop = 'loader';
+      error = 'WhatsApp Web\'s "load earlier messages" function was not found';
+      break;
+    }
+    let more;
+    try {
+      more = await loadEarlier();
+    } catch (e) {
+      stop = 'loader';
+      error = String((e && e.message) || e || 'unknown error').slice(0, 120);
+      break;
+    }
+    pages++;
     const before = byId.size;
-    add(more);
-    add(chat.msgs && chat.msgs.getModelsArray ? chat.msgs.getModelsArray() : []);
-    if (byId.size === before) break;
+    const reachedBefore = oldest;
+    add(Array.isArray(more) ? more : (more && more.messages));
+    add(inMemory()); // loaded messages normally land in the chat's own list too
+    if (byId.size === before && oldest === reachedBefore) stop = 'start';
   }
-  return [...byId.values()]
+
+  const messages = [...byId.values()]
     .sort((a, b) => (Number(a.t) || 0) - (Number(b.t) || 0))
-    .slice(-limit)
+    .slice(-maxMsgs)
     .map(W.slim);
+  return { messages, oldest: Number.isFinite(oldest) ? oldest : 0, pages, stop, error };
 }
 
 async function pageCheckRevoke(msgId) {
@@ -354,7 +414,8 @@ class WaDirect {
   listChats() { return this.run(pageListChats, 120000, 'list chats'); }
   findChatByPhone(digits) { return this.run(pageFindChatByPhone, 30000, 'find chat', digits); }
   chatInfo(chatId) { return this.run(pageChatInfo, 30000, 'find chat', chatId); }
-  fetchMessages(chatId, limit) { return this.run(pageFetchMessages, 120000, 'read messages', chatId, limit); }
+  /** opts: { sinceSec, maxMsgs }. Resolves to { messages, oldest, pages, stop, error }. */
+  fetchMessages(chatId, opts) { return this.run(pageFetchMessages, 300000, 'read messages', chatId, opts); }
   checkRevoke(msgId) { return this.run(pageCheckRevoke, 30000, 'revoke check', msgId); }
   getType(msgId) { return this.run(pageGetType, 20000, 'verify delete', msgId); }
   ownNotes(limit = 20) { return this.run(pageOwnNotes, 20000, 'read notes to self', limit); }
