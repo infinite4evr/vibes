@@ -13,7 +13,7 @@ global command are all the same kebab-case name. Anything a command needs
 | `stack-highlights` | Extract PDF highlights into structured notes (rebuilt modular version with tests, config presets and a "Check in book" list of unplaced highlights; see `stack-highlights/README.md`) |
 | `recall-sheet` | PDF highlights -> two-column active-recall PDF (calls `stack-highlights` + `md-to-pdf`; also takes a `.md` or `.json` made by `stack-highlights`). Options include `--grey-context`, `--space-every N:M --space-style ruled\|dotted`, `--color-map`, `--italic-colors`, `-p` |
 | `notes` | One command for a highlighted PDF: notes PDF + recall sheet by default, `--to notes,recall,md,json` for any mix; runs `stack-highlights`, `md-to-pdf` and `recall-sheet` |
-| `notes-recall` | Folder of highlighted PDFs -> one combined notes `.md`, notes PDF and recall sheet, with fixed settings (all mark kinds, comma context, italic non-yellow marks, plain titles): `notes-recall [BOOKS] [NAME] [FONT]`, defaults `~/Documents/Dump`, `Dump`, `14`. Outputs go next to the books folder |
+| `notes-recall` | Folder of highlighted PDFs -> one combined notes `.md`, notes PDF and recall sheet, with fixed settings (all mark kinds, comma context, italic non-yellow marks, plain titles): `notes-recall [BOOKS] [NAME] [FONT]`, defaults `~/Documents/Dump`, `Dump`, `14`. BOOKS can also be one PDF; `-P 1-200` reads only those PDF pages. Outputs go next to the books folder |
 | `yt-subs-export` | Export YouTube subscriptions to CSV |
 | `yt-subs-sync` | Diff two accounts' subscriptions and subscribe the missing ones |
 | `yt-subs-subscribe` | Bulk-subscribe from a CSV (quota-aware, resumable) |

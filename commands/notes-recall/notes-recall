@@ -1,23 +1,32 @@
 #!/usr/bin/env bash
-# notes-recall: turn a folder of highlighted PDFs into one notes PDF and one
-# recall sheet.
+# notes-recall: turn a folder of highlighted PDFs (or one PDF) into one notes
+# PDF and one recall sheet.
 #
 # Usage: notes-recall [BOOKS] [NAME] [FONT]
-#        notes-recall [-b|--books DIR] [-n|--name NAME] [-f|--font SIZE] [-F|--font-name NAME]
-#                     [-p|--page-number [POS]] [-o|--out-dir DIR]
-#   BOOKS / -b   Folder of highlighted PDFs, subfolders included
-#                (default: ~/Documents/Dump)
+#        notes-recall [-b|--books DIR|PDF] [-n|--name NAME] [-f|--font SIZE] [-F|--font-name NAME]
+#                     [-P|--pages RANGE] [-p|--page-number [POS]] [-o|--out-dir DIR]
+#   BOOKS / -b   Folder of highlighted PDFs, subfolders included, or a single
+#                PDF (default: ~/Documents/Dump)
 #   NAME  / -n   Base name of the output files (default: Dump)
 #   FONT  / -f   Body font size in points for both PDFs (default: 14)
 #   -F           Body font for both PDFs: any installed font, e.g. -F Roboto
 #                or -F "Noto Serif" (default: Latin Modern Roman). Checked
 #                before anything is extracted.
+#   -P           Only read these pages, e.g. -P 1-200 or -P 1-20,35
+#                (default: every page). These are the PDF's own page numbers
+#                (1 = the first page of the file), not the numbers printed in
+#                the book. With a folder, the range applies to every PDF in it.
 #   -p           Print page numbers (default: no page numbers). Alone, -p puts
 #                them at the bottom right; or name a position: br bl bc
 #                (bottom right/left/centre), tr tl tc (top), e.g. -p bc
 #   -o           Where to write the outputs (default: the folder that contains
-#                BOOKS). It must not be inside BOOKS: the next run would read
+#                BOOKS; for a single PDF, the folder that contains the PDF's
+#                folder, the same place a run on that folder writes to). It
+#                must not be inside the books folder: the next run would read
 #                your notes PDFs as books.
+#
+# Example, pages 1-200 of one book:
+#   notes-recall Dump/Book.pdf irll 18 -F "Charis SIL" -p -P 1-200
 #
 # Writes, in the output folder:
 #   NAME.md          the combined notes (Markdown)
@@ -42,13 +51,14 @@ books="$HOME/Documents/Dump"
 name="Dump"
 font="14"
 font_name=""
+pages=""             # e.g. 1-200 or 1-20,35; empty = every page
 page_number="none"   # -p alone -> br; or bl bc tl tr tc
 out_dir=""
 positional=()
 
 while [ $# -gt 0 ]; do
     case "$1" in
-        -b|--books|-n|--name|-f|--font|-F|--font-name|-o|--out-dir)
+        -b|--books|-n|--name|-f|--font|-F|--font-name|-P|--pages|-o|--out-dir)
             if [ $# -lt 2 ]; then
                 echo "Error: $1 needs a value" >&2
                 exit 1
@@ -58,6 +68,7 @@ while [ $# -gt 0 ]; do
                 -n|--name) name="$2" ;;
                 -f|--font) font="$2" ;;
                 -F|--font-name) font_name="$2" ;;
+                -P|--pages) pages="$2" ;;
                 -o|--out-dir) out_dir="$2" ;;
             esac
             shift 2
@@ -94,11 +105,31 @@ fi
 [ ${#positional[@]} -ge 3 ] && font="${positional[2]}"
 
 # ---- check the inputs -------------------------------------------------------
-if [ ! -d "$books" ]; then
-    echo "Error: books folder not found: $books" >&2
+# BOOKS may be one PDF: then $books becomes the folder it sits in (for the
+# output-folder rules below) and only that PDF is read.
+single_pdf=""
+if [ -f "$books" ]; then
+    case "$books" in
+        *.[pP][dD][fF]) ;;
+        *)
+            echo "Error: BOOKS must be a folder or a .pdf file (got '$books')" >&2
+            exit 1
+            ;;
+    esac
+    single_pdf="$(cd "$(dirname "$books")" && pwd)/$(basename "$books")"
+    books="$(dirname "$single_pdf")"
+elif [ -d "$books" ]; then
+    books="$(cd "$books" && pwd)"
+else
+    echo "Error: books folder or PDF not found: $books" >&2
     exit 1
 fi
-books="$(cd "$books" && pwd)"
+
+# same forms stack-highlights --pages reads: 5, 1-200, 150-, -20, joined by commas
+if [ -n "$pages" ] && ! [[ "$pages" =~ ^([0-9]+(-[0-9]*)?|-[0-9]+)(,([0-9]+(-[0-9]*)?|-[0-9]+))*$ ]]; then
+    echo "Error: pages must look like 1-200 or 1-20,35 (got '$pages')" >&2
+    exit 1
+fi
 
 if [ -z "$name" ] || [[ "$name" == */* ]]; then
     echo "Error: name must be a plain file name without '/' (got '$name')" >&2
@@ -141,7 +172,8 @@ notes_md="$out_dir/$name.md"
 notes_pdf="$out_dir/$name.pdf"
 recall_pdf="$out_dir/${name}_recall.pdf"
 
-echo "Books:  $books"
+echo "Books:  ${single_pdf:-$books}"
+if [ -n "$pages" ]; then echo "Pages:  $pages (PDF page numbers)"; fi
 if [ "$page_number" = "none" ]; then pages_msg="no page numbers"; else pages_msg="page numbers $page_number"; fi
 echo "Output: $out_dir/$name{.md,.pdf,_recall.pdf}  (font ${font}pt${font_name:+, $font_name}, $pages_msg)"
 echo
@@ -149,17 +181,40 @@ echo
 # ---- 1. every PDF in the folder -> one combined Markdown file ---------------
 # Written to a temporary file first, so a failed run leaves the previous
 # notes untouched.
+tmp_md=""
+src_dir=""
+cleanup() {
+    if [ -n "$tmp_md" ]; then rm -f "$tmp_md"; fi
+    # src_dir only ever holds symlinks; removing them leaves the book alone
+    if [ -n "$src_dir" ]; then rm -f "$src_dir"/*; rmdir "$src_dir" 2>/dev/null || true; fi
+}
+trap cleanup EXIT
 tmp_md="$(mktemp "$out_dir/.${name}.XXXXXX.md")"
-trap 'rm -f "$tmp_md"' EXIT
-"$stack_cmd" "$books" \
+
+# A single PDF is read through a temporary folder holding a link to it (and
+# to the notes.toml beside it, if any), so the notes come out exactly as in
+# folder mode: one section headed by the book's file name.
+src="$books"
+if [ -n "$single_pdf" ]; then
+    src_dir="$(mktemp -d)"
+    ln -s "$single_pdf" "$src_dir/$(basename "$single_pdf")"
+    if [ -f "$books/notes.toml" ]; then ln -s "$books/notes.toml" "$src_dir/notes.toml"; fi
+    src="$src_dir"
+fi
+
+page_args=()
+if [ -n "$pages" ]; then page_args=(--pages "$pages"); fi
+
+"$stack_cmd" "$src" \
     --kinds highlight,underline,squiggly,strikeout \
     --context comma \
     --italic-colors \
     --plain-titles \
+    ${page_args[@]+"${page_args[@]}"} \
     --combine-out "$tmp_md"
 
 if [ ! -s "$tmp_md" ]; then
-    echo "Error: no highlights found in $books, so nothing was written." >&2
+    echo "Error: no highlights found in ${single_pdf:-$books}${pages:+ (pages $pages)}, so nothing was written." >&2
     exit 1
 fi
 mv -f "$tmp_md" "$notes_md"
