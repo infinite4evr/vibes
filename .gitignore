@@ -8,3 +8,4 @@ token_*.json
 # the 266 MB test PDF; only its README is tracked
 **/source-pdfs/*
 !**/source-pdfs/README.md
+data

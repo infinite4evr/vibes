@@ -1,0 +1,46 @@
+{
+  "_readme": "Edit \"settings\" to tune behaviour (see README.md). Re-run \"npm run setup\" to change the chat.",
+  "targetChat": {
+    "id": "49495253483691@lid",
+    "name": "Shurbhi CBI",
+    "isGroup": false,
+    "aliases": [
+      "917417613463@c.us",
+      "917417613463@c.us"
+    ],
+    "activeSince": 0,
+    "configuredAt": "2026-09-24T13:26:57.447Z"
+  },
+  "settings": {
+    "dryRun": false,
+    "settleDelaySec": [
+      4,
+      12
+    ],
+    "settleMaxSec": 45,
+    "deleteDelaySec": [
+      2.5,
+      7
+    ],
+    "maxDeletesPerHour": 60,
+    "maxDeletesPerDay": 400,
+    "maxMessageAgeHours": 58,
+    "scanDepth": 150,
+    "periodicSweepMin": [
+      8,
+      16
+    ],
+    "presenceRefreshMin": [
+      20,
+      40
+    ],
+    "recycleAfterHours": [
+      20,
+      28
+    ],
+    "maxAttemptsPerMessage": 3,
+    "circuitBreakerFailures": 4,
+    "circuitBreakerPauseMin": 30,
+    "incompatiblePauseMin": 60
+  }
+}
