@@ -1,0 +1,56 @@
+# ~/.zshrc - made by linux-setup. Your previous one is saved in ~/.local/state/linux-setup/backup-*
+# Put personal additions in ~/.zshrc.local (this file may be replaced by future runs).
+
+# ---------- History ----------
+HISTFILE=~/.zsh_history
+HISTSIZE=50000
+SAVEHIST=50000
+setopt SHARE_HISTORY HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE HIST_REDUCE_BLANKS EXTENDED_HISTORY
+setopt AUTO_CD INTERACTIVE_COMMENTS NO_BEEP
+
+# ---------- Completion (Tab) ----------
+autoload -Uz compinit && compinit -d ~/.cache/zcompdump
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' group-name ''
+
+# ---------- Keys ----------
+bindkey -e
+bindkey '^[[1;5C' forward-word          # Ctrl+Right
+bindkey '^[[1;5D' backward-word         # Ctrl+Left
+bindkey '^[[H' beginning-of-line        # Home
+bindkey '^[[F' end-of-line              # End
+bindkey '^[[3~' delete-char             # Delete
+bindkey '^H' backward-kill-word         # Ctrl+Backspace
+autoload -U up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey '^[[A' up-line-or-beginning-search    # Up: history matching what you typed
+bindkey '^[[B' down-line-or-beginning-search
+bindkey '^[OA' up-line-or-beginning-search
+bindkey '^[OB' down-line-or-beginning-search
+
+# ---------- Shared settings + things from your old bash setup ----------
+[ -f ~/.config/shell/common.sh ] && source ~/.config/shell/common.sh
+[ -f ~/.config/zsh/from-bashrc.zsh ] && source ~/.config/zsh/from-bashrc.zsh   # nvm, pyenv, PATHs...
+[ -f ~/.bash_aliases ] && source ~/.bash_aliases
+[ -f ~/.zshrc.local ] && source ~/.zshrc.local
+
+# ---------- Tools ----------
+if command -v fzf >/dev/null && fzf --zsh >/dev/null 2>&1; then
+  source <(fzf --zsh)                                        # Ctrl+R history, Ctrl+T files
+elif [ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]; then
+  source /usr/share/doc/fzf/examples/key-bindings.zsh
+fi
+command -v starship >/dev/null && eval "$(starship init zsh)"
+command -v zoxide >/dev/null && eval "$(zoxide init zsh --cmd cd)"   # 'cd proj' jumps to ~/…/my-project
+
+# ---------- Plugins (syntax highlighting must stay last) ----------
+if [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+  ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+  source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#6c7086'
+fi
+[ -f ~/.config/zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh ] && source ~/.config/zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh
+[ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] && source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

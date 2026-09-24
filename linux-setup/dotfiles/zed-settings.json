@@ -1,0 +1,11 @@
+{
+  "theme": { "mode": "dark", "dark": "Catppuccin Mocha", "light": "Catppuccin Latte" },
+  "icon_theme": "Catppuccin Mocha",
+  "auto_install_extensions": { "catppuccin": true, "catppuccin-icons": true },
+  "buffer_font_family": "JetBrainsMono Nerd Font",
+  "buffer_font_size": 15,
+  "ui_font_size": 16,
+  "terminal": { "font_family": "JetBrainsMono Nerd Font", "font_size": 14 },
+  "autosave": "on_focus_change",
+  "indent_guides": { "enabled": true, "coloring": "indent_aware" }
+}
