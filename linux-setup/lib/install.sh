@@ -405,6 +405,150 @@ setup_gnome() {
   fi
 }
 
+# ---------------------------------------------------------------- pc control center
+install_pc() {
+  title "pc - your computer's control center"
+  local src="$SCRIPT_DIR/pc"
+  if [[ ! -f $src/pyproject.toml ]]; then warn "The pc folder is missing next to setup.sh - skipped"; return 1; fi
+  export PATH="$HOME/.local/bin:$PATH"
+  if have uv; then
+    info "Installing pc (with its own private Python, so it never clashes with your projects)…"
+    uv tool install --force --reinstall --python-preference managed "$src" >/dev/null 2>&1 \
+      || uv tool install --force "$src" >/dev/null || return 1
+  else
+    info "Installing pc into ~/.local/share/pc…"
+    python3 -m venv "$HOME/.local/share/pc/venv" \
+      && "$HOME/.local/share/pc/venv/bin/pip" install -q --upgrade "$src" \
+      && ln -sf "$HOME/.local/share/pc/venv/bin/pc" "$HOME/.local/bin/pc" || return 1
+  fi
+  local pcbin; pcbin=$(command -v pc || echo "$HOME/.local/bin/pc")
+  [[ -x $pcbin ]] || return 1
+
+  # Remember where these scripts live (pc's Maintenance tab can re-run them)
+  mkdir -p "$HOME/.config/pc"
+  python3 - "$SCRIPT_DIR" <<'PY'
+import json, os, sys
+p = os.path.expanduser("~/.config/pc/config.json")
+try:
+    d = json.load(open(p))
+except Exception:
+    d = {}
+d["setup_dir"] = sys.argv[1]
+json.dump(d, open(p, "w"), indent=2)
+PY
+
+  ok "pc installed - type ${C_MAUVE}pc${C_RESET} in a terminal for the terminal version"
+
+  install_pc_app || warn "The desktop app didn't install - try again with: bash setup.sh app"
+
+  if ask "Turn on the weekly automatic checkup? (safe cleanup + a notification if something needs you)" y; then
+    if "$pcbin" maintain --on >/dev/null 2>&1; then ok "Weekly checkup on (Sundays 11:00)"
+    else warn "Couldn't turn on the weekly checkup - try it later in pc → Maintenance"; fi
+  fi
+}
+
+# ---------------------------------------------------------------- desktop app
+APP_ID="io.github.infinite4evr.PcCommandCenter"
+APP_DIR="$HOME/.local/share/pc-command-center"
+APP_DEPS=(python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 python3-psutil)
+
+install_pc_app() {
+  title "PC Command Center - the desktop app"
+  local src="$SCRIPT_DIR/pc/src/pcctl"
+  if [[ ! -d $src/gui ]]; then warn "The pc/src/pcctl folder is missing next to setup.sh - skipped"; return 1; fi
+
+  # GTK 4 + libadwaita for Ubuntu's own Python (native look and the normal password popup)
+  local missing=() p
+  for p in "${APP_DEPS[@]}"; do dpkg -s "$p" >/dev/null 2>&1 || missing+=("$p"); done
+  if (( ${#missing[@]} )); then
+    info "Installing ${missing[*]}…"
+    need_sudo
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${missing[@]}" || return 1
+  fi
+  if ! /usr/bin/python3 -c 'import gi; gi.require_version("Gtk", "4.0"); gi.require_version("Adw", "1"); from gi.repository import Gtk, Adw; import psutil' 2>/dev/null; then
+    warn "GTK 4 / libadwaita for Python isn't working on this system"; return 1
+  fi
+
+  # A private copy of the code, so the app keeps working even if you move the linux-setup folder
+  info "Copying the app to ${APP_DIR/#$HOME/\~}…"
+  rm -rf "$APP_DIR.new" && mkdir -p "$APP_DIR.new" || return 1
+  cp -r "$src" "$APP_DIR.new/pcctl" || return 1
+  find "$APP_DIR.new" -name __pycache__ -prune -exec rm -rf {} + 2>/dev/null
+  rm -rf "$APP_DIR" && mv "$APP_DIR.new" "$APP_DIR" || return 1
+
+  mkdir -p "$HOME/.local/bin"
+  cat > "$HOME/.local/bin/pc-gui" <<EOF
+#!/bin/sh
+# PC Command Center (desktop app). Runs on Ubuntu's Python so GTK 4 / libadwaita come from apt.
+export PYTHONPATH="$APP_DIR\${PYTHONPATH:+:\$PYTHONPATH}"
+exec /usr/bin/python3 -m pcctl.gui "\$@"
+EOF
+  chmod +x "$HOME/.local/bin/pc-gui"
+
+  # Icon + app-grid entry (right-click the icon for shortcuts straight to a page)
+  mkdir -p "$HOME/.local/share/icons/hicolor/scalable/apps" "$HOME/.local/share/applications"
+  cp "$src/gui/data/$APP_ID.svg" "$HOME/.local/share/icons/hicolor/scalable/apps/$APP_ID.svg"
+  keep_original "$HOME/.local/share/applications/$APP_ID.desktop"
+  cat > "$HOME/.local/share/applications/$APP_ID.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=PC Command Center
+GenericName=System Manager
+Comment=Monitor, clean, update, secure and tune your computer
+Exec=$HOME/.local/bin/pc-gui
+Icon=$APP_ID
+Terminal=false
+StartupNotify=true
+Categories=System;Monitor;Utility;GTK;
+Keywords=cleanup;junk;updates;processes;task manager;storage;disk;network;services;startup;security;privacy;tweaks;
+Actions=cleanup;updates;processes;storage;
+
+[Desktop Action cleanup]
+Name=Clean up
+Exec=$HOME/.local/bin/pc-gui --page cleanup
+
+[Desktop Action updates]
+Name=Updates
+Exec=$HOME/.local/bin/pc-gui --page updates
+
+[Desktop Action processes]
+Name=Processes
+Exec=$HOME/.local/bin/pc-gui --page processes
+
+[Desktop Action storage]
+Name=Storage
+Exec=$HOME/.local/bin/pc-gui --page storage
+EOF
+  # The old "PC Control Center" terminal launcher is replaced by this app (pc still works in any terminal)
+  if [[ -f $HOME/.local/share/applications/pc-control-center.desktop ]]; then
+    keep_original "$HOME/.local/share/applications/pc-control-center.desktop"
+    rm -f "$HOME/.local/share/applications/pc-control-center.desktop"
+  fi
+  update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
+  gtk-update-icon-cache -q -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+
+  # Remember where these scripts live (the app's Maintenance page can re-run them)
+  mkdir -p "$HOME/.config/pc"
+  python3 - "$SCRIPT_DIR" <<'PY'
+import json, os, sys
+p = os.path.expanduser("~/.config/pc/config.json")
+try:
+    d = json.load(open(p))
+except Exception:
+    d = {}
+d["setup_dir"] = sys.argv[1]
+json.dump(d, open(p, "w"), indent=2)
+PY
+
+  # Pin it to the dock (keeps whatever is already there)
+  local favs; favs=$(gsettings get org.gnome.shell favorite-apps 2>/dev/null || echo "")
+  if [[ $favs == "["*"]" && $favs != *"$APP_ID"* ]]; then
+    if [[ $favs == "@as []" || $favs == "[]" ]]; then gset_keep org.gnome.shell favorite-apps "['$APP_ID.desktop']"
+    else gset_keep org.gnome.shell favorite-apps "${favs%]}, '$APP_ID.desktop']"; fi
+  fi
+  ok "PC Command Center installed - it's in your dock and app grid (or run ${C_MAUVE}pc-gui${C_RESET})"
+}
+
 setup_main() {
   title "Set up: dev tools + Catppuccin Mocha look"
   cat <<EOF
@@ -415,6 +559,7 @@ setup_main() {
     • set up VS Code and Zed with the theme, font and good defaults
     • give GNOME dark mode, purple accent, Papirus icons, new cursor, wallpaper,
       a floating dock, and 3 extensions (blur, clipboard history, keep-awake)
+    • install ${C_MAUVE}pc${C_RESET}, a control center for your whole computer that runs in the terminal
   Your old files are backed up and "Undo" can put your old look back.
 EOF
   ask "Start?" y || return 0
@@ -429,6 +574,7 @@ EOF
   step "VS Code" setup_vscode
   step "Zed" setup_zed
   step "Desktop look" setup_gnome
+  step "pc control center" install_pc
   [[ -n $TMPD ]] && rm -rf "$TMPD"
 
   title "All done"
@@ -437,7 +583,8 @@ EOF
   ${C_BOLD}Last step: log out and log back in${C_RESET} (top-right menu → Power → Log Out).
   That switches on zsh, the extensions and the cursor everywhere.
 
-  Then press ${C_MAUVE}Ctrl+Alt+T${C_RESET} for your new terminal and type ${C_MAUVE}tips${C_RESET} to see what's new.
+  Then press ${C_MAUVE}Ctrl+Alt+T${C_RESET} for your new terminal and type ${C_MAUVE}pc${C_RESET} to open your control center
+  (or ${C_MAUVE}tips${C_RESET} for a cheat sheet of the new commands).
   Backups of anything changed: $BACKUP_DIR
 EOF
 }

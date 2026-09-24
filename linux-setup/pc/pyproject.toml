@@ -1,0 +1,25 @@
+[project]
+name = "pc-control"
+version = "2.0.0"
+description = "PC Command Center - monitor, clean, update, secure and tune Ubuntu (desktop app + terminal app)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "textual>=1.0",
+  "psutil>=5.9",
+]
+
+[project.scripts]
+pc = "pcctl.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pcctl"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/pcctl/ui/app.tcss" = "pcctl/ui/app.tcss"
+"src/pcctl/gui/style.css" = "pcctl/gui/style.css"
+"src/pcctl/gui/data/io.github.infinite4evr.PcCommandCenter.svg" = "pcctl/gui/data/io.github.infinite4evr.PcCommandCenter.svg"

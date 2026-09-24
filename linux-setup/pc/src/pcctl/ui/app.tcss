@@ -1,0 +1,116 @@
+Screen {
+    background: $background;
+}
+
+#topbar {
+    height: 1;
+    background: $panel;
+    padding: 0 1;
+}
+#brand {
+    background: $primary;
+    color: $background;
+    text-style: bold;
+    margin-right: 2;
+}
+#ident {
+    width: 1fr;
+    color: $foreground;
+}
+#clock {
+    width: auto;
+}
+
+#main {
+    height: 1fr;
+}
+
+#sidebar {
+    width: 27;
+    background: $panel;
+    border-right: tall $surface;
+    padding: 1 0 0 0;
+}
+#nav {
+    height: auto;
+    max-height: 100%;
+    background: $panel;
+    border: none;
+    padding: 0 0;
+}
+#nav > .option-list--option-highlighted {
+    background: $primary 25%;
+    color: $foreground;
+    text-style: bold;
+}
+#nav:focus > .option-list--option-highlighted {
+    background: $primary 40%;
+}
+#side-stats {
+    height: auto;
+    padding: 1 1;
+    color: $text-muted;
+}
+
+#panels {
+    width: 1fr;
+    height: 1fr;
+    padding: 1 1 0 1;
+}
+
+DataTable {
+    background: $background;
+}
+DataTable > .datatable--header {
+    background: $panel;
+    color: $primary;
+    text-style: bold;
+}
+DataTable > .datatable--cursor {
+    background: $primary 30%;
+}
+DataTable:focus > .datatable--cursor {
+    background: $primary 45%;
+}
+
+Card {
+    border: round $surface-lighten-2;
+    border-title-color: $primary;
+    border-title-style: bold;
+}
+
+Button {
+    min-width: 8;
+}
+
+Footer {
+    background: $panel;
+}
+
+TabbedContent ContentTabs {
+    margin-bottom: 1;
+}
+
+LoadingIndicator {
+    color: $primary;
+}
+
+.toolbar {
+    height: auto;
+}
+.toolbar Switch {
+    height: 1;
+    border: none;
+    padding: 0 1;
+    margin: 0 1 0 0;
+    background: $panel;
+}
+.toolbar Label {
+    margin: 0 1;
+}
+Card Horizontal {
+    height: auto;
+}
+Card Static {
+    height: auto;
+}

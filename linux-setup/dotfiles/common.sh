@@ -43,6 +43,10 @@ alias myip='curl -s https://ifconfig.me; echo'
 alias cleanup='bash "$LINUX_SETUP_DIR/setup.sh" clean'
 alias scan='bash "$LINUX_SETUP_DIR/setup.sh" scan'
 alias tips='bash "$LINUX_SETUP_DIR/setup.sh" tips'
+if command -v pc >/dev/null 2>&1; then
+  alias cleanup='pc clean'
+  alias scan='pc doctor'
+fi
 
 # make a folder and jump into it
 mkcd() { mkdir -p -- "$1" && cd -- "$1" || return; }

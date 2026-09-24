@@ -1,0 +1,153 @@
+/* PC Command Center - Catppuccin Mocha on libadwaita.
+   Both the old (@define-color) and new (CSS variable) names are set so it works on libadwaita 1.5 → 1.9+. */
+
+@define-color accent_color #cba6f7;
+@define-color accent_bg_color #cba6f7;
+@define-color accent_fg_color #11111b;
+@define-color destructive_color #f38ba8;
+@define-color destructive_bg_color #f38ba8;
+@define-color destructive_fg_color #11111b;
+@define-color success_color #a6e3a1;
+@define-color success_bg_color #a6e3a1;
+@define-color success_fg_color #11111b;
+@define-color warning_color #fab387;
+@define-color warning_bg_color #fab387;
+@define-color warning_fg_color #11111b;
+@define-color error_color #f38ba8;
+@define-color error_bg_color #f38ba8;
+@define-color error_fg_color #11111b;
+@define-color window_bg_color #1e1e2e;
+@define-color window_fg_color #cdd6f4;
+@define-color view_bg_color #181825;
+@define-color view_fg_color #cdd6f4;
+@define-color headerbar_bg_color #181825;
+@define-color headerbar_fg_color #cdd6f4;
+@define-color headerbar_backdrop_color #181825;
+@define-color sidebar_bg_color #181825;
+@define-color sidebar_fg_color #cdd6f4;
+@define-color sidebar_backdrop_color #181825;
+@define-color card_bg_color #262637;
+@define-color card_fg_color #cdd6f4;
+@define-color dialog_bg_color #1e1e2e;
+@define-color dialog_fg_color #cdd6f4;
+@define-color popover_bg_color #313244;
+@define-color popover_fg_color #cdd6f4;
+@define-color thumbnail_bg_color #313244;
+
+:root {
+  --accent-color: #cba6f7;
+  --accent-bg-color: #cba6f7;
+  --accent-fg-color: #11111b;
+  --destructive-color: #f38ba8;
+  --destructive-bg-color: #f38ba8;
+  --destructive-fg-color: #11111b;
+  --success-color: #a6e3a1;
+  --success-bg-color: #a6e3a1;
+  --success-fg-color: #11111b;
+  --warning-color: #fab387;
+  --warning-bg-color: #fab387;
+  --warning-fg-color: #11111b;
+  --error-color: #f38ba8;
+  --error-bg-color: #f38ba8;
+  --error-fg-color: #11111b;
+  --window-bg-color: #1e1e2e;
+  --window-fg-color: #cdd6f4;
+  --view-bg-color: #181825;
+  --view-fg-color: #cdd6f4;
+  --headerbar-bg-color: #181825;
+  --headerbar-fg-color: #cdd6f4;
+  --headerbar-backdrop-color: #181825;
+  --sidebar-bg-color: #181825;
+  --sidebar-fg-color: #cdd6f4;
+  --sidebar-backdrop-color: #181825;
+  --secondary-sidebar-bg-color: #181825;
+  --card-bg-color: #262637;
+  --card-fg-color: #cdd6f4;
+  --dialog-bg-color: #1e1e2e;
+  --dialog-fg-color: #cdd6f4;
+  --popover-bg-color: #313244;
+  --popover-fg-color: #cdd6f4;
+  --thumbnail-bg-color: #313244;
+}
+
+window, .background { background-color: #1e1e2e; color: #cdd6f4; }
+
+/* ---------- sidebar ---------- */
+.nav-list { background: transparent; }
+.nav-list row { border-radius: 10px; margin: 1px 8px; padding: 7px 10px; }
+.nav-list row:selected { background-color: alpha(#cba6f7, 0.18); color: #f5e0dc; }
+.nav-list row:selected image { color: #cba6f7; }
+.nav-list image { color: #9399b2; }
+.nav-section { font-size: 0.78em; font-weight: 800; letter-spacing: 1px; color: #6c7086; margin: 14px 18px 4px 18px; }
+.nav-badge { background-color: #fab387; color: #11111b; border-radius: 99px; padding: 0 7px; font-size: 0.8em; font-weight: 800; min-width: 12px; }
+.nav-badge.bad { background-color: #f38ba8; }
+.brand-title { font-weight: 800; font-size: 1.05em; }
+.brand-sub { color: #7f849c; font-size: 0.85em; }
+
+/* ---------- page ---------- */
+.page-title { font-size: 1.6em; font-weight: 800; }
+.page-sub { color: #a6adc8; }
+.section-title { font-weight: 800; font-size: 1.02em; margin-top: 6px; }
+.dim { color: #7f849c; }
+.subtle { color: #a6adc8; }
+.mono { font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", "Ubuntu Mono", monospace; }
+.big-num { font-size: 2.2em; font-weight: 800; }
+.huge-num { font-size: 3.2em; font-weight: 900; }
+.mid-num { font-size: 1.35em; font-weight: 800; }
+.tile { padding: 14px 16px; }
+.tile-title { font-size: 0.82em; font-weight: 800; letter-spacing: 0.6px; color: #9399b2; }
+.card-pad { padding: 16px 18px; }
+.accent-text { color: #cba6f7; }
+.ok-text { color: #a6e3a1; }
+.warn-text { color: #fab387; }
+.bad-text { color: #f38ba8; }
+.blue-text { color: #89b4fa; }
+.teal-text { color: #94e2d5; }
+.peach-text { color: #fab387; }
+.pink-text { color: #f5c2e7; }
+
+.lvl-ok { color: #a6e3a1; }
+.lvl-info { color: #89b4fa; }
+.lvl-warn { color: #fab387; }
+.lvl-bad { color: #f38ba8; }
+
+.pill { border-radius: 99px; padding: 1px 9px; font-size: 0.82em; font-weight: 700; }
+.pill-neutral { background-color: alpha(#cdd6f4, 0.1); color: #bac2de; }
+.pill-ok { background-color: alpha(#a6e3a1, 0.16); color: #a6e3a1; }
+.pill-warn { background-color: alpha(#fab387, 0.16); color: #fab387; }
+.pill-bad { background-color: alpha(#f38ba8, 0.16); color: #f38ba8; }
+.pill-info { background-color: alpha(#89b4fa, 0.16); color: #89b4fa; }
+.pill-accent { background-color: alpha(#cba6f7, 0.18); color: #cba6f7; }
+
+.hero { padding: 22px 24px; background-image: linear-gradient(120deg, alpha(#cba6f7, 0.14), alpha(#89b4fa, 0.06) 60%, alpha(#1e1e2e, 0)); }
+
+/* ---------- tables ---------- */
+columnview { background-color: transparent; }
+columnview > header > button { font-weight: 800; color: #a6adc8; padding: 6px 8px; }
+columnview row:selected { background-color: alpha(#cba6f7, 0.22); }
+columnview > listview > row { padding: 2px 0; }
+.table-frame { border-radius: 12px; background-color: #181825; }
+
+/* ---------- misc ---------- */
+.log-view, .log-view text { background-color: #11111b; color: #bac2de; font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", "Ubuntu Mono", monospace; font-size: 0.9em; }
+.cmd-box { background-color: #11111b; border-radius: 10px; padding: 10px 12px; }
+.toolbar-row { margin: 0 0 10px 0; }
+.step-row { padding: 3px 0; }
+levelbar block.filled { background-color: #cba6f7; }
+.card.selected-card { box-shadow: inset 0 0 0 2px alpha(#cba6f7, 0.6); }
+.linked-modes button:checked { background-color: alpha(#cba6f7, 0.3); color: #f5e0dc; }
+.clean-total { font-size: 2.4em; font-weight: 900; color: #a6e3a1; }
+
+/* ---------- tabs + misc ---------- */
+.page-tabs button { padding: 4px 12px; border-radius: 10px; }
+.page-tabs button:checked { background-color: alpha(#cba6f7, 0.2); color: #f5e0dc; }
+.banner-warn { background-color: alpha(#fab387, 0.12); border-radius: 12px; padding: 10px 14px; }
+.banner-bad { background-color: alpha(#f38ba8, 0.12); border-radius: 12px; padding: 10px 14px; }
+.banner-ok { background-color: alpha(#a6e3a1, 0.10); border-radius: 12px; padding: 10px 14px; }
+.stat-num { font-size: 1.7em; font-weight: 800; }
+.stat-label { color: #9399b2; font-size: 0.85em; font-weight: 700; }
+.mode-card { padding: 14px 16px; border-radius: 14px; }
+.mode-card:checked { background-color: alpha(#cba6f7, 0.22); box-shadow: inset 0 0 0 2px alpha(#cba6f7, 0.7); }
+.score-good { color: #a6e3a1; }
+.score-mid { color: #fab387; }
+.score-bad { color: #f38ba8; }

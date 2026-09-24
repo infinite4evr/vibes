@@ -1,0 +1,227 @@
+"""Running commands: quick captures for reading state, and Steps for actions the user confirms."""
+
+from __future__ import annotations
+
+import asyncio
+import os
+import shlex
+import shutil
+import subprocess
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Awaitable, Callable, Iterable, Sequence
+
+HOME = Path.home()
+C_ENV = {**os.environ, "LANG": "C", "LC_ALL": "C"}
+
+# Places tools live that aren't always on PATH (uv, pipx, zed, nvm's node, cargo).
+EXTRA_PATHS = [HOME / ".local/bin", HOME / ".cargo/bin", Path("/snap/bin")]
+
+
+def which(cmd: str) -> str | None:
+    found = shutil.which(cmd)
+    if found:
+        return found
+    for d in EXTRA_PATHS:
+        p = d / cmd
+        if p.is_file() and os.access(p, os.X_OK):
+            return str(p)
+    return None
+
+
+def has(cmd: str) -> bool:
+    return which(cmd) is not None
+
+
+@dataclass
+class Result:
+    code: int
+    out: str = ""
+    err: str = ""
+
+    @property
+    def ok(self) -> bool:
+        return self.code == 0
+
+
+def sh(
+    cmd: Sequence[str] | str,
+    *,
+    timeout: float = 20,
+    root: bool = False,
+    env: dict | None = None,
+    cwd: str | Path | None = None,
+    input: str | None = None,
+) -> Result:
+    """Run a command and capture its output (C locale so parsers are stable). Never raises."""
+    if isinstance(cmd, str):
+        args = ["bash", "-c", cmd]
+    else:
+        args = list(cmd)
+    if root and os.geteuid() != 0:
+        args = ["sudo", "-n", *args]
+    try:
+        p = subprocess.run(
+            args,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            env=env or C_ENV,
+            cwd=cwd,
+            input=input,
+            errors="replace",
+        )
+        return Result(p.returncode, p.stdout, p.stderr)
+    except FileNotFoundError:
+        return Result(127, "", f"{args[0]}: not installed")
+    except subprocess.TimeoutExpired:
+        return Result(124, "", "timed out")
+    except OSError as e:  # permission problems etc.
+        return Result(126, "", str(e))
+
+
+def out(cmd: Sequence[str] | str, **kw) -> str:
+    r = sh(cmd, **kw)
+    return r.out.strip() if r.ok else ""
+
+
+def sudo_ready() -> bool:
+    if os.geteuid() == 0:
+        return True
+    return sh(["sudo", "-n", "true"], timeout=5).ok
+
+
+def read(path: str | Path, default: str = "") -> str:
+    try:
+        return Path(path).read_text(errors="replace")
+    except OSError:
+        return default
+
+
+# ---------------------------------------------------------------- actions
+
+
+@dataclass
+class Step:
+    """One command in an action. Shown to the user before it runs."""
+
+    title: str
+    cmd: list[str]
+    root: bool = False
+    env: dict = field(default_factory=dict)
+    cwd: str | None = None
+    ok_codes: tuple[int, ...] = (0,)
+    optional: bool = False  # failure doesn't mark the whole action failed
+
+    def argv(self) -> list[str]:
+        args = list(self.cmd)
+        if self.env:
+            args = ["env", *[f"{k}={v}" for k, v in self.env.items()], *args]
+        if self.root and os.geteuid() != 0:
+            args = ["sudo", "-n", *args]
+        return args
+
+    def display(self) -> str:
+        if self.cmd and self.cmd[0] == "__python__":
+            return self.cmd[1]
+        args = list(self.cmd)
+        if self.env:
+            args = [*[f"{k}={v}" for k, v in self.env.items()], *args]
+        text = shlex.join(args)
+        return ("sudo " + text) if self.root else text
+
+
+def py_step(title: str, func: Callable[[], str | None], shown: str) -> Step:
+    """A step done in Python (e.g. moving files). `shown` describes it for the confirm dialog."""
+    s = Step(title=title, cmd=["__python__", shown])
+    s._func = func  # type: ignore[attr-defined]
+    return s
+
+
+def needs_root(steps: Iterable[Step]) -> bool:
+    return any(s.root for s in steps)
+
+
+LineCallback = Callable[[str], Awaitable[None] | None]
+
+
+async def stream(step: Step, on_line: LineCallback) -> int:
+    """Run a step, calling on_line for every output line. Returns the exit code."""
+    func = getattr(step, "_func", None)
+    if func is not None:
+        try:
+            msg = await asyncio.to_thread(func)
+            if msg:
+                for line in str(msg).splitlines():
+                    r = on_line(line)
+                    if asyncio.iscoroutine(r):
+                        await r
+            return 0
+        except Exception as e:  # noqa: BLE001 - report any failure to the user
+            r = on_line(f"error: {e}")
+            if asyncio.iscoroutine(r):
+                await r
+            return 1
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *step.argv(),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+            stdin=asyncio.subprocess.DEVNULL,
+            cwd=step.cwd,
+            env={**os.environ, "DEBIAN_FRONTEND": "noninteractive", "NO_COLOR": "1"},
+        )
+    except FileNotFoundError:
+        r = on_line(f"{step.cmd[0]}: not installed")
+        if asyncio.iscoroutine(r):
+            await r
+        return 127
+    assert proc.stdout is not None
+    buf = b""
+    while True:
+        chunk = await proc.stdout.read(4096)
+        if not chunk:
+            break
+        buf += chunk
+        # apt uses \r for progress; treat it as a line break
+        parts = buf.replace(b"\r", b"\n").split(b"\n")
+        buf = parts.pop()
+        for part in parts:
+            line = part.decode(errors="replace").rstrip()
+            if line:
+                r = on_line(line)
+                if asyncio.iscoroutine(r):
+                    await r
+    if buf.strip():
+        r = on_line(buf.decode(errors="replace").rstrip())
+        if asyncio.iscoroutine(r):
+            await r
+    return await proc.wait()
+
+
+def run_steps_blocking(steps: Sequence[Step], echo: Callable[[str], None] = print) -> bool:
+    """For the CLI: run steps in the foreground with live output. Returns True if all succeeded."""
+    ok = True
+    for s in steps:
+        echo(f"\n\033[1;38;2;203;166;247m▸ {s.title}\033[0m  \033[2m{s.display()}\033[0m")
+        func = getattr(s, "_func", None)
+        if func is not None:
+            try:
+                msg = func()
+                if msg:
+                    echo(str(msg))
+                code = 0
+            except Exception as e:  # noqa: BLE001
+                echo(f"error: {e}")
+                code = 1
+        else:
+            args = list(s.argv())  # root steps use `sudo -n`; the CLI primes sudo before calling this
+            try:
+                code = subprocess.call(args, cwd=s.cwd, env={**os.environ, "DEBIAN_FRONTEND": "noninteractive"})
+            except FileNotFoundError:
+                echo(f"{s.cmd[0]}: not installed")
+                code = 127
+        if code not in s.ok_codes and not s.optional:
+            ok = False
+            echo(f"\033[38;2;243;139;168m✗ failed (exit {code})\033[0m")
+    return ok

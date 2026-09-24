@@ -7,6 +7,17 @@ tips_main() {
 
 ${C_BOLD}${M}Your new setup - cheat sheet${R}
 
+${C_BOLD}Your control center${R}
+  ${M}PC Command Center${R} the desktop app (dock / app grid, or ${M}pc-gui${R}): dashboard, cleanup,
+                   updates, apps, startup, processes, storage, network, power, logs,
+                   services, security, privacy, tweaks, developer, maintenance
+  ${M}pc${R}               the same in your terminal (${M}pc gui${R} opens the desktop app)
+  ${M}pc status${R}        quick summary          ${M}pc doctor${R}      health check with fixes
+  ${M}pc clean${R}         safe cleanup           ${M}pc update${R}      update everything
+  ${M}pc ports${R}         what's on which port   ${M}pc kill-port 3000${R}
+  ${M}pc repos${R}         all your git projects  ${M}pc big ~/${R}      biggest folders
+  ${M}pc --help${R}        everything else
+
 ${C_BOLD}Moving around${R}
   ${M}cd proj${R}          jumps to any folder you've visited that matches "proj"
   ${M}cdi${R}              pick a recent folder from a list

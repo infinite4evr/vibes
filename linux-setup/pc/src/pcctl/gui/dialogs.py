@@ -1,0 +1,387 @@
+"""Dialogs: confirm (shows exact commands), live task runner, text viewer, input, pick-items, choose-one."""
+
+from __future__ import annotations
+
+from typing import Callable
+
+import gi
+
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+from gi.repository import Adw, GLib, Gtk  # noqa: E402
+
+from ..core.run import Step, needs_root  # noqa: E402
+from .runner import Runner  # noqa: E402
+from .util import button, esc, hbox, label, spacer, vbox  # noqa: E402
+
+
+def _commands_view(steps: list[Step]) -> Gtk.Widget:
+    box = vbox(spacing=6)
+    for s in steps:
+        box.append(label(esc(s.title), "heading", markup=True, wrap=True))
+        cmd = label(("$ " + s.display()), ["mono", "dim"], wrap=True, selectable=True)
+        cmd.set_margin_start(10)
+        box.append(cmd)
+    frame = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+    frame.set_max_content_height(260)
+    frame.set_propagate_natural_height(True)
+    inner = vbox(box, css="cmd-box")
+    frame.set_child(inner)
+    return frame
+
+
+def confirm(parent: Gtk.Widget, title: str, steps: list[Step], explain: str = "", danger: bool = False, ok_label: str = "Run",
+            on_done: Callable[[bool], None] | None = None) -> None:
+    d = Adw.AlertDialog(heading=title, body=explain or "")
+    if hasattr(d, "set_prefer_wide_layout"):  # libadwaita 1.6+
+        d.set_prefer_wide_layout(True)
+    extra = vbox(spacing=10)
+    extra.append(_commands_view(steps))
+    if needs_root(steps):
+        extra.append(label("Ubuntu will ask for your password once.", ["warn-text"], wrap=True))
+    d.set_extra_child(extra)
+    d.add_response("cancel", "Cancel")
+    d.add_response("run", ok_label)
+    d.set_response_appearance("run", Adw.ResponseAppearance.DESTRUCTIVE if danger else Adw.ResponseAppearance.SUGGESTED)
+    d.set_default_response("run")
+    d.set_close_response("cancel")
+    d.connect("response", lambda _d, r: on_done and on_done(r == "run"))
+    d.present(parent)
+
+
+class TaskDialog(Adw.Dialog):
+    """Runs steps with a live log. Calls on_done(success) when closed."""
+
+    def __init__(self, title: str, steps: list[Step], on_done: Callable[[bool], None] | None = None):
+        super().__init__()
+        self.set_title(title)
+        self.set_content_width(760)
+        self.set_content_height(560)
+        self.steps, self.on_done_cb = steps, on_done
+        self.success = False
+        self.finished = False
+        tv = Adw.ToolbarView()
+        hb = Adw.HeaderBar()
+        tv.add_top_bar(hb)
+        body = vbox(spacing=12)
+        body.set_margin_top(6)
+        body.set_margin_bottom(14)
+        body.set_margin_start(18)
+        body.set_margin_end(18)
+        self.step_rows: list[tuple[Gtk.Image, Gtk.Label, Gtk.Spinner]] = []
+        steps_box = vbox(spacing=2)
+        for s in steps:
+            img = Gtk.Image.new_from_icon_name("content-loading-symbolic")
+            img.add_css_class("dim")
+            sp = Gtk.Spinner()
+            sp.set_visible(False)
+            lb = label(s.title, wrap=True, hexpand=True)
+            steps_box.append(hbox(img, sp, lb, spacing=10, css="step-row"))
+            self.step_rows.append((img, lb, sp))
+        ssw = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+        ssw.set_max_content_height(160)
+        ssw.set_propagate_natural_height(True)
+        ssw.set_child(steps_box)
+        body.append(ssw)
+        self.progress = Gtk.ProgressBar()
+        body.append(self.progress)
+        self.buffer = Gtk.TextBuffer()
+        self.view = Gtk.TextView(buffer=self.buffer, editable=False, cursor_visible=False, monospace=True, wrap_mode=Gtk.WrapMode.WORD_CHAR)
+        self.view.add_css_class("log-view")
+        self.view.set_left_margin(10)
+        self.view.set_top_margin(8)
+        sw = Gtk.ScrolledWindow()
+        sw.set_vexpand(True)
+        sw.set_child(self.view)
+        self.sw = sw
+        body.append(sw)
+        self.result = label("", "heading", wrap=True)
+        self.close_btn = button("Close", css="pill")
+        self.close_btn.set_sensitive(False)
+        self.close_btn.connect("clicked", lambda *_: self.close())
+        self.stop_btn = button("Stop", css="pill")
+        self.stop_btn.connect("clicked", lambda *_: self.runner.cancel())
+        body.append(hbox(self.result, spacer(), self.stop_btn, self.close_btn))
+        tv.set_content(body)
+        self.set_child(tv)
+        self.set_can_close(False)
+        self.connect("closed", lambda *_: self.on_done_cb and self.on_done_cb(self.success))
+        self._lines = 0
+        self.runner = Runner(steps, self._on_step, self._on_line, self._on_done)
+
+    def start(self, parent: Gtk.Widget) -> None:
+        self.present(parent)
+        self.runner.start()
+        GLib.timeout_add(120, self._pulse)
+
+    def _pulse(self) -> bool:
+        if self.finished:
+            return False
+        done = sum(1 for img, *_ in self.step_rows if img.get_icon_name() in ("emblem-ok-symbolic", "action-unavailable-symbolic"))
+        if done:
+            self.progress.set_fraction(done / max(1, len(self.step_rows)))
+        else:
+            self.progress.pulse()
+        return True
+
+    def _on_step(self, i: int, state: str, code) -> None:
+        GLib.idle_add(self._set_step, i, state, code)
+
+    def _set_step(self, i: int, state: str, code) -> bool:
+        if i >= len(self.step_rows):
+            return False
+        img, lb, sp = self.step_rows[i]
+        for c in ("dim", "lvl-ok", "lvl-bad", "lvl-warn"):
+            img.remove_css_class(c)
+        if state == "running":
+            img.set_visible(False)
+            sp.set_visible(True)
+            sp.start()
+            lb.add_css_class("heading")
+        else:
+            sp.stop()
+            sp.set_visible(False)
+            img.set_visible(True)
+            lb.remove_css_class("heading")
+            icon, css = {"ok": ("emblem-ok-symbolic", "lvl-ok"), "failed": ("dialog-error-symbolic", "lvl-bad"),
+                         "skipped": ("action-unavailable-symbolic", "lvl-warn")}[state]
+            img.set_from_icon_name(icon)
+            img.add_css_class(css)
+            if state != "ok" and code is not None:
+                lb.set_text(f"{self.steps[i].title}  (exit {code}{', skipped' if state == 'skipped' else ''})")
+        return False
+
+    def _on_line(self, line: str) -> None:
+        GLib.idle_add(self._append, line)
+
+    def _append(self, line: str) -> bool:
+        if self._lines > 5000:
+            start = self.buffer.get_start_iter()
+            res = self.buffer.get_iter_at_line(1000)
+            cut = res[1] if isinstance(res, tuple) else res
+            self.buffer.delete(start, cut)
+            self._lines -= 1000
+        end = self.buffer.get_end_iter()
+        self.buffer.insert(end, line + "\n")
+        self._lines += 1
+        adj = self.sw.get_vadjustment()
+        GLib.idle_add(lambda: (adj.set_value(adj.get_upper()), False)[1])
+        return False
+
+    def _on_done(self, ok: bool, note: str) -> None:
+        GLib.idle_add(self._finish, ok, note)
+
+    def _finish(self, ok: bool, note: str) -> bool:
+        self.finished = True
+        self.success = ok
+        self.progress.set_fraction(1.0 if ok else self.progress.get_fraction())
+        self.result.set_text("Done ✓" if ok else (note or "Something went wrong - see the output above."))
+        self.result.remove_css_class("heading")
+        self.result.add_css_class("ok-text" if ok else "bad-text")
+        self.close_btn.set_sensitive(True)
+        self.close_btn.add_css_class("suggested-action")
+        self.stop_btn.set_visible(False)
+        self.set_can_close(True)
+        self.close_btn.grab_focus()
+        self._notify(ok, note)
+        return False
+
+    def _notify(self, ok: bool, note: str) -> None:
+        """A desktop notification when a task finishes while you're in another window."""
+        from gi.repository import Gio
+        win = self.get_root()
+        app = Gio.Application.get_default()
+        if app is None or (isinstance(win, Gtk.Window) and win.is_active()):
+            return
+        n = Gio.Notification.new(f"{self.get_title()}: {'done' if ok else 'failed'}")
+        n.set_body("Finished without problems." if ok else (note or "Open PC Command Center to see what went wrong."))
+        app.send_notification("task-finished", n)
+
+
+def run_steps(parent: Gtk.Widget, title: str, steps: list[Step], explain: str = "", danger: bool = False, ok_label: str = "Run",
+              on_done: Callable[[bool], None] | None = None, ask: bool = True) -> None:
+    if not steps:
+        toast(parent, "Nothing to do.")
+        return
+
+    def go(yes: bool) -> None:
+        if yes:
+            TaskDialog(title, steps, on_done).start(parent)
+        elif on_done:
+            on_done(False)
+    if ask:
+        confirm(parent, title, steps, explain, danger, ok_label, go)
+    else:
+        go(True)
+
+
+def toast(parent: Gtk.Widget, text: str, timeout: int = 3) -> None:
+    root = parent.get_root() if parent else None
+    overlay = getattr(root, "toasts", None)
+    if overlay is not None:
+        t = Adw.Toast(title=text)
+        t.set_timeout(timeout)
+        overlay.add_toast(t)
+
+
+class TextDialog(Adw.Dialog):
+    def __init__(self, title: str, text: str):
+        super().__init__()
+        self.set_title(title)
+        self.set_content_width(900)
+        self.set_content_height(620)
+        tv = Adw.ToolbarView()
+        hb = Adw.HeaderBar()
+        copy = button(icon="edit-copy-symbolic", tooltip="Copy all")
+        copy.connect("clicked", lambda *_: self.get_clipboard().set(text))
+        hb.pack_start(copy)
+        tv.add_top_bar(hb)
+        buf = Gtk.TextBuffer()
+        buf.set_text(text or "(nothing to show)")
+        view = Gtk.TextView(buffer=buf, editable=False, monospace=True, wrap_mode=Gtk.WrapMode.WORD_CHAR)
+        view.add_css_class("log-view")
+        view.set_left_margin(12)
+        view.set_top_margin(10)
+        sw = Gtk.ScrolledWindow()
+        sw.set_vexpand(True)
+        sw.set_child(view)
+        tv.set_content(sw)
+        self.set_child(tv)
+
+
+def show_text(parent: Gtk.Widget, title: str, text: str) -> None:
+    TextDialog(title, text).present(parent)
+
+
+def ask_text(parent: Gtk.Widget, title: str, body: str, placeholder: str = "", on_done: Callable[[str | None], None] | None = None,
+             password: bool = False, ok_label: str = "OK", initial: str = "") -> None:
+    d = Adw.AlertDialog(heading=title, body=body)
+    entry = Gtk.PasswordEntry(show_peek_icon=True) if password else Gtk.Entry(placeholder_text=placeholder, text=initial)
+    entry.set_activates_default(True)
+    d.set_extra_child(entry)
+    d.add_response("cancel", "Cancel")
+    d.add_response("ok", ok_label)
+    d.set_response_appearance("ok", Adw.ResponseAppearance.SUGGESTED)
+    d.set_default_response("ok")
+    d.set_close_response("cancel")
+    d.connect("response", lambda _d, r: on_done and on_done(entry.get_text().strip() if r == "ok" and entry.get_text().strip() else None))
+    d.present(parent)
+    entry.grab_focus()
+
+
+class PickDialog(Adw.Dialog):
+    """Tick items. on_done(list of keys) or None if cancelled."""
+
+    def __init__(self, title: str, explain: str, items: list[tuple[str, str, str, bool]], on_done: Callable[[list[str] | None], None]):
+        super().__init__()
+        self.set_title(title)
+        self.set_content_width(720)
+        self.set_content_height(620)
+        self.on_done_cb = on_done
+        self.checks: list[tuple[str, Gtk.CheckButton]] = []
+        tv = Adw.ToolbarView()
+        hb = Adw.HeaderBar()
+        hb.set_show_end_title_buttons(False)
+        hb.set_show_start_title_buttons(False)
+        cancel = button("Cancel")
+        cancel.connect("clicked", lambda *_: self._finish(None))
+        ok = button("Done", css="suggested-action")
+        ok.connect("clicked", lambda *_: self._finish([k for k, c in self.checks if c.get_active()]))
+        hb.pack_start(cancel)
+        hb.pack_end(ok)
+        tv.add_top_bar(hb)
+        box = vbox(spacing=10)
+        box.set_margin_start(16)
+        box.set_margin_end(16)
+        box.set_margin_bottom(16)
+        if explain:
+            box.append(label(explain, "dim", wrap=True))
+        allb, noneb = button("Select all"), button("Select none")
+        allb.connect("clicked", lambda *_: [c.set_active(True) for _, c in self.checks])
+        noneb.connect("clicked", lambda *_: [c.set_active(False) for _, c in self.checks])
+        box.append(hbox(allb, noneb))
+        lst = Gtk.ListBox()
+        lst.add_css_class("boxed-list")
+        lst.set_selection_mode(Gtk.SelectionMode.NONE)
+        for key, title_, sub, active in items:
+            row = Adw.ActionRow(title=esc(title_), subtitle=esc(sub))
+            cb = Gtk.CheckButton(active=active)
+            row.add_prefix(cb)
+            row.set_activatable_widget(cb)
+            lst.append(row)
+            self.checks.append((key, cb))
+        sw = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+        sw.set_vexpand(True)
+        sw.set_child(lst)
+        box.append(sw)
+        tv.set_content(box)
+        self.set_child(tv)
+        self._done = False
+
+    def _finish(self, res) -> None:
+        if not self._done:
+            self._done = True
+            self.on_done_cb(res)
+        self.close()
+
+
+class ChoiceDialog(Adw.Dialog):
+    """Pick one row. rows: (key, title, subtitle)."""
+
+    def __init__(self, title: str, rows: list[tuple[str, str, str]], on_done: Callable[[str | None], None], explain: str = "",
+                 search: bool = True):
+        super().__init__()
+        self.set_title(title)
+        self.set_content_width(720)
+        self.set_content_height(640)
+        self.on_done_cb = on_done
+        self._done = False
+        tv = Adw.ToolbarView()
+        tv.add_top_bar(Adw.HeaderBar())
+        box = vbox(spacing=10)
+        box.set_margin_start(16)
+        box.set_margin_end(16)
+        box.set_margin_bottom(16)
+        if explain:
+            box.append(label(explain, "dim", wrap=True))
+        self.lst = Gtk.ListBox()
+        self.lst.add_css_class("boxed-list")
+        self.rows = []
+        for key, t, sub in rows:
+            r = Adw.ActionRow(title=esc(t), subtitle=esc(sub), activatable=True)
+            r.add_suffix(Gtk.Image.new_from_icon_name("go-next-symbolic"))
+            r.connect("activated", lambda _r, k=key: self._finish(k))
+            r._search = f"{t} {sub}".lower()
+            self.lst.append(r)
+            self.rows.append(r)
+        if search:
+            entry = Gtk.SearchEntry(placeholder_text="Search…")
+            entry.connect("search-changed", self._filter)
+            entry.connect("activate", lambda *_: self._first())
+            box.append(entry)
+        sw = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+        sw.set_vexpand(True)
+        sw.set_child(self.lst)
+        box.append(sw)
+        tv.set_content(box)
+        self.set_child(tv)
+        self.connect("closed", lambda *_: self._finish(None, close=False))
+
+    def _first(self) -> None:
+        """Enter in the search box picks the first row that's still visible."""
+        for r in self.rows:
+            if r.get_visible():
+                r.emit("activated")
+                return
+
+    def _filter(self, entry: Gtk.SearchEntry) -> None:
+        q = entry.get_text().lower()
+        for r in self.rows:
+            r.set_visible(q in r._search)
+
+    def _finish(self, key, close: bool = True) -> None:
+        if not self._done:
+            self._done = True
+            self.on_done_cb(key)
+        if close:
+            self.close()
