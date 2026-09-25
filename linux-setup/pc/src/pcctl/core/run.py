@@ -29,6 +29,46 @@ def which(cmd: str) -> str | None:
     return None
 
 
+def du_bin() -> str:
+    """GNU du when available. Ubuntu 26.04 ships Rust coreutils as `du` and keeps GNU's as `gnudu`."""
+    return which("gnudu") or "du"
+
+
+def py_size(path: str | Path, one_fs: bool = True, limit_s: float = 60.0) -> int:
+    """Pure-Python fallback for du (disk usage in bytes, like du -B1)."""
+    import time as _t
+    t0 = _t.monotonic()
+    p = str(path)
+    try:
+        st = os.lstat(p)
+    except OSError:
+        return 0
+    if not os.path.isdir(p) or os.path.islink(p):
+        return st.st_blocks * 512
+    dev = st.st_dev
+    total = st.st_blocks * 512
+    seen: set[tuple[int, int]] = set()
+    for cur, dirs, files in os.walk(p):
+        if _t.monotonic() - t0 > limit_s:
+            break
+        for n in dirs + files:
+            fp = os.path.join(cur, n)
+            try:
+                s2 = os.lstat(fp)
+            except OSError:
+                continue
+            if one_fs and s2.st_dev != dev:
+                continue
+            key = (s2.st_dev, s2.st_ino)
+            if key in seen:
+                continue
+            seen.add(key)
+            total += s2.st_blocks * 512
+        if one_fs:
+            dirs[:] = [d for d in dirs if not os.path.ismount(os.path.join(cur, d))]
+    return total
+
+
 def has(cmd: str) -> bool:
     return which(cmd) is not None
 

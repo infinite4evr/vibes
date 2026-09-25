@@ -1,0 +1,20 @@
+{
+    "pipx_spec_version": "0.1",
+    "venvs": {
+        "gnome-extensions-cli": {
+            "metadata": {
+                "injected_packages": {},
+                "main_package": {
+                    "app_paths": [{"__Path__": "/home/infinite4evr/.local/share/pipx/venvs/gnome-extensions-cli/bin/gext", "__type__": "Path"}],
+                    "apps": ["gext", "gnome-extensions-cli"],
+                    "include_apps": true,
+                    "package": "gnome-extensions-cli",
+                    "package_version": "0.10.4"
+                },
+                "pipx_metadata_version": "0.5",
+                "python_version": "Python 3.14.0",
+                "venv_args": ["--system-site-packages"]
+            }
+        }
+    }
+}

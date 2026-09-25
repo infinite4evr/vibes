@@ -1,0 +1,6 @@
+# Edit this file to introduce tasks to be run by cron.
+# m h  dom mon dow   command
+MAILTO=""
+*/15 * * * * /home/infinite4evr/bin/sync-notes.sh >/dev/null 2>&1
+0 9 * * 1-5 cd ~/work && ./standup-reminder.py
+@reboot /home/infinite4evr/.local/bin/start-bot

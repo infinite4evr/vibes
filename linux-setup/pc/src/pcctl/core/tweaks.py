@@ -185,32 +185,37 @@ class Switch:
 DESKTOP = [
     Switch("animations", "Desktop", "Animations", "Turn off to make the desktop feel faster on older hardware.", "org.gnome.desktop.interface", "enable-animations"),
     Switch("hot-corner", "Desktop", "Hot corner", "Opens the Activities overview when the mouse hits the top-left corner.", "org.gnome.desktop.interface", "enable-hot-corners"),
-    Switch("battery-pct", "Desktop", "Battery percentage in the top bar", "", "org.gnome.desktop.interface", "show-battery-percentage"),
-    Switch("weekday", "Desktop", "Weekday in the clock", "", "org.gnome.desktop.interface", "clock-show-weekday"),
-    Switch("seconds", "Desktop", "Seconds in the clock", "", "org.gnome.desktop.interface", "clock-show-seconds"),
-    Switch("center", "Desktop", "Open new windows in the center", "", "org.gnome.mutter", "center-new-windows"),
     Switch("night-light", "Desktop", "Night Light", "Warmer screen colours in the evening - easier on the eyes.", "org.gnome.settings-daemon.plugins.color", "night-light-enabled"),
     Switch("overamp", "Desktop", "Allow volume above 100%", "Useful for quiet laptop speakers.", "org.gnome.desktop.sound", "allow-volume-above-100-percent"),
+    Switch("clock-24h", "Top bar & clock", "24-hour clock", "Shows 18:30 instead of 6:30 PM.", "org.gnome.desktop.interface", "clock-format", "'24h'", "'12h'"),
+    Switch("weekday", "Top bar & clock", "Weekday in the clock", "", "org.gnome.desktop.interface", "clock-show-weekday"),
+    Switch("date", "Top bar & clock", "Date in the clock", "", "org.gnome.desktop.interface", "clock-show-date"),
+    Switch("seconds", "Top bar & clock", "Seconds in the clock", "", "org.gnome.desktop.interface", "clock-show-seconds"),
+    Switch("battery-pct", "Top bar & clock", "Battery percentage in the top bar", "", "org.gnome.desktop.interface", "show-battery-percentage"),
+    Switch("week-numbers", "Top bar & clock", "Week numbers in the calendar", "The calendar that opens when you click the clock.", "org.gnome.desktop.calendar", "show-weekdate"),
+    Switch("center", "Windows", "Open new windows in the center", "", "org.gnome.mutter", "center-new-windows"),
+    Switch("attach-modal", "Windows", "Attach dialogs to their window", "Pop-ups like “Save as” slide out of their window and move with it.", "org.gnome.mutter", "attach-modal-dialogs"),
     Switch("tap-click", "Touchpad", "Tap to click", "", "org.gnome.desktop.peripherals.touchpad", "tap-to-click"),
     Switch("natural", "Touchpad", "Natural scrolling", "Content moves with your fingers, like a phone.", "org.gnome.desktop.peripherals.touchpad", "natural-scroll"),
     Switch("typing-off", "Touchpad", "Disable touchpad while typing", "", "org.gnome.desktop.peripherals.touchpad", "disable-while-typing"),
     Switch("dyn-ws", "Workspaces", "Dynamic workspaces", "Adds and removes workspaces as you need them.", "org.gnome.mutter", "dynamic-workspaces"),
     Switch("ws-primary", "Workspaces", "Workspaces only on the main display", "", "org.gnome.mutter", "workspaces-only-on-primary"),
-    Switch("attach-modal", "Workspaces", "Attach dialogs to their window", "", "org.gnome.mutter", "attach-modal-dialogs"),
     Switch("auto-brightness", "Power", "Automatic screen brightness", "", "org.gnome.settings-daemon.plugins.power", "ambient-enabled"),
     Switch("dim", "Power", "Dim the screen when idle", "", "org.gnome.settings-daemon.plugins.power", "idle-dim"),
 ]
 
 
 def desktop_switches() -> list[tuple[Switch, bool]]:
+    """[(switch, is_on)] for the switches that exist on this PC (one gsettings call per schema)."""
     if not has("gsettings"):
         return []
-    res = []
-    for s in DESKTOP:
-        if not sh(["gsettings", "writable", s.schema, s.key], timeout=3).ok:
-            continue
-        res.append((s, out(["gsettings", "get", s.schema, s.key]) == s.on))
-    return res
+    from .desktop import norm, read_values
+    values = read_values([s.schema for s in DESKTOP])
+    return [(s, norm(values[(s.schema, s.key)]) == norm(s.on)) for s in DESKTOP if (s.schema, s.key) in values]
+
+
+def switch_steps(s: Switch, value: bool) -> list[Step]:
+    return [Step(f"{s.title}: {'on' if value else 'off'}", ["gsettings", "set", s.schema, s.key, s.on if value else s.off])]
 
 
 def set_switch(s: Switch, value: bool) -> bool:

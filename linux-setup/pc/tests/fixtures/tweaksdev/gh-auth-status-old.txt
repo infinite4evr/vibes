@@ -1,0 +1,5 @@
+github.com
+  ✓ Logged in to github.com as infinite4evr (/home/infinite4evr/.config/gh/hosts.yml)
+  ✓ Git operations for github.com configured to use https protocol.
+  ✓ Token: gho_************************************
+  ✓ Token scopes: admin:public_key, gist, read:org, repo

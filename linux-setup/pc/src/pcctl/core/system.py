@@ -346,6 +346,9 @@ class Proc:
     started: float
     threads: int = 0
     children: list = field(default_factory=list)
+    ppid: int = 0
+    io: float = 0.0          # disk read+write, bytes per second (your own processes; others need admin rights)
+    nice: int = 0
 
 
 class ProcessWatcher:
@@ -353,10 +356,15 @@ class ProcessWatcher:
 
     def __init__(self) -> None:
         self.ncpu = psutil.cpu_count() or 1
+        self._io: dict[int, tuple[float, int]] = {}
 
     def list(self) -> list[Proc]:
+        import time as _t
         res: list[Proc] = []
-        attrs = ["pid", "name", "username", "memory_info", "memory_percent", "cmdline", "status", "create_time", "num_threads"]
+        attrs = ["pid", "name", "username", "memory_info", "memory_percent", "cmdline", "status", "create_time", "num_threads", "ppid",
+                 "io_counters", "nice"]
+        now = _t.monotonic()
+        new_io: dict[int, tuple[float, int]] = {}
         for p in psutil.process_iter(attrs):
             try:
                 cpu = p.cpu_percent(None) / self.ncpu
@@ -375,7 +383,17 @@ class ProcessWatcher:
                 status=p.info.get("status") or "",
                 started=p.info.get("create_time") or 0,
                 threads=p.info.get("num_threads") or 0,
+                ppid=p.info.get("ppid") or 0,
+                nice=p.info.get("nice") or 0,
             ))
+            ioc = p.info.get("io_counters")
+            if ioc is not None:
+                total = ioc.read_bytes + ioc.write_bytes
+                prev = self._io.get(p.pid)
+                if prev and now > prev[0]:
+                    res[-1].io = max(0.0, (total - prev[1]) / (now - prev[0]))
+                new_io[p.pid] = (now, total)
+        self._io = new_io
         return res
 
 

@@ -1,0 +1,11 @@
+cpython-3.14.0-linux-x86_64-gnu                    <download available>
+cpython-3.14.0+freethreaded-linux-x86_64-gnu       <download available>
+cpython-3.13.7-linux-x86_64-gnu                    /home/infinite4evr/.local/share/uv/python/cpython-3.13.7-linux-x86_64-gnu/bin/python3.13
+cpython-3.13.7+freethreaded-linux-x86_64-gnu       <download available>
+cpython-3.12.11-linux-x86_64-gnu                   <download available>
+cpython-3.12.3-linux-x86_64-gnu                    /usr/bin/python3.12
+cpython-3.12.3-linux-x86_64-gnu                    /usr/bin/python3 -> python3.12
+cpython-3.11.13-linux-x86_64-gnu                   <download available>
+cpython-3.15.0a1-linux-x86_64-gnu                  <download available>
+pypy-3.11.13-linux-x86_64-gnu                      <download available>
+graalpy-3.11.0-linux-x86_64-gnu                    <download available>

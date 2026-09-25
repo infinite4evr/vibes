@@ -27,6 +27,23 @@ def screenshot(win: Gtk.Window, path: str) -> None:
     tex.save_to_png(path)
 
 
+def _install_crash_guard() -> None:
+    """Unexpected errors go to ~/.local/state/pc/gui-errors.log and show as a toast instead of vanishing."""
+    import traceback
+
+    from .activity import log_error
+
+    def hook(exc_type, exc, tb) -> None:
+        text = "".join(traceback.format_exception(exc_type, exc, tb))
+        sys.__stderr__.write(text)
+        log_error(text)
+        app = Gio.Application.get_default()
+        win = app.props.active_window if app else None
+        if win is not None and hasattr(win, "toast"):
+            GLib.idle_add(lambda: (win.toast(f"Something went wrong: {exc}. Details are in ~/.local/state/pc/gui-errors.log", 6), False)[1])
+    sys.excepthook = hook
+
+
 class App(Adw.Application):
     def __init__(self, start: str | None = None, shots: str | None = None, pages: list[str] | None = None, wait: float = 3.0):
         super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.NON_UNIQUE if shots else Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
@@ -35,14 +52,14 @@ class App(Adw.Application):
 
     def do_startup(self) -> None:
         Adw.Application.do_startup(self)
-        Adw.StyleManager.get_default().set_color_scheme(Adw.ColorScheme.FORCE_DARK)
         from gi.repository import Gdk
         display = Gdk.Display.get_default()
         if display is not None:  # our icon, also when running straight from the source folder
             Gtk.IconTheme.get_for_display(display).add_search_path(os.path.join(os.path.dirname(__file__), "data"))
         Gtk.Window.set_default_icon_name(APP_ID)
-        from .window import load_css
-        load_css()
+        from . import prefs, theme
+        theme.setup(os.environ.get("PC_STYLE") or prefs.get("appearance"), os.environ.get("PC_LOOK") or prefs.get("look"))
+        _install_crash_guard()
         q = Gio.SimpleAction.new("quit", None)
         q.connect("activate", lambda *_: self.quit())
         self.add_action(q)
@@ -53,6 +70,9 @@ class App(Adw.Application):
         if not win:
             from .window import MainWindow
             win = MainWindow(self, self.start)
+            from . import prefs
+            if not self.shots and not prefs.get("welcomed") and not os.environ.get("PC_NO_WELCOME"):
+                GLib.timeout_add(900, lambda: (win.welcome(), False)[1])
         win.present()
         if self.shots:
             self._shoot(win)
@@ -60,18 +80,26 @@ class App(Adw.Application):
     def do_command_line(self, cmdline) -> int:
         """Also runs in the already-open app when you launch it again (e.g. 'Clean up' from the dock menu)."""
         args = cmdline.get_arguments()[1:]
-        page = None
+        page = action = None
         for i, a in enumerate(args):
-            if a == "--page" and i + 1 < len(args):
-                page = args[i + 1]
+            if a in ("--page", "--action") and i + 1 < len(args):
+                if a == "--page":
+                    page = args[i + 1]
+                else:
+                    action = args[i + 1]
             elif a.startswith("--page="):
                 page = a.split("=", 1)[1]
+            elif a.startswith("--action="):
+                action = a.split("=", 1)[1]
         first = self.props.active_window is None
         if first and page:
             self.start = page
         self.activate()
+        win = self.props.active_window
         if not first and page:
-            self.props.active_window.goto(page)
+            win.goto(page)
+        if action and win is not None:  # e.g. from GNOME search or the dock menu: "maintenance:fix-sound", "app:palette"
+            GLib.timeout_add(700 if first else 50, lambda: (win.run_action(action), False)[1])
         return 0
 
     # testing helper: visit pages and save PNGs
@@ -87,8 +115,12 @@ class App(Adw.Application):
             pid = pages[state["i"]]
             win.goto(pid)
 
-            def snap() -> bool:
-                screenshot(win, os.path.join(self.shots, f"{pid}.png"))
+            def snap(tries: int = 0) -> bool:
+                path = os.path.join(self.shots, f"{pid}.png")
+                screenshot(win, path)
+                if not os.path.exists(path) and tries < 4:  # nothing rendered yet (mid-relayout); try again shortly
+                    GLib.timeout_add(400, lambda: snap(tries + 1))
+                    return False
                 print("shot", pid, flush=True)
                 state["i"] += 1
                 GLib.timeout_add(100, step)
@@ -101,6 +133,7 @@ class App(Adw.Application):
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="pc-gui", description="PC Command Center")
     ap.add_argument("--page", default=None, help="page to open (default: the one you had open last)")
+    ap.add_argument("--action", default=None, help="run a palette action, e.g. maintenance:fix-sound or app:palette")
     ap.add_argument("--screenshots", help=argparse.SUPPRESS)
     ap.add_argument("--pages", help=argparse.SUPPRESS)
     ap.add_argument("--wait", type=float, default=3.0, help=argparse.SUPPRESS)

@@ -439,11 +439,37 @@ PY
 
   ok "pc installed - type ${C_MAUVE}pc${C_RESET} in a terminal for the terminal version"
 
+  # Tab completion for pc (zsh + bash); regenerated from pc itself so it always matches the installed version
+  mkdir -p "$HOME/.local/share/zsh/site-functions" "$HOME/.local/share/bash-completion/completions"
+  if "$pcbin" completions zsh > "$HOME/.local/share/zsh/site-functions/_pc" 2>/dev/null \
+     && "$pcbin" completions bash > "$HOME/.local/share/bash-completion/completions/pc" 2>/dev/null; then
+    rm -f "$HOME/.cache/zcompdump"
+    # an existing ~/.zshrc (e.g. from an earlier run) needs the user completion folder before compinit
+    if [[ -f $HOME/.zshrc ]] && ! grep -q "zsh/site-functions" "$HOME/.zshrc"; then
+      if grep -q "compinit" "$HOME/.zshrc"; then
+        backup "$HOME/.zshrc"
+        python3 - "$HOME/.zshrc" <<'PY' || true
+import sys
+p = sys.argv[1]
+lines = open(p).read().split("\n")
+i = next(n for n, l in enumerate(lines) if "compinit" in l)
+lines.insert(i, "fpath=(~/.local/share/zsh/site-functions $fpath)   # pc and other user-installed completions")
+open(p, "w").write("\n".join(lines))
+PY
+      fi
+    fi
+    dim "Tab completion for pc installed (zsh and bash)"
+  fi
+
   install_pc_app || warn "The desktop app didn't install - try again with: bash setup.sh app"
 
   if ask "Turn on the weekly automatic checkup? (safe cleanup + a notification if something needs you)" y; then
     if "$pcbin" maintain --on >/dev/null 2>&1; then ok "Weekly checkup on (Sundays 11:00)"
     else warn "Couldn't turn on the weekly checkup - try it later in pc → Maintenance"; fi
+  fi
+  if ask "Turn on background alerts? (a notification when a disk is almost full, security updates wait, a service keeps crashing…)" y; then
+    if "$pcbin" watch --on >/dev/null 2>&1; then ok "Background alerts on (checks every 30 minutes, each alert at most once a day)"
+    else warn "Couldn't turn on alerts - try it later in the app: Preferences → Alerts"; fi
   fi
 }
 
@@ -500,8 +526,8 @@ Icon=$APP_ID
 Terminal=false
 StartupNotify=true
 Categories=System;Monitor;Utility;GTK;
-Keywords=cleanup;junk;updates;processes;task manager;storage;disk;network;services;startup;security;privacy;tweaks;
-Actions=cleanup;updates;processes;storage;
+Keywords=cleanup;junk;updates;processes;task manager;storage;disk;network;services;startup;security;privacy;tweaks;troubleshoot;fix;report;battery;
+Actions=cleanup;updates;processes;storage;fix;slow;
 
 [Desktop Action cleanup]
 Name=Clean up
@@ -518,6 +544,14 @@ Exec=$HOME/.local/bin/pc-gui --page processes
 [Desktop Action storage]
 Name=Storage
 Exec=$HOME/.local/bin/pc-gui --page storage
+
+[Desktop Action fix]
+Name=Fix a problem
+Exec=$HOME/.local/bin/pc-gui --page maintenance
+
+[Desktop Action slow]
+Name=Why is my PC slow?
+Exec=$HOME/.local/bin/pc-gui --action maintenance:fix-slow
 EOF
   # The old "PC Control Center" terminal launcher is replaced by this app (pc still works in any terminal)
   if [[ -f $HOME/.local/share/applications/pc-control-center.desktop ]]; then
@@ -526,6 +560,21 @@ EOF
   fi
   update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
   gtk-update-icon-cache -q -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+
+  # Friendlier password popup ("PC Command Center needs…", remembered for a few minutes) + GNOME Activities search
+  local data="$SCRIPT_DIR/pc/data"
+  mkdir -p "$HOME/.local/share/dbus-1/services" "$HOME/.cache/pc"
+  printf '[D-BUS Service]\nName=%s.SearchProvider\nExec=%s --search-provider\n' "$APP_ID" "$HOME/.local/bin/pc-gui" \
+    > "$HOME/.local/share/dbus-1/services/$APP_ID.SearchProvider.service"
+  printf '[Shell Search Provider]\nDesktopId=%s.desktop\nBusName=%s.SearchProvider\nObjectPath=/io/github/infinite4evr/PcCommandCenter/SearchProvider\nVersion=2\n' \
+    "$APP_ID" "$APP_ID" > "$HOME/.cache/pc/search-provider.ini"
+  if [[ -f $data/pc-admin && -f $data/$APP_ID.policy ]] && need_sudo; then
+    sudo install -D -m 755 "$data/pc-admin" /usr/local/libexec/pc-command-center/pc-admin \
+      && sudo install -D -m 644 "$data/$APP_ID.policy" "/usr/share/polkit-1/actions/$APP_ID.policy" \
+      && dim "Password popup set up (names the app, remembers the password for a few minutes)"
+    sudo install -D -m 644 "$HOME/.cache/pc/search-provider.ini" "/usr/local/share/gnome-shell/search-providers/$APP_ID.search-provider.ini" \
+      && dim "GNOME search: type “clean”, “battery” or “fix sound” in Activities (after you log out and back in)"
+  fi
 
   # Remember where these scripts live (the app's Maintenance page can re-run them)
   mkdir -p "$HOME/.config/pc"

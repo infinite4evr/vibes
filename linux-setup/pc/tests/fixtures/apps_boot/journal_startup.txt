@@ -1,0 +1,3 @@
+1758000000.123456 ashu-pc systemd[1]: Startup finished in 7.001s (firmware) + 3.000s (loader) + 2.100s (kernel) + 3.900s (initrd) + 14.000s (userspace) = 30.001s.
+1758100000.654321 ashu-pc systemd[1]: Startup finished in 6.900s (firmware) + 2.950s (loader) + 2.345s (kernel) + 4.001s (initrd) + 9.412s (userspace) = 25.608s.
+1758200000.000001 ashu-pc systemd[1]: Some other message

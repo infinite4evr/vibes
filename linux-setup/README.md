@@ -25,24 +25,25 @@ When it's finished, **log out and log back in**, then type `tips` in the termina
 
 ## PC Command Center - the desktop app
 
-After setup, open **PC Command Center** from the dock or app grid (or run `pc-gui`). It's a native GNOME app (GTK 4 + libadwaita, Catppuccin Mocha) for the whole computer:
+After setup, open **PC Command Center** from the dock or app grid (or run `pc-gui`). It's a native GNOME app (GTK 4 + libadwaita) for the whole computer, with a clean modern look that uses GNOME's accent colour (Catppuccin is one click away in Preferences) and switches with GNOME's light/dark setting:
 
-- **Dashboard**: health score, live CPU / memory / network / disk / temperature / battery, what needs attention (with Fix buttons), busiest apps
-- **Cleanup**: ~40 kinds of junk in 5 groups (system, developer caches, apps & browsers, your files, privacy), tick exactly what goes, deep scan for old node_modules / build folders / venvs / old runtimes / old downloads / duplicates
-- **Updates**: apt + Snap + Flatpak in one list (security first), update one or all, history, firmware, auto-updates, Ubuntu Pro, leftover packages, repair
-- **Apps**: everything installed from every source, uninstall, search & install (with recommended apps), default apps
-- **Startup**: login apps on/off, boot time and slowest services, optional boot services (Docker, databases, printing, Bluetooth…)
-- **Processes**: grouped by app, end / force quit / pause / priority / details
-- **Storage**: disks and drive health, folder explorer by size, big files, duplicate finder
-- **Network**: live traffic, Wi-Fi, open ports (stop / allow in firewall), diagnostics, speed test
-- **Power & hardware**: battery health and charge limit, power modes, temperatures, specs, restart into BIOS
-- **Logs**, **Services** (and timers), **Security** (score, one-click fixes, firewall rules, SSH keys), **Privacy** (camera/mic in use, telemetry, history), **Tweaks** (dev-laptop tuning with undo, desktop switches, Caps Lock → Escape…), **Developer** (git projects, dev servers, pm2, containers, Node/Python versions, CLI toolbox), **Maintenance** (one-click tune-up, weekly checkup, settings backups, Timeshift, these setup scripts)
+- **Dashboard**: health score, live CPU / memory / GPU / network / disks / temperature / battery, and a one-click **Why is my PC slow?**
+- **Cleanup**: ~45 kinds of junk, a never-clean list, the real space freed, a deep scan (old node_modules, build folders, venvs, duplicates, similar photos, empty folders)
+- **Updates**: apt + Snap + Flatpak together, **undo an apt change**, PPAs and sources, old kernels, drivers, snapshots before updating
+- **Apps**: install from a downloaded file, AppImages in the app grid, uninstall several at once, app permissions, unused apps
+- **Startup**: login apps (with a delay), boot speed and boot chart, **boot menu (GRUB) settings**
+- **Processes** (tree, disk use, efficiency mode), **Storage** (drives, health, treemap, file types, Trash, swap, speed test), **Network** (which app talks to whom, DNS switcher, VPN, saved Wi-Fi passwords, hotspot, devices nearby)
+- **Power & hardware**: battery history graph, keep awake, shutdown/sleep timer, CPU speed and throttling, every device
+- **Logs** (kernel messages, live follow, journal size), **Services** (memory per service, block, **keep a script running or on a schedule**, cron explained)
+- **Security** (checklist, **secrets check** for leaked API keys, Docker-vs-firewall, SSH, virus scan, accounts), **Privacy** (dev-tool telemetry off in one switch, file indexing)
+- **Tweaks** (extensions manager, Dock settings, Ctrl+Shift+Esc → Processes, Files and clock options, computer name, time zone), **Developer** (PATH doctor, Docker disk cleanup, GitHub connection, git identity, global packages, Python versions via uv)
+- **Maintenance**: troubleshooters (Wi-Fi, sound, Bluetooth, apt, printer…), weekly checkup with a health graph, a **system report** to share, backups, Timeshift snapshots
 
-Every action shows the exact commands first; anything that needs admin rights asks for your password once with Ubuntu's normal popup.
+Every action shows the exact commands first; anything that needs admin rights asks for your password once. The search bar at the top (**Ctrl+K**) finds any page, action or setting. Background alerts (disk full, security updates, failing services…) arrive as notifications even when the app is closed. See `pc/README.md` for the full list and `docs/FEATURE-AUDIT.md` for how it compares with other tools.
 
 ## pc - the terminal version
 
-Type `pc` in a terminal. It's a full-screen app for the whole computer: live overview + health check, processes, storage explorer, cleanup, updates, apps, startup apps, services, network & ports, dev projects / pm2 / containers, power & hardware, security checklist, logs, and maintenance (weekly auto-checkup, settings backups, snapshots). Quick commands: `pc status`, `pc doctor`, `pc clean`, `pc update`, `pc kill-port 3000`, `pc repos`, `pc --help`. Details in `pc/README.md`.
+Type `pc` in a terminal. It's a full-screen app for the whole computer: live overview + health check, processes, storage explorer, cleanup, updates, apps, startup apps, services, network & ports, dev projects / pm2 / containers, power & hardware, security checklist, logs, and maintenance (weekly auto-checkup, settings backups, snapshots). Quick commands: `pc status`, `pc doctor`, `pc slow`, `pc fix`, `pc secrets`, `pc report`, `pc clean`, `pc update`, `pc kill-port 3000`, `pc awake 2h`, `pc --help` (Tab completes them). Details in `pc/README.md`.
 
 Everything is safe to re-run. Backups go to `~/.local/state/linux-setup/`.
 

@@ -1,0 +1,6 @@
+{
+    // my editor settings
+    "editor.fontSize": 14,
+    /* "telemetry.telemetryLevel": "all", */
+    "workbench.colorTheme": "Catppuccin Mocha", // theme
+}

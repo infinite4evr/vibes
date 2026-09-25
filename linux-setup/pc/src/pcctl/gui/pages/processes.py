@@ -49,14 +49,15 @@ class ProcessesPage(Page):
         self.search_entry = Gtk.SearchEntry(placeholder_text="Find a process… (Ctrl+F)")
         self.search_entry.set_hexpand(True)
         self.search_entry.connect("search-changed", lambda e: self.table.set_filter(e.get_text()))
-        self.mode_dd = Gtk.DropDown.new_from_strings(["Apps (grouped)", "All processes", "Only mine"])
+        self.mode_dd = Gtk.DropDown.new_from_strings(["Apps (grouped)", "All processes", "Only mine", "Tree (who started what)"])
         self.mode_dd.connect("notify::selected", self._mode)
         self.pause_btn = Gtk.ToggleButton(icon_name="media-playback-pause-symbolic", tooltip_text="Freeze the list")
         self.pause_btn.connect("toggled", lambda b: setattr(self, "paused", b.get_active()))
         more = Gtk.MenuButton(icon_name="view-more-symbolic", tooltip_text="More actions")
         pop = Gtk.Popover()
         items = vbox(spacing=2)
-        for text, fn in (("Pause (freeze) app", lambda: self.signal(signal.SIGSTOP)), ("Resume app", lambda: self.signal(signal.SIGCONT)),
+        for text, fn in (("Efficiency mode (lowest priority)", self.efficiency),
+                         ("Pause (freeze) app", lambda: self.signal(signal.SIGSTOP)), ("Resume app", lambda: self.signal(signal.SIGCONT)),
                          ("Lower priority (be nice)", lambda: self.renice(10)), ("Normal priority", lambda: self.renice(0)),
                          ("Higher priority", lambda: self.renice(-5)), ("Open its folder", self.open_folder), ("Copy command", self.copy_cmd)):
             b = button(text, css="flat")
@@ -75,12 +76,14 @@ class ProcessesPage(Page):
             Column("count", "#", "num", width=48, fmt=lambda v, d: str(v) if v and v > 1 else ""),
             Column("cpu", "CPU", "bar", width=130, fmt=lambda v, d: f"{(v or 0) * 100:.1f}%"),
             Column("mem", "Memory", "size", width=96),
+            Column("io", "Disk", "num", width=86, fmt=lambda v, d: (human(v) + "/s") if v and v >= 1024 else ""),
             Column("user", "User", "muted", width=110),
             Column("pid", "PID", "num", width=74, fmt=lambda v, d: str(v) if v else ""),
             Column("cmd", "Command", "mono", expand=True),
         ], on_activate=lambda r: self.details(), empty="No processes match.", sort="cpu",
             search=lambda d, q: q in d["name"].lower() or q in d["cmd"].lower() or q == str(d.get("pid")))
         self.table.set_vexpand(True)
+        self.table.set_context(self._row_menu, "processes")
         self.body.append(self.table)
         self.hint = label("Double-click a row for details. End asks nicely; Force quit doesn't wait.", "dim")
         self.body.append(self.hint)
@@ -88,6 +91,25 @@ class ProcessesPage(Page):
         key = Gtk.EventControllerKey()
         key.connect("key-pressed", self._key)
         self.table.add_controller(key)
+
+    def _row_menu(self, _row: dict) -> list:
+        return [("Details", lambda r: self.details()), ("End", lambda r: self.signal(signal.SIGTERM)),
+                ("Force quit", lambda r: self.signal(signal.SIGKILL)), ("Efficiency mode (lowest priority)", lambda r: self.efficiency()),
+                ("Pause (freeze)", lambda r: self.signal(signal.SIGSTOP)), ("Resume", lambda r: self.signal(signal.SIGCONT)),
+                ("Open its folder", lambda r: self.open_folder()), ("Copy command", lambda r: self.copy_cmd())]
+
+    def efficiency(self) -> None:
+        from ...core.diagnose import efficiency_steps
+        r = self._sel()
+        if not r:
+            return
+        pids = [p for p in r["pids"] if p not in (0, 1, 2, os.getpid())]
+        if not pids:
+            return
+        self.run(f"Efficiency mode for {r['name']}", efficiency_steps(r["name"], pids, r["users"]),
+                 "It keeps running, but only gets the CPU and disk when nothing else needs them - like Windows' efficiency mode. "
+                 "Lasts until it's restarted.", ok_label="Turn on", reload=False, ask=any(u not in (ME, "?") for u in r["users"]),
+                 done=lambda ok: ok and self.toast(f"{r['name']} is in efficiency mode."))
 
     def _key(self, _c, keyval, _code, _state) -> bool:
         from gi.repository import Gdk
@@ -98,6 +120,8 @@ class ProcessesPage(Page):
 
     def _mode(self, dd, _p) -> None:
         self.mode = dd.get_selected()
+        if self.mode == 3:  # keep tree order until the user clicks a column header
+            self.table.view.sort_by_column(None, Gtk.SortType.ASCENDING)
         self.collect(force=True)
 
     def load(self) -> None:
@@ -131,15 +155,45 @@ class ProcessesPage(Page):
                 first = by_pid.get(g["pids"][0])
                 users = {by_pid[p].user for p in g["pids"] if p in by_pid}
                 rows.append({"key": f"g:{g['name']}", "name": g["name"], "count": g["count"], "cpu": g["cpu"] / 100, "mem": g["mem"],
+                             "io": sum(by_pid[p].io for p in g["pids"] if p in by_pid),
                              "user": ", ".join(sorted(users))[:30], "pid": g["pids"][0] if g["count"] == 1 else 0,
                              "cmd": first.cmd if first else "", "pids": g["pids"], "users": users})
+        elif self.mode == 3:
+            rows = self._tree_rows(procs)
         else:
             for p in procs:
                 if self.mode == 2 and p.user != ME:
                     continue
                 rows.append({"key": f"p:{p.pid}", "name": p.name, "count": 1, "cpu": p.cpu / 100, "mem": p.mem, "user": p.user, "pid": p.pid,
-                             "cmd": p.cmd, "pids": [p.pid], "users": {p.user}})
+                             "io": p.io, "cmd": p.cmd, "pids": [p.pid], "users": {p.user}})
         self.table.set_rows(rows)
+
+    def _tree_rows(self, procs: list[system.Proc]) -> list[dict]:
+        """Parent → children order with indented names. Sorting by a column header flattens it again."""
+        by_pid = {p.pid: p for p in procs}
+        kids: dict[int, list] = {}
+        for p in procs:
+            kids.setdefault(p.ppid if p.ppid in by_pid else 0, []).append(p)
+        rows: list[dict] = []
+
+        def walk(pid: int, depth: int) -> None:
+            for c in sorted(kids.get(pid, []), key=lambda x: -x.mem):
+                prefix = ("    " * (depth - 1) + "└─ ") if depth else ""
+                sub = self._subtree(c.pid, kids)
+                rows.append({"key": f"t:{c.pid}", "name": prefix + c.name, "count": len(sub), "cpu": c.cpu / 100, "mem": c.mem, "io": c.io,
+                             "user": c.user, "pid": c.pid, "cmd": c.cmd, "pids": [c.pid], "users": {c.user}})
+                walk(c.pid, depth + 1)
+        walk(0, 0)
+        return rows
+
+    @staticmethod
+    def _subtree(pid: int, kids: dict) -> list[int]:
+        out, stack = [pid], [pid]
+        while stack:
+            for c in kids.get(stack.pop(), []):
+                out.append(c.pid)
+                stack.append(c.pid)
+        return out
 
     # ---------------------------------------------------------------- actions
     def _sel(self) -> dict | None:

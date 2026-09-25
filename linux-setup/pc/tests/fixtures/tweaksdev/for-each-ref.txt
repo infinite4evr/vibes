@@ -1,0 +1,9 @@
+refs/heads/main	origin/main	[ahead 2]
+refs/heads/feature/login		
+refs/heads/fix-typo	origin/fix-typo	[gone]
+refs/heads/old	origin/old	[ahead 1, behind 3]
+refs/heads/pushed-no-track		
+refs/remotes/origin/HEAD		
+refs/remotes/origin/main		
+refs/remotes/origin/old		
+refs/remotes/origin/pushed-no-track		

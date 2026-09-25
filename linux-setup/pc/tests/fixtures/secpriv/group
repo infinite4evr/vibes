@@ -1,0 +1,7 @@
+root:x:0:
+adm:x:4:syslog,infinite4evr
+sudo:x:27:infinite4evr,dev
+docker:x:998:infinite4evr,guest
+infinite4evr:x:1000:
+guest:x:1001:
+dev:x:1003:

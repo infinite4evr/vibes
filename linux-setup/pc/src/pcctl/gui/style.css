@@ -1,153 +1,245 @@
-/* PC Command Center - Catppuccin Mocha on libadwaita.
-   Both the old (@define-color) and new (CSS variable) names are set so it works on libadwaita 1.5 → 1.9+. */
+/* PC Command Center - "Modern" (neutral surfaces, hairline borders, GNOME's accent) or Catppuccin, light and dark.
+   This is a template: $name tokens are filled from gui/theme.py for the active look, and the sheet is reloaded when
+   GNOME switches between light and dark or changes its accent colour. Both the old (@define-color) and the new
+   (CSS variable) libadwaita names are set so it works on libadwaita 1.5 → 1.9+. */
 
-@define-color accent_color #cba6f7;
-@define-color accent_bg_color #cba6f7;
-@define-color accent_fg_color #11111b;
-@define-color destructive_color #f38ba8;
-@define-color destructive_bg_color #f38ba8;
-@define-color destructive_fg_color #11111b;
-@define-color success_color #a6e3a1;
-@define-color success_bg_color #a6e3a1;
-@define-color success_fg_color #11111b;
-@define-color warning_color #fab387;
-@define-color warning_bg_color #fab387;
-@define-color warning_fg_color #11111b;
-@define-color error_color #f38ba8;
-@define-color error_bg_color #f38ba8;
-@define-color error_fg_color #11111b;
-@define-color window_bg_color #1e1e2e;
-@define-color window_fg_color #cdd6f4;
-@define-color view_bg_color #181825;
-@define-color view_fg_color #cdd6f4;
-@define-color headerbar_bg_color #181825;
-@define-color headerbar_fg_color #cdd6f4;
-@define-color headerbar_backdrop_color #181825;
-@define-color sidebar_bg_color #181825;
-@define-color sidebar_fg_color #cdd6f4;
-@define-color sidebar_backdrop_color #181825;
-@define-color card_bg_color #262637;
-@define-color card_fg_color #cdd6f4;
-@define-color dialog_bg_color #1e1e2e;
-@define-color dialog_fg_color #cdd6f4;
-@define-color popover_bg_color #313244;
-@define-color popover_fg_color #cdd6f4;
-@define-color thumbnail_bg_color #313244;
+@define-color accent_color $mauve;
+@define-color accent_bg_color $accent_bg;
+@define-color accent_fg_color $accent_fg;
+@define-color destructive_color $red;
+@define-color destructive_bg_color $red;
+@define-color destructive_fg_color $on_color;
+@define-color success_color $green;
+@define-color success_bg_color $green;
+@define-color success_fg_color $on_color;
+@define-color warning_color $peach;
+@define-color warning_bg_color $peach;
+@define-color warning_fg_color $on_color;
+@define-color error_color $red;
+@define-color error_bg_color $red;
+@define-color error_fg_color $on_color;
+@define-color window_bg_color $window;
+@define-color window_fg_color $text;
+@define-color view_bg_color $view;
+@define-color view_fg_color $text;
+@define-color headerbar_bg_color $headerbar;
+@define-color headerbar_fg_color $text;
+@define-color headerbar_backdrop_color $headerbar;
+@define-color headerbar_shade_color $line;
+@define-color sidebar_bg_color $sidebar;
+@define-color sidebar_fg_color $text;
+@define-color sidebar_backdrop_color $sidebar;
+@define-color sidebar_shade_color $line;
+@define-color card_bg_color $card;
+@define-color card_fg_color $text;
+@define-color card_shade_color $line;
+@define-color dialog_bg_color $dialog;
+@define-color dialog_fg_color $text;
+@define-color popover_bg_color $popover;
+@define-color popover_fg_color $text;
+@define-color thumbnail_bg_color $popover;
+@define-color pc_mauve $mauve;
 
 :root {
-  --accent-color: #cba6f7;
-  --accent-bg-color: #cba6f7;
-  --accent-fg-color: #11111b;
-  --destructive-color: #f38ba8;
-  --destructive-bg-color: #f38ba8;
-  --destructive-fg-color: #11111b;
-  --success-color: #a6e3a1;
-  --success-bg-color: #a6e3a1;
-  --success-fg-color: #11111b;
-  --warning-color: #fab387;
-  --warning-bg-color: #fab387;
-  --warning-fg-color: #11111b;
-  --error-color: #f38ba8;
-  --error-bg-color: #f38ba8;
-  --error-fg-color: #11111b;
-  --window-bg-color: #1e1e2e;
-  --window-fg-color: #cdd6f4;
-  --view-bg-color: #181825;
-  --view-fg-color: #cdd6f4;
-  --headerbar-bg-color: #181825;
-  --headerbar-fg-color: #cdd6f4;
-  --headerbar-backdrop-color: #181825;
-  --sidebar-bg-color: #181825;
-  --sidebar-fg-color: #cdd6f4;
-  --sidebar-backdrop-color: #181825;
-  --secondary-sidebar-bg-color: #181825;
-  --card-bg-color: #262637;
-  --card-fg-color: #cdd6f4;
-  --dialog-bg-color: #1e1e2e;
-  --dialog-fg-color: #cdd6f4;
-  --popover-bg-color: #313244;
-  --popover-fg-color: #cdd6f4;
-  --thumbnail-bg-color: #313244;
+  --accent-color: $mauve;
+  --accent-bg-color: $accent_bg;
+  --accent-fg-color: $accent_fg;
+  --destructive-color: $red;
+  --destructive-bg-color: $red;
+  --destructive-fg-color: $on_color;
+  --success-color: $green;
+  --success-bg-color: $green;
+  --success-fg-color: $on_color;
+  --warning-color: $peach;
+  --warning-bg-color: $peach;
+  --warning-fg-color: $on_color;
+  --error-color: $red;
+  --error-bg-color: $red;
+  --error-fg-color: $on_color;
+  --window-bg-color: $window;
+  --window-fg-color: $text;
+  --view-bg-color: $view;
+  --view-fg-color: $text;
+  --headerbar-bg-color: $headerbar;
+  --headerbar-fg-color: $text;
+  --headerbar-backdrop-color: $headerbar;
+  --headerbar-shade-color: $line;
+  --sidebar-bg-color: $sidebar;
+  --sidebar-fg-color: $text;
+  --sidebar-backdrop-color: $sidebar;
+  --sidebar-shade-color: $line;
+  --sidebar-border-color: $line;
+  --secondary-sidebar-bg-color: $sidebar;
+  --card-bg-color: $card;
+  --card-fg-color: $text;
+  --card-shade-color: $line;
+  --dialog-bg-color: $dialog;
+  --dialog-fg-color: $text;
+  --popover-bg-color: $popover;
+  --popover-fg-color: $text;
+  --thumbnail-bg-color: $popover;
+  --border-color: $line;
 }
 
-window, .background { background-color: #1e1e2e; color: #cdd6f4; }
+window, .background { background-color: $window; color: $text; }
+window, popover, dialog { font-family: "Inter Variable", "Inter", "Adwaita Sans", "Ubuntu Sans", "Cantarell", sans-serif; }
+
+/* ---------- header bars ---------- */
+.main-header { background-color: $headerbar; box-shadow: inset 0 -1px $line; }
+.side-header { background-color: $sidebar; box-shadow: none; }
+.top-search { min-height: 36px; border-radius: 10px; background-color: $field; border: none; box-shadow: none; padding: 0 12px; color: $text; }
+.top-search:hover { background-color: alpha($text, 0.07); }
+.top-search:focus-within { background-color: $card; box-shadow: 0 0 0 1px alpha($accent_bg, 0.55), 0 0 0 4px alpha($accent_bg, 0.14); }
+.top-search image { color: $overlay1; }
+.search-pop > contents { border-radius: 14px; padding: 6px; box-shadow: 0 12px 32px $shadow, 0 0 0 1px $line; }
+.search-results { background: transparent; }
+.search-results row { padding: 7px 10px; border-radius: 9px; }
+.search-results row:selected, .search-results row:hover { background-color: alpha($accent_bg, 0.10); }
+.search-results row image { color: $overlay2; }
+.search-results row:selected image { color: $mauve; }
+.result-kind { font-size: 0.78em; color: $overlay1; }
+.search-hint { font-size: 0.8em; color: $overlay1; padding: 6px 10px 2px 10px; }
 
 /* ---------- sidebar ---------- */
+.sidebar-pane, .side-body { background-color: $sidebar; }
 .nav-list { background: transparent; }
-.nav-list row { border-radius: 10px; margin: 1px 8px; padding: 7px 10px; }
-.nav-list row:selected { background-color: alpha(#cba6f7, 0.18); color: #f5e0dc; }
-.nav-list row:selected image { color: #cba6f7; }
-.nav-list image { color: #9399b2; }
-.nav-section { font-size: 0.78em; font-weight: 800; letter-spacing: 1px; color: #6c7086; margin: 14px 18px 4px 18px; }
-.nav-badge { background-color: #fab387; color: #11111b; border-radius: 99px; padding: 0 7px; font-size: 0.8em; font-weight: 800; min-width: 12px; }
-.nav-badge.bad { background-color: #f38ba8; }
-.brand-title { font-weight: 800; font-size: 1.05em; }
-.brand-sub { color: #7f849c; font-size: 0.85em; }
+.nav-list row { border-radius: 8px; margin: 1px 10px; padding: 6px 10px; }
+.nav-list row:hover { background-color: alpha($text, 0.05); }
+.nav-list row:selected { background-color: alpha($accent_bg, 0.12); color: $mauve; }
+.nav-list row:selected label.nav-title { font-weight: 600; }
+.nav-list image { color: $overlay2; }
+.nav-list row:selected image { color: $mauve; }
+.nav-section { font-size: 0.72em; font-weight: 700; letter-spacing: 0.08em; color: $overlay1; margin: 16px 20px 4px 20px; }
+.nav-badge { background-color: $peach; color: $on_color; border-radius: 99px; padding: 0 6px; font-size: 0.75em; font-weight: 700; min-width: 10px; }
+.nav-badge.bad { background-color: $red; }
+.nav-count { color: $overlay1; font-size: 0.85em; font-feature-settings: "tnum"; }
+.brand-title { font-weight: 700; font-size: 1.02em; }
+.brand-sub { color: $overlay1; font-size: 0.82em; }
+.quick-btn { margin: 2px 12px 8px 12px; }
+.quick-btn > button { background-color: $card; color: $text; border-radius: 14px; padding: 8px 18px 8px 14px; font-weight: 600;
+  box-shadow: 0 0 0 1px $line, 0 2px 6px $shadow; }
+.quick-btn > button:hover, .quick-btn > button:checked { background-color: $hover; }
+.quick-btn image { color: $mauve; }
+.side-card { background-color: $card; border-radius: 12px; box-shadow: 0 0 0 1px $line; padding: 10px 12px; margin: 6px 12px 12px 12px; }
+.side-card-title { font-weight: 700; font-size: 0.88em; }
+.side-card-sub { color: $overlay1; font-size: 0.78em; }
+.side-link { padding: 0; min-height: 0; font-size: 0.82em; font-weight: 600; color: $mauve; background: none; box-shadow: none; }
+.side-link:hover { text-decoration-line: underline; background: none; }
 
-/* ---------- page ---------- */
-.page-title { font-size: 1.6em; font-weight: 800; }
-.page-sub { color: #a6adc8; }
-.section-title { font-weight: 800; font-size: 1.02em; margin-top: 6px; }
-.dim { color: #7f849c; }
-.subtle { color: #a6adc8; }
+/* ---------- pages ---------- */
+.page-title { font-size: 1.55em; font-weight: 700; letter-spacing: -0.01em; }
+.page-sub { color: $overlay2; }
+.section-title { font-weight: 700; font-size: 1.0em; margin-top: 6px; }
+.dim { color: $overlay1; }
+.subtle { color: $subtext0; }
 .mono { font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", "Ubuntu Mono", monospace; }
-.big-num { font-size: 2.2em; font-weight: 800; }
-.huge-num { font-size: 3.2em; font-weight: 900; }
-.mid-num { font-size: 1.35em; font-weight: 800; }
+.big-num { font-size: 2.1em; font-weight: 700; letter-spacing: -0.02em; font-feature-settings: "tnum"; }
+.huge-num { font-size: 3.0em; font-weight: 800; letter-spacing: -0.03em; font-feature-settings: "tnum"; }
+.mid-num { font-size: 1.3em; font-weight: 700; letter-spacing: -0.01em; }
 .tile { padding: 14px 16px; }
-.tile-title { font-size: 0.82em; font-weight: 800; letter-spacing: 0.6px; color: #9399b2; }
+.tile-title { font-size: 0.74em; font-weight: 700; letter-spacing: 0.08em; color: $overlay1; }
 .card-pad { padding: 16px 18px; }
-.accent-text { color: #cba6f7; }
-.ok-text { color: #a6e3a1; }
-.warn-text { color: #fab387; }
-.bad-text { color: #f38ba8; }
-.blue-text { color: #89b4fa; }
-.teal-text { color: #94e2d5; }
-.peach-text { color: #fab387; }
-.pink-text { color: #f5c2e7; }
+.accent-text { color: $mauve; }
+.ok-text { color: $green; }
+.warn-text { color: $peach; }
+.bad-text { color: $red; }
+.blue-text { color: $blue; }
+.teal-text { color: $teal; }
+.peach-text { color: $peach; }
+.pink-text { color: $pink; }
 
-.lvl-ok { color: #a6e3a1; }
-.lvl-info { color: #89b4fa; }
-.lvl-warn { color: #fab387; }
-.lvl-bad { color: #f38ba8; }
+.lvl-ok { color: $green; }
+.lvl-info { color: $blue; }
+.lvl-warn { color: $peach; }
+.lvl-bad { color: $red; }
 
-.pill { border-radius: 99px; padding: 1px 9px; font-size: 0.82em; font-weight: 700; }
-.pill-neutral { background-color: alpha(#cdd6f4, 0.1); color: #bac2de; }
-.pill-ok { background-color: alpha(#a6e3a1, 0.16); color: #a6e3a1; }
-.pill-warn { background-color: alpha(#fab387, 0.16); color: #fab387; }
-.pill-bad { background-color: alpha(#f38ba8, 0.16); color: #f38ba8; }
-.pill-info { background-color: alpha(#89b4fa, 0.16); color: #89b4fa; }
-.pill-accent { background-color: alpha(#cba6f7, 0.18); color: #cba6f7; }
+.pill { border-radius: 6px; padding: 1px 8px; font-size: 0.78em; font-weight: 600; }
+.pill-neutral { background-color: alpha($text, 0.07); color: $subtext0; }
+.pill-ok { background-color: alpha($green, 0.13); color: $green; }
+.pill-warn { background-color: alpha($peach, 0.14); color: $peach; }
+.pill-bad { background-color: alpha($red, 0.12); color: $red; }
+.pill-info { background-color: alpha($blue, 0.12); color: $blue; }
+.pill-accent { background-color: alpha($accent_bg, 0.12); color: $mauve; }
 
-.hero { padding: 22px 24px; background-image: linear-gradient(120deg, alpha(#cba6f7, 0.14), alpha(#89b4fa, 0.06) 60%, alpha(#1e1e2e, 0)); }
+/* cards and lists: flat surfaces with a hairline border instead of heavy shadows */
+.card, list.boxed-list, .boxed-list { background-color: $card; border-radius: 12px; box-shadow: 0 0 0 1px $line, 0 1px 2px $shadow; }
+list.boxed-list > row, .boxed-list > row { border-color: $line_soft; }
+button.card { box-shadow: 0 0 0 1px $line, 0 1px 2px $shadow; }
+button.card:hover { background-color: $hover; box-shadow: 0 0 0 1px alpha($accent_bg, 0.35), 0 2px 6px $shadow; }
+.hero { padding: 20px 22px; background-image: linear-gradient(135deg, alpha($accent_bg, 0.07), alpha($accent_bg, 0.0) 55%); }
+preferencesgroup > box > box.header .title, .preferences-group-title { font-weight: 700; }
+
+/* buttons inside pages: outlined, not grey blobs */
+.page-body button:not(.flat):not(.suggested-action):not(.destructive-action):not(.card):not(.circular):not(.toggle):not(.mode-card) {
+  background-color: $card; box-shadow: 0 0 0 1px $line, 0 1px 1px $shadow; }
+.page-body button:not(.flat):not(.suggested-action):not(.destructive-action):not(.card):not(.circular):not(.toggle):not(.mode-card):hover {
+  background-color: $hover; }
+.page-body button.toggle { background-color: $card; box-shadow: 0 0 0 1px $line; }
+.page-body button.toggle:hover { background-color: $hover; }
+.page-body button.toggle:checked { background-color: alpha($accent_bg, 0.12); color: $mauve; box-shadow: 0 0 0 1px alpha($accent_bg, 0.45); }
+button.suggested-action { box-shadow: 0 1px 2px alpha($accent_bg, 0.35); }
+button.pill { padding: 6px 16px; }
+
+/* filter chips (drop-downs) and search boxes */
+.page-body dropdown > button { border-radius: 99px; padding: 3px 12px; background-color: $card; box-shadow: 0 0 0 1px $line; font-weight: 500; }
+.page-body dropdown > button:hover { background-color: $hover; }
+.page-body entry.search, .page-body searchentry, .page-body entry { border-radius: 10px; }
+.page-body entry.search, .page-body searchentry { background-color: $field; box-shadow: none; min-height: 34px; }
+.page-body entry.search:focus-within, .page-body searchentry:focus-within { background-color: $card; box-shadow: 0 0 0 1px alpha($accent_bg, 0.55), 0 0 0 3px alpha($accent_bg, 0.12); }
+
+/* ---------- tabs: underlined ---------- */
+.tabbar { box-shadow: inset 0 -1px $line; }
+.tabbar viewswitcher button, .page-tabs button { background: none; box-shadow: none; border-radius: 0; padding: 4px 12px 8px 12px; margin: 0 2px 0 0;
+  color: $subtext0; font-weight: 600; border-bottom: 2px solid transparent; }
+.tabbar viewswitcher button:hover, .page-tabs button:hover { color: $text; background: none; }
+.tabbar viewswitcher button:checked, .page-tabs button:checked { color: $mauve; background: none; border-bottom: 2px solid $accent_bg; }
+.tabbar viewswitcher button image { color: inherit; }
 
 /* ---------- tables ---------- */
+.table-frame { border-radius: 12px; background-color: $card; box-shadow: 0 0 0 1px $line; }
 columnview { background-color: transparent; }
-columnview > header > button { font-weight: 800; color: #a6adc8; padding: 6px 8px; }
-columnview row:selected { background-color: alpha(#cba6f7, 0.22); }
-columnview > listview > row { padding: 2px 0; }
-.table-frame { border-radius: 12px; background-color: #181825; }
+columnview.data-table > header { box-shadow: inset 0 -1px $line; }
+columnview.data-table > header > button { background: none; box-shadow: none; border: none; padding: 9px 10px 8px 10px; font-size: 0.74em; font-weight: 700;
+  letter-spacing: 0.06em; color: $overlay1; }
+columnview.data-table > header > button:hover { color: $text; }
+columnview.data-table > listview > row { border-bottom: 1px solid $line_soft; }
+columnview.data-table > listview > row:hover { background-color: $hover; }
+columnview.data-table > listview > row:selected { background-color: alpha($accent_bg, 0.10); color: $text; }
+columnview.data-table > listview > row > cell { padding: 7px 10px; }
+columnview.data-table label { font-feature-settings: "tnum"; }
+
+/* ---------- right-click menus ---------- */
+popover.ctx > contents { border-radius: 12px; padding: 6px; box-shadow: 0 10px 28px $shadow, 0 0 0 1px $line; }
+.ctx-item { padding: 5px 10px; border-radius: 8px; min-height: 24px; font-weight: 500; }
+.ctx-item:hover { background-color: $hover; }
+.ctx-item image { color: $overlay2; }
+.ctx-item.danger, .ctx-item.danger label, .ctx-item.danger image { color: $red; }
+.ctx-item.danger:hover { background-color: alpha($red, 0.08); }
+.ctx-sep { margin: 4px 6px; background-color: $line; min-height: 1px; }
 
 /* ---------- misc ---------- */
-.log-view, .log-view text { background-color: #11111b; color: #bac2de; font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", "Ubuntu Mono", monospace; font-size: 0.9em; }
-.cmd-box { background-color: #11111b; border-radius: 10px; padding: 10px 12px; }
+.log-view, .log-view text { background-color: $code; color: $subtext1; font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", "Ubuntu Mono", monospace; font-size: 0.9em; }
+.cmd-box { background-color: $code; border-radius: 10px; padding: 10px 12px; box-shadow: 0 0 0 1px $line_soft; }
 .toolbar-row { margin: 0 0 10px 0; }
 .step-row { padding: 3px 0; }
-levelbar block.filled { background-color: #cba6f7; }
-.card.selected-card { box-shadow: inset 0 0 0 2px alpha(#cba6f7, 0.6); }
-.linked-modes button:checked { background-color: alpha(#cba6f7, 0.3); color: #f5e0dc; }
-.clean-total { font-size: 2.4em; font-weight: 900; color: #a6e3a1; }
-
-/* ---------- tabs + misc ---------- */
-.page-tabs button { padding: 4px 12px; border-radius: 10px; }
-.page-tabs button:checked { background-color: alpha(#cba6f7, 0.2); color: #f5e0dc; }
-.banner-warn { background-color: alpha(#fab387, 0.12); border-radius: 12px; padding: 10px 14px; }
-.banner-bad { background-color: alpha(#f38ba8, 0.12); border-radius: 12px; padding: 10px 14px; }
-.banner-ok { background-color: alpha(#a6e3a1, 0.10); border-radius: 12px; padding: 10px 14px; }
-.stat-num { font-size: 1.7em; font-weight: 800; }
-.stat-label { color: #9399b2; font-size: 0.85em; font-weight: 700; }
-.mode-card { padding: 14px 16px; border-radius: 14px; }
-.mode-card:checked { background-color: alpha(#cba6f7, 0.22); box-shadow: inset 0 0 0 2px alpha(#cba6f7, 0.7); }
-.score-good { color: #a6e3a1; }
-.score-mid { color: #fab387; }
-.score-bad { color: #f38ba8; }
+levelbar block.filled { background-color: $accent_bg; }
+levelbar block.empty { background-color: $track; }
+.card.selected-card { box-shadow: 0 0 0 2px alpha($accent_bg, 0.7); }
+.linked-modes button:checked { background-color: alpha($accent_bg, 0.14); color: $mauve; }
+.clean-total { font-size: 2.3em; font-weight: 800; letter-spacing: -0.02em; color: $green; }
+.banner-warn { background-color: alpha($peach, 0.09); box-shadow: inset 0 0 0 1px alpha($peach, 0.25); border-radius: 12px; padding: 10px 14px; }
+.banner-bad { background-color: alpha($red, 0.07); box-shadow: inset 0 0 0 1px alpha($red, 0.22); border-radius: 12px; padding: 10px 14px; }
+.banner-ok { background-color: alpha($green, 0.08); box-shadow: inset 0 0 0 1px alpha($green, 0.22); border-radius: 12px; padding: 10px 14px; }
+.banner-info { background-color: alpha($blue, 0.07); box-shadow: inset 0 0 0 1px alpha($blue, 0.20); border-radius: 12px; padding: 10px 14px; }
+.stat-num { font-size: 1.6em; font-weight: 700; letter-spacing: -0.01em; font-feature-settings: "tnum"; }
+.stat-label { color: $overlay1; font-size: 0.74em; font-weight: 700; letter-spacing: 0.06em; }
+.mode-card { padding: 14px 16px; border-radius: 12px; background-color: $card; box-shadow: 0 0 0 1px $line; }
+.mode-card:hover { background-color: $hover; }
+.mode-card:checked { background-color: alpha($accent_bg, 0.08); box-shadow: 0 0 0 2px $accent_bg; color: $text; }
+.score-good { color: $green; }
+.score-mid { color: $peach; }
+.score-bad { color: $red; }
+.finding { padding: 4px 0; }
+.kbd { font-family: "JetBrains Mono", monospace; font-size: 0.78em; color: $overlay2; background-color: $mantle; box-shadow: inset 0 0 0 1px $line;
+  border-radius: 5px; padding: 0 5px; }
+toast { border-radius: 12px; }

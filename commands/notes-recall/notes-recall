@@ -24,6 +24,10 @@
 #                folder, the same place a run on that folder writes to). It
 #                must not be inside the books folder: the next run would read
 #                your notes PDFs as books.
+#   --rule       Draw a vertical line between the recall columns.
+#   --gap N      Vertical gap between recall rows (default: 1.0).
+#   --right      How the answer column is rendered: plain, bold, or cloze
+#                (default: bold).
 #
 # Example, pages 1-200 of one book:
 #   notes-recall Dump/Book.pdf irll 18 -F "Charis SIL" -p -P 1-200
@@ -54,6 +58,9 @@ font_name=""
 pages=""             # e.g. 1-200 or 1-20,35; empty = every page
 page_number="none"   # -p alone -> br; or bl bc tl tr tc
 out_dir=""
+recall_rule=false
+recall_gap="1.0"
+recall_right="bold"
 positional=()
 
 while [ $# -gt 0 ]; do
@@ -70,6 +77,37 @@ while [ $# -gt 0 ]; do
                 -F|--font-name) font_name="$2" ;;
                 -P|--pages) pages="$2" ;;
                 -o|--out-dir) out_dir="$2" ;;
+            esac
+            shift 2
+            ;;
+        --rule)
+            recall_rule=true
+            shift
+            ;;
+        --gap)
+            if [ $# -lt 2 ]; then
+                echo "Error: --gap needs a value" >&2
+                exit 1
+            fi
+            recall_gap="$2"
+            if ! [[ "$recall_gap" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+                echo "Error: gap must be a number, e.g. 1.0 or 1.5 (got '$recall_gap')" >&2
+                exit 1
+            fi
+            shift 2
+            ;;
+        --right)
+            if [ $# -lt 2 ]; then
+                echo "Error: --right needs a value (plain, bold, or cloze)" >&2
+                exit 1
+            fi
+            recall_right="$2"
+            case "$recall_right" in
+                plain|bold|cloze) ;;
+                *)
+                    echo "Error: --right must be plain, bold, or cloze (got '$recall_right')" >&2
+                    exit 1
+                    ;;
             esac
             shift 2
             ;;
@@ -175,7 +213,9 @@ recall_pdf="$out_dir/${name}_recall.pdf"
 echo "Books:  ${single_pdf:-$books}"
 if [ -n "$pages" ]; then echo "Pages:  $pages (PDF page numbers)"; fi
 if [ "$page_number" = "none" ]; then pages_msg="no page numbers"; else pages_msg="page numbers $page_number"; fi
-echo "Output: $out_dir/$name{.md,.pdf,_recall.pdf}  (font ${font}pt${font_name:+, $font_name}, $pages_msg)"
+rule_msg="no column rule"
+[ "$recall_rule" = true ] && rule_msg="column rule"
+echo "Output: $out_dir/$name{.md,.pdf,_recall.pdf}  (font ${font}pt${font_name:+, $font_name}, $pages_msg; recall: $recall_right, gap $recall_gap, $rule_msg)"
 echo
 
 # ---- 1. every PDF in the folder -> one combined Markdown file ---------------
@@ -224,7 +264,21 @@ mv -f "$tmp_md" "$notes_md"
 failed=()
 echo
 # (--md2pdf-cmd is split like a shell command line, so quote the path)
-if ! "$recall_cmd" "$notes_md" -o "$recall_pdf" -s "$font" ${font_args[@]+"${font_args[@]}"} -p "$page_number" --right bold --md2pdf-cmd "$(printf '%q' "$md2pdf_cmd")"; then
+recall_args=(
+    "$notes_md"
+    -o "$recall_pdf"
+    -s "$font"
+    ${font_args[@]+"${font_args[@]}"}
+    -p "$page_number"
+    --right "$recall_right"
+    --gap "$recall_gap"
+    --md2pdf-cmd "$(printf '%q' "$md2pdf_cmd")"
+)
+if [ "$recall_rule" = true ]; then
+    recall_args+=(--rule)
+fi
+
+if ! "$recall_cmd" "${recall_args[@]}"; then
     failed+=("recall sheet ($recall_pdf)")
 fi
 

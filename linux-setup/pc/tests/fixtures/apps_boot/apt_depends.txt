@@ -1,0 +1,11 @@
+ubuntu-desktop-minimal
+  Depends: alsa-base
+  Depends: gnome-shell
+ |Depends: ptyxis
+  Depends: gnome-terminal
+  Recommends: <firefox>
+  Recommends: gnome-text-editor
+ubuntu-desktop
+  Depends: ubuntu-desktop-minimal
+  Recommends: libreoffice-writer
+  Recommends: thunderbird:any

@@ -16,7 +16,11 @@ ${C_BOLD}Your control center${R}
   ${M}pc clean${R}         safe cleanup           ${M}pc update${R}      update everything
   ${M}pc ports${R}         what's on which port   ${M}pc kill-port 3000${R}
   ${M}pc repos${R}         all your git projects  ${M}pc big ~/${R}      biggest folders
-  ${M}pc --help${R}        everything else
+  ${M}pc slow${R}          why is it slow?        ${M}pc fix sound${R}   troubleshooters (wifi, sound, apt…)
+  ${M}pc secrets${R}       leaked API keys?       ${M}pc report${R}      system report to share
+  ${M}pc awake 2h${R}      don't sleep for 2 h    ${M}pc telemetry off${R}  dev tools stop phoning home
+  ${M}Ctrl+Shift+Esc${R}   Processes (task manager), once turned on in the app
+  ${M}pc --help${R}        everything else (Tab completes pc commands)
 
 ${C_BOLD}Moving around${R}
   ${M}cd proj${R}          jumps to any folder you've visited that matches "proj"

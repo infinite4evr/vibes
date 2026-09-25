@@ -270,6 +270,225 @@ def cmd_backup(_a) -> int:
     return 0 if run_steps_blocking(maint.backup_settings_steps()) else 1
 
 
+def _print_checks(checks, fix: bool = True) -> None:
+    """Shared by doctor / slow / fix: coloured list, then offer each fix (interactive terminals only)."""
+    for c in checks:
+        color, sym = LV[c.level]
+        print(f"  {color}{sym}{R} {B}{c.title}{R}  {DIM}{c.detail}{R}")
+        if c.level in ("bad", "warn") and c.goto and not c.steps:
+            where = c.goto.split(":", 1)[1] + " settings" if c.goto.startswith("settings:") else f"pc gui {c.goto}"
+            print(f"      {rgb('overlay1')}→ {where}{R}")
+    fixable = [c for c in checks if c.level in ("bad", "warn") and c.steps]
+    if fix and fixable and sys.stdin.isatty():
+        print()
+        from .core.run import needs_root, run_steps_blocking
+        for c in fixable:
+            print(f"{DIM}" + "\n".join(f"  $ {s.display()}" for s in c.steps) + R)
+            if confirm(f"{c.fix_label or 'Fix'}: {c.title}?", default=False):
+                if needs_root(c.steps) and not prime_sudo():
+                    continue
+                run_steps_blocking(c.steps)
+
+
+def cmd_slow(_a) -> int:
+    from .core import diagnose
+    print(f"{DIM}Measuring for a couple of seconds…{R}\n")
+    _print_checks(diagnose.run())
+    return 0
+
+
+def cmd_fix(a) -> int:
+    from .core import troubleshoot
+    if not a.what or a.what not in troubleshoot.BY_ID:
+        print("What needs fixing?\n")
+        for t in troubleshoot.TROUBLESHOOTERS:
+            print(f"  {B}pc fix {t.id:<10}{R} {t.title} {DIM}- {t.description}{R}")
+        return 0 if not a.what else 2
+    t = troubleshoot.BY_ID[a.what]
+    title(t.title)
+    print(f"{DIM}Checking…{R}")
+    _print_checks(t.checks(), fix=not a.no_fix)
+    return 0
+
+
+def cmd_secrets(a) -> int:
+    from .core import secrets
+    return secrets.main(["--json"] if a.json else [])
+
+
+def cmd_report(a) -> int:
+    from .core import report
+    if a.text:
+        print(report.text(redacted=not a.full, quick=a.quick))
+        return 0
+    print(f"{DIM}Collecting{' (quick)' if a.quick else ' (updates and the last day of errors take ~20 s)'}…{R}")
+    data = report.collect(quick=a.quick)
+    path = report.save(a.output, redacted=a.share, data=data)
+    print(f"{rgb('green')}✓{R} {report.summary_line(data)}\n  {B}{path}{R}" + (f"\n  {DIM}names and addresses are hidden in this copy{R}" if a.share else ""))
+    if a.open:
+        subprocess.Popen(report.open_cmd(path), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    return 0
+
+
+def cmd_watch(a) -> int:
+    """What the background-alerts timer runs every 30 minutes."""
+    from .core import watch
+    if a.on or a.off:
+        from .core.run import run_steps_blocking
+        return 0 if run_steps_blocking(watch.enable_steps() if a.on else watch.disable_steps()) else 1
+    if a.list:
+        found = watch.checks()
+        for f in found:
+            print(f"  {rgb('peach')}▲{R} {B}{f['title']}{R}  {DIM}{f['body']}{R}")
+        if not found:
+            print("Nothing needs attention ✓")
+        return 0
+    sent = watch.run(force=a.force)
+    if sys.stdout.isatty():
+        print(f"{len(sent)} alert(s) sent" if sent else "Nothing new to tell you ✓")
+    return 0
+
+
+def _parse_duration(text: str) -> int | None:
+    """'90m', '2h', '1h30m', '45' (minutes) -> seconds; 'forever'/'on' -> None (until stopped)."""
+    import re
+    t = text.strip().lower()
+    if t in ("forever", "on", "always", "until"):
+        return None
+    if t.isdigit():
+        return int(t) * 60
+    total = 0
+    for n, unit in re.findall(r"(\d+)\s*([hms])", t):
+        total += int(n) * {"h": 3600, "m": 60, "s": 1}[unit]
+    if not total:
+        raise ValueError(text)
+    return total
+
+
+def cmd_awake(a) -> int:
+    from .core import power
+    arg = (a.duration or "").lower()
+    if arg in ("off", "stop"):
+        print("Keep awake stopped." if power.stop_keep_awake() else "Keep awake wasn't on.")
+        return 0
+    if not arg or arg == "status":
+        st = power.keep_awake_status()
+        if not st:
+            print(f"Keep awake is off. {DIM}pc awake 2h | 90m | forever | off{R}")
+        else:
+            print("Keeping the PC awake " + (f"for another {duration(st['left'])}" if st.get("left") else "until you run: pc awake off"))
+        return 0
+    try:
+        secs = _parse_duration(arg)
+    except ValueError:
+        print("Say how long, e.g. pc awake 2h, pc awake 45m, pc awake forever, or pc awake off")
+        return 2
+    try:
+        power.start_keep_awake(secs)
+    except Exception as e:  # noqa: BLE001
+        print(f"Couldn't keep the PC awake: {e}")
+        return 1
+    print(f"{rgb('green')}✓{R} The PC won't sleep or blank the screen " + (f"for {duration(secs)}" if secs else "until you run: pc awake off"))
+    return 0
+
+
+def cmd_telemetry(a) -> int:
+    from .core import devtelemetry
+    from .core.run import run_steps_blocking
+    if a.state == "off":
+        return 0 if run_steps_blocking(devtelemetry.off_steps()) else 1
+    if a.state == "on":
+        return 0 if run_steps_blocking(devtelemetry.on_steps()) else 1
+    st = devtelemetry.status()
+    print(f"Developer tool telemetry: {st['off_count']} of {st['total']} switched off")
+    for r in st["vars"]:
+        if r["installed"] or r["off"]:
+            mark = f"{rgb('green')}off{R}" if r["off"] else f"{rgb('peach')}on {R}"
+            print(f"  {mark}  {r['tools']}  {DIM}{r['var']}={r['value']}{R}")
+    print(f"{DIM}pc telemetry off | on{R}")
+    return 0
+
+
+PAGES = ["dashboard", "cleanup", "updates", "apps", "startup", "processes", "storage", "network", "power", "logs", "services", "security",
+         "privacy", "tweaks", "dev", "maintenance"]
+
+
+def _parser_tree(p: argparse.ArgumentParser) -> dict[str, list[str]]:
+    """{subcommand: [options…]} straight from argparse, so completions never go stale."""
+    tree: dict[str, list[str]] = {}
+    for action in p._actions:  # noqa: SLF001 - argparse has no public API for this
+        if isinstance(action, argparse._SubParsersAction):  # noqa: SLF001
+            for name, sp in action.choices.items():
+                opts = [o for a in sp._actions for o in a.option_strings if o.startswith("--")]  # noqa: SLF001
+                tree[name] = opts
+    return tree
+
+
+def completion_script(shell: str, p: argparse.ArgumentParser) -> str:
+    from .core import troubleshoot
+    tree = _parser_tree(p)
+    cmds = " ".join(sorted(tree))
+    values = {"gui": " ".join(PAGES), "fix": " ".join(t.id for t in troubleshoot.TROUBLESHOOTERS), "awake": "30m 1h 2h 4h forever off status",
+              "telemetry": "off on", "completions": "bash zsh", "logs": ""}
+    if shell == "bash":
+        cases = "\n".join(f'        {c}) opts="{" ".join(o)} {values.get(c, "")}";;' for c, o in sorted(tree.items()))
+        return f"""# bash completion for pc (generated by `pc completions bash`)
+_pc() {{
+    local cur cmd opts
+    cur="${{COMP_WORDS[COMP_CWORD]}}"
+    if [ "$COMP_CWORD" -eq 1 ]; then
+        COMPREPLY=( $(compgen -W "{cmds} --help --version" -- "$cur") )
+        return
+    fi
+    cmd="${{COMP_WORDS[1]}}"
+    case "$cmd" in
+{cases}
+        *) opts="";;
+    esac
+    case "$cmd" in
+        big) COMPREPLY=( $(compgen -d -- "$cur") $(compgen -W "$opts" -- "$cur") ); return;;
+        report) if [ "${{COMP_WORDS[COMP_CWORD-1]}}" = "-o" ] || [ "${{COMP_WORDS[COMP_CWORD-1]}}" = "--output" ]; then
+                    COMPREPLY=( $(compgen -f -- "$cur") ); return; fi;;
+    esac
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}}
+complete -F _pc pc
+"""
+    if shell == "zsh":
+        helps = {}
+        for action in p._actions:  # noqa: SLF001
+            if isinstance(action, argparse._SubParsersAction):  # noqa: SLF001
+                for ca in action._choices_actions:  # noqa: SLF001
+                    helps[ca.dest] = (ca.help or "").replace("'", "").replace(":", " -")
+        described = "\n".join(f"        '{c}:{helps.get(c, '')}'" for c in sorted(tree))
+        cases = "\n".join(f"        {c}) _values '{c}' {' '.join(repr(x) for x in (values.get(c, '').split() + o)) or repr('')} ;;"
+                          for c, o in sorted(tree.items()) if o or values.get(c))
+        return f"""#compdef pc
+# zsh completion for pc (generated by `pc completions zsh`)
+_pc() {{
+    local -a cmds
+    cmds=(
+{described}
+    )
+    if (( CURRENT == 2 )); then
+        _describe 'command' cmds
+        return
+    fi
+    case "$words[2]" in
+        big) _files -/ ;;
+{cases}
+    esac
+}}
+if [[ $zsh_eval_context[-1] == loadautofunc ]]; then _pc "$@"; else compdef _pc pc; fi
+"""
+    raise SystemExit("pc completions bash | zsh")
+
+
+def cmd_completions(a) -> int:
+    print(completion_script(a.shell, a._parser))
+    return 0
+
+
 def cmd_gui(a) -> int:
     """Open the desktop app. It runs on Ubuntu's own Python (for GTK), so hand over to the pc-gui launcher."""
     import os
@@ -323,6 +542,37 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("--off", action="store_true")
     m.set_defaults(fn=cmd_maintain)
     sub.add_parser("backup", help="back up your settings to ~/Backups").set_defaults(fn=cmd_backup)
+    sub.add_parser("slow", help="why is my PC slow right now? (with fixes)").set_defaults(fn=cmd_slow)
+    fx = sub.add_parser("fix", help="troubleshooters: internet, sound, bluetooth, apt, desktop, clock, printer…")
+    fx.add_argument("what", nargs="?", default="", help="which one (leave empty to list them)")
+    fx.add_argument("--no-fix", action="store_true", help="only report, don't offer fixes")
+    fx.set_defaults(fn=cmd_fix)
+    se = sub.add_parser("secrets", help="find leaked API keys, tokens and passwords")
+    se.add_argument("--json", action="store_true", help="machine-readable output (secrets stay masked)")
+    se.set_defaults(fn=cmd_secrets)
+    rp = sub.add_parser("report", help="save a system report (HTML) to keep or share")
+    rp.add_argument("--share", action="store_true", help="hide names, IP and MAC addresses")
+    rp.add_argument("--quick", action="store_true", help="skip the update check and error log")
+    rp.add_argument("--text", action="store_true", help="print plain text instead (names hidden unless --full)")
+    rp.add_argument("--full", action="store_true", help="with --text: don't hide names")
+    rp.add_argument("-o", "--output", default=None, help="where to save (default ~/Documents/PC-report-….html)")
+    rp.add_argument("--open", action="store_true", help="open it in the browser afterwards")
+    rp.set_defaults(fn=cmd_report)
+    w = sub.add_parser("watch", help="check once and send desktop alerts (what the background timer runs)")
+    w.add_argument("--force", action="store_true", help="run even if alerts are turned off")
+    w.add_argument("--list", action="store_true", help="just print what needs attention")
+    w.add_argument("--on", action="store_true", help="turn background alerts on (every 30 minutes)")
+    w.add_argument("--off", action="store_true", help="turn background alerts off")
+    w.set_defaults(fn=cmd_watch)
+    aw = sub.add_parser("awake", help="keep the PC awake: pc awake 2h | forever | off")
+    aw.add_argument("duration", nargs="?", default="", help="2h, 90m, forever, off or status")
+    aw.set_defaults(fn=cmd_awake)
+    te = sub.add_parser("telemetry", help="developer tool telemetry: pc telemetry off | on")
+    te.add_argument("state", nargs="?", choices=["off", "on", "status"], default="status")
+    te.set_defaults(fn=cmd_telemetry)
+    co = sub.add_parser("completions", help="print tab-completion script: pc completions bash | zsh")
+    co.add_argument("shell", choices=["bash", "zsh"])
+    co.set_defaults(fn=cmd_completions, _parser=p)
     g = sub.add_parser("gui", help="open the desktop app (PC Command Center)")
     g.add_argument("page", nargs="?", default="", help="page to open, e.g. cleanup")
     g.set_defaults(fn=cmd_gui)

@@ -1,0 +1,6 @@
+# tzdb timezone descriptions
+#codes	coordinates	TZ	comments
+AE,OM,RE,SC,TF	+2518+05518	Asia/Dubai	Crozet
+IN	+2232+08822	Asia/Kolkata
+DE,DK,NO,SE,SJ	+5230+01322	Europe/Berlin	most of Germany
+US	+404251-0740023	America/New_York	Eastern (most areas)

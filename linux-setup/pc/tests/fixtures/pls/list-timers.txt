@@ -1,0 +1,7 @@
+Fri 2026-09-25 14:30:00 CEST     27min Fri 2026-09-25 13:30:04 CEST     32min ago anacron.timer                  anacron.service
+Fri 2026-09-25 18:23:41 CEST  4h 21min Fri 2026-09-25 06:46:02 CEST  7h ago       apt-daily.timer                apt-daily.service
+Sat 2026-09-26 00:00:00 CEST        9h Fri 2026-09-25 00:00:04 CEST      13h ago dpkg-db-backup.timer           dpkg-db-backup.service
+Mon 2026-09-28 00:48:22 CEST 2 days left Mon 2026-09-21 00:12:10 CEST 4 days ago fstrim.timer                   fstrim.service
+-                                    - -                                        - snapd.snap-repair.timer        snapd.snap-repair.service
+Sat 2026-09-26 09:00:00 CEST 18h -                                        - pc-backup.timer pc-backup.service
+-                                    - Thu 2026-09-24 22:00:01 CEST 1 day 16h ago motd-news.timer motd-news.service

@@ -1,0 +1,8 @@
+/usr/bin/man (enforce)
+man_filter (enforce)
+man_groff (enforce)
+firefox (unconfined)
+/usr/sbin/cupsd (enforce)
+/usr/lib/snapd/snap-confine (enforce)
+code (unconfined)
+/usr/bin/evince (complain)

@@ -1,0 +1,8 @@
+WHO                          UID  USER         PID   COMM            WHAT                                                     WHY                                                       MODE
+ModemManager                 0    root         1034  ModemManager    sleep                                                    ModemManager needs to reset devices                       delay
+NetworkManager               0    root         962   NetworkManager  sleep                                                    NetworkManager needs to turn off networks                 delay
+Unattended Upgrades Shutdown 0    root         1320  unattended-upgr shutdown                                                 Stop ongoing upgrades or perform upgrades before shutdown delay
+infinite4evr                 1000 infinite4evr 2567  gsd-media-keys  handle-power-key:handle-suspend-key:handle-hibernate-key GNOME handling keypresses                                 block
+PC Command Center            1000 infinite4evr 48211 systemd-inhibit idle:sleep                                               Keep awake                                                block
+
+5 inhibitors listed.

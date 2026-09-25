@@ -1,0 +1,6 @@
+gnome-keyring-daemon.service                           loaded active   running GNOME Keyring daemon
+localsearch-3.service                                  loaded active   running Localsearch - File System Indexer
+pc-maintain.timer                                      loaded active   waiting Weekly PC check-up
+pipewire.service                                       loaded active   running PipeWire Multimedia Service
+wireplumber.service                                    loaded failed   failed  Multimedia Service Session Manager
+xdg-user-dirs.service                                  loaded inactive dead    User folders update

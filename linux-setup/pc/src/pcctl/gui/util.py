@@ -13,7 +13,6 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, GLib, Gtk, Pango  # noqa: E402
 
-from ..core.fmt import human  # noqa: E402,F401  (re-exported for pages)
 from ..core.run import which  # noqa: E402
 
 
@@ -28,7 +27,13 @@ def bg(fn: Callable[[], Any], done: Callable[[Any], None] | None = None, error: 
         try:
             res = fn()
         except Exception as e:  # noqa: BLE001
-            traceback.print_exc()
+            if error is None:  # unexpected: keep a record. Expected failures are handled by the caller's error callback.
+                traceback.print_exc()
+                try:
+                    from .activity import log_error
+                    log_error(traceback.format_exc())
+                except Exception:  # noqa: BLE001
+                    pass
             err = e  # `e` is cleared when the except block ends; keep our own reference for the callback
             if error:
                 GLib.idle_add(lambda: (error(err), False)[1])
@@ -79,6 +84,8 @@ def button(text: str = "", icon: str | None = None, css: str | list[str] | None 
         b.add_css_class(c)
     if tooltip:
         b.set_tooltip_text(tooltip)
+        if icon and not text:  # screen readers read this instead of the icon name
+            b.update_property([Gtk.AccessibleProperty.LABEL], [tooltip])
     if on_click:
         b.connect("clicked", lambda *_: on_click())
     return b

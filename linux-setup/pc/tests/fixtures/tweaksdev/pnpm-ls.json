@@ -1,0 +1,9 @@
+[
+  {
+    "path": "/home/infinite4evr/.local/share/pnpm/global/5",
+    "private": false,
+    "dependencies": {
+      "vercel": {"from": "vercel", "version": "44.2.0", "resolved": "https://registry.npmjs.org/vercel/-/vercel-44.2.0.tgz", "path": "/home/infinite4evr/.local/share/pnpm/global/5/node_modules/vercel"}
+    }
+  }
+]

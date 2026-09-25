@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
+from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango  # noqa: E402
 
 from .. import __version__  # noqa: E402
 from ..core import system  # noqa: E402
+from . import prefs, theme  # noqa: E402
 from .util import bg, esc, hbox, label, vbox  # noqa: E402
 
 SECTIONS = [
@@ -22,6 +21,44 @@ SECTIONS = [
     ("Develop", ["dev"]),
     ("Care", ["maintenance"]),
 ]
+
+
+PALETTE_ACTIONS = [
+    ("cleanup:scan", "Scan for junk", "Cleanup"), ("cleanup:deep", "Deep scan (projects, duplicates, old versions)", "Cleanup"),
+    ("updates:all", "Update everything", "Updates"), ("updates:sec", "Install security fixes only", "Updates"),
+    ("maintenance:tune", "One-click tune-up", "Maintenance"), ("maintenance:backup", "Back up my settings", "Maintenance"),
+    ("storage:big", "Find big files", "Storage"), ("storage:dups", "Find duplicate files", "Storage"),
+    ("network:speed", "Internet speed test", "Network"), ("network:diag", "Why is the internet not working?", "Network"),
+    ("network:ports", "What's listening on which port", "Network"), ("security:fix", "Fix security issues", "Security"),
+    ("tweaks:all", "Apply recommended tweaks", "Tweaks"), ("apps:get", "Install an app", "Apps"),
+    ("dev:srv", "Running dev servers", "Developer"), ("power:bios", "Restart into BIOS / UEFI", "Power"),
+    ("app:preferences", "Preferences", "App"), ("app:activity", "Activity history: everything this app did", "App"),
+    ("app:light", "Switch to light style", "App"), ("app:dark", "Switch to dark style", "App"),
+    ("app:system", "Follow the system's light/dark style", "App"), ("app:welcome", "Welcome & quick setup", "App"),
+]
+
+
+def all_actions(classes: dict[str, type]) -> list[tuple[str, str, str]]:
+    """Every action the palette (and GNOME search) can run: built-in ones plus each page's PALETTE."""
+    rows = [(k, t, s) for k, t, s in PALETTE_ACTIONS if k.split(":")[0] in classes or k.startswith("app:")]
+    known = {r[0] for r in rows}
+    for pid, cls in classes.items():
+        rows += [(f"{pid}:{k}", t, cls.TITLE) for k, t in getattr(cls, "PALETTE", []) if f"{pid}:{k}" not in known]
+    return rows
+
+
+def setting_rows() -> list[tuple[str, str, str]]:
+    """Individual settings, so typing e.g. 'hot corner' or 'tap to click' finds the page that has it."""
+    rows = []
+    try:
+        from ..core import privacy, tweaks
+        for sw in tweaks.DESKTOP:
+            rows.append((f"setting:tweaks:{sw.title}", sw.title, f"Setting · Tweaks · {sw.group}"))
+        for st in privacy.SETTINGS:
+            rows.append((f"setting:privacy:{st.title}", st.title, "Setting · Privacy"))
+    except Exception:  # noqa: BLE001
+        pass
+    return rows
 
 
 def page_classes() -> dict[str, type]:
@@ -56,21 +93,35 @@ class MainWindow(Adw.ApplicationWindow):
         # ---------- sidebar
         side_tv = Adw.ToolbarView()
         side_hb = Adw.HeaderBar()
+        side_hb.add_css_class("side-header")
         ident = system.identity()
         logo = Gtk.Image.new_from_icon_name("io.github.infinite4evr.PcCommandCenter")
-        logo.set_pixel_size(30)
+        logo.set_pixel_size(28)
         title = hbox(logo, vbox(label("PC Command Center", "brand-title"), label(ident["host"], "brand-sub"), spacing=0), spacing=10)
         title.set_valign(Gtk.Align.CENTER)
         side_hb.set_title_widget(title)
+        side_hb.set_show_title(True)
         menu = Gio.Menu()
-        menu.append("Go to or do… (Ctrl+K)", "win.palette")
-        menu.append("Keyboard shortcuts", "win.shortcuts")
-        menu.append("About PC Command Center", "win.about")
-        menu.append("Quit", "app.quit")
+        style = Gio.Menu()
+        style.append("Follow system style", "win.appearance::system")
+        style.append("Light", "win.appearance::light")
+        style.append("Dark", "win.appearance::dark")
+        menu.append_section(None, style)
+        main = Gio.Menu()
+        main.append("Go to or do…", "win.palette")
+        main.append("Activity history", "win.activity")
+        main.append("Preferences", "win.preferences")
+        menu.append_section(None, main)
+        more = Gio.Menu()
+        more.append("Keyboard shortcuts", "win.shortcuts")
+        more.append("About PC Command Center", "win.about")
+        more.append("Quit", "app.quit")
+        menu.append_section(None, more)
         mb = Gtk.MenuButton(icon_name="open-menu-symbolic", menu_model=menu, tooltip_text="Menu")
         side_hb.pack_end(mb)
         side_tv.add_top_bar(side_hb)
         side_box = vbox(spacing=0)
+        side_box.append(self._quick_button())
         classes = page_classes()
         self.classes = classes
         for section, ids in SECTIONS:
@@ -88,7 +139,8 @@ class MainWindow(Adw.ApplicationWindow):
                 badge = label("", "nav-badge", xalign=0.5)
                 badge.set_visible(False)
                 row = Gtk.ListBoxRow()
-                row.set_child(hbox(img, label(cls.TITLE, hexpand=True), badge, spacing=12))
+                row.set_child(hbox(img, label(cls.TITLE, "nav-title", hexpand=True), badge, spacing=12))
+                row.set_tooltip_text(getattr(cls, "SUBTITLE", "") or None)
                 row._pid = pid
                 lb.append(row)
                 self.rows[pid] = row
@@ -97,16 +149,17 @@ class MainWindow(Adw.ApplicationWindow):
         sw = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
         sw.set_child(side_box)
         sw.set_vexpand(True)
-        foot = label(f"{ident['os']}\nkernel {ident['kernel']}", ["dim"], wrap=True)
-        foot.set_margin_start(18)
-        foot.set_margin_bottom(12)
-        foot.set_margin_top(8)
-        side_tv.set_content(vbox(sw, foot, spacing=0))
+        self.status_card = self._status_card()
+        body = vbox(sw, self.status_card, spacing=0)
+        body.add_css_class("side-body")
+        side_tv.set_content(body)
         self.split.set_sidebar(Adw.NavigationPage(title="PC Command Center", child=side_tv))
 
         # ---------- content
         self.content_tv = Adw.ToolbarView()
         self.content_hb = Adw.HeaderBar()
+        self.content_hb.add_css_class("main-header")
+        self.content_hb.set_title_widget(self._search_box())
         self.refresh_btn = Gtk.Button(icon_name="view-refresh-symbolic", tooltip_text="Refresh (F5)")
         self.refresh_btn.connect("clicked", lambda *_: self.refresh_current())
         self.content_hb.pack_end(self.refresh_btn)
@@ -137,22 +190,237 @@ class MainWindow(Adw.ApplicationWindow):
         self.set_content(self.split)
 
         self._actions()
-        state = load_state()
-        if state.get("width") and state.get("height"):
-            self.set_default_size(max(760, state["width"]), max(520, state["height"]))
-        if state.get("maximized"):
+        w, h = prefs.get("width"), prefs.get("height")
+        if w and h:
+            self.set_default_size(max(760, w), max(520, h))
+        if prefs.get("maximized"):
             self.maximize()
         if not start:
-            start = state.get("page", "dashboard")
+            sp = prefs.get("start_page")
+            start = prefs.get("page", "dashboard") if sp == "last" else sp
         self.goto(start if start in self.pages else "dashboard")
         self.connect("close-request", self._save_state)
+        theme.on_change(lambda _dark: theme.redraw_tree(self))
+        self._hidden = False
+        self.connect("realize", self._watch_surface)
         GLib.timeout_add_seconds(2, lambda: (self.refresh_badges(), False)[1])
+        GLib.timeout_add_seconds(1, lambda: (self._update_status_card(), False)[1])
+        GLib.timeout_add_seconds(20, lambda: (self._update_status_card(), True)[1])
         GLib.timeout_add_seconds(600, lambda: (self.refresh_badges(), True)[1])
 
     def _save_state(self, *_a) -> bool:
+        if getattr(self, "search_pop", None) is not None and self.search_pop.get_parent() is not None:
+            self.search_pop.unparent()
         w, h = self.get_default_size()
-        save_state({"width": w, "height": h, "maximized": self.is_maximized(), "page": self.current})
+        prefs.update(width=w, height=h, maximized=self.is_maximized(), page=self.current)
         return False
+
+    # ---------------------------------------------------------------- sidebar extras
+    QUICK = [("cleanup:scan", "Scan for junk", "edit-clear-all-symbolic"), ("updates:all", "Update everything", "software-update-available-symbolic"),
+             ("maintenance:fix-slow", "Why is my PC slow?", "power-profile-performance-symbolic"),
+             ("maintenance:tune", "One-click tune-up", "starred-symbolic"), ("page:maintenance", "Fix a problem…", "applications-engineering-symbolic"),
+             ("storage:big", "Find big files", "drive-harddisk-symbolic"), ("network:speed", "Internet speed test", "network-wireless-symbolic"),
+             ("maintenance:report", "Create a system report", "x-office-document-symbolic")]
+
+    def _quick_button(self) -> Gtk.Widget:
+        """The big button at the top of the sidebar: the things people come here to do, one click away."""
+        pop = Gtk.Popover()
+        pop.add_css_class("ctx")
+        pop.set_has_arrow(False)
+        box = vbox(spacing=1)
+        for key, text, icon in self.QUICK:
+            inner = hbox(Gtk.Image.new_from_icon_name(icon), label(text, hexpand=True), spacing=12)
+            b = Gtk.Button()
+            b.set_child(inner)
+            b.add_css_class("flat")
+            b.add_css_class("ctx-item")
+            b.connect("clicked", lambda _b, k=key: (pop.popdown(), self.run_action(k)))
+            box.append(b)
+        box.set_size_request(230, -1)
+        pop.set_child(box)
+        mb = Gtk.MenuButton(popover=pop)
+        mb.set_child(hbox(Gtk.Image.new_from_icon_name("list-add-symbolic"), label("Quick actions"), spacing=10))
+        mb.add_css_class("quick-btn")
+        mb.set_halign(Gtk.Align.START)
+        mb.set_tooltip_text("Scan, update, fix and more")
+        return mb
+
+    def _status_card(self) -> Gtk.Widget:
+        from .widgets import MiniBar
+        self.sc_title = label("This PC", "side-card-title", hexpand=True)
+        self.sc_score = label("", "pill")
+        self.sc_disk = label("Main disk", "side-card-sub")
+        self.sc_bar = MiniBar(height=6, warn=80, crit=90)
+        self.sc_mem = label("", "side-card-sub")
+        btn = Gtk.Button(label="Free up space →")
+        btn.add_css_class("flat")
+        btn.add_css_class("side-link")
+        btn.connect("clicked", lambda *_: self.goto("cleanup"))
+        self.sc_mem.set_hexpand(True)
+        box = vbox(hbox(self.sc_title, self.sc_score, spacing=6), self.sc_disk, self.sc_bar, hbox(self.sc_mem, btn, spacing=6), spacing=5)
+        box.add_css_class("side-card")
+        return box
+
+    def _update_status_card(self) -> None:
+        import psutil
+        try:
+            root = next((m for m in system.mounts() if m.mountpoint == "/"), None)
+            vm = psutil.virtual_memory()
+        except Exception:  # noqa: BLE001
+            return
+        from ..core.fmt import human
+        if root:
+            self.sc_disk.set_text(f"Main disk · {human(root.free)} free of {human(root.total)}")
+            self.sc_bar.set(root.pct / 100)
+        self.sc_mem.set_text(f"Memory {vm.percent:.0f}%")
+        score = getattr(self, "_last_score", None)
+        if score is not None:
+            self.sc_score.set_text(f"Health {score}")
+            for c in ("pill-ok", "pill-warn", "pill-bad"):
+                self.sc_score.remove_css_class(c)
+            self.sc_score.add_css_class("pill-ok" if score >= 85 else "pill-warn" if score >= 60 else "pill-bad")
+        self.sc_score.set_visible(score is not None)
+
+    def set_health(self, score: int) -> None:
+        self._last_score = score
+        self._update_status_card()
+
+    # ---------------------------------------------------------------- search in the header
+    def _search_box(self) -> Gtk.Widget:
+        """A wide search field in the header: finds pages, actions and single settings as you type."""
+        self.search = Gtk.SearchEntry(placeholder_text="Search pages, actions and settings…   Ctrl+K")
+        self.search.add_css_class("top-search")
+        self.search.set_hexpand(True)
+        self.search.set_size_request(280, -1)
+        clamp = Adw.Clamp(maximum_size=620, tightening_threshold=400)
+        clamp.set_child(self.search)
+        clamp.set_hexpand(True)
+        self.results = Gtk.ListBox()
+        self.results.add_css_class("search-results")
+        self.results.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.results.set_can_focus(False)
+        self.results.connect("row-activated", lambda _l, r: self._search_pick(r))
+        box = vbox(label("", "search-hint"), self.results, spacing=2)
+        self.search_hint = box.get_first_child()
+        self.search_pop = Gtk.Popover()
+        self.search_pop.add_css_class("search-pop")
+        self.search_pop.set_has_arrow(False)
+        self.search_pop.set_autohide(False)
+        self.search_pop.set_can_focus(False)
+        self.search_pop.set_position(Gtk.PositionType.BOTTOM)
+        self.search_pop.set_child(box)
+        self.search_pop.set_parent(self.search)
+        self.search.connect("search-changed", lambda *_: self._search_update())
+        self.search.connect("activate", lambda *_: self._search_pick(self.results.get_selected_row() or self.results.get_row_at_index(0)))
+        self.search.connect("stop-search", lambda *_: self._search_close())
+        keys = Gtk.EventControllerKey()
+        keys.connect("key-pressed", self._search_keys)
+        self.search.add_controller(keys)
+        focus = Gtk.EventControllerFocus()
+        focus.connect("leave", lambda *_: GLib.timeout_add(150, lambda: (self._search_close(clear=False), False)[1]))
+        self.search.add_controller(focus)
+        return clamp
+
+    def _search_rows(self) -> list[tuple[str, str, str, str]]:
+        """(key, title, subtitle, icon) for everything searchable."""
+        if getattr(self, "_search_cache", None) is None:
+            rows = [(f"page:{pid}", self.classes[pid].TITLE, self.classes[pid].SUBTITLE, self.classes[pid].ICON)
+                    for _, ids in SECTIONS for pid in ids if pid in self.pages]
+            icon_of = {pid: self.classes[pid].ICON for pid in self.pages}
+            rows += [(k, t, sub, icon_of.get(k.split(":")[0], "preferences-system-symbolic"))
+                     for k, t, sub in all_actions({pid: self.classes[pid] for pid in self.pages})]
+            rows += [(k, t, sub, icon_of.get(k.split(":")[1], "emblem-system-symbolic")) for k, t, sub in self.extra_palette_rows()]
+            self._search_cache = rows
+        return self._search_cache
+
+    def _search_update(self) -> None:
+        q = self.search.get_text().strip().lower()
+        while (r := self.results.get_row_at_index(0)) is not None:
+            self.results.remove(r)
+        if not q:
+            self.search_pop.popdown()
+            return
+        words = q.split()
+        hits = []
+        for key, title, sub, icon in self._search_rows():
+            hay = f"{title} {sub}".lower()
+            if all(w in hay for w in words):
+                rank = (0 if title.lower().startswith(words[0]) else 1 if words[0] in title.lower() else 2, 0 if key.startswith("page:") else 1)
+                hits.append((rank, key, title, sub, icon))
+        hits.sort(key=lambda h: h[0])
+        for _rank, key, title, sub, icon in hits[:9]:
+            kind = "Page" if key.startswith("page:") else "Setting" if key.startswith("setting:") else "Action"
+            text = vbox(label(title, "heading" if kind == "Page" else None, hexpand=True), label(sub, "dim", wrap=False), spacing=0)
+            text.get_last_child().set_ellipsize(Pango.EllipsizeMode.END)
+            row = Gtk.ListBoxRow()
+            row.set_can_focus(False)
+            row.set_child(hbox(Gtk.Image.new_from_icon_name(icon), text, label(kind, "result-kind"), spacing=12))
+            row._key = key
+            self.results.append(row)
+        self.search_hint.set_text(f"{len(hits)} result{'s' if len(hits) != 1 else ''} · Enter to open · ↑↓ to choose" if hits
+                                  else "Nothing found. Try another word, e.g. “clean”, “battery”, “ports”.")
+        if hits:
+            self.results.select_row(self.results.get_row_at_index(0))
+        w = max(420, self.search.get_width())
+        self.search_pop.set_size_request(w, -1)
+        self.search_pop.popup()
+
+    def _search_keys(self, _c, keyval, _code, _state) -> bool:
+        from gi.repository import Gdk as _Gdk
+        if keyval in (_Gdk.KEY_Down, _Gdk.KEY_Up):
+            cur = self.results.get_selected_row()
+            i = cur.get_index() if cur else -1
+            nxt = self.results.get_row_at_index(i + (1 if keyval == _Gdk.KEY_Down else -1))
+            if nxt is not None:
+                self.results.select_row(nxt)
+            return True
+        return False
+
+    def _search_pick(self, row) -> None:
+        if row is None or not hasattr(row, "_key"):
+            return
+        key = row._key
+        self._search_close()
+        self.run_action(key)
+
+    def _search_close(self, clear: bool = True) -> None:
+        self.search_pop.popdown()
+        if clear:
+            self.search.set_text("")
+
+    # ---------------------------------------------------------------- pause while hidden
+    def _watch_surface(self, *_a) -> None:
+        surface = self.get_surface()
+        if surface is not None:
+            surface.connect("notify::state", self._surface_state)
+
+    def _surface_state(self, surface, _p) -> None:
+        st = surface.get_state()
+        hidden_flags = Gdk.ToplevelState.MINIMIZED
+        if hasattr(Gdk.ToplevelState, "SUSPENDED"):  # GTK 4.12+: compositor says the window can't be seen
+            hidden_flags |= Gdk.ToplevelState.SUSPENDED
+        hidden = bool(st & hidden_flags)
+        if hidden == self._hidden or not prefs.get("pause_hidden"):
+            return
+        self._hidden = hidden
+        page = self.pages.get(self.current)
+        if page is None:
+            return
+        if hidden:
+            page.deactivate()
+        else:
+            page.activate()
+
+    def restart_timers(self) -> None:
+        page = self.pages.get(self.current)
+        if page is not None:
+            page.deactivate()
+            page.activate()
+
+    def sync_appearance_action(self, mode: str) -> None:
+        a = self.lookup_action("appearance")
+        if a is not None:
+            a.set_state(GLib.Variant("s", mode))
 
     # ---------------------------------------------------------------- navigation
     def _row_activated(self, _lb, row) -> None:
@@ -229,23 +497,47 @@ class MainWindow(Adw.ApplicationWindow):
             add(f"goto-{pid}", lambda p=pid: self.goto(p), [f"<Control>{i + 1}"])
         add("search", self.focus_search, ["<Control>f"])
         add("palette", self.palette, ["<Control>k", "<Control>p"])
+        add("preferences", self.preferences, ["<Control>comma"])
+        add("activity", self.activity, ["<Control>h"])
+        mode = prefs.get("appearance")
+        app_action = Gio.SimpleAction.new_stateful("appearance", GLib.VariantType.new("s"), GLib.Variant("s", mode))
+
+        def set_mode(action, value) -> None:
+            action.set_state(value)
+            prefs.set("appearance", value.get_string())
+            theme.set_mode(value.get_string())
+        app_action.connect("change-state", set_mode)
+        self.add_action(app_action)
+
+    def preferences(self) -> None:
+        from .preferences import PreferencesDialog
+        PreferencesDialog(self).present(self)
+
+    def activity(self) -> None:
+        from .dialogs import ActivityDialog
+        ActivityDialog().present(self)
+
+    def welcome(self) -> None:
+        from .welcome import WelcomeDialog
+        WelcomeDialog(self).present(self)
 
     def palette(self) -> None:
-        """Ctrl+K: jump to any page or run a common action by typing."""
+        """Ctrl+K: jump to any page or run a common action by typing (the search field in the header)."""
+        if getattr(self, "search", None) is not None and self.search.get_mapped():
+            self.search.grab_focus()
+            return
+        self.palette_dialog()
+
+    def palette_dialog(self) -> None:
         from .dialogs import ChoiceDialog
         rows = [(f"page:{pid}", self.classes[pid].TITLE, "Go to page") for _, ids in SECTIONS for pid in ids if pid in self.pages]
-        actions = [
-            ("cleanup:scan", "Scan for junk", "Cleanup"), ("cleanup:deep", "Deep scan (projects, duplicates, old versions)", "Cleanup"),
-            ("updates:all", "Update everything", "Updates"), ("updates:sec", "Install security fixes only", "Updates"),
-            ("maintenance:tune", "One-click tune-up", "Maintenance"), ("maintenance:backup", "Back up my settings", "Maintenance"),
-            ("storage:big", "Find big files", "Storage"), ("storage:dups", "Find duplicate files", "Storage"),
-            ("network:speed", "Internet speed test", "Network"), ("network:diag", "Why is the internet not working?", "Network"),
-            ("network:ports", "What's listening on which port", "Network"), ("security:fix", "Fix security issues", "Security"),
-            ("tweaks:all", "Apply recommended tweaks", "Tweaks"), ("apps:get", "Install an app", "Apps"),
-            ("dev:srv", "Running dev servers", "Developer"), ("power:bios", "Restart into BIOS / UEFI", "Power"),
-        ]
-        rows += [(k, t, s) for k, t, s in actions if k.split(":")[0] in self.pages]
+        rows += all_actions({pid: self.classes[pid] for pid in self.pages})
+        rows += self.extra_palette_rows()
         ChoiceDialog("Go to or do…", rows, self._palette_pick, explain="Type to filter. Tip: Ctrl+K opens this from anywhere.").present(self)
+
+    def run_action(self, key: str) -> None:
+        """Run a palette action by key (used by --action from GNOME search and the dock menu)."""
+        self._palette_pick(key)
 
     def _palette_pick(self, key: str | None) -> None:
         if not key:
@@ -253,6 +545,23 @@ class MainWindow(Adw.ApplicationWindow):
         kind, _, what = key.partition(":")
         if kind == "page":
             self.goto(what)
+            return
+        if kind == "app":
+            if what == "palette":
+                self.palette()
+            elif what == "welcome":
+                self.welcome()
+            elif what == "preferences":
+                self.preferences()
+            elif what == "activity":
+                self.activity()
+            else:
+                self.lookup_action("appearance").change_state(GLib.Variant("s", what))
+            return
+        if kind == "setting":
+            page_id, _, name = what.partition(":")
+            self.goto(page_id)
+            self.toast(f"“{name}” is on this page.")
             return
         self.goto(kind)
         page = self.pages[kind]
@@ -297,8 +606,13 @@ class MainWindow(Adw.ApplicationWindow):
                 from ..core.run import Step
                 page.run("Restart into BIOS", [Step("Restart into BIOS/UEFI setup", ["systemctl", "reboot", "--firmware-setup"])],
                          "Save your work first. Open apps will close.", danger=True, ok_label="Restart")
+            elif hasattr(page, "palette_action"):
+                page.palette_action(key.partition(":")[2])
             return False
         GLib.timeout_add(250, later)
+
+    def extra_palette_rows(self) -> list[tuple[str, str, str]]:
+        return [r for r in setting_rows() if r[0].split(":")[1] in self.pages]
 
     def focus_search(self) -> None:
         page = self.pages.get(self.current)
@@ -316,38 +630,13 @@ class MainWindow(Adw.ApplicationWindow):
         from .dialogs import show_text
         order = [pid for _, ids in SECTIONS for pid in ids if pid in self.pages]
         lines = ["Keyboard shortcuts", ""] + [f"  Ctrl+{i + 1}      {self.classes[p].TITLE}" for i, p in enumerate(order[:9])]
-        lines += ["", "  Ctrl+K       Go to a page or run an action by typing", "  F5 / Ctrl+R  Refresh this page",
+        lines += ["", "  Ctrl+K       Go to a page or run an action by typing", "  Ctrl+,       Preferences",
+                  "  Ctrl+H       Activity history", "  F5 / Ctrl+R  Refresh this page",
                   "  Ctrl+F       Search (on pages with a search box)", "  Ctrl+Q       Quit",
                   "  Double-click / Enter on a row opens its details"]
         show_text(self, "Keyboard shortcuts", "\n".join(lines))
 
 
-STATE_FILE = Path.home() / ".config/pc/gui.json"
-
-
-def load_state() -> dict:
-    import json
-    try:
-        return json.loads(STATE_FILE.read_text())
-    except (OSError, ValueError):
-        return {}
-
-
-def save_state(d: dict) -> None:
-    import json
-    try:
-        STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        STATE_FILE.write_text(json.dumps(d))
-    except OSError:
-        pass
-
-
 def load_css() -> None:
-    import os
-    provider = Gtk.CssProvider()
-    path = os.path.join(os.path.dirname(__file__), "style.css")
-    try:
-        provider.load_from_path(path)
-    except GLib.Error as e:
-        print("CSS error:", e)
-    Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 1)
+    """Kept for older callers; the theme module owns the stylesheet now."""
+    theme.setup(prefs.get("appearance"))

@@ -1,0 +1,20 @@
+NOTE: This is only a simulation!
+      apt-get needs root privileges for real execution.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Note, selecting 'code' instead of '/home/infinite4evr/Downloads/code_1.104.0-1758000000_amd64.deb'
+The following additional packages will be installed:
+  libxkbfile1
+The following packages will be REMOVED:
+  code-insiders
+The following NEW packages will be installed:
+  libxkbfile1
+The following packages will be upgraded:
+  code
+1 upgraded, 1 newly installed, 1 to remove and 3 not upgraded.
+Remv code-insiders [1.105.0-1758100000]
+Inst libxkbfile1 (1:1.1.0-1build4 Ubuntu:26.04/resolute [amd64])
+Inst code [1.103.2-1757000000] (1.104.0-1758000000 local-deb [amd64])
+Conf libxkbfile1 (1:1.1.0-1build4 Ubuntu:26.04/resolute [amd64])
+Conf code (1.104.0-1758000000 local-deb [amd64])

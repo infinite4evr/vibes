@@ -1,0 +1,16 @@
+dbus.service                                  static   -
+filter-chain.service                          disabled enabled
+gnome-keyring-daemon.service                  enabled  enabled
+gnome-keyring-daemon.socket                   enabled  enabled
+localsearch-3.service                         enabled  enabled
+pc-maintain.service                           static   -
+pc-maintain.timer                             enabled  enabled
+pc-watch.timer                                disabled enabled
+pc-watch.service                              static   -
+pipewire-pulse.service                        enabled  enabled
+pipewire.service                              enabled  enabled
+pipewire.socket                               enabled  enabled
+snap.snapd-desktop-integration.snapd-desktop-integration.service enabled enabled
+syncthing@.service                            enabled  enabled
+wireplumber.service                           enabled  enabled
+xdg-user-dirs.service                         enabled  enabled

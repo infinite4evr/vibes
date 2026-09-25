@@ -1,0 +1,5 @@
+black v26.3.1 (/home/infinite4evr/.local/share/uv/tools/black)
+- black (/home/infinite4evr/.local/bin/black)
+- blackd (/home/infinite4evr/.local/bin/blackd)
+ruff v0.15.11 (/home/infinite4evr/.local/share/uv/tools/ruff)
+- ruff (/home/infinite4evr/.local/bin/ruff)

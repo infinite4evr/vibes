@@ -5,6 +5,7 @@ from __future__ import annotations
 import glob
 import os
 import re
+import shlex
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -340,3 +341,236 @@ def apt_history(limit: int = 60) -> list[dict]:
 def obsolete_packages() -> list[str]:
     """Installed packages that no repository offers anymore (often leftovers from old Ubuntu versions)."""
     return [ln.split("/")[0] for ln in out(["apt", "list", "?obsolete"], timeout=60).splitlines() if "/" in ln]
+
+
+# ---------------------------------------------------------------- APT 3 history: undo / rollback (Ubuntu 26.04+)
+
+def apt3_history_supported() -> bool:
+    return sh(["apt", "history-list"], timeout=20).ok
+
+
+def parse_apt3_history(text: str) -> list[dict]:
+    """Rows of `apt history-list`: ID, command line, date/time, action, number of changes."""
+    res = []
+    for line in text.splitlines():
+        m = re.match(r"^\s*(\d+)\s{2,}(.*?)\s{2,}(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(?::\d{2})?)\s{2,}(\S.*?)\s{2,}(\d+)\s*$", line)
+        if m:
+            res.append({"id": int(m.group(1)), "cmd": m.group(2).strip(), "date": re.sub(r"\s+", " ", m.group(3)),
+                        "action": m.group(4).strip(), "changes": int(m.group(5))})
+    res.sort(key=lambda e: -e["id"])
+    return res
+
+
+def apt3_history() -> list[dict]:
+    return parse_apt3_history(sh(["apt", "history-list"], timeout=30).out)
+
+
+def apt3_history_info(hid: int) -> str:
+    r = sh(["apt", "history-info", str(hid)], timeout=30)
+    return r.out or r.err
+
+
+def apt3_undo_steps(hid: int) -> list[Step]:
+    return [Step(f"Undo apt change #{hid}", ["apt", "history-undo", "-y", str(hid)], root=True, env=APT_ENV)]
+
+
+def apt3_rollback_steps(hid: int) -> list[Step]:
+    return [Step(f"Roll back everything after apt change #{hid}", ["apt", "history-rollback", "-y", str(hid)], root=True, env=APT_ENV)]
+
+
+# ---------------------------------------------------------------- kernels
+
+def _kver(v: str) -> tuple:
+    return tuple(int(x) if x.isdigit() else 0 for x in re.split(r"[.-]", v))
+
+
+def kernels() -> list[dict]:
+    """Installed kernel versions, which one is running, and which can be removed safely."""
+    text = out(["dpkg-query", "-W", "-f=${Package}\t${Version}\t${db:Status-Abbrev}\t${Installed-Size}\n",
+                "linux-image-*", "linux-modules-*", "linux-headers-*"], timeout=20)
+    return parse_kernels(text, os.uname().release)
+
+
+def parse_kernels(text: str, running: str) -> list[dict]:
+    by_ver: dict[str, dict] = {}
+    for line in text.splitlines():
+        p = line.split("\t")
+        if len(p) < 4 or not p[2].startswith("ii"):
+            continue
+        m = re.match(r"^linux-(?:image(?:-unsigned)?|modules(?:-extra)?|headers)-(\d+\.\d+\.\d+-\d+)(-[a-z0-9]+)?$", p[0])
+        if not m:
+            continue
+        ver = m.group(1) + (m.group(2) or "")
+        k = by_ver.setdefault(ver, {"version": ver, "packages": [], "size": 0})
+        k["packages"].append(p[0])
+        k["size"] += int(p[3]) * 1024 if p[3].isdigit() else 0
+    # headers without flavour (linux-headers-6.8.0-45) belong to every flavour of that version
+    for ver, k in list(by_ver.items()):
+        base = re.match(r"^(\d+\.\d+\.\d+-\d+)$", ver)
+        if base and not any(p.startswith("linux-image") for p in k["packages"]):
+            for other, ok in by_ver.items():
+                if other != ver and other.startswith(ver + "-"):
+                    ok["packages"] += k["packages"]
+                    ok["size"] += k["size"]
+            del by_ver[ver]
+    res = [k for k in by_ver.values() if any(p.startswith("linux-image") for p in k["packages"])]
+    res.sort(key=lambda k: _kver(k["version"]), reverse=True)
+    for i, k in enumerate(res):
+        k["running"] = k["version"] == running
+        k["newest"] = i == 0
+        k["removable"] = not k["running"] and i > 1  # always keep the running one plus the two newest
+    return res
+
+
+def remove_kernel_steps(k: dict) -> list[Step]:
+    return [Step(f"Remove kernel {k['version']}", ["apt-get", "purge", "-y", *sorted(set(k["packages"]))], root=True, env=APT_ENV)]
+
+
+# ---------------------------------------------------------------- drivers (ubuntu-drivers)
+
+def parse_ubuntu_drivers(text: str) -> list[dict]:
+    """`ubuntu-drivers devices` → [{device, model, vendor, drivers: [{package, recommended, free}]}]."""
+    res: list[dict] = []
+    cur: dict | None = None
+    for line in text.splitlines():
+        if line.startswith("== "):
+            cur = {"device": line.strip("= ").strip(), "model": "", "vendor": "", "drivers": []}
+            res.append(cur)
+            continue
+        if cur is None or ":" not in line:
+            continue
+        k, _, v = line.partition(":")
+        k, v = k.strip(), v.strip()
+        if k == "model":
+            cur["model"] = v
+        elif k == "vendor":
+            cur["vendor"] = v
+        elif k == "driver":
+            pkg = v.split(" - ")[0].strip()
+            cur["drivers"].append({"package": pkg, "recommended": "recommended" in v, "free": "non-free" not in v, "note": v})
+    return res
+
+
+def drivers() -> list[dict]:
+    if not has("ubuntu-drivers"):
+        return []
+    res = parse_ubuntu_drivers(out(["ubuntu-drivers", "devices"], timeout=60))
+    installed = set(out(["dpkg-query", "-W", "-f=${Package}\n"], timeout=20).split())
+    for d in res:
+        for drv in d["drivers"]:
+            drv["installed"] = drv["package"] in installed
+    return res
+
+
+def driver_install_steps(pkg: str | None = None) -> list[Step]:
+    if pkg:
+        return [Step(f"Install {pkg}", ["apt-get", "install", "-y", pkg], root=True, env=APT_ENV)]
+    return [Step("Install the recommended drivers", ["ubuntu-drivers", "install"], root=True, env=APT_ENV)]
+
+
+# ---------------------------------------------------------------- software sources (repositories, PPAs)
+
+OFFICIAL = ("archive.ubuntu.com", "security.ubuntu.com", "ports.ubuntu.com", "archive.canonical.com", "esm.ubuntu.com", "ppa.launchpadcontent.net/ubuntu-")
+
+
+def _parse_deb822(text: str) -> list[dict]:
+    stanzas = []
+    for block in re.split(r"\n\s*\n", text):
+        fields: dict[str, str] = {}
+        for line in block.splitlines():
+            if line.startswith("#") or ":" not in line or line.startswith((" ", "\t")):
+                continue
+            k, _, v = line.partition(":")
+            fields[k.strip().lower()] = v.strip()
+        if fields.get("uris"):
+            stanzas.append(fields)
+    return stanzas
+
+
+def sources() -> list[dict]:
+    files = sorted(glob.glob("/etc/apt/sources.list.d/*.sources") + glob.glob("/etc/apt/sources.list.d/*.list"))
+    if os.path.exists("/etc/apt/sources.list"):
+        files.insert(0, "/etc/apt/sources.list")
+    res = []
+    for f in files:
+        text = read(f)
+        entries = []
+        if f.endswith(".sources"):
+            for st in _parse_deb822(text):
+                entries.append({"uris": st.get("uris", "").split(), "suites": st.get("suites", ""), "components": st.get("components", ""),
+                                "enabled": st.get("enabled", "yes").lower() != "no"})
+        else:
+            for line in text.splitlines():
+                m = re.match(r"^\s*(#\s*)?deb(?:-src)?\s+(?:\[[^\]]*\]\s+)?(\S+)\s+(\S+)\s*(.*)$", line)
+                if m:
+                    entries.append({"uris": [m.group(2)], "suites": m.group(3), "components": m.group(4), "enabled": not m.group(1)})
+        if not entries:
+            continue
+        uris = sorted({u for e in entries for u in e["uris"]})
+        ppa = next((re.search(r"ppa\.launchpad(?:content)?\.net/([^/]+/[^/]+)", u) for u in uris if "launchpad" in u), None)
+        res.append({"file": f, "name": os.path.basename(f), "uris": uris, "enabled": any(e["enabled"] for e in entries),
+                    "official": all(any(o in u for o in OFFICIAL) for u in uris), "ppa": ppa.group(1) if ppa else "",
+                    "suites": sorted({e["suites"] for e in entries})})
+    return res
+
+
+def source_toggle_steps(src: dict, enable: bool) -> list[Step]:
+    f = src["file"]
+    if f.endswith(".sources"):
+        if enable:
+            cmd = ["sed", "-i", "/^Enabled:/d", f]
+        else:
+            cmd = ["bash", "-c", f"grep -q '^Enabled:' {shlex.quote(f)} && sed -i 's/^Enabled:.*/Enabled: no/' {shlex.quote(f)} || "
+                                 f"sed -i '0,/^Types:/s//Enabled: no\\nTypes:/' {shlex.quote(f)}"]
+    else:
+        cmd = ["sed", "-i", "-E", r"s/^#\s*(deb(-src)?\s)/\1/" if enable else r"s/^(deb(-src)?\s)/# \1/", f]
+    return [Step(("Turn on " if enable else "Turn off ") + src["name"], cmd, root=True),
+            Step("Refresh package lists", ["apt-get", "update"], root=True, optional=True)]
+
+
+def source_remove_steps(src: dict) -> list[Step]:
+    return [Step(f"Remove {src['name']}", ["rm", "-f", src["file"]], root=True),
+            Step("Refresh package lists", ["apt-get", "update"], root=True, optional=True)]
+
+
+def add_ppa_steps(ppa: str) -> list[Step]:
+    ppa = ppa.strip()
+    if not ppa.startswith("ppa:"):
+        ppa = "ppa:" + ppa
+    steps = []
+    if not has("add-apt-repository"):
+        steps.append(Step("Install the PPA tool", ["apt-get", "install", "-y", "software-properties-common"], root=True, env=APT_ENV))
+    steps.append(Step(f"Add {ppa}", ["add-apt-repository", "-y", ppa], root=True, env=APT_ENV))
+    return steps
+
+
+# ---------------------------------------------------------------- holds, changelogs, snap refresh control
+
+def holds() -> list[str]:
+    return out(["apt-mark", "showhold"], timeout=15).split()
+
+
+def hold_steps(pkg: str, hold: bool = True) -> list[Step]:
+    return [Step(("Keep " if hold else "Stop keeping ") + pkg + (" at its current version" if hold else " back"),
+                 ["apt-mark", "hold" if hold else "unhold", pkg], root=True)]
+
+
+def changelog(pkg: str, lines: int = 400) -> str:
+    r = sh(["apt", "changelog", pkg], timeout=40)
+    text = r.out or r.err or "No changelog available (needs internet)."
+    return "\n".join(text.splitlines()[:lines])
+
+
+def snap_refresh_info() -> str:
+    return out(["snap", "refresh", "--time"], timeout=15) if has("snap") else ""
+
+
+def snap_hold_steps(hold: bool, hours: int = 0) -> list[Step]:
+    if hold:
+        arg = f"--hold={hours}h" if hours else "--hold"
+        return [Step("Pause automatic snap updates" + (f" for {hours} hours" if hours else ""), ["snap", "refresh", arg], root=True)]
+    return [Step("Resume automatic snap updates", ["snap", "refresh", "--unhold"], root=True)]
+
+
+def snap_changes() -> str:
+    return out(["snap", "changes"], timeout=15) if has("snap") else ""

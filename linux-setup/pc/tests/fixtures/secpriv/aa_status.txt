@@ -1,0 +1,11 @@
+apparmor module is loaded.
+120 profiles are loaded.
+52 profiles are in enforce mode.
+   /usr/bin/man
+4 profiles are in complain mode.
+   transmission-cli
+0 profiles are in prompt mode.
+0 profiles are in kill mode.
+64 profiles are in unconfined mode.
+   firefox
+8 processes have profiles defined.

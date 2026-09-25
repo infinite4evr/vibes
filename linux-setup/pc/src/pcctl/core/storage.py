@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from .run import HOME, sh
+from .run import HOME, du_bin, py_size, sh
 
 
 @dataclass
@@ -38,7 +38,18 @@ def parse_du(text: str, root: str) -> list[Entry]:
 def children(path: str | Path, timeout: float = 180) -> tuple[int, list[Entry]]:
     """Size of each item directly inside `path` (stays on one filesystem). Returns (total, items)."""
     path = str(path)
-    r = sh(["du", "-xaB1", "--max-depth=1", path], timeout=timeout)
+    r = sh([du_bin(), "-xaB1", "--max-depth=1", path], timeout=timeout)
+    if not r.out.strip():  # du missing/broken: walk it ourselves
+        items = []
+        try:
+            names = os.listdir(path)
+        except OSError:
+            names = []
+        for n in names:
+            fp = os.path.join(path, n)
+            items.append(Entry(fp, py_size(fp, limit_s=20), os.path.isdir(fp) and not os.path.islink(fp)))
+        items.sort(key=lambda e: -e.size)
+        return sum(e.size for e in items), items
     total = 0
     for line in r.out.splitlines():
         if "\t" in line:
@@ -162,11 +173,11 @@ def latest_mtime(folder: str, skip: set[str], depth: int = 2) -> float:
 
 
 def dir_size(path: str | Path) -> int:
-    r = sh(["du", "-sxB1", str(path)], timeout=120)
+    r = sh([du_bin(), "-sxB1", str(path)], timeout=120)
     try:
         return int(r.out.split("\t", 1)[0])
     except (ValueError, IndexError):
-        return 0
+        return py_size(path)
 
 
 def old_downloads(days: int = 90) -> list[Entry]:

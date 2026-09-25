@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Callable
 
 from . import storage
-from .run import HOME, Step, has, out, py_step, read, sh, which
+from .run import HOME, Step, du_bin, has, out, py_size, py_step, read, sh, which
 
 STATE = HOME / ".local/state/pc"
 
@@ -69,14 +69,14 @@ def size_of(*paths: str | Path) -> int:
     existing = [str(p) for p in paths if os.path.lexists(p)]
     if not existing:
         return 0
-    r = sh(["du", "-scB1", *existing], timeout=180)
+    r = sh([du_bin(), "-scB1", *existing], timeout=180)
     if not r.out.strip() and os.geteuid() != 0:
-        r = sh(["du", "-scB1", *existing], timeout=180, root=True)
+        r = sh([du_bin(), "-scB1", *existing], timeout=180, root=True)
     last = r.out.strip().splitlines()[-1:] if r.out else []
     try:
-        return int(last[0].split("\t")[0]) if last else 0
+        return int(last[0].split("\t")[0]) if last else sum(py_size(p) for p in existing)
     except ValueError:
-        return 0
+        return sum(py_size(p) for p in existing)
 
 
 SAFE_ROOTS = (str(HOME) + "/", "/tmp/", "/var/tmp/")
@@ -1004,6 +1004,133 @@ def clipboard_history() -> Junk:
                 size, [_rm_step("Clear clipboard history", paths)] if paths else [], default=False, group="Privacy")
 
 
+# ================================================================ more developer + unknown caches
+
+def more_dev_caches() -> Junk:
+    rels = [".pub-cache/hosted", ".pub-cache/git/cache", ".cache/composer", ".composer/cache", ".bundle/cache", ".cache/Homebrew",
+            ".cache/unity3d", ".cache/godot", ".cache/ccache", ".cache/sccache", ".cache/bazel", ".cache/zig", ".cache/buildkit",
+            ".cache/pnpm", ".cache/pip-tools", ".cache/black", ".cache/ruff", ".cache/mypy", ".cache/pylint", ".cache/jedi",
+            ".cache/torch_extensions", ".cache/clangd", ".cache/cmake", ".cache/vscode-cpptools", ".vscode-server/data/CachedExtensionVSIXs"]
+    return _paths_junk("more-dev-caches", "More developer caches", "Flutter/Dart, PHP Composer, Ruby, Homebrew, C/C++ (ccache, clangd), "
+                       "Bazel, Unity/Godot, linters. All rebuilt or re-downloaded when needed.", rels, "Developer")
+
+
+def android_images() -> Junk:
+    items: list[Item] = []
+    for sdk in (HOME / "Android/Sdk", HOME / ".android/sdk"):
+        for d in glob.glob(str(sdk / "system-images/*/*/*")):
+            items.append(Item(d, "Emulator image: " + "/".join(Path(d).parts[-3:]), size_of(d), default=False))
+    avd = HOME / ".android/avd"
+    if avd.is_dir():
+        for d in avd.glob("*.avd"):
+            items.append(Item(str(d), f"Emulator (virtual phone): {d.stem}", size_of(d), "its apps and data go with it", default=False))
+    return Junk("android-images", "Android emulator images", "Downloaded Android system images and virtual phones. Android Studio can "
+                "download them again.", sum(i.size for i in items), items=items, group="Developer", default=False, pick=True,
+                make_steps=lambda keys: [_rm_step("Delete Android emulator files", keys)])
+
+
+def _workspace_folder(ws_dir: Path) -> str | None:
+    """The local folder a VS Code workspaceStorage entry belongs to, or None for remote/unknown."""
+    try:
+        data = json.loads((ws_dir / "workspace.json").read_text())
+    except (OSError, ValueError):
+        return None
+    uri = data.get("folder") or data.get("workspace") or ""
+    if not uri.startswith("file://"):
+        return None
+    from urllib.parse import unquote, urlparse
+    return unquote(urlparse(uri).path)
+
+
+def vscode_workspaces() -> Junk:
+    items: list[Item] = []
+    for app in ("Code", "Cursor", "Windsurf", "VSCodium", "Code - Insiders"):
+        base = HOME / ".config" / app / "User/workspaceStorage"
+        if not base.is_dir():
+            continue
+        for d in base.iterdir():
+            if not d.is_dir():
+                continue
+            folder = _workspace_folder(d)
+            if folder and not os.path.exists(folder):
+                s = size_of(d)
+                if s > 64 * 1024:
+                    items.append(Item(str(d), f"{app}: {_short(folder)}", s, "folder no longer exists"))
+    return Junk("vscode-workspaces", "Editor data for deleted projects", "VS Code / Cursor keep per-project data (search index, history, "
+                "chat state) even after the project folder is gone.", sum(i.size for i in items), items=items, group="Developer",
+                warn="Close your editors first.", make_steps=lambda keys: [_rm_step("Delete editor data of deleted projects", keys)])
+
+
+KNOWN_CACHE_DIRS = {
+    "pip", "pypoetry", "pipx", "pre-commit", "pdm", "hatch", "virtualenv", "matplotlib", "uv", "yarn", "node-gyp", "typescript", "bun",
+    "deno", "electron", "electron-builder", "prisma", "turbo", "next-swc", "nx", "vite", "esbuild", "node", "corepack", "go-build",
+    "ms-playwright", "puppeteer", "Cypress", "selenium", "chrome-for-testing", "huggingface", "torch", "whisper", "thumbnails",
+    "mesa_shader_cache", "mesa_shader_cache_db", "nvidia", "fontconfig", "gnome-software", "evolution", "wine", "spotify", "zed",
+    "JetBrains", "Google", "composer", "Homebrew", "unity3d", "godot", "ccache", "sccache", "bazel", "zig", "buildkit", "pnpm",
+    "pip-tools", "black", "ruff", "mypy", "pylint", "jedi", "torch_extensions", "clangd", "cmake", "vscode-cpptools",
+    # never touch: search index, keyrings, desktop state, our own state
+    "tracker3", "localsearch", "gnome-shell", "gstreamer-1.0", "ibus", "pc", "dconf", "gvfsd", "mozilla", "google-chrome", "chromium",
+    "BraveSoftware", "microsoft-edge", "vivaldi", "opera", "thunderbird", "keyring", "gnome-desktop-thumbnailer", "event-sound-cache",
+    "flatpak", "snap", "sessions",
+}
+
+
+def unknown_caches(min_mb: int = 50) -> Junk:
+    items: list[Item] = []
+    base = HOME / ".cache"
+    if base.is_dir():
+        for d in base.iterdir():
+            if d.name in KNOWN_CACHE_DIRS or d.is_symlink():
+                continue
+            s = size_of(d)
+            if s >= min_mb * 1024 * 1024:
+                items.append(Item(str(d), f"~/.cache/{d.name}", s, "cache of an app PCC doesn't know - safe by design, the app rebuilds it",
+                                  default=False))
+    return Junk("unknown-caches", "Other big caches", "Large folders in ~/.cache that the other categories don't cover. Caches are "
+                "meant to be deletable; close the app that owns one first.", sum(i.size for i in items), items=items, group="Apps & browsers",
+                default=False, pick=True, make_steps=lambda keys: [_rm_step("Delete other caches", keys)])
+
+
+# ================================================================ exclusions ("never clean") and weekly auto-clean
+
+def _settings() -> dict:
+    from . import maint  # late import: maint imports this module
+    return maint.config()
+
+
+def exclusions() -> set[str]:
+    """'junk-id' excludes a whole category, 'junk-id|item-key' a single item."""
+    return set(_settings().get("never_clean", []))
+
+
+def set_excluded(key: str, excluded: bool = True) -> None:
+    from . import maint
+    cur = [k for k in _settings().get("never_clean", []) if k != key]
+    if excluded:
+        cur.append(key)
+    maint.save_config(never_clean=cur)
+
+
+def apply_exclusions(j: Junk, ex: set[str] | None = None) -> Junk | None:
+    ex = exclusions() if ex is None else ex
+    if not ex:
+        return j
+    if j.id in ex:
+        return None
+    if j.items and j.make_steps is not None:
+        kept = [i for i in j.items if f"{j.id}|{i.key}" not in ex]
+        if len(kept) != len(j.items):
+            j.items = kept
+            j.size = sum(i.size for i in kept if i.default or not j.pick) if kept else 0
+            if not kept:
+                return None
+    return j
+
+
+AUTO_SAFE: dict[str, tuple[str, Callable[[], Junk]]] = {}   # filled after the functions below exist
+AUTO_DEFAULT = ["py-caches", "js-caches", "thumbnails", "home-logs", "vscode-ext"]
+
+
 # ================================================================ scan
 
 QUICK: list[Callable[[], Junk]] = [
@@ -1011,6 +1138,7 @@ QUICK: list[Callable[[], Junk]] = [
     packagekit_cache, python_caches, js_caches, go_rust_caches, jvm_caches, headless_browsers, ai_models, vscode_old_extensions,
     editor_caches, containers, browser_caches, chrome_ai_model, app_caches, thumbnails, snap_leftovers, flatpak_leftovers, texlive_cache,
     home_logs, waydroid_left, trash, installers, launchers, broken_symlinks, recent_files, clipboard_history,
+    more_dev_caches, vscode_workspaces, android_images, unknown_caches,
 ]
 DEEP: list[Callable[[], Junk]] = [old_runtimes, downloads_old, duplicates]
 
@@ -1037,10 +1165,12 @@ def scan(deep: bool = False, on_result: Callable[[Junk], None] | None = None, wo
         futs = [ex.submit(_safe, fn) for fn in fns]
         if deep:
             futs.append(ex.submit(lambda: project_junks()))
+        ex = exclusions()
         for f in futs:
             r = f.result()
             for j in (r if isinstance(r, list) else [r]):
-                if worth_showing(j):
+                j = apply_exclusions(j, ex)
+                if j is not None and worth_showing(j):
                     res.append(j)
                     if on_result:
                         on_result(j)
@@ -1049,14 +1179,41 @@ def scan(deep: bool = False, on_result: Callable[[Junk], None] | None = None, wo
     return res
 
 
+def auto_ids() -> list[str]:
+    ids = _settings().get("auto_clean")
+    return [i for i in (ids if isinstance(ids, list) else AUTO_DEFAULT) if i in AUTO_SAFE]
+
+
 def safe_user_steps(junks: list[Junk]) -> list[Step]:
     """For the weekly automatic run: only things that never need a password or a decision."""
-    keep = {"py-caches", "js-caches", "thumbnails", "home-logs", "vscode-ext"}
-    return [s for j in junks if j.id in keep for s in j.steps_for() if not s.root]
+    keep = set(auto_ids())
+    ex = exclusions()
+    res = []
+    for j in junks:
+        if j.id not in keep:
+            continue
+        j2 = apply_exclusions(j, ex)
+        if j2 is None:
+            continue
+        res += [s for s in j2.steps_for() if not s.root]
+    return res
 
 
 def auto_candidates() -> list[Junk]:
-    return [_safe(f) for f in (python_caches, js_caches, thumbnails, home_logs, vscode_old_extensions)]
+    return [_safe(AUTO_SAFE[i][1]) for i in auto_ids()]
+
+
+AUTO_SAFE.update({
+    "py-caches": ("Python caches (pip, poetry, uv…)", python_caches),
+    "js-caches": ("JavaScript caches (npm, yarn, bun…)", js_caches),
+    "thumbnails": ("Thumbnail previews", thumbnails),
+    "home-logs": ("Log files in your home folder", home_logs),
+    "vscode-ext": ("Old editor extension versions", vscode_old_extensions),
+    "go-rust": ("Go and Rust caches", go_rust_caches),
+    "jvm": ("Java, Android and .NET caches", jvm_caches),
+    "more-dev-caches": ("More developer caches", more_dev_caches),
+    "vscode-workspaces": ("Editor data for deleted projects", vscode_workspaces),
+})
 
 
 # kept for older callers

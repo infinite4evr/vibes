@@ -60,6 +60,9 @@ class TaskDialog(Adw.Dialog):
         self.steps, self.on_done_cb = steps, on_done
         self.success = False
         self.finished = False
+        self._all_lines: list[str] = []
+        import time as _t
+        self._t0 = _t.monotonic()
         tv = Adw.ToolbarView()
         hb = Adw.HeaderBar()
         tv.add_top_bar(hb)
@@ -152,6 +155,9 @@ class TaskDialog(Adw.Dialog):
         return False
 
     def _on_line(self, line: str) -> None:
+        self._all_lines.append(line)
+        if len(self._all_lines) > 2000:
+            del self._all_lines[:500]
         GLib.idle_add(self._append, line)
 
     def _append(self, line: str) -> bool:
@@ -184,6 +190,14 @@ class TaskDialog(Adw.Dialog):
         self.set_can_close(True)
         self.close_btn.grab_focus()
         self._notify(ok, note)
+        try:
+            import time as _t
+
+            from .activity import record
+            record(self.get_title(), [s.display() for s in self.steps], ok, note, self._all_lines,
+                   root=needs_root(self.steps), duration=_t.monotonic() - self._t0)
+        except Exception:  # noqa: BLE001 - history is best effort
+            pass
         return False
 
     def _notify(self, ok: bool, note: str) -> None:
@@ -209,6 +223,9 @@ def run_steps(parent: Gtk.Widget, title: str, steps: list[Step], explain: str = 
             TaskDialog(title, steps, on_done).start(parent)
         elif on_done:
             on_done(False)
+    from . import prefs
+    if ask and not danger and not needs_root(steps) and not prefs.get("confirm_safe"):
+        ask = False  # the user chose to skip confirmations for harmless actions
     if ask:
         confirm(parent, title, steps, explain, danger, ok_label, go)
     else:
@@ -385,3 +402,140 @@ class ChoiceDialog(Adw.Dialog):
             self.on_done_cb(key)
         if close:
             self.close()
+
+
+class ActivityDialog(Adw.Dialog):
+    """Everything the app ran: when, what, the exact commands, the result and the output."""
+
+    def __init__(self):
+        super().__init__()
+        from . import activity
+        from ..core.fmt import ago
+        self.set_title("Activity history")
+        self.set_content_width(820)
+        self.set_content_height(640)
+        tv = Adw.ToolbarView()
+        hb = Adw.HeaderBar()
+        clear_btn = button("Clear", css="flat", tooltip="Forget the history (doesn't undo anything)")
+        hb.pack_start(clear_btn)
+        tv.add_top_bar(hb)
+        entries = activity.entries()
+        box = vbox(spacing=12)
+        box.set_margin_start(16)
+        box.set_margin_end(16)
+        box.set_margin_bottom(16)
+        ok_n = sum(1 for e in entries if e.get("ok"))
+        box.append(label(f"{len(entries)} actions · {ok_n} succeeded · {len(entries) - ok_n} failed or cancelled. Newest first.", "dim", wrap=True))
+        lb = Gtk.ListBox()
+        lb.add_css_class("boxed-list")
+        lb.set_selection_mode(Gtk.SelectionMode.NONE)
+        for e in entries:
+            from .util import status_icon
+            import time as _t
+            when = _t.strftime("%d %b %H:%M", _t.localtime(e["ts"]))
+            row = Adw.ExpanderRow(title=esc(e["title"]), subtitle=esc(f"{when} ({ago(e['ts'])}) · " + ("done" if e.get("ok") else (e.get("note") or "failed"))
+                                                                     + (" · admin" if e.get("root") else "") + (f" · {e['duration']}s" if e.get("duration") else "")))
+            row.add_prefix(status_icon("ok" if e.get("ok") else "bad"))
+            cmds = "\n".join("$ " + c for c in e.get("commands", []))
+            r = Adw.ActionRow(title="Commands", subtitle=esc(cmds[:2000]))
+            r.set_subtitle_selectable(True)
+            r.set_subtitle_lines(12)
+            row.add_row(r)
+            out_btn = button("Show output", css="flat")
+            out_btn.connect("clicked", lambda _b, ee=e: show_text(self, ee["title"], "\n".join(ee.get("output", [])) or "(no output)"))
+            copy_btn = button("Copy commands", css="flat")
+            copy_btn.connect("clicked", lambda _b, c=cmds: self.get_clipboard().set(c))
+            acts = hbox(out_btn, copy_btn, spacing=6)
+            acts.set_margin_top(6)
+            acts.set_margin_bottom(6)
+            acts.set_margin_start(12)
+            row.add_row(acts)
+            lb.append(row)
+        if not entries:
+            box.append(label("Nothing yet. Every cleanup, update, fix or change you run from the app shows up here.", "dim", wrap=True))
+        else:
+            box.append(lb)
+        sw = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+        sw.set_vexpand(True)
+        sw.set_child(box)
+        tv.set_content(sw)
+        self.set_child(tv)
+
+        def do_clear(*_a) -> None:
+            activity.clear()
+            self.close()
+        clear_btn.connect("clicked", do_clear)
+
+
+class ChecksDialog(Adw.Dialog):
+    """Runs a check function in the background and lists what it found, each with a Fix button.
+
+    checks_fn() -> list of Check (id, title, level, detail, fix_label, steps, goto). page is used to run fixes."""
+
+    def __init__(self, title: str, intro: str, checks_fn, page, again_label: str = "Check again", busy: str = "Checking…"):
+        super().__init__()
+        self.busy_text = busy
+        self.set_title(title)
+        self.set_content_width(720)
+        self.set_content_height(600)
+        self.checks_fn, self.page = checks_fn, page
+        tv = Adw.ToolbarView()
+        hb = Adw.HeaderBar()
+        self.again = button(again_label, icon="view-refresh-symbolic", css="flat")
+        self.again.connect("clicked", lambda *_: self.start())
+        hb.pack_start(self.again)
+        tv.add_top_bar(hb)
+        self.box = vbox(spacing=12)
+        self.box.set_margin_start(18)
+        self.box.set_margin_end(18)
+        self.box.set_margin_bottom(18)
+        self.intro = label(intro, "dim", wrap=True)
+        sw = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+        sw.set_vexpand(True)
+        self.list_box = vbox(spacing=10)
+        sw.set_child(vbox(self.intro, self.list_box, spacing=12, css=None))
+        self.box.append(sw)
+        tv.set_content(self.box)
+        self.set_child(tv)
+
+    def start(self) -> None:
+        from .util import bg, clear
+        clear(self.list_box)
+        sp = Gtk.Spinner()
+        sp.start()
+        self.list_box.append(hbox(sp, label(self.busy_text, "dim")))
+        self.again.set_sensitive(False)
+        bg(self.checks_fn, self._show, error=lambda e: self._show([]))
+
+    def _show(self, checks) -> None:
+        from .util import clear, status_icon
+        clear(self.list_box)
+        self.again.set_sensitive(True)
+        lb = Gtk.ListBox()
+        lb.add_css_class("boxed-list")
+        lb.set_selection_mode(Gtk.SelectionMode.NONE)
+        for c in checks:
+            row = Adw.ActionRow(title=esc(c.title), subtitle=esc(c.detail))
+            row.set_subtitle_lines(4)
+            row.add_prefix(status_icon(c.level))
+            if c.fix_label and (c.steps or c.goto):
+                b = button(c.fix_label, css="suggested-action" if c.level == "bad" else "flat")
+                b.set_valign(Gtk.Align.CENTER)
+                b.connect("clicked", lambda _b, ch=c: self._fix(ch))
+                row.add_suffix(b)
+            lb.append(row)
+        self.list_box.append(lb)
+
+    def _fix(self, c) -> None:
+        if c.goto.startswith("settings:"):  # a GNOME Settings panel, e.g. settings:sound
+            from .util import launch
+            launch(["gnome-control-center", c.goto.split(":", 1)[1]])
+        elif c.goto:
+            self.close()
+            self.page.win.goto(c.goto)
+        else:
+            self.page.run(c.fix_label, c.steps, c.detail, ok_label=c.fix_label, reload=False, done=lambda ok: ok and self.start())
+
+    def present_and_start(self, parent) -> None:
+        self.present(parent)
+        self.start()

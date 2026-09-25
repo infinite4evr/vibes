@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 
 from gi.repository import Adw, Gtk
@@ -12,6 +13,7 @@ from ...core.fmt import ago, human
 from ...core.run import HOME, Step
 from ..util import button, clear, esc, hbox, idle, label, pill, vbox
 from ..widgets import HBars, card
+from .. import prefs, theme
 from .base import Page, action_row, group
 
 HISTORY = HOME / ".local/state/pc/cleanup-history.json"
@@ -27,9 +29,24 @@ def _history() -> list[dict]:
         return []
 
 
-def _save_history(freed: int, what: list[str]) -> None:
+def _free_space() -> int:
+    """Free bytes on / plus /home when it's a separate disk: measured before and after a cleanup."""
+    seen, total = set(), 0
+    for p in ("/", str(HOME)):
+        try:
+            st = os.statvfs(p)
+        except OSError:
+            continue
+        if st.f_fsid in seen:
+            continue
+        seen.add(st.f_fsid)
+        total += st.f_bavail * st.f_frsize
+    return total
+
+
+def _save_history(freed: int, what: list[str], measured: int | None = None) -> None:
     h = _history()[-49:]
-    h.append({"ts": time.time(), "freed": freed, "what": what})
+    h.append({"ts": time.time(), "freed": freed, "what": what, "measured": measured})
     try:
         HISTORY.parent.mkdir(parents=True, exist_ok=True)
         HISTORY.write_text(json.dumps(h))
@@ -78,7 +95,9 @@ class CleanupPage(Page):
         self.bars = HBars("green", row=22, label_width=150)
         self.bars.set_visible(False)
         self.history_label = label("", "dim", wrap=True)
-        hero = card(hbox(left, right, spacing=18), self.bars, self.history_label, spacing=12)
+        self.history_label.set_hexpand(True)
+        hist = hbox(self.history_label, button("History", icon="document-open-recent-symbolic", css="flat", on_click=self.show_history))
+        hero = card(hbox(left, right, spacing=18), self.bars, hist, spacing=12)
         hero.add_css_class("hero")
         self.body.append(hero)
 
@@ -175,7 +194,7 @@ class CleanupPage(Page):
         size_text = "?" if j.size is None else (human(j.size) if j.size else "")
         sub = esc(j.desc)
         if j.warn:
-            sub += f"\n<span foreground='#fab387'>{esc(j.warn)}</span>"
+            sub += "\n" + theme.span("peach", esc(j.warn))
         cb = Gtk.CheckButton()
         cb.set_valign(Gtk.Align.CENTER)
         cb.connect("toggled", self._cat_toggled, j)
@@ -189,11 +208,23 @@ class CleanupPage(Page):
             tags.append(pill("you choose", "accent"))
         if j.deep:
             tags.append(pill("deep", "neutral"))
-        cmds = button(icon="utilities-terminal-symbolic", css="flat", tooltip="Show exactly what would run",
-                      on_click=lambda jj=j: self.show_commands(jj))
         only = button(icon="user-trash-symbolic", css="flat", tooltip="Clean just this", on_click=lambda jj=j: self.clean([jj]))
+        more = Gtk.MenuButton(icon_name="view-more-symbolic", tooltip_text="More")
+        more.add_css_class("flat")
+        pop = Gtk.Popover()
+        mbox = vbox(spacing=2)
+        for text, fn in (("Show exactly what would run", lambda jj=j: self.show_commands(jj)),
+                         ("Clean just this", lambda jj=j: self.clean([jj])),
+                         ("Never clean this category", lambda jj=j: self.exclude(jj.id, jj.title))):
+            b = Gtk.Button(label=text)
+            b.add_css_class("flat")
+            b.get_child().set_xalign(0)
+            b.connect("clicked", lambda _b, f=fn, p=pop: (p.popdown(), f()))
+            mbox.append(b)
+        pop.set_child(mbox)
+        more.set_popover(pop)
         # one box, so the order is the same on every libadwaita version
-        suffix = hbox(*tags, size, cmds, only, spacing=6)
+        suffix = hbox(*tags, size, only, more, spacing=6)
         suffix.set_valign(Gtk.Align.CENTER)
 
         if j.items:
@@ -216,6 +247,11 @@ class CleanupPage(Page):
                     self.item_checks[j.id][it.key] = icb
                 if it.size:
                     ir.add_suffix(label(human(it.size), "dim"))
+                if selectable(j):
+                    nb = button(icon="action-unavailable-symbolic", css="flat", tooltip="Never clean this item",
+                                on_click=lambda jj=j, ii=it: self.exclude(f"{jj.id}|{ii.key}", ii.label))
+                    nb.set_valign(Gtk.Align.CENTER)
+                    ir.add_suffix(nb)
                 row.add_row(ir)
             if len(items) > 300:
                 row.add_row(Adw.ActionRow(title=f"… and {len(items) - 300} more (use the category box to include them)"))
@@ -336,6 +372,24 @@ class CleanupPage(Page):
         lines += [f"  $ {s.display()}" + ("   [admin]" if s.root else "") for s in steps] or ["  (nothing)"]
         self.text(j.title, "\n".join(lines))
 
+    def exclude(self, key: str, name: str) -> None:
+        junk.set_excluded(key, True)
+        self.toast(f"“{name}” won't be offered again. Undo in Preferences → Cleanup.", 5)
+        self.show([j for j in (junk.apply_exclusions(j) for j in self.junks) if j is not None])
+
+    def show_history(self) -> None:
+        h = _history()
+        if not h:
+            self.toast("No cleanups yet.")
+            return
+        lines = [f"{'When':<18} {'Estimated':>10} {'Measured':>10}  What", ""]
+        for e in reversed(h):
+            when = time.strftime("%d %b %Y %H:%M", time.localtime(e["ts"]))
+            meas = human(e["measured"]) if e.get("measured") is not None else "-"
+            lines.append(f"{when:<18} {human(e['freed']):>10} {meas:>10}  {', '.join(e['what'])[:110]}")
+        lines += ["", f"Total: {human(sum(e['freed'] for e in h))} over {len(h)} cleanups."]
+        self.text("Cleanup history", "\n".join(lines))
+
     def clean(self, only: list[junk.Junk] | None = None) -> None:
         targets = only if only is not None else self.junks
         steps: list[Step] = []
@@ -362,11 +416,28 @@ class CleanupPage(Page):
         if warns:
             explain += "\n\n" + " ".join(sorted(set(warns)))
 
+        before = _free_space()
+
         def done(ok: bool) -> None:
             if ok:
-                _save_history(freed, titles)
-                self.toast(f"Freed about {human(freed)}")
-        self.run("Clean up" if only is None else f"Clean: {titles[0]}", steps, explain, ok_label="Clean", done=done)
+                measured = max(0, _free_space() - before)
+                _save_history(freed, titles, measured)
+                self.toast(f"Freed {human(measured)} of disk space" if measured else f"Freed about {human(freed)}", 5)
+
+        def go() -> None:
+            self.run("Clean up" if only is None else f"Clean: {titles[0]}", steps, explain, ok_label="Clean", done=done,
+                     danger=freed > big)
+        big = int(prefs.get("big_delete_gb") or 10) * 1024 ** 3
+        if freed > big:
+            d = Adw.AlertDialog(heading=f"Delete {human(freed)}?", body="That's a lot at once. Make sure nothing in the list is something you "
+                                "still need (expand the categories to check).")
+            d.add_response("cancel", "Go back")
+            d.add_response("ok", "Continue")
+            d.set_response_appearance("ok", Adw.ResponseAppearance.DESTRUCTIVE)
+            d.connect("response", lambda _d, r: r == "ok" and go())
+            d.present(self.win)
+        else:
+            go()
 
 
 PAGE = CleanupPage

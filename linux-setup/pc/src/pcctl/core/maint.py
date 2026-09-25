@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import sys
 import tarfile
@@ -96,7 +97,8 @@ def disable_timer_steps() -> list[Step]:
 
 def notify(title: str, body: str, urgency: str = "normal") -> None:
     if has("notify-send"):
-        sh(["notify-send", "-a", "PC Command Center", "-u", urgency, "-i", "utilities-system-monitor", title, body], timeout=5)
+        app = "io.github.infinite4evr.PcCommandCenter"
+        sh(["notify-send", "-a", "PC Command Center", "-u", urgency, "-i", app, "--hint", f"string:desktop-entry:{app}", title, body], timeout=5)
 
 
 def maintain_auto() -> str:
@@ -205,3 +207,41 @@ def timeshift_steps() -> list[Step]:
 
 def timeshift_list() -> str:
     return sh(["timeshift", "--list", "--scripted"], root=True, timeout=30).out if has("timeshift") else ""
+
+
+TS_TAGS = {"O": "made by hand", "B": "at start-up", "H": "hourly", "D": "daily", "W": "weekly", "M": "monthly"}
+
+
+def parse_timeshift_list(text: str) -> dict:
+    """`timeshift --list --scripted` -> {'device', 'status', 'free', 'snapshots': [{'name', 'tags', 'kinds', 'comment', 'time'}]}."""
+    info: dict = {"device": "", "status": "", "free": "", "mode": "", "snapshots": [], "configured": "First run mode" not in text}
+    for line in text.splitlines():
+        m = re.match(r"^(Device|Status|Mode)\s*:\s*(.+)$", line.strip())
+        if m:
+            info[m.group(1).lower()] = m.group(2).strip()
+            continue
+        m = re.match(r"^(\d+) snapshots?, (.+?) free", line.strip())
+        if m:
+            info["free"] = m.group(2)
+            continue
+        m = re.match(r"^\s*\d+\s+>\s+(\S+)\s*([OBHDWM]*)\s*(.*)$", line)
+        if m:
+            name, tags = m.group(1), m.group(2)
+            t = None
+            try:
+                t = time.mktime(time.strptime(name, "%Y-%m-%d_%H-%M-%S"))
+            except ValueError:
+                pass
+            info["snapshots"].append({"name": name, "tags": tags, "kinds": [TS_TAGS[c] for c in tags if c in TS_TAGS],
+                                      "comment": m.group(3).strip(), "time": t})
+    info["snapshots"].sort(key=lambda s: s["name"], reverse=True)
+    return info
+
+
+def timeshift_delete_steps(names: list[str]) -> list[Step]:
+    return [Step(f"Delete snapshot {n}", ["timeshift", "--delete", "--snapshot", n, "--scripted"], root=True) for n in names]
+
+
+def timeshift_list_steps() -> list[Step]:
+    return [Step("List snapshots", ["timeshift", "--list", "--scripted"], root=True)]
+

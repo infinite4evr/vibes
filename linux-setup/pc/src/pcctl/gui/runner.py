@@ -26,6 +26,10 @@ def raw_argv(step: Step) -> list[str]:
     return args
 
 
+HELPER = "/usr/local/libexec/pc-command-center/pc-admin"
+POLICY = "/usr/share/polkit-1/actions/io.github.infinite4evr.PcCommandCenter.policy"
+
+
 def root_prefix() -> list[str]:
     """How to become root: pkexec (password popup) normally; PC_ROOT_RUNNER=sudo for testing."""
     if os.geteuid() == 0:
@@ -33,6 +37,20 @@ def root_prefix() -> list[str]:
     if os.environ.get("PC_ROOT_RUNNER") == "sudo":
         return ["sudo", "-n"]
     return ["pkexec"]
+
+
+def batch_prefix() -> list[str]:
+    """Command that runs our admin batch script as root.
+
+    With the app's polkit policy installed, the password popup names PC Command Center and remembers the password
+    for a few minutes; otherwise plain `pkexec /bin/bash` still works."""
+    if os.geteuid() == 0:
+        return ["/bin/bash"]
+    if os.environ.get("PC_ROOT_RUNNER") == "sudo":
+        return ["sudo", "-n", "/bin/bash"]
+    if os.path.exists(HELPER) and os.path.exists(POLICY):
+        return ["pkexec", HELPER]
+    return ["pkexec", "/bin/bash"]
 
 
 class Runner:
@@ -141,7 +159,7 @@ class Runner:
             s = self.steps[k]
             opt = "1" if s.optional or any(c != 0 for c in s.ok_codes) else "0"
             lines.append(f"__run {k} {opt} {shlex.join(raw_argv(s))}")
-        fd, path = tempfile.mkstemp(prefix="pc-admin-", suffix=".sh")
+        fd, path = tempfile.mkstemp(prefix="pc-admin-", suffix=".sh", dir="/tmp")
         with os.fdopen(fd, "w") as f:
             f.write("\n".join(lines) + "\n")
         os.chmod(path, 0o644)
@@ -170,7 +188,7 @@ class Runner:
 
         self._handle_line = handle  # type: ignore[method-assign]
         try:
-            code = self._stream([*root_prefix(), "/bin/bash", path])
+            code = self._stream([*batch_prefix(), path])
         finally:
             self._handle_line = orig  # type: ignore[method-assign]
             try:

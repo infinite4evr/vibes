@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import os
+import socket
 import time
 
 import psutil
-from gi.repository import Gtk
+from gi.repository import Adw, Gtk
 
 from ...core import network, security
 from ...core.fmt import human, rate
@@ -56,15 +57,21 @@ class NetworkPage(Page):
         self.conn_box = vbox(spacing=18)
         self.ports_box = vbox(spacing=10)
         self.diag_box = vbox(spacing=18)
-        sw, self.stack = tabs(("conn", "Connections", "network-wired-symbolic", self.conn_box),
+        self.talk_box = vbox(spacing=10)
+        self.lan_box = vbox(spacing=10)
+        sw, self.stack = tabs(("conn", "Wi-Fi & DNS", "network-wireless-symbolic", self.conn_box),
+                              ("talk", "Talking to", "network-transmit-receive-symbolic", self.talk_box),
                               ("ports", "Open ports", "network-server-symbolic", self.ports_box),
-                              ("diag", "Diagnose & speed", "network-workgroup-symbolic", self.diag_box))
+                              ("lan", "Devices nearby", "network-workgroup-symbolic", self.lan_box),
+                              ("diag", "Fix & speed", "emblem-system-symbolic", self.diag_box))
         self.body.append(sw)
         self.body.append(self.stack)
         self.stack.connect("notify::visible-child-name", self._tab)
         self.tab_loaded: set[str] = set()
         self._build_ports()
         self._build_diag()
+        self._build_talk()
+        self._build_lan()
 
     def load(self) -> None:
         self.tab_loaded.clear()
@@ -92,6 +99,8 @@ class NetworkPage(Page):
             self.load_conn()
         elif name == "ports":
             self.load_ports()
+        elif name == "talk":
+            self.load_talk()
 
     # ---------------------------------------------------------------- summary + connections
     def show_summary(self, res) -> None:
@@ -117,11 +126,17 @@ class NetworkPage(Page):
 
     def load_conn(self) -> None:
         self.loading(self.conn_box)
-        self.bg(lambda: (network.interfaces(), network.wifi() if has("nmcli") else {"available": False}, saved_wifi() if has("nmcli") else set()),
-                self.show_conn)
+        self.bg(self._conn_data, self.show_conn)
+
+    def _conn_data(self, rescan: bool = False):
+        nm = has("nmcli")
+        con = network.active_connection() if nm else {}
+        return (network.interfaces(), network.wifi(rescan=rescan) if nm else {"available": False}, saved_wifi() if nm else set(),
+                con, network.current_dns_preset(con) if con else "auto", network.vpns() if nm else [],
+                [c for c in network.nm_connections() if c["type"] == "802-11-wireless"] if nm else [])
 
     def show_conn(self, res) -> None:
-        ifaces, wf, saved = res
+        ifaces, wf, saved, con, dns_now, vpns, saved_list = res
         self.saved = saved
         clear(self.conn_box)
         rows = []
@@ -161,12 +176,159 @@ class NetworkPage(Page):
                                  prefix=Gtk.Image.new_from_icon_name("network-wireless-signal-" + ("excellent" if n["signal"] > 75 else "good" if n["signal"] > 50 else "ok" if n["signal"] > 25 else "weak") + "-symbolic"))
                 g.add(row)
             self.conn_box.append(g)
-        self.conn_box.append(group("Settings", "", action_row("Network settings", "VPNs, proxies, hotspot and advanced options live in GNOME Settings.",
+        # DNS
+        if con:
+            keys = [k for k, *_ in network.DNS_PRESETS]
+            names = [t for _, t, *_ in network.DNS_PRESETS] + (["Custom (set elsewhere)"] if dns_now == "custom" else [])
+            combo = Adw.ComboRow(model=Gtk.StringList.new(names))
+            combo.set_use_markup(False)
+            combo.set_title("Look up websites with")
+            combo.set_subtitle(f"DNS for “{con['name']}”. A different DNS can be faster, more private, or block ads and malware for every app.")
+            combo.set_selected(keys.index(dns_now) if dns_now in keys else len(names) - 1)
+
+            def pick(r, _p) -> None:
+                i = r.get_selected()
+                if i >= len(keys) or keys[i] == dns_now:
+                    return
+                self.run("Change DNS", network.dns_steps(keys[i], con), "Your connection reconnects for a second.", ok_label="Change",
+                         reload=False, done=lambda ok: self.load_conn())
+            combo.connect("notify::selected", pick)
+            self.conn_box.append(group("DNS", "", combo))
+
+        # VPN
+        if vpns:
+            vg = group("VPN", "Your saved VPN connections.")
+            for v in vpns:
+                if v["type"] == "tailscale":
+                    vg.add(action_row("Tailscale", "connected" if v["active"] else "stopped",
+                                      button("Disconnect" if v["active"] else "Connect", css="flat", on_click=lambda on=v["active"]: self.run(
+                                          "Tailscale", [Step("Tailscale " + ("down" if on else "up"), ["tailscale", "down" if on else "up"])], ask=False,
+                                          reload=False, done=lambda ok: self.load_conn()))))
+                    continue
+
+                def toggle_vpn(on: bool, settle, vv=v) -> None:
+                    r = sh(["nmcli", "con", "up" if on else "down", vv["uuid"]], timeout=45)
+                    settle(r.ok)
+                    if not r.ok:
+                        self.toast(f"Couldn't {'connect' if on else 'disconnect'}: {(r.err or r.out).strip()[:120]}", 5)
+                vg.add(switch_row(v["name"], v["type"], v["active"], toggle_vpn))
+            self.conn_box.append(vg)
+
+        # saved networks + hotspot
+        if saved_list:
+            sg = Adw.ExpanderRow(title=f"Saved Wi-Fi networks ({len(saved_list)})", subtitle="Forget old networks, or see a password to share it.")
+            for c in sorted(saved_list, key=lambda c: c["last"], reverse=True):
+                r = action_row(c["name"], f"last used {c['last']}" if c["last"] and c["last"] != "never" else "never used",
+                               button("Password", css="flat", on_click=lambda cc=c: self.show_password(cc)),
+                               button(icon="user-trash-symbolic", css="flat", tooltip="Forget this network",
+                                      on_click=lambda cc=c: self.run(f"Forget {cc['name']}", [Step(f"Forget {cc['name']}", ["nmcli", "con", "delete", cc["uuid"]])],
+                                                                     "The PC won't join it automatically anymore.", danger=True, ok_label="Forget",
+                                                                     reload=False, done=lambda ok: self.load_conn())))
+                sg.add_row(r)
+            hot = action_row("Wi-Fi hotspot", "Share this PC's internet with your phone or another laptop.",
+                             button("Start…", css="flat", on_click=self.hotspot),
+                             button("Stop", css="flat", on_click=lambda: self.run("Stop hotspot", network.hotspot_steps(False), ask=False, reload=False)))
+            self.conn_box.append(group("Wi-Fi extras", "", sg, hot))
+
+        self.conn_box.append(group("Settings", "", action_row("Network settings", "Proxies, VPN setup and advanced options live in GNOME Settings.",
                                                                   button("Open", css="flat", on_click=lambda: launch(["gnome-control-center", "network"])))))
+
+    def show_password(self, c: dict) -> None:
+        pw = network.wifi_password(c["uuid"])
+        if not pw:
+            self.toast("No saved password (open network, or it's stored in your keyring only).")
+            return
+        self.text(f"Wi-Fi password: {c['name']}", f"Network:  {c['name']}\nPassword: {pw}\n\nOn a phone you can also scan the QR code in "
+                  "GNOME Settings → Wi-Fi → ⋮ → Share network.")
+
+    def hotspot(self) -> None:
+        def got(pw: str | None) -> None:
+            if pw is None:
+                return
+            if len(pw) < 8:
+                self.toast("The password needs at least 8 characters.")
+                return
+            self.run("Start hotspot", network.hotspot_steps(True, f"{socket.gethostname()}-hotspot", pw), "Your Wi-Fi disconnects from its "
+                     "current network while the hotspot runs (unless you're on a cable).", ok_label="Start", reload=False)
+        ask_text(self.win, "Wi-Fi hotspot", "Choose a password (8+ characters) for the hotspot.", "password", got, ok_label="Start")
 
     def rescan(self) -> None:
         self.loading(self.conn_box, "Scanning for Wi-Fi networks…")
-        self.bg(lambda: (network.interfaces(), network.wifi(rescan=True), saved_wifi()), self.show_conn)
+        self.bg(lambda: self._conn_data(rescan=True), self.show_conn)
+
+    # ---------------------------------------------------------------- who the PC is talking to
+    def _build_talk(self) -> None:
+        self.talk_status = label("Apps with an open connection to the internet right now.", "dim", hexpand=True)
+        self.talk_box.append(hbox(self.talk_status, button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_talk)))
+        self.ttable = DataTable([
+            Column("process", "App", "bold", width=170),
+            Column("host", "Talking to", "text", expand=True),
+            Column("ip", "Address", "mono", width=170),
+            Column("svc", "Kind", "muted", width=110, sort="port"),
+            Column("pid", "PID", "num", width=70),
+        ], empty="No open connections.", sort="process", descending=False,
+            on_activate=lambda r: self.text(f"{r['process']} → {r['host'] or r['ip']}", f"App: {r['process']} (pid {r['pid']})\n"
+                                                                                       f"Remote: {r['ip']}:{r['port']}\nName: {r['host'] or '(no name)'}\nLocal: {r['local']}"))
+        self.ttable.set_size_request(-1, 420)
+        self.ttable.set_context(lambda r: [("Look up this address", lambda rr: launch(["xdg-open", f"https://ipinfo.io/{rr['ip']}"])),
+                                           ("Stop this app…", lambda rr: self.win.goto("processes"))], "connections")
+        self.talk_box.append(self.ttable)
+        self.talk_box.append(label("Names come from reverse DNS, so big services show their hosting provider (e.g. cloudfront, 1e100 = Google).",
+                                   "dim", wrap=True))
+
+    def load_talk(self) -> None:
+        self.ttable.set_empty("Looking at connections…")
+        self.bg(network.connections, self.show_talk)
+
+    def show_talk(self, items: list[dict]) -> None:
+        grouped: dict[tuple, dict] = {}  # one row per app + remote address (browsers open many sockets to the same server)
+        for c in items:
+            k = (c["process"] or "(system)", c["remote_ip"], c["remote_port"])
+            g = grouped.get(k)
+            if g:
+                g["n"] += 1
+                continue
+            grouped[k] = {"key": ":".join(map(str, k)), "process": k[0], "host": c.get("host", ""), "ip": c["remote_ip"],
+                          "port": c["remote_port"], "svc": network.SERVICES.get(c["remote_port"], str(c["remote_port"])),
+                          "pid": c["pid"], "local": c["local"], "n": 1}
+        rows = list(grouped.values())
+        for r in rows:
+            if r["n"] > 1:
+                r["svc"] = f"{r['svc']} ×{r['n']}"
+        self.ttable.set_rows(rows)
+        self.ttable.set_empty("No open connections.")
+        apps = len({r["process"] for r in rows})
+        self.talk_status.set_text(f"{len(items)} connections to {len(rows)} places from {apps} app{'s' if apps != 1 else ''} right now.")
+
+    # ---------------------------------------------------------------- devices nearby
+    def _build_lan(self) -> None:
+        self.lan_status = label("Phones, TVs, printers and other computers on the same network as this PC.", "dim", hexpand=True)
+        self.lan_btn = button("Scan", icon="system-search-symbolic", css="suggested-action", on_click=self.scan_lan)
+        self.lan_box.append(hbox(self.lan_status, self.lan_btn))
+        self.ltable = DataTable([
+            Column("name", "Name", "bold", expand=True),
+            Column("ip", "Address", "mono", width=150, sort="ipkey"),
+            Column("mac", "Hardware ID (MAC)", "mono", width=200),
+            Column("what", "", "pill", width=110),
+        ], empty="Press Scan to look for devices.", sort="ipkey", descending=False)
+        self.ltable.set_size_request(-1, 400)
+        self.lan_box.append(self.ltable)
+        self.lan_box.append(label("Unknown devices you don't recognise on your home Wi-Fi? Change the Wi-Fi password in your router.", "dim", wrap=True))
+
+    def scan_lan(self) -> None:
+        self.lan_btn.set_sensitive(False)
+        self.lan_status.set_text("Scanning your network (a few seconds)…")
+        self.bg(network.lan_devices, self.show_lan)
+
+    def show_lan(self, items: list[dict]) -> None:
+        self.lan_btn.set_sensitive(True)
+        rows = []
+        for d in items:
+            what = ("router", "accent") if d["router"] else (("this PC", "ok") if d["state"] == "self" else ("", "neutral"))
+            rows.append({"key": d["ip"], "name": d["name"] or "(unknown device)", "ip": d["ip"], "ipkey": tuple(int(x) for x in d["ip"].split(".")),
+                         "mac": d["mac"], "what": what})
+        self.ltable.set_rows(rows)
+        self.lan_status.set_text(f"{len(rows)} devices found.")
 
     def connect(self, n: dict) -> None:
         ssid = n["ssid"]

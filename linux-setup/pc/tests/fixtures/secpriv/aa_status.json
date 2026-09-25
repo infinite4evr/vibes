@@ -1,0 +1,1 @@
+{"version": "2", "profiles": {"/usr/bin/man": "enforce", "firefox": "unconfined", "/usr/sbin/cupsd": "enforce", "evince": "complain"}, "processes": {}}

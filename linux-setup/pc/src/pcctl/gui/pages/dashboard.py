@@ -5,17 +5,21 @@ import time
 
 from gi.repository import Adw, Gtk
 
+import psutil
+
 from ...core import health, system
+from ...core.diagnose import pressure as diagnose_pressure
 from ...core.fmt import duration, human, rate
 from ..util import bg, button, clear, esc, hbox, label, spacer, status_icon, vbox
 from ..widgets import LineGraph, MiniBar, RingGauge, card, level_color
+from .. import theme
 from .base import Page
 
 
 class DashboardPage(Page):
     ID = "dashboard"
     TITLE = "Dashboard"
-    ICON = "utilities-system-monitor-symbolic"
+    ICON = "go-home-symbolic"
     AUTO_REFRESH = 1.5
 
     def build(self) -> None:
@@ -31,9 +35,10 @@ class DashboardPage(Page):
         self.hero_sub = label("This takes a few seconds.", "subtle", wrap=True)
         actions = hbox(
             button("Clean up", icon="edit-clear-all-symbolic", css="suggested-action", on_click=lambda: self.win.goto("cleanup")),
+            button("Why is it slow?", icon="power-profile-performance-symbolic", tooltip="Measures for two seconds and explains what's slowing the PC down",
+                   on_click=self.why_slow),
             button("Updates", icon="software-update-available-symbolic", on_click=lambda: self.win.goto("updates")),
             button("Security", icon="security-high-symbolic", on_click=lambda: self.win.goto("security")),
-            button("Tweaks", icon="preferences-system-symbolic", on_click=lambda: self.win.goto("tweaks")),
             spacing=8)
         actions.set_margin_top(6)
         text = vbox(self.hero_title, self.hero_sub, actions, spacing=6)
@@ -52,10 +57,13 @@ class DashboardPage(Page):
 
         self.cpu_num = label("0%", "big-num")
         self.cpu_info = label("", "dim", ellipsize=True)
+        self.strain = label("", "dim", ellipsize=True)
+        self.strain.set_tooltip_text("How often programs had to wait for the CPU, memory or disk in the last 10 seconds (Linux pressure stall info). "
+                                     "Near 0% means nothing is holding you back.")
         self.cpu_graph = LineGraph(("mauve",))
         self.cores = Gtk.Box(spacing=3, homogeneous=True)
         self.core_bars: list[MiniBar] = []
-        self._tile("CPU", self.cpu_num, self.cpu_info, self.cpu_graph, self.cores)
+        self._tile("CPU", self.cpu_num, self.cpu_info, self.strain, self.cpu_graph, self.cores)
 
         self.mem_num = label("0%", "big-num")
         self.mem_info = label("", "dim")
@@ -77,6 +85,7 @@ class DashboardPage(Page):
         self.temp_graph = LineGraph(("peach",), maximum=100)
         self._tile("Temperature", self.temp_num, self.temp_info, self.temp_graph)
 
+        self.gpu_tile = None
         self.bat_num = label("--", "big-num")
         self.bat_info = label("", "dim", wrap=True)
         self.bat_bar = MiniBar(height=10, warn=101, crit=101, color="green")
@@ -101,6 +110,45 @@ class DashboardPage(Page):
         self.ticks = 0
         self.busy = False
 
+    def why_slow(self) -> None:
+        from ...core import diagnose
+        from ..dialogs import ChecksDialog
+        ChecksDialog("Why is my PC slow?", "Watches CPU, memory, disk, heat and background jobs for two seconds, then explains what it found.",
+                     diagnose.run, self, busy="Measuring for a couple of seconds…").present_and_start(self.win)
+
+    def _gpu(self) -> None:
+        from ...core import gpu
+        gs = gpu.gpus()
+        if not gs:
+            return
+        g = gs[0]
+        if self.gpu_tile is None:
+            self.gpu_num = label("--", "big-num")
+            self.gpu_info = label("", "dim", wrap=True)
+            self.gpu_graph = LineGraph(("green",), maximum=100)
+            self.gpu_vram = MiniBar(height=7, warn=85, crit=95)
+            self.gpu_vram_label = label("", "dim")
+            self.gpu_tile = self._tile("Graphics", self.gpu_num, self.gpu_info, self.gpu_graph,
+                                       hbox(label("Video memory", "dim"), self.gpu_vram, self.gpu_vram_label))
+        busy = g.get("busy")
+        self.gpu_num.set_text(f"{busy:.0f}%" if busy is not None else "--")
+        parts = [g["name"]]
+        if g.get("busy_is_freq"):
+            parts.append(f"{g['freq']:.0f} MHz (speed, not load)" if g.get("freq") else "")
+        if g.get("temp"):
+            parts.append(f"{g['temp']:.0f}°C")
+        if g.get("power"):
+            parts.append(f"{g['power']:.0f} W")
+        if g.get("driver") == "nouveau":
+            parts.append("basic driver - see Updates → Drivers")
+        self.gpu_info.set_text(" · ".join(p for p in parts if p))
+        self.gpu_graph.push(busy or 0)
+        if g.get("vram_total"):
+            self.gpu_vram.set(g["vram_used"] / g["vram_total"])
+            self.gpu_vram_label.set_text(f"{human(g['vram_used'])} / {human(g['vram_total'])}")
+        else:
+            self.gpu_vram_label.set_text("shared with RAM")
+
     def _tile(self, title: str, *children: Gtk.Widget) -> Gtk.Box:
         t = card(*children, title=title)
         t.set_valign(Gtk.Align.FILL)
@@ -121,6 +169,13 @@ class DashboardPage(Page):
 
     def show_health(self, checks: list) -> None:
         score = health.score(checks)
+        try:
+            from ...core import watch
+            watch.record_health(score)
+        except Exception:  # noqa: BLE001
+            pass
+        if hasattr(self.win, "set_health"):
+            self.win.set_health(score)
         todo = [c for c in checks if c.level in ("bad", "warn")]
         self.gauge.set(score, str(score), "health")
         if not todo:
@@ -129,6 +184,9 @@ class DashboardPage(Page):
         else:
             self.hero_title.set_text(f"{len(todo)} thing{'s' if len(todo) != 1 else ''} could use your attention")
             self.hero_sub.set_text("Fix them below, or run a cleanup and update.")
+        up = system.uptime_seconds()
+        if up > 14 * 86400:
+            self.hero_sub.set_text(self.hero_sub.get_text() + f" Up for {duration(up)}: a restart would clear things out.")
         clear(self.checks_list)
         shown = todo + [c for c in checks if c.level in ("info", "ok")][: max(0, 7 - len(todo))]
         for c in shown:
@@ -171,7 +229,11 @@ class DashboardPage(Page):
             b.set_tooltip_text(f"Core {n}: {v:.0f}%")
 
         self.mem_num.set_text(f"{s.mem_pct:.0f}%")
-        self.mem_info.set_text(f"{human(s.mem_used)} of {human(s.mem_total)} in use · disk ↓{rate(s.disk_read)} ↑{rate(s.disk_write)}")
+        vm = psutil.virtual_memory()
+        cache = getattr(vm, "cached", 0) + getattr(vm, "buffers", 0)
+        self.mem_info.set_text(f"{human(s.mem_used)} of {human(s.mem_total)} in use · {human(cache)} cache (freed when needed) · "
+                               f"disk ↓{rate(s.disk_read)} ↑{rate(s.disk_write)}")
+        self.mem_info.set_tooltip_text(f"Available right now: {human(vm.available)}")
         self.mem_graph.push(s.mem_pct)
         if s.swap_total:
             self.swap_bar.set(s.swap_used / s.swap_total)
@@ -179,12 +241,21 @@ class DashboardPage(Page):
         else:
             self.swap_info.set_text("none")
 
-        self.net_num.set_markup(f"<span foreground='#94e2d5'>↓ {esc(rate(s.net_rx))}</span>   <span foreground='#fab387'>↑ {esc(rate(s.net_tx))}</span>")
+        self.net_num.set_markup(theme.span("teal", f"↓ {esc(rate(s.net_rx))}") + "   " + theme.span("peach", f"↑ {esc(rate(s.net_tx))}"))
         self.net_graph.push(s.net_rx, s.net_tx)
         self.net_info.set_text("download (teal) and upload (peach), last 90 seconds")
 
         if self.ticks % 4 == 1:
             self._slow()
+            p = diagnose_pressure()
+            worst = max(p.values()) if p else 0
+            self.strain.set_text(f"Waiting: CPU {p['cpu']:.0f}% · memory {p['memory']:.0f}% · disk {p['io']:.0f}%" +
+                                 ("  (struggling)" if worst > 25 else ""))
+        if self.ticks % 2 == 0:
+            try:
+                self._gpu()
+            except Exception:  # noqa: BLE001
+                pass
         if self.ticks % 2 == 1 and not self.busy:
             self.busy = True
             bg(self.watcher.list, self._show_apps)

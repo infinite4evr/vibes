@@ -1,16 +1,19 @@
-"""Logs: problems grouped by app, the full journal with search, crash reports, and past boots."""
+"""Logs: problems grouped by app, the full journal with search and live follow, kernel messages, crash reports,
+past boots, and how much space the logs take."""
 
 from __future__ import annotations
 
 import os
+import subprocess
+import threading
 
-from gi.repository import Adw, Gtk
+from gi.repository import Adw, GLib, Gtk
 
 from ...core import logs, services
 from ...core.fmt import ago, human
-from ...core.run import Step, out
-from ..util import button, clear, esc, hbox, label, pill, spacer, vbox
-from ..widgets import Column, DataTable
+from ...core.run import C_ENV, Step, out
+from ..util import button, clear, esc, hbox, label, pill, status_icon, vbox
+from ..widgets import Column, DataTable, Row
 from .base import Page, action_row, boxed_list, group, tabs
 
 RANGES = [("This boot", "boot"), ("Previous boot (before the last restart/crash)", "previous"), ("Last hour", "1 hour ago"),
@@ -18,6 +21,11 @@ RANGES = [("This boot", "boot"), ("Previous boot (before the last restart/crash)
 LEVELS = [("Errors", 3), ("Warnings and errors", 4), ("Everything", 6)]
 PRIO = {0: ("emergency", "bad"), 1: ("alert", "bad"), 2: ("critical", "bad"), 3: ("error", "bad"), 4: ("warning", "warn"), 5: ("notice", "info"),
         6: ("info", "neutral"), 7: ("debug", "neutral")}
+KERNEL_LEVELS = [("Warnings and errors", 4), ("Everything", 6)]
+KEEP_SIZES = [(100, "100 MB"), (250, "250 MB"), (500, "500 MB"), (1024, "1 GB")]
+KEEP_DAYS = [(3, "3 days"), (7, "1 week"), (14, "2 weeks"), (30, "1 month")]
+LIMITS = [(0, "Ubuntu's default"), (200, "200 MB"), (500, "500 MB"), (1024, "1 GB"), (2048, "2 GB")]
+LIVE_CAP = 2000
 
 
 class LogsPage(Page):
@@ -25,6 +33,8 @@ class LogsPage(Page):
     TITLE = "Logs"
     ICON = "text-x-generic-symbolic"
     SUBTITLE = "What went wrong and when. Most messages are harmless; repeated errors from one app are worth a look."
+    PALETTE = [("kernel", "Kernel messages: hardware, drivers, USB (like dmesg)"), ("live", "Watch the logs live as messages arrive"),
+               ("size", "How much space logs use / keep them small")]
 
     def build(self) -> None:
         self.header()
@@ -36,23 +46,36 @@ class LogsPage(Page):
         self.noise = Gtk.CheckButton(label="Hide harmless noise", active=True)
         for w, sig in ((self.range_dd, "notify::selected"), (self.level_dd, "notify::selected"), (self.noise, "toggled")):
             w.connect(sig, lambda *_: self.load())
-        self.body.append(hbox(self.range_dd, self.level_dd, self.search_entry, self.noise, spacing=8))
+        self.search_entry.set_size_request(200, -1)
+        filters = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, column_spacing=8, row_spacing=8, min_children_per_line=1, max_children_per_line=4)
+        for w in (self.range_dd, self.level_dd, self.search_entry, self.noise):
+            filters.append(w)
+        self.body.append(filters)
         self.summary = label("", "subtle", wrap=True)
         self.body.append(self.summary)
 
         self.problems = vbox(spacing=10)
         self.all_box = vbox(spacing=10)
+        self.kernel_box = vbox(spacing=12)
         self.crash_box = vbox(spacing=10)
         self.boots_box = vbox(spacing=10)
-        sw, self.stack = tabs(("problems", "Problems by app", "dialog-warning-symbolic", self.problems),
-                              ("all", "All messages", "view-list-symbolic", self.all_box),
+        self.size_box = vbox(spacing=18)
+        sw, self.stack = tabs(("problems", "Problems", "dialog-warning-symbolic", self.problems),
+                              ("all", "Messages", "view-list-symbolic", self.all_box),
+                              ("kernel", "Kernel", "application-x-firmware-symbolic", self.kernel_box),
                               ("crashes", "Crashes", "computer-fail-symbolic", self.crash_box),
-                              ("boots", "Restarts", "system-reboot-symbolic", self.boots_box))
+                              ("boots", "Restarts", "system-reboot-symbolic", self.boots_box),
+                              ("size", "Log size", "drive-harddisk-symbolic", self.size_box))
         self.body.append(sw)
         self.body.append(self.stack)
         self.stack.connect("notify::visible-child-name", self._tab)
         self.tab_loaded: set[str] = set()
 
+        # all messages + live follow (K2)
+        self.live_switch = Gtk.Switch(valign=Gtk.Align.CENTER)
+        self.live_switch.connect("notify::active", lambda *_: self._live_toggled())
+        self.live_status = label("", "dim", wrap=True, hexpand=True)
+        self.all_box.append(hbox(self.live_switch, label("Live", "heading"), self.live_status, spacing=10))
         self.table = DataTable([
             Column("when", "Time", "muted", width=110, sort="time"),
             Column("lvl", "Level", "pill", width=90, sort="prio"),
@@ -61,8 +84,25 @@ class LogsPage(Page):
         ], on_activate=lambda r: self.text(f"{r['source']} at {r['when']}", r["message"] + (f"\n\nunit: {r['unit']}  pid: {r['pid']}" if r["unit"] else "")),
             empty="No messages.", sort="time")
         self.table.set_size_request(-1, 480)
+        self.table.set_context(lambda r: [("Search the web for this", lambda rr: self.web(rr["source"], rr["message"]))], "logs")
         self.all_box.append(self.table)
-        self.all_box.append(label("Double-click a message to read all of it.", "dim"))
+        self.all_box.append(label("Double-click a message to read all of it. Newest first.", "dim"))
+        self._follow: subprocess.Popen | None = None
+        self._pending: list[logs.LogLine] = []
+        self._lock = threading.Lock()
+        self._flush_id: int | None = None
+        self._live_n = 0
+
+        # kernel (K1)
+        self.k_level = Gtk.DropDown.new_from_strings([k[0] for k in KERNEL_LEVELS])
+        self.k_level.connect("notify::selected", lambda *_: self.load_kernel())
+        self.k_raw = button("Show as plain text", icon="text-x-generic-symbolic", css="flat", on_click=self.kernel_raw)
+        self.k_summary = label("", "dim", wrap=True, hexpand=True)
+        self.k_list = vbox(spacing=10)
+        self.kernel_box.append(label("Messages from the core of Linux (the kernel): hardware, drivers, USB, disks, Wi-Fi, graphics. "
+                                     "Most are harmless chatter; the ones worth a look are explained.", "dim", wrap=True))
+        self.kernel_box.append(hbox(self.k_level, self.k_summary, self.k_raw, spacing=10))
+        self.kernel_box.append(self.k_list)
 
     def _query(self) -> dict:
         return {"since": RANGES[self.range_dd.get_selected()][1], "max_priority": LEVELS[self.level_dd.get_selected()][1],
@@ -74,9 +114,12 @@ class LogsPage(Page):
         self.loading(self.problems, "Reading logs…")
         self.table.set_empty("Reading logs…")
         self.bg(lambda: logs.entries(**q), self.show)
-        for t in ("crashes", "boots"):
+        for t in ("crashes", "boots", "kernel", "size"):
             self.tab_loaded.discard(t)
         self._tab()
+        if self._follow is not None:  # filters changed: follow with the new ones
+            self._stop_follow()
+            self._start_follow()
 
     def _tab(self, *_a) -> None:
         name = self.stack.get_visible_child_name()
@@ -87,6 +130,14 @@ class LogsPage(Page):
             self.load_crashes()
         elif name == "boots":
             self.load_boots()
+        elif name == "kernel":
+            self.load_kernel()
+        elif name == "size":
+            self.load_size()
+
+    def _row(self, n, ln: logs.LogLine) -> dict:
+        return {"key": n, "time": ln.time, "when": logs.fmt_time(ln.time), "prio": ln.priority, "lvl": PRIO.get(ln.priority, ("?", "neutral")),
+                "source": ln.source, "message": ln.message, "unit": ln.unit, "pid": ln.pid}
 
     def show(self, lines: list[logs.LogLine]) -> None:
         hide = self.noise.get_active()
@@ -130,11 +181,7 @@ class LogsPage(Page):
         if groups:
             self.problems.append(lb)
         # table
-        rows = []
-        for n, ln in enumerate(shown):
-            rows.append({"key": n, "time": ln.time, "when": logs.fmt_time(ln.time), "prio": ln.priority, "lvl": PRIO.get(ln.priority, ("?", "neutral")),
-                         "source": ln.source, "message": ln.message, "unit": ln.unit, "pid": ln.pid})
-        self.table.set_rows(rows)
+        self.table.set_rows([self._row(n, ln) for n, ln in enumerate(shown)])
         self.table.set_empty("No messages for this time range.")
         errs_boot = sum(1 for g in groups if g["worst"] <= 3)
         self.win.set_badge("logs", 0)
@@ -152,6 +199,212 @@ class LogsPage(Page):
         from ..util import launch
         clean = re.sub(r"\b[0-9a-f]{8,}\b|\d+", "", msg)[:120]
         launch(["xdg-open", f"https://duckduckgo.com/?q={quote(f'ubuntu {source} {clean}')}"])
+
+    # ---------------------------------------------------------------- live follow (K2)
+    def activate(self) -> None:
+        super().activate()
+        if self.live_switch.get_active() and self._follow is None:
+            self._start_follow()
+
+    def deactivate(self) -> None:
+        super().deactivate()
+        self._stop_follow()  # leaving the page or hiding the window: stop reading (the switch stays on and resumes)
+
+    def _live_toggled(self) -> None:
+        if self.live_switch.get_active():
+            self.stack.set_visible_child_name("all")
+            self._start_follow()
+        else:
+            self._stop_follow()
+            self.live_status.set_text("")
+
+    def _start_follow(self) -> None:
+        if self._follow is not None:
+            return
+        q = self._query()
+        cmd = logs.follow_cmd(q["max_priority"], grep=q["grep"])
+        try:
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, text=True, bufsize=1,
+                                    errors="replace", env=C_ENV)
+        except OSError as e:
+            self.live_status.set_text(f"Can't follow the journal: {e}")
+            self.live_switch.set_active(False)
+            return
+        self._follow = proc
+        self._live_n = 0
+        self.live_status.set_text("Watching: new messages appear at the top as they happen.")
+        threading.Thread(target=self._follow_reader, args=(proc,), daemon=True).start()
+        self._flush_id = GLib.timeout_add(700, self._flush_follow)
+
+    def _follow_reader(self, proc: subprocess.Popen) -> None:
+        assert proc.stdout is not None
+        try:
+            for line in proc.stdout:
+                got = logs.parse_journal_json(line)
+                if got:
+                    with self._lock:
+                        self._pending.extend(got)
+                        del self._pending[:-LIVE_CAP]
+        except (OSError, ValueError):
+            pass
+        code = proc.wait()
+        GLib.idle_add(lambda: (self._follow_ended(proc, code), False)[1])
+
+    def _follow_ended(self, proc: subprocess.Popen, code: int) -> None:
+        if self._follow is not proc:
+            return  # we stopped it ourselves
+        self._stop_follow()
+        self.live_status.set_text("Stopped: the journal can't be followed here (no permission or no journal)." if code else "Stopped.")
+        self.live_switch.set_active(False)
+
+    def _flush_follow(self) -> bool:
+        with self._lock:
+            new, self._pending = self._pending, []
+        if new:
+            hide = self.noise.get_active()
+            store = self.table.store
+            for ln in new:
+                if hide and logs.is_noise(ln.message):
+                    continue
+                self._live_n += 1
+                store.append(Row(self._row(f"live{self._live_n}-{ln.time}", ln)))
+            extra = store.get_n_items() - LIVE_CAP
+            if extra > 0:
+                store.splice(0, extra, [])
+            self.table.refilter()
+            self.live_status.set_text(f"Watching: {self._live_n} new message{'s' if self._live_n != 1 else ''} so far (newest at the top).")
+        return self._follow is not None
+
+    def _stop_follow(self) -> None:
+        proc, self._follow = self._follow, None
+        if self._flush_id is not None:
+            GLib.source_remove(self._flush_id)
+            self._flush_id = None
+        if proc is not None and proc.poll() is None:
+            try:
+                proc.terminate()
+            except OSError:
+                pass
+
+    # ---------------------------------------------------------------- kernel (K1)
+    def load_kernel(self) -> None:
+        self.loading(self.k_list, "Reading kernel messages…")
+        q = self._query()
+        prio = KERNEL_LEVELS[self.k_level.get_selected()][1]
+        self.bg(lambda: logs.kernel_entries(q["since"], prio, 3000, q["grep"]), self.show_kernel)
+
+    def show_kernel(self, lines: list[logs.LogLine]) -> None:
+        clear(self.k_list)
+        hide = self.noise.get_active()
+        groups = logs.kernel_groups(lines, hide_harmless=hide)
+        shown = sum(g["count"] for g in groups)
+        hidden = len(lines) - shown
+        worth = sum(1 for g in groups for _ln, ex in g["lines"] if not (ex and ex[1]))
+        if hidden:
+            self.k_summary.set_text(f"{shown} worth a look, {hidden} harmless one{'s' if hidden != 1 else ''} hidden.")
+        else:
+            self.k_summary.set_text(f"{shown} message{'s' if shown != 1 else ''}, {worth} worth a look.")
+        self.stack.get_page(self.kernel_box).set_badge_number(sum(1 for g in groups if g["worst"] <= 3))
+        if not lines:
+            self.k_list.append(label("No kernel messages for this time range and level (or no permission to read them: your account needs to be in the "
+                                     "'adm' group, which it is by default on Ubuntu).", "dim", wrap=True))
+            return
+        if not groups:
+            self.k_list.append(hbox(status_icon("ok"), label("Only harmless messages. Nothing here needs your attention.", None, wrap=True)))
+            return
+        lb = boxed_list()
+        for g in groups:
+            name, kind = PRIO.get(g["worst"], ("?", "neutral"))
+            first = g["lines"][0]
+            row = Adw.ExpanderRow(title=esc(g["name"]), subtitle=esc(f"last {ago(g['last'])}: {first[0].message[:150]}"))
+            row.set_subtitle_lines(2)
+            row.add_prefix(Gtk.Image.new_from_icon_name(g["icon"]))
+            suffix = hbox(pill(f"{g['count']}×", "neutral"), pill(name, kind), spacing=6)
+            suffix.set_valign(Gtk.Align.CENTER)
+            row.add_suffix(suffix)
+            seen: set[str] = set()
+            n = 0
+            for ln, ex in g["lines"]:
+                if n >= 15:
+                    break
+                n += 1
+                sub = f"{logs.fmt_time(ln.time)} · {PRIO.get(ln.priority, ('?',))[0]}"
+                if ex and ex[0] not in seen:
+                    sub += "\n" + ex[0]
+                    seen.add(ex[0])
+                r = Adw.ActionRow(title=esc(ln.message[:300]), subtitle=esc(sub))
+                r.set_title_lines(3)
+                r.set_subtitle_lines(4)
+                r.set_title_selectable(True)
+                if ex and ex[1]:
+                    r.add_suffix(pill("harmless", "ok"))
+                elif ex:
+                    r.add_suffix(pill("worth a look", "warn"))
+                row.add_row(r)
+            if len(g["lines"]) > n:
+                row.add_row(Adw.ActionRow(title=esc(f"…and {len(g['lines']) - n} more (use “Show as plain text”)")))
+            lb.append(row)
+        self.k_list.append(lb)
+
+    def kernel_raw(self) -> None:
+        q = self._query()
+        args = ["journalctl", "-k", "--no-pager", "-o", "short-iso", "-n", "3000", "-p", str(KERNEL_LEVELS[self.k_level.get_selected()][1])]
+        args += ["-b"] if q["since"] == "boot" else (["-b", "-1"] if q["since"] == "previous" else ["--since", q["since"]])
+        self.bg(lambda: out(args, timeout=30), lambda t: self.text("Kernel messages", t or "No kernel messages (or no permission to read them)."))
+
+    # ---------------------------------------------------------------- journal size (K3)
+    def load_size(self) -> None:
+        self.loading(self.size_box, "Measuring…")
+        self.bg(logs.journal_info, self.show_size)
+
+    def show_size(self, info: dict) -> None:
+        clear(self.size_box)
+        size = info.get("size")
+        where = ("Kept on disk (/var/log/journal), so you can look back at earlier boots." if info["persistent"] else
+                 "Kept in memory only, so they're lost at every restart.")
+        limit = info.get("max_use")
+        lim_text = (f"Kept under {limit}" + (" (set by PC Command Center)" if info.get("ours") else "") if limit else
+                    "Ubuntu's default: up to 10% of the disk, never more than 4 GB")
+        if info.get("max_age"):
+            lim_text += f"; deleted after {info['max_age']}"
+        big = size is not None and size > 1024 ** 3
+        self.size_box.append(group("Space used by system logs", "",
+                                   action_row(f"Logs take up {human(size)}" if size is not None else "Size unknown",
+                                              where if size is not None else "Couldn't measure (journalctl isn't answering).",
+                                              prefix=status_icon("warn" if big else "ok")),
+                                   action_row("Limit", lim_text)))
+        # clean up now
+        size_dd = Gtk.DropDown.new_from_strings([t for _, t in KEEP_SIZES])
+        size_dd.set_selected(2)
+        days_dd = Gtk.DropDown.new_from_strings([t for _, t in KEEP_DAYS])
+        days_dd.set_selected(1)
+        clean1 = button("Clean up", css="flat", on_click=lambda: self.vacuum(size_mb=KEEP_SIZES[size_dd.get_selected()][0]))
+        clean2 = button("Clean up", css="flat", on_click=lambda: self.vacuum(days=KEEP_DAYS[days_dd.get_selected()][0]))
+        self.size_box.append(group("Clean up now", "Deletes older log messages. Only history is lost; nothing on your PC stops working.",
+                                   action_row("Keep only the newest", "Everything older than that goes.", size_dd, clean1),
+                                   action_row("Or keep only the last", "Messages older than this are deleted.", days_dd, clean2)))
+        # limit from now on
+        cur = next((i for i, (mb, _t) in enumerate(LIMITS) if mb and limit and limit.upper().rstrip("B") in (f"{mb}M", f"{mb // 1024}G")), 0)
+        lim_dd = Gtk.DropDown.new_from_strings([t for _, t in LIMITS])
+        lim_dd.set_selected(cur)
+        apply = button("Apply", css="suggested-action", on_click=lambda: self.set_limit(LIMITS[lim_dd.get_selected()][0]))
+        r = action_row("Keep logs under", "Ubuntu's default is up to 10% of the disk (max 4 GB). Saved in "
+                       "/etc/systemd/journald.conf.d/pc-size.conf, so it lasts.", lim_dd, apply)
+        self.size_box.append(group("Always keep logs small", "Old messages are deleted automatically once the logs reach this size. "
+                                   "500 MB keeps a few weeks of history on most PCs.", r))
+
+    def vacuum(self, size_mb: int | None = None, days: int | None = None) -> None:
+        what = f"the newest {size_mb} MB" if size_mb else f"the last {days} days"
+        self.run("Clean up old logs", logs.vacuum_steps(size_mb, days), f"Keeps {what} of system logs and deletes the rest.", ok_label="Clean up",
+                 reload=False, done=lambda ok: self.load_size())
+
+    def set_limit(self, mb: int) -> None:
+        if mb:
+            self.run(f"Keep logs under {mb} MB", logs.limit_steps(mb), "The log service restarts for a second (nothing else is affected).",
+                     ok_label="Apply", reload=False, done=lambda ok: self.load_size())
+        else:
+            self.run("Back to Ubuntu's default log size", logs.limit_steps(None), "Removes the limit this app added.", ok_label="Apply",
+                     reload=False, done=lambda ok: self.load_size())
 
     # ---------------------------------------------------------------- crashes
     def load_crashes(self) -> None:
@@ -205,6 +458,16 @@ class LogsPage(Page):
     def boot_errors(self, idx: int) -> None:
         self.bg(lambda: out(["journalctl", "--no-pager", "-b", str(idx), "-p", "3", "-n", "500"], timeout=30),
                 lambda t: self.text(f"Errors from boot {idx}", t or "No errors (or no permission to read them)."))
+
+    # ---------------------------------------------------------------- command palette
+    def palette_action(self, key: str) -> None:
+        if key == "kernel":
+            self.stack.set_visible_child_name("kernel")
+        elif key == "live":
+            self.stack.set_visible_child_name("all")
+            self.live_switch.set_active(True)
+        elif key == "size":
+            self.stack.set_visible_child_name("size")
 
 
 PAGE = LogsPage

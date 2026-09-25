@@ -1,0 +1,5 @@
+: 1727000000:0;ls
+: 1727000010:0;export ANTHROPIC_API_KEY="sk-ant-api03-AAAAbbbbCCCCddddEEEEffff1234567890ZZ"
+: 1727000020:0;aws configure set aws_access_key_id AKIAQWERTYUIOPASDFGH \
+aws configure set region eu-west-1
+: 1727000030:0;git status

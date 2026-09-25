@@ -27,6 +27,7 @@ class Page(Gtk.Box):
 
     def __init__(self, win):
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
+        self.add_css_class("page-body")
         self.win = win
         self.loaded = False
         self._timer = None
@@ -61,7 +62,8 @@ class Page(Gtk.Box):
             self.loaded = True
             self.load()
         if self.AUTO_REFRESH and self._timer is None:
-            self._timer = GLib.timeout_add(int(self.AUTO_REFRESH * 1000), self._tick)
+            from .. import prefs
+            self._timer = GLib.timeout_add(int(self.AUTO_REFRESH * prefs.refresh_factor() * 1000), self._tick)
 
     def deactivate(self) -> None:
         if self._timer is not None:
@@ -153,8 +155,44 @@ def tabs(*pages: tuple[str, str, str, Gtk.Widget]) -> tuple[Gtk.Widget, Adw.View
         stack.add_titled_with_icon(child, name, title, icon)
     sw = Adw.ViewSwitcher(stack=stack, policy=Adw.ViewSwitcherPolicy.WIDE)
     sw.set_halign(Gtk.Align.START)
-    sw.add_css_class("page-tabs")
-    return sw, stack
+    stack.connect("notify::visible-child", _remeasure)
+    _auto_compact(sw, len(pages))
+    bar = Gtk.Box()  # full-width underline under the tabs
+    bar.add_css_class("tabbar")
+    bar.append(sw)
+    bar._switcher = sw
+    return bar, stack
+
+
+def _remeasure(stack: Adw.ViewStack, *_a) -> None:
+    """GTK 4.14: a tab filled while hidden can keep a stale height and overlap the next group; ask it to measure again."""
+    child = stack.get_visible_child()
+    if child is None:
+        return
+    child.queue_resize()
+    c = child.get_first_child()
+    while c is not None:
+        c.queue_resize()
+        c = c.get_next_sibling()
+
+
+def _auto_compact(sw: Adw.ViewSwitcher, n: int, per_tab: int = 150) -> None:
+    """Put tab labels under their icons when the page is too narrow for icon + label side by side (no cut-off names)."""
+    def on_map(_w) -> None:
+        sc = sw.get_ancestor(Gtk.ScrolledWindow)
+        if sc is None or getattr(sw, "_compact_hooked", False):
+            return
+        sw._compact_hooked = True
+        adj = sc.get_hadjustment()
+
+        def check(*_a) -> None:
+            w = adj.get_page_size()
+            want = Adw.ViewSwitcherPolicy.NARROW if 0 < w < per_tab * n + 48 else Adw.ViewSwitcherPolicy.WIDE
+            if sw.get_policy() != want:
+                GLib.idle_add(lambda: (sw.set_policy(want), False)[1])
+        adj.connect("notify::page-size", check)
+        check()
+    sw.connect("map", on_map)
 
 
 def boxed_list() -> Gtk.ListBox:
@@ -197,7 +235,7 @@ def banner(text: str, kind: str = "warn", *buttons: Gtk.Widget, icon: str | None
     img = Gtk.Image.new_from_icon_name(icon or icons.get(kind, icons["info"]))
     img.add_css_class(f"lvl-{kind}")
     lb = label(text, None, wrap=True, hexpand=True)
-    b = hbox(img, lb, *buttons, spacing=12, css=f"banner-{kind if kind in ('warn', 'bad', 'ok') else 'warn'}")
+    b = hbox(img, lb, *buttons, spacing=12, css=f"banner-{kind if kind in ('warn', 'bad', 'ok', 'info') else 'warn'}")
     for w in buttons:
         w.set_valign(Gtk.Align.CENTER)
     b._label = lb

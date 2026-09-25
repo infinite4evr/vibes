@@ -1,0 +1,5 @@
+Username         Port     From                                       Latest
+root                                                                 **Never logged in**
+infinite4evr     tty2                                                Wed Sep 24 09:12:44 +0200 2026
+guest                                                                **Never logged in**
+dev              pts/1    192.168.1.20                               Tue Sep 23 18:00:01 +0200 2026

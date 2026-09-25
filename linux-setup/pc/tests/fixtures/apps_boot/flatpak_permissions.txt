@@ -1,0 +1,12 @@
+[Context]
+shared=network;ipc;
+sockets=x11;wayland;pulseaudio;fallback-x11;
+devices=dri;
+filesystems=xdg-download;!home;xdg-music:ro;
+
+[Session Bus Policy]
+org.freedesktop.Notifications=talk
+org.mpris.MediaPlayer2.spotify=own
+
+[Environment]
+TMPDIR=

@@ -1,0 +1,57 @@
+ubuntu-dock@ubuntu.com
+  Name: Ubuntu Dock
+  Description: A dock for the Gnome Shell, default Ubuntu experience. This extension is a modified version of Dash To Dock with different defaults.
+  Path: /usr/share/gnome-shell/extensions/ubuntu-dock@ubuntu.com
+  URL: https://micheleg.github.io/dash-to-dock/
+  Original author: micxgx@gmail.com
+  Version: 101
+  Enabled: Yes
+  State: ACTIVE
+
+ding@rastersoft.com
+  Name: Desktop Icons NG (DING)
+  Description: Adds icons to the desktop. Fork of the original Desktop Icons extension, with several enhancements .
+  Path: /usr/share/gnome-shell/extensions/ding@rastersoft.com
+  URL: https://gitlab.com/rastersoft/desktop-icons-ng
+  Version: 76
+  Enabled: No
+  State: INACTIVE
+
+blur-my-shell@aunetx
+  Name: Blur my Shell
+  Description: Adds a blur look to different parts of the GNOME Shell, including the top panel, dash and overview.
+
+You can support my work by sponsoring me on:
+- github: https://github.com/sponsors/aunetx
+  Path: /home/infinite4evr/.local/share/gnome-shell/extensions/blur-my-shell@aunetx
+  URL: https://github.com/aunetx/blur-my-shell
+  Version: 1.2 (68)
+  Enabled: Yes
+  State: ACTIVE
+
+clipboard-indicator@tudmotu.com
+  Name: Clipboard Indicator
+  Description: Clipboard Manager extension for GNOME Shell
+  Path: /home/infinite4evr/.local/share/gnome-shell/extensions/clipboard-indicator@tudmotu.com
+  URL: https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator
+  Version: 66
+  Enabled: Yes
+  State: ERROR
+
+caffeine@patapon.info
+  Name: Caffeine
+  Description: Disable the screensaver and auto suspend
+  Path: /home/infinite4evr/.local/share/gnome-shell/extensions/caffeine@patapon.info
+  URL: https://github.com/eonpatapon/gnome-shell-extension-caffeine
+  Version: 55
+  Enabled: Yes
+  State: OUT OF DATE
+
+gsconnect@andyholmes.github.io
+  Name: GSConnect
+  Description: GSConnect is a complete implementation of KDE Connect
+  Path: /usr/share/gnome-shell/extensions/gsconnect@andyholmes.github.io
+  URL: https://github.com/GSConnect/gnome-shell-extension-gsconnect/wiki
+  Version: 58
+  Enabled: No
+  State: INITIALIZED

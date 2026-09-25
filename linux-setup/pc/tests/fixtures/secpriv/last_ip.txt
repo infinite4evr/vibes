@@ -1,0 +1,6 @@
+infinite4evr tty2         0.0.0.0          Wed Sep 24 09:12 - still logged in
+dev          pts/1        192.168.1.20     Tue Sep 23 18:00 - 19:30  (01:30)
+root         pts/2        2001:db8::7      Sun Sep 21 03:10 - 03:11  (00:01)
+reboot       system boot  0.0.0.0          Mon Sep 22 08:00   still running
+
+wtmp begins Mon Sep  1 07:00:00 2026

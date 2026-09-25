@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<application-state>
+  <context id="">
+    <application id="org.gnome.Nautilus.desktop" score="37" last-seen="1758700000"/>
+    <application id="firefox_firefox.desktop" score="152" last-seen="1758790000"/>
+    <application id="code.desktop" score="98" last-seen="1758780000"/>
+    <application id="com.spotify.Client.desktop" score="3" last-seen="1740000000"/>
+    <application id="gimp.desktop" score="1" last-seen="1720000000"/>
+    <application id="broken" score="x" last-seen="oops"/>
+  </context>
+</application-state>

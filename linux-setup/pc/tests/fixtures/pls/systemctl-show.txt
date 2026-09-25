@@ -1,0 +1,17 @@
+Id=NetworkManager.service
+MemoryCurrent=18874368
+CPUUsageNSec=4210334000
+TasksCurrent=4
+MainPID=962
+
+Id=docker.service
+MemoryCurrent=[not set]
+CPUUsageNSec=[not set]
+TasksCurrent=18446744073709551615
+MainPID=0
+
+Id=snapd.service
+MemoryCurrent=48234496
+CPUUsageNSec=512000
+TasksCurrent=21
+MainPID=1105

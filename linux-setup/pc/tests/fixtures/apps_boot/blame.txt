@@ -1,0 +1,5 @@
+6.090s NetworkManager-wait-online.service
+2.889s docker.service
+1min 2.100s plymouth-quit-wait.service
+ 296ms NetworkManager.service
+  48ms systemd-tmpfiles-setup.service

@@ -1,0 +1,6 @@
+cargo-watch v8.5.2:
+    cargo-watch
+ripgrep v14.1.0:
+    rg
+zoxide v0.9.4 (/home/infinite4evr/src/zoxide):
+    zoxide

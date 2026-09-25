@@ -9,6 +9,7 @@ setopt SHARE_HISTORY HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE HIST_REDUCE_BLANKS E
 setopt AUTO_CD INTERACTIVE_COMMENTS NO_BEEP
 
 # ---------- Completion (Tab) ----------
+fpath=(~/.local/share/zsh/site-functions $fpath)   # pc and other user-installed completions
 autoload -Uz compinit && compinit -d ~/.cache/zcompdump
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
