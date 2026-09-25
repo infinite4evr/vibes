@@ -1,0 +1,131 @@
+"""Serve the UI against the fake Telegram world (no network needed).
+
+    python -m tests.demo_server      then open http://127.0.0.1:8766
+"""
+import asyncio
+import io
+import os
+import random
+import sys
+import tempfile
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+os.environ.setdefault("TGDRIVE_DATA", tempfile.mkdtemp(prefix="tgdrive-demo-"))
+
+from telethon.tl import types  # noqa: E402
+
+from tests.fake import CH, doc_msg, make_account, sample_world  # noqa: E402
+from tgdrive import api  # noqa: E402
+from tgdrive.settings import settings  # noqa: E402
+
+
+def fake_jpeg(seed: int, w=320, h=240) -> bytes:
+    try:
+        from PIL import Image, ImageDraw
+    except ImportError:
+        return b""
+    rnd = random.Random(seed)
+    palette = [(70, 120, 150), (190, 140, 90), (90, 150, 110), (160, 90, 110), (120, 110, 170), (200, 170, 120)]
+    base = rnd.choice(palette)
+    img = Image.new("RGB", (w, h), base)
+    d = ImageDraw.Draw(img)
+    for _ in range(6):
+        c = tuple(min(255, max(0, v + rnd.randint(-60, 60))) for v in base)
+        x, y = rnd.randint(-40, w), rnd.randint(-40, h)
+        r = rnd.randint(30, 160)
+        d.ellipse([x, y, x + r * 2, y + r], fill=c)
+    buf = io.BytesIO()
+    img.save(buf, "JPEG", quality=82)
+    return buf.getvalue()
+
+
+EXTRA = [
+    ("Economy_TestSeries_2023.pdf", "application/pdf"), ("Mock Test Series Polity.pdf", "application/pdf"),
+    ("Previous Year Questions Polity 2011-2024.pdf", "application/pdf"), ("PYQ Economy 2024.pdf", "application/pdf"),
+    ("भारतीय संविधान नोट्स.pdf", "application/pdf"), ("Monthly Current Affairs Magazine September.pdf", "application/pdf"),
+    ("Environment and Ecology notes.docx", "application/msword"), ("Budget 2024 highlights.pptx", "application/vnd.ms-powerpoint"),
+    ("NCERT Class 11 History.epub", "application/epub+zip"), ("Answer writing sheet.xlsx", "application/vnd.ms-excel"),
+    ("UPSC Mains 2025 papers.zip", "application/zip"), ("syllabus.txt", "text/plain"),
+]
+
+
+async def setup(tmp: Path):
+    world = sample_world(scale=3)
+    acc, client = make_account(tmp, world=world)
+    cid = -CH - 101
+    for i, (n, mime) in enumerate(EXTRA):
+        m = doc_msg(cid, 5000 + i, n, mime, random.Random(i).randint(200_000, 40_000_000), world[0][cid][0].date,
+                    thumb=n.endswith(".pdf") and i % 2 == 0, caption="Free test series for all aspirants" if i < 2 else "")
+        client.chats[cid].append(m)
+        if n.endswith(".txt"):
+            client.content[m.media.document.id] = ("PRELIMS SYLLABUS\n\n" + "General Studies Paper I\n- Current events\n- History of India\n" * 30).encode()
+            m.media.document.size = len(client.content[m.media.document.id])
+    for msgs in client.chats.values():  # full-size photos for the viewer
+        for m in msgs:
+            if isinstance(m.media, types.MessageMediaPhoto):
+                client.content[m.media.photo.id] = fake_jpeg(m.id * 7 + 3, 1280, 960)
+    real_download = client.download_media
+
+    async def download_media(msg, file=None, thumb=None):
+        seed = msg.id * 31 + abs(msg.peer_id.to_dict().get("channel_id", 0) or 0)
+        data = fake_jpeg(seed, 800 if thumb in ("x", "y") or thumb is None else 320,
+                         600 if thumb in ("x", "y") or thumb is None else 240)
+        if not data:
+            return await real_download(msg, file, thumb)
+        if file is bytes:
+            return data
+        Path(file).write_bytes(data)
+        return file
+
+    client.download_media = download_media
+    await acc.indexer.sync_dialogs()
+    await acc.indexer.sync_dialog_filters()
+    for chat in acc.db.chats_needing_index():
+        await acc.indexer.index_chat(acc.db.get_chat(chat["id"]))
+    d = acc.drive
+    await d.load()
+    study = await d.create_folder("Study", None, color="blue")
+    phys = await d.create_folder("Quantum mechanics", study["id"])
+    await d.create_folder("Design inspiration", None, color="purple")
+    home = await d.create_folder("Home and bills", None, color="green")
+    await d.create_folder("Travel 2026", None, color="orange")
+    lectures = acc.db.q("SELECT chat_id, msg_id FROM files WHERE chat_title='Physics Lectures' LIMIT 8")
+    await d.place([(r["chat_id"], r["msg_id"]) for r in lectures], phys["id"])
+    bills = acc.db.q("SELECT chat_id, msg_id FROM files WHERE name LIKE 'electricity%' OR name LIKE 'Invoice%' LIMIT 10")
+    await d.place([(r["chat_id"], r["msg_id"]) for r in bills], home["id"])
+    stars = acc.db.q("SELECT chat_id, msg_id FROM files WHERE kind='photo' LIMIT 4")
+    await d.set_meta_items([(r["chat_id"], r["msg_id"]) for r in stars], starred=True, tags_add=["family"])
+    await d.set_meta_items([(cid, 5000), (cid, 5002)], tags_add=["exam", "polity"])
+    await d.save_search("Big lectures", "type:video size>500mb", {})
+    await d.flush_now()
+    for r in acc.db.q("SELECT chat_id, msg_id FROM files WHERE chat_title='Design Resources' LIMIT 6"):
+        await d.copy_to_drive(r["chat_id"], r["msg_id"], None)
+    return acc
+
+
+def main():
+    tmp = Path(tempfile.mkdtemp())
+    settings.data.update(api_id=1, api_hash="0" * 32, search_semantic=True, download_dir=str(tmp / "Downloads"))
+    acc = asyncio.run(setup(tmp))
+    api.manager.accounts = {acc.uid: acc}
+
+    async def noop():
+        return None
+
+    async def startup():
+        acc.semantic.start()
+
+    api.manager.startup = startup
+    api.manager.shutdown = noop
+    acc.indexer.phase = "indexing"
+    acc.indexer.current_title = "Physics Lectures"
+    import run
+    port = int(os.environ.get("DEMO_PORT", "8766"))
+    server, socks = run.make_server(port=port, media_port=port + 1, fallback=False)
+    print(f"demo on http://127.0.0.1:{socks[0].getsockname()[1]}", flush=True)
+    server.run(sockets=socks)
+
+
+if __name__ == "__main__":
+    main()

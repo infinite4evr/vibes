@@ -1,0 +1,26 @@
+# TG Drive — Python 3.10+
+# The AppImage bundles all of this; you only need this file to run from source.
+
+# Telegram
+telethon>=1.40,<2
+cryptg>=0.4                  # fast encryption: transfers and streaming several times faster
+python-socks[asyncio]>=2.4   # SOCKS/HTTP proxy support
+hachoir>=3.1                 # video/audio metadata for uploads
+
+# Local server
+fastapi>=0.110
+uvicorn>=0.29
+segno>=1.5                   # QR-code sign-in
+
+# Smart search
+numpy>=1.24
+rapidfuzz>=3.0               # typo correction
+snowballstemmer>=2.2         # word endings (series/serie, notes/note)
+indic-transliteration>=2.3   # Hindi ↔ Latin script
+tokenizers>=0.15             # meaning-based search (offline model) …
+safetensors>=0.4
+wordllama>=0.3               # … whose model files come with this package
+
+# Desktop window (optional: without it, `python run.py` serves the same app to your browser)
+PyQt6>=6.6
+PyQt6-WebEngine>=6.6

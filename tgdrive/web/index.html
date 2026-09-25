@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>TG Drive</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div class="app" id="app" hidden>
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Show folders and chats"></button>
+      <a class="brand" href="#drive" aria-label="TG Drive home">
+        <svg class="mark" viewBox="0 0 30 24" aria-hidden="true" style="stroke:none"><path d="M1 4a3 3 0 0 1 3-3h7l3 3h12a3 3 0 0 1 3 3v13a3 3 0 0 1-3 3H4a3 3 0 0 1-3-3z" fill="var(--folder)"/><path d="M8 15l12-5-3 10-3-4z" fill="var(--accent)"/></svg>
+        <span>TG Drive</span>
+      </a>
+      <form class="search" id="searchForm" role="search" autocomplete="off">
+        <svg class="s-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span class="s-spin" aria-hidden="true"></span>
+        <input id="q" type="search" spellcheck="false" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest"
+               placeholder="Search files, captions and chats — test series, pyq, संविधान…" aria-label="Search files">
+        <button type="button" class="icon-btn s-clear" id="searchClear" aria-label="Clear search" hidden></button>
+        <span class="filters-on" id="filtersOn" hidden>Filters on</span>
+        <button type="button" class="icon-btn" id="advBtn" aria-expanded="false" aria-controls="adv" title="All search filters"></button>
+        <div class="suggest" id="suggest" role="listbox" hidden></div>
+        <div class="adv" id="adv" hidden></div>
+      </form>
+      <div class="top-actions">
+        <button class="icon-btn" id="transfersBtn" aria-label="Transfers" title="Transfers">
+          <span class="badge" id="tBadge" hidden></span>
+        </button>
+        <button class="account-btn" id="accountBtn" aria-haspopup="menu" aria-expanded="false"></button>
+      </div>
+    </header>
+
+    <aside class="sidebar" id="sidebar">
+      <button class="new-btn" id="newBtn" aria-haspopup="menu"></button>
+      <div class="side-scroll">
+        <nav id="navTop" aria-label="Drive"></nav>
+        <div id="navMid"></div>
+        <div class="side-h sources-h"><span>Sources</span><button class="icon-btn tiny" id="chatSortBtn" aria-label="Sort sources" title="Sort sources"></button></div>
+        <input class="chat-filter" id="chatFilter" type="search" placeholder="Filter chats" aria-label="Filter chats">
+        <div id="chatList"></div>
+        <nav id="navTools" aria-label="Tools"></nav>
+      </div>
+      <div class="idx" id="indexStatus" aria-live="polite"></div>
+    </aside>
+
+    <main class="main" id="main">
+      <div id="banner"></div>
+      <div id="listView" class="list-view">
+        <div class="toolbar">
+          <nav class="crumbs" id="crumbs" aria-label="Location"></nav>
+          <span class="summary" id="summary" aria-live="polite"></span>
+          <div class="tool-right">
+            <label class="sr-only" for="sort">Sort files</label>
+            <select id="sort">
+              <option value="relevance:desc">Best match</option>
+              <option value="date:desc">Newest first</option>
+              <option value="date:asc">Oldest first</option>
+              <option value="name:asc">Name, A to Z</option>
+              <option value="name:desc">Name, Z to A</option>
+              <option value="size:desc">Largest first</option>
+              <option value="size:asc">Smallest first</option>
+              <option value="chat:asc">By chat</option>
+              <option value="duration:desc">Longest first</option>
+              <option value="type:asc">By type</option>
+              <option value="ext:asc">By extension</option>
+            </select>
+            <button class="icon-btn" id="viewBtn" aria-label="Switch grid or list"></button>
+            <button class="icon-btn" id="refreshBtn" title="Refresh" aria-label="Refresh"></button>
+            <button class="icon-btn" id="moreBtn" title="More" aria-label="More options" aria-haspopup="menu"></button>
+          </div>
+        </div>
+        <div class="search-info" id="searchInfo" hidden></div>
+        <div class="chips" id="chips"></div>
+        <div class="selbar" id="selbar" hidden></div>
+        <div class="tabs" id="tabs" role="tablist" aria-label="File types"></div>
+        <div class="content" id="content">
+          <div id="folderArea"></div>
+          <div class="grid" id="grid" role="listbox" aria-multiselectable="true" aria-label="Files"></div>
+          <div id="empty"></div>
+          <div class="loading-more" id="loadingMore" hidden><span class="spin"></span>Loading more files…</div>
+          <div id="sentinel"></div>
+        </div>
+        <div class="drop-overlay" id="dropOverlay" hidden></div>
+      </div>
+      <div id="pageView" class="page-view" hidden></div>
+    </main>
+
+    <aside class="drawer" id="drawer" hidden aria-label="Details"></aside>
+    <div class="mini-player" id="miniPlayer" hidden></div>
+  </div>
+
+  <div id="login" hidden></div>
+  <div id="layer"></div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>
