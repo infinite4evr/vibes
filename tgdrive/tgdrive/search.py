@@ -489,7 +489,8 @@ class SearchEngine:
             marks = ",".join("?" * len(ids))
             full = {row["id"]: dict(row) for row in c.execute(
                 "SELECT f.*, p.folder_id, p.starred, p.tags, p.note, c.kind AS chat_kind, c.username AS chat_username, "
-                "pb.pos AS play_pos, pb.dur AS play_dur, pb.done AS play_done "
+                "pb.pos AS play_pos, pb.dur AS play_dur, pb.done AS play_done, "
+                "(SELECT s.subject FROM file_subjects s WHERE s.file_id=f.id) AS subject "
                 "FROM files f LEFT JOIN placements p ON p.chat_id=f.chat_id AND p.msg_id=f.msg_id "
                 "LEFT JOIN chats c ON c.id=f.chat_id "
                 f"LEFT JOIN playback pb ON pb.chat_id=f.chat_id AND pb.msg_id=f.msg_id WHERE f.id IN ({marks})", ids)}

@@ -14,6 +14,7 @@ export function renderDrawer() {
   $('#transfersBtn').setAttribute('aria-expanded', String(S.drawer === 'transfers'));
   if (S.drawer === 'transfers') return import('./transfers.js').then((m) => m.renderTransfers());
   if (S.drawer === 'details') return renderDetails();
+  if (S.drawer === 'context') return undefined;   // context.js owns the panel
   d.innerHTML = '';
 }
 export function closeDrawer() { S.drawer = null; renderDrawer(); }
@@ -96,6 +97,8 @@ async function renderDetails() {
       ${det.folder_id ? `<button class="btn" data-one="unfile">${icon('folder')}Take out of folder</button>` : ''}
       ${det.can_copy ? `<button class="btn" data-one="copy">${icon('copy')}Save a copy to Drive</button>` : ''}
       ${det.can_forward ? `<button class="btn" data-one="send">${icon('send')}Send to chat</button>` : ''}
+      <button class="btn" data-one="context">${icon('chat')}Show in chat</button>
+      <button class="btn" data-one="subject">${icon('book')}${det.subject && det.subject !== '_none' ? `Subject: ${esc((S.subjects || []).find((x) => x.id === det.subject)?.name || det.subject)}` : 'Set subject'}</button>
       <button class="btn" data-one="related">${icon('sparkle')}Find related files</button>
       ${det.can_delete ? `<button class="btn danger" data-one="delete">${icon('trash')}Delete from Telegram</button>` : ''}
     </div>`;
@@ -166,6 +169,8 @@ $('#drawer').addEventListener('click', (e) => {
       move: () => doMove(items, f.folder_id), unfile: () => placeInto(items, null),
       copy: () => doCopy(items), send: () => doSend(items), delete: () => doDelete(items),
       telegram: () => openInTelegram(f),
+      context: () => import('./context.js').then((m) => m.showContext(f)),
+      subject: () => import('./actions.js').then((m) => m.setSubject([f]).then(renderDetails)),
       related: () => bus.emit('go', `#search/${encodeURIComponent(f.name.replace(/\.[^.]+$/, '').replace(/[_\-.()]+/g, ' ').trim())}`),
     })[one.dataset.one]?.();
     return;

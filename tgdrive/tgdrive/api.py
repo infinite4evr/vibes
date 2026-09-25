@@ -46,6 +46,8 @@ RUNTIME: dict[str, Any] = {"media_port": None, "port": config.PORT, "desktop": F
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    from . import diagnostics
+    asyncio.get_running_loop().set_exception_handler(diagnostics.asyncio_handler)
     await manager.startup()
     yield
     await manager.shutdown()
@@ -86,9 +88,20 @@ async def rpc_error(_: Request, exc: errors.RPCError):
     return JSONResponse({"error": f"Telegram refused: {exc.message or exc.__class__.__name__}"}, status_code=400)
 
 
+@app.exception_handler(Exception)
+async def unexpected_error(request: Request, exc: Exception):
+    """A bug: keep a crash report and give the page a readable message instead of a bare 500."""
+    from . import diagnostics
+    rid = diagnostics.record_exception("server", exc, {"request": f"{request.method} {request.url.path}"})
+    log.exception("unhandled error in %s %s", request.method, request.url.path)
+    return JSONResponse({"error": f"Something went wrong in TG Drive ({exc.__class__.__name__}). "
+                                  f"A crash report was saved{f' ({rid})' if rid else ''}.", "crash": rid},
+                        status_code=500)
+
+
 # ------------------------------------------------------------------- security
 LOOPBACK = {"127.0.0.1", "localhost", "[::1]", "::1"}
-OPEN_PATHS = ("/static/", "/favicon")
+OPEN_PATHS = ("/static/", "/favicon", "/dav/")  # /dav/ checks its own secret (file managers can't send tokens)
 STREAM_PATH = re.compile(r"^/api/a/\d+/stream/-?\d+/\d+(/[^/]*)?$")
 
 
@@ -190,6 +203,7 @@ def file_out(row: dict, full: bool = False) -> dict:
         "grouped_id": row.get("grouped_id"),
         "topic_id": row.get("topic_id"),
         "match": row.get("match"),
+        "subject": row.get("subject") if row.get("subject") != "_none" else None,
         "play_pos": row.get("play_pos") or 0,
         "play_dur": row.get("play_dur"),
         "watched": bool(row.get("play_done")),
@@ -791,20 +805,37 @@ async def folders(aid: int):
 
 @app.post("/api/a/{aid}/folders")
 async def create_folder(aid: int, body: dict = Body(...)):
-    return await acc(aid).drive.create_folder(str(body.get("name", "")), body.get("parent_id") or None,
-                                              str(body.get("color") or ""), str(body.get("description") or ""))
+    a = acc(aid)
+    f = await a.drive.create_folder(str(body.get("name", "")), body.get("parent_id") or None,
+                                    str(body.get("color") or ""), str(body.get("description") or ""),
+                                    emoji=str(body.get("emoji") or ""), rules=body.get("rules") or None)
+    if f.get("kind") == "auto":
+        a.autofile.poke()
+    dav_invalidate()
+    return f
 
 
 @app.patch("/api/a/{aid}/folders/{fid}")
 async def update_folder(aid: int, fid: str, body: dict = Body(...)):
-    kwargs: dict[str, Optional[str]] = {}
-    for k in ("name", "color", "description"):
+    kwargs: dict[str, Any] = {}
+    for k in ("name", "color", "description", "emoji", "cover"):
         if k in body:
             kwargs[k] = str(body[k] or "")
     if "parent_id" in body:
         kwargs["parent_id"] = body["parent_id"] or None
-    await acc(aid).drive.update_folder(fid, **kwargs)
+    if "rules" in body:
+        kwargs["rules"] = body["rules"] or None
+    a = acc(aid)
+    await a.drive.update_folder(fid, **kwargs)
+    if "rules" in body:
+        a.autofile.poke()
+    dav_invalidate()
     return {"ok": True}
+
+
+def dav_invalidate() -> None:
+    from . import dav
+    dav.invalidate_all()
 
 
 @app.delete("/api/a/{aid}/folders/{fid}")
@@ -1003,6 +1034,14 @@ async def export(aid: int, request: Request):
                     headers={"Content-Disposition": f'attachment; filename="tgdrive-{time.strftime("%Y%m%d-%H%M")}.csv"'})
 
 
+# --------------------------------------------------------------- more routes
+from .api_features import router as _features  # noqa: E402  (they use the helpers above)
+from .dav import router as _dav  # noqa: E402
+
+app.include_router(_features)
+app.include_router(_dav)
+
+
 # ------------------------------------------------------------------------ web
 app.mount("/static", StaticFiles(directory=str(WEB)), name="static")
 
@@ -1016,9 +1055,11 @@ async def index(request: Request):
     mp = RUNTIME.get("media_port")
     host = (request.url.hostname or "127.0.0.1").strip("[]")
     media = f" http://{'[' + host + ']' if ':' in host else host}:{mp}" if mp else ""
-    csp = (f"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; "
-           f"img-src 'self' data: blob:{media}; media-src 'self' blob:{media}; connect-src 'self'{media}; "
-           f"frame-src 'self'{media}; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
+    tiles = " https://tile.openstreetmap.org" if settings.get("map_online_tiles") else ""
+    csp = (f"default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; "
+           f"font-src 'self' data:; img-src 'self' data: blob:{media}{tiles}; media-src 'self' blob:{media}; "
+           f"connect-src 'self'{media}; frame-src 'self'{media}; object-src 'none'; base-uri 'none'; "
+           f"form-action 'self'; frame-ancestors 'self'")
     return FileResponse(WEB / "index.html", headers={"Cache-Control": "no-cache", "Content-Security-Policy": csp})
 
 

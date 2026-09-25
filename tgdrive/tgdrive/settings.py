@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import re
 import threading
 from pathlib import Path
 from typing import Any, Callable
@@ -20,6 +21,14 @@ DEFAULTS: dict[str, Any] = {
     "grid_size": "m",             # s | m | l
     "group_by_date": False,
     "show_related": True,
+    "accent": "",                 # "" = default blue, or #rrggbb
+    "contrast": "normal",         # normal | high
+    "font_scale": 1.0,            # 0.85 – 1.4
+    "folder_style": "tiles",      # tiles | cards | list
+    "stack_albums": True,         # albums as one stacked card in the grid
+    "list_columns": ["name", "chat", "date", "size", "kind"],
+    "list_widths": {},
+    "slideshow_seconds": 4,
     # Search
     "search_mode": "smart",       # smart | exact
     "search_semantic": True,
@@ -27,6 +36,21 @@ DEFAULTS: dict[str, Any] = {
     "search_synonyms": "",
     "search_live": True,
     "search_scope_default": "everywhere",  # everywhere | here
+    # Subjects (auto-tagging) and places
+    "subjects_enabled": True,
+    "subjects_builtin": True,
+    "subjects_custom": "",
+    "places_scan": False,         # read EXIF locations of image files (first 128 KB of each)
+    "map_online_tiles": False,    # detailed OpenStreetMap tiles in the Map view (goes online)
+    # Drive as a disk (WebDAV) and folder sync
+    "dav_enabled": False,
+    "dav_secret": "",
+    "dav_write": True,
+    "sync_enabled": True,
+    "sync_interval": 60,
+    "sync_delete_remote": False,  # a file deleted on disk is also deleted from Telegram (else just unfiled)
+    # Diagnostics
+    "crash_reports": True,
     # Transfers
     "download_dir": "",
     "open_after_download": False,
@@ -79,12 +103,17 @@ CHOICES = {
     "search_mode": {"smart", "exact"},
     "search_scope_default": {"everywhere", "here"},
     "proxy_type": {"socks5", "socks4", "http", "mtproto"},
+    "contrast": {"normal", "high"},
+    "folder_style": {"tiles", "cards", "list"},
 }
+LIST_COLUMNS = {"name", "chat", "folder", "date", "size", "kind", "ext", "duration", "dims", "tags", "sender",
+                "subject", "caption"}
 RANGES = {
     "parallel_transfers": (1, 10), "upload_workers": (1, 8), "download_workers": (1, 8),
     "stream_cache_mb": (0, 200_000), "stream_prefetch": (0, 16), "index_wait": (0.0, 10.0),
     "resync_minutes": (5, 1440), "verify_per_hour": (0, 200_000), "proxy_port": (1, 65535),
     "lock_after_minutes": (0, 1440), "api_id": (0, 2**31),
+    "font_scale": (0.8, 1.5), "slideshow_seconds": (1, 60), "sync_interval": (15, 3600),
 }
 SECRET = {"api_hash", "proxy_pass", "proxy_secret", "lock_hash", "lock_salt"}
 
@@ -152,12 +181,26 @@ class Settings:
         elif isinstance(default, list):
             if not isinstance(value, list):
                 raise SettingsError(f"{key} must be a list.")
+        elif isinstance(default, dict):
+            if not isinstance(value, dict):
+                raise SettingsError(f"{key} must be an object.")
         elif isinstance(default, str):
             value = "" if value is None else str(value)
         if key in RANGES:
             lo, hi = RANGES[key]
             if not lo <= value <= hi:
                 raise SettingsError(f"{key} must be between {lo} and {hi}.")
+        if key == "accent" and value and not re.fullmatch(r"#[0-9a-fA-F]{6}", value):
+            raise SettingsError("The accent colour must look like #2a7fc9.")
+        if key == "list_columns":
+            value = [c for c in value if c in LIST_COLUMNS]
+            if "name" not in value:
+                value = ["name", *value]
+        if key == "list_widths":
+            if not isinstance(value, dict):
+                raise SettingsError("list_widths must be an object.")
+            value = {k: max(60, min(900, int(v))) for k, v in value.items() if k in LIST_COLUMNS and
+                     isinstance(v, (int, float))}
         if key == "download_dir" and value:
             p = Path(value).expanduser()
             try:

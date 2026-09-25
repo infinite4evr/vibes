@@ -107,12 +107,15 @@ class FakeClient:
 
     # ---- messages
     async def iter_messages(self, peer, limit=None, *, filter=None, min_id=0, offset_id=0, search=None,
-                            wait_time=None):
+                            wait_time=None, reverse=False):
         self.iter_calls += 1
-        msgs = sorted(self.chats.get(peer, []), key=lambda m: -m.id)
+        msgs = sorted(self.chats.get(peer, []), key=lambda m: m.id if reverse else -m.id)
         n = 0
         for m in msgs:
-            if m.id <= min_id or (offset_id and m.id >= offset_id):
+            if reverse:
+                if m.id <= max(min_id, offset_id):
+                    continue
+            elif m.id <= min_id or (offset_id and m.id >= offset_id):
                 continue
             if filter and not FILTER_KINDS[filter](m):
                 continue

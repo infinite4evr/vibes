@@ -6,6 +6,9 @@
 #   bash start.sh --browser   open in your web browser instead
 #   bash start.sh --demo      try the UI on a fake account (no Telegram sign-in)
 #   bash start.sh --reinstall rebuild the environment
+#   bash start.sh --install   add TG Drive to the app menu (with icon), a `tgdrive` command,
+#                             and "Send to TG Drive" in file managers' right-click menus
+#   bash start.sh --uninstall remove all of that again (your data stays)
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
@@ -26,6 +29,31 @@ if [ ! -x .venv/bin/python ]; then
   say "Installing dependencies (about 300 MB, a few minutes)"
   .venv/bin/pip install --quiet -r requirements.txt || { rm -rf .venv; die "Dependency install failed (see above)."; }
   say "Setup done"
+fi
+
+HERE="$(pwd)"
+BIN="$HOME/.local/bin/tgdrive"
+if [ -x "$BIN" ] && grep -q "$HERE/start.sh" "$BIN" 2>/dev/null; then
+  export TGDRIVE_LAUNCHER="$BIN"
+else
+  export TGDRIVE_LAUNCHER="bash $HERE/start.sh"
+fi
+
+if [ "${1:-}" = "--install" ]; then
+  mkdir -p "$(dirname "$BIN")"
+  printf '#!/usr/bin/env bash\n# Added by TG Drive (bash start.sh --install)\nexec bash "%s/start.sh" "$@"\n' "$HERE" > "$BIN"
+  chmod +x "$BIN"
+  export TGDRIVE_LAUNCHER="$BIN"
+  .venv/bin/python -m desktop --install-desktop-entry
+  say "Installed. Find TG Drive in your app menu, or run: tgdrive"
+  case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) say "(add ~/.local/bin to your PATH to use the tgdrive command)";; esac
+  exit 0
+fi
+if [ "${1:-}" = "--uninstall" ]; then
+  .venv/bin/python -m desktop --uninstall-desktop-entry || true
+  if grep -q "Added by TG Drive" "$BIN" 2>/dev/null; then rm -f "$BIN"; fi
+  say "Removed from the app menu and file managers. Your TG Drive data was not touched."
+  exit 0
 fi
 
 if [ "${1:-}" = "--demo" ]; then

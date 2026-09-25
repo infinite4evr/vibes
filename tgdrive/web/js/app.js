@@ -13,7 +13,18 @@ import { renderPage } from './pages.js';
 import { showOnboarding, showLock } from './login.js';
 import { newFolder } from './folders.js';
 
-const PAGES = new Set(['storage', 'duplicates', 'index', 'activity', 'settings']);
+const PAGES = new Set(['storage', 'duplicates', 'index', 'activity', 'settings', 'photos', 'map', 'sync', 'marks']);
+const EMBED = new URLSearchParams(location.search).has('embed');
+document.documentElement.classList.toggle('embed', EMBED);
+// Other windows and the split-view pane: tell each other when folders or files changed.
+const channel = 'BroadcastChannel' in window ? new BroadcastChannel('tgdrive') : null;
+let fromOtherWindow = false;
+channel?.addEventListener('message', (e) => {
+  if (e.data?.aid !== S.aid) return;
+  fromOtherWindow = true;
+  try { bus.emit(e.data.evt); } finally { fromOtherWindow = false; }
+});
+function broadcast(evt) { if (!fromOtherWindow) channel?.postMessage({ evt, aid: S.aid }); }
 
 /* ------------------------------------------------------------------- boot */
 async function boot() {
@@ -53,11 +64,25 @@ function applyStatus(st) {
   S.mediaBase = mp && S.localHost ? `${location.protocol}//${location.hostname}:${mp}` : '';
   applyTheme();
 }
-function applyTheme() {
-  const t = S.settings.theme;
-  if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
-  else delete document.documentElement.dataset.theme;
-  document.documentElement.dataset.density = S.settings.density || 'comfortable';
+function luminance(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
+export function applyTheme() {
+  const s = S.settings;
+  const root = document.documentElement;
+  const t = s.theme;
+  if (t === 'light' || t === 'dark') root.dataset.theme = t;
+  else delete root.dataset.theme;
+  root.dataset.density = s.density || 'comfortable';
+  if (s.contrast === 'high') root.dataset.contrast = 'high'; else delete root.dataset.contrast;
+  if (/^#[0-9a-f]{6}$/i.test(s.accent || '')) {
+    root.style.setProperty('--accent-base', s.accent);
+    root.style.setProperty('--accent-ink-l', luminance(s.accent) > 0.45 ? '#10151d' : '#ffffff');
+  } else { root.style.removeProperty('--accent-base'); root.style.removeProperty('--accent-ink-l'); }
+  root.style.setProperty('--fs', String(Math.max(0.8, Math.min(1.5, Number(s.font_scale) || 1))));
+  import('./columns.js').then((m) => m.applyTemplate());
   if (S.desktop) callBridge('setTheme', t || 'system');
 }
 
@@ -78,12 +103,26 @@ async function switchAccount(aid) {
   renderDrawer();
   renderAccountButton();
   await Promise.all([loadFolders(), loadChats()]).catch(fail);
+  loadSubjects();
   if (!location.hash || location.hash === '#') history.replaceState(null, '', '#drive');
   route();
   poll();
   pollEvents();
   loadTransfers();
+  window.tgdrive.ready = true;
+  if (!EMBED) checkCrashes();
 }
+
+export async function loadSubjects() {
+  try {
+    const r = await api(A('/subjects'));
+    S.subjects = r.subjects;
+    S.subjectsEnabled = r.enabled;
+    renderNav();
+    bus.emit('subjects-loaded');
+  } catch { /* optional */ }
+}
+bus.on('subjects-changed', () => setTimeout(loadSubjects, 400));
 
 /* ------------------------------------------------------------- accounts */
 function renderAccountButton() {
@@ -160,6 +199,7 @@ function route() {
   else if (type === 'tag' && rest[0]) v = { type: 'tag', tag: rest.join('/') };
   else if (type === 'album' && rest[1]) v = { type: 'album', chatId: Number(rest[0]), groupedId: rest[1] };
   else if (type === 'search') v = { type: 'search', q: rest.join('/') };
+  else if (type === 'subject' && rest[0]) v = { type: 'subject', subject: rest[0] };
   else if (PAGES.has(type)) v = { type, arg: rest[0] };
   else v = { type: 'drive', folderId: rest[0] || null };
   const sameKind = prev && prev.type === v.type;
@@ -186,7 +226,15 @@ function route() {
   $('#pageView').hidden = !isPage;
   renderNav();
   renderChats();
-  if (isPage) { renderPage(v.type, v.arg); return; }
+  if (isPage) {
+    $('#pageView').className = 'page-view';
+    if (v.type === 'photos') import('./photos.js').then((m) => m.renderPhotos(v.arg));
+    else if (v.type === 'map') import('./map.js').then((m) => m.renderMap());
+    else if (v.type === 'sync') import('./sync.js').then((m) => m.renderSyncPage());
+    else if (v.type === 'marks') import('./pdfview.js').then((m) => m.renderMarksPage());
+    else renderPage(v.type, v.arg);
+    return;
+  }
   S.lastListParams = listParams();
   renderChips();
   reload();
@@ -195,10 +243,11 @@ window.addEventListener('hashchange', route);
 window.addEventListener('popstate', () => { if (location.hash !== `#${S.view.type}`) route(); });
 
 bus.on('drive-changed', async () => {
+  broadcast('drive-changed');
   await loadFolders().catch(fail);
   if (!$('#listView').hidden) { renderFolderArea(); reload(true); }
 });
-bus.on('meta-changed', () => { loadFolders().catch(() => {}); api(A('/tags')).then((r) => { S.tags = r.tags; renderNav(); }).catch(() => {}); });
+bus.on('meta-changed', () => { broadcast('meta-changed'); loadFolders().catch(() => {}); api(A('/tags')).then((r) => { S.tags = r.tags; renderNav(); }).catch(() => {}); });
 bus.on('chats-changed', () => loadChats().catch(() => {}));
 bus.on('open-file-ref', async (f) => {
   try {
@@ -232,31 +281,35 @@ document.addEventListener('click', (e) => {
   }
   const fm = e.target.closest('[data-folder-menu]');
   if (fm) { e.stopPropagation(); import('./folders.js').then((mod) => mod.folderMenu(fm, fm.dataset.folderMenu)); return; }
-  const folder = e.target.closest('.folder[data-folder]');
-  if (folder) { S.openFolders.add(S.folderById.get(folder.dataset.folder)?.parent_id || ''); go(`#drive/${folder.dataset.folder}`); return; }
+  const folder = e.target.closest('.fitem[data-folder]');
+  if (folder && !folder.classList.contains('fhead')) { S.openFolders.add(S.folderById.get(folder.dataset.folder)?.parent_id || ''); go(`#drive/${folder.dataset.folder}`); return; }
   const act = e.target.closest('[data-act]');
   if (act) { ({ 'new-folder': () => newFolder(), upload: () => pickUpload(), retry: () => reload() })[act.dataset.act]?.(); return; }
   const tab = e.target.closest('.tab[data-kind]');
   if (tab) { S.kind = tab.dataset.kind; reload(); }
 });
 document.addEventListener('contextmenu', (e) => {
-  const folder = e.target.closest('.folder[data-folder], #tree [data-go^="#drive/"]');
+  const folder = e.target.closest('.fitem[data-folder], #tree [data-go^="#drive/"]');
   if (!folder) return;
   e.preventDefault();
   const id = folder.dataset.folder || folder.dataset.go.split('/')[1];
   import('./folders.js').then((mod) => mod.folderMenu({ getBoundingClientRect: () => ({ left: e.clientX, right: e.clientX, top: e.clientY, bottom: e.clientY }), setAttribute() {} }, id));
 });
 document.addEventListener('keydown', (e) => {
-  const folder = e.target.closest?.('.folder[data-folder]');
+  const folder = e.target.closest?.('.fitem[data-folder]');
   if (folder && e.key === 'Enter' && e.target === folder) go(`#drive/${folder.dataset.folder}`);
 });
 
 $('#newBtn').addEventListener('click', (e) => menu(e.currentTarget, [
   { label: 'New folder', icon: 'folderPlus', onClick: () => newFolder() },
+  { label: 'New smart folder…', icon: 'sparkle', onClick: () => import('./folders.js').then((m) => m.newSmartFolder()) },
   '-',
   { label: 'Upload files', icon: 'upload', onClick: () => pickUpload() },
   { label: 'Upload a folder', icon: 'uploadFolder', onClick: () => pickUploadFolder() },
   { label: 'Upload to a chat…', icon: 'send', onClick: () => uploadToChat() },
+  { label: 'Paste files', icon: 'paste', kbd: 'Ctrl V', onClick: () => import('./transfers.js').then((m) => m.pasteFromBridge()) },
+  '-',
+  { label: 'Sync a folder on this computer…', icon: 'sync', onClick: () => import('./sync.js').then((m) => m.addPairDialog()) },
 ]));
 $('#sort').addEventListener('change', () => {
   [S.sort, S.order] = $('#sort').value.split(':');
@@ -271,9 +324,14 @@ $('#viewBtn').addEventListener('click', toggleView);
 $('#moreBtn').addEventListener('click', (e) => {
   const p = listParams() || {};
   menu(e.currentTarget, [
+    { label: 'Open in split view', icon: 'split', onClick: () => import('./split.js').then((m) => m.openSplit(location.hash)) },
+    S.desktop ? { label: 'Open in new window', icon: 'window', kbd: 'Ctrl Shift N', onClick: () => callBridge('newWindow', location.hash) } : { label: 'Open in new tab', icon: 'window', onClick: () => window.open(location.href, '_blank', 'noopener') },
+    '-',
     { header: 'Card size' },
     ...[['s', 'Small'], ['m', 'Medium'], ['l', 'Large']].map(([k, l]) => ({ label: l, checked: (S.settings.grid_size || 'm') === k, onClick: () => setDensity(k) })),
     { label: 'Group by date', checked: !!S.settings.group_by_date, onClick: () => { S.settings.group_by_date = !S.settings.group_by_date; api('/api/settings', { method: 'PATCH', body: { group_by_date: S.settings.group_by_date } }).catch(() => {}); rerenderItems(); } },
+    { label: 'Albums as stacks', checked: S.settings.stack_albums !== false, onClick: () => { S.settings.stack_albums = S.settings.stack_albums === false; api('/api/settings', { method: 'PATCH', body: { stack_albums: S.settings.stack_albums } }).catch(() => {}); rerenderItems(); } },
+    { label: 'List columns…', icon: 'columns', onClick: () => import('./columns.js').then((m) => m.columnsDialog()) },
     '-',
     { label: 'Select all loaded', icon: 'check', kbd: 'Ctrl A', onClick: () => setSelected(S.items.map(key)) },
     { label: 'Download everything here', icon: 'download', onClick: () => downloadAll(false) },
@@ -322,7 +380,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '?') { e.preventDefault(); shortcutsDialog(); return; }
   if (gPending && Date.now() - gPending < 1200) {
     gPending = 0;
-    const dest = { d: '#drive', a: '#all', s: '#starred', r: '#recent', c: '#continue', i: '#index', t: '#storage' }[e.key.toLowerCase()];
+    const dest = { d: '#drive', a: '#all', s: '#starred', r: '#recent', c: '#continue', i: '#index', t: '#storage', p: '#photos', m: '#map' }[e.key.toLowerCase()];
     if (dest) { e.preventDefault(); go(dest); }
     return;
   }
@@ -339,6 +397,7 @@ document.addEventListener('keydown', (e) => {
   else if (k.toLowerCase() === 'm') doMove(items, files[0]?.folder_id);
   else if (k.toLowerCase() === 'd') doDownload(items);
   else if (k.toLowerCase() === 'l') doLinks(files);
+  else if (k.toLowerCase() === 'c' && files.length === 1) import('./context.js').then((m) => m.showContext(files[0]));
 });
 
 /* ---------------------------------------------------------------- polling */
@@ -377,6 +436,7 @@ async function pollEvents() {
     S.lastEvent = r.last;
     if (!first) {
       for (const ev of r.events) {
+        if (ev.kind === 'crash' && !EMBED) checkCrashes();
         if (ev.kind === 'notify' && ev.account === S.aid) {
           if (!S.desktop) {
             toast(`${ev.title}: ${ev.body}`, ev.path && S.localHost ? { action: 'Open', onAction: () => api('/api/open', { method: 'POST', body: { path: ev.path } }).catch(fail) } : {});
@@ -392,7 +452,56 @@ async function pollEvents() {
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { poll(); pollEvents(); } });
 
 bus.on('header', () => { document.title = S.view.type === 'search' && S.view.q ? `${S.view.q} · TG Drive` : 'TG Drive'; });
-window.addEventListener('error', (e) => console.error(e.error || e.message));
-window.tgdrive = { S, go, reload };
+/* ------------------------------------------------------ crash reporting */
+// Errors in this page are saved as crash reports (only on this computer; see Settings → About).
+let sentErrors = 0;
+function reportError(message, stack, source) {
+  console.error(message, stack);
+  if (sentErrors++ > 8 || !S.settings || S.settings.crash_reports === false) return;
+  api('/api/crash', { method: 'POST', body: { message: String(message).slice(0, 2000), stack: String(stack || '').slice(0, 20000), source, view: location.hash, agent: navigator.userAgent } }).catch(() => {});
+}
+window.addEventListener('error', (e) => {
+  if (!e.error && /ResizeObserver loop/.test(e.message || '')) return;
+  reportError(e.message, e.error?.stack, `${e.filename}:${e.lineno}`);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  const r = e.reason;
+  if (!r || r.name === 'AbortError' || r instanceof Error === false || r.status !== undefined) return;
+  reportError(r.message || String(r), r.stack, 'promise');
+});
+async function checkCrashes() {
+  try {
+    const r = await api('/api/crashes');
+    const newest = r.reports.find((x) => x.new);
+    const el = $('#crashNotice');
+    if (!r.unseen || !newest) { if (el) el.remove(); return; }
+    const box = el || Object.assign(document.createElement('div'), { id: 'crashNotice', className: 'crash-notice' });
+    box.innerHTML = `${icon('bug')}<div class="grow"><strong>TG Drive ran into a problem${r.unseen > 1 ? ` (${r.unseen} times)` : ''}</strong><small>${esc(newest.summary || newest.kind)}</small></div>
+      <button class="btn sm" data-crash="view">View report</button><button class="btn sm" data-crash="bundle">Create diagnostics file</button><button class="icon-btn tiny" data-crash="dismiss" aria-label="Dismiss">${icon('close')}</button>`;
+    box.dataset.id = newest.id;
+    if (!el) $('#main').prepend(box);
+  } catch { /* ignore */ }
+}
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-crash]');
+  if (!b) return;
+  const act = b.dataset.crash;
+  if (act === 'dismiss') { await api('/api/crashes/seen', { method: 'POST' }).catch(() => {}); $('#crashNotice')?.remove(); }
+  if (act === 'view') { await api('/api/crashes/seen', { method: 'POST' }).catch(() => {}); $('#crashNotice')?.remove(); go('#settings/about'); }
+  if (act === 'bundle') { const m = await import('./pages.js'); m.diagnosticsDialog(); }
+});
+
+/* ---------------------------------------------- tasks from the desktop */
+// "Send to TG Drive" in a file manager, and launcher actions (search, upload).
+async function receivePaths(paths) {
+  const m = await import('./transfers.js');
+  m.sendToDialog(paths);
+}
+function openTask(what) {
+  if (what === 'search') { import('./search.js').then((m) => m.focusSearch()); }
+  else if (what === 'upload') pickUpload();
+}
+
+window.tgdrive = { S, go, reload, receivePaths, openTask, ready: false };
 
 boot();

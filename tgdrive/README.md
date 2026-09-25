@@ -1,19 +1,21 @@
-# TG Drive 2.0
+# TG Drive 2.1
 
 Every file in your Telegram (every channel, group, private chat, bot and Saved Messages) in one place that works like Google Drive: folders, search that understands what you mean, streaming, downloads and uploads. It signs in as your own account and runs on your computer. Nothing goes anywhere except Telegram.
 
 ## Install on Linux
 
-**AppImage (recommended).** Download `TG_Drive-2.0.0-x86_64.AppImage`, then:
+**AppImage (recommended).** Download `TG_Drive-2.1.0-x86_64.AppImage`, then:
 
 ```bash
-chmod +x TG_Drive-2.0.0-x86_64.AppImage
-./TG_Drive-2.0.0-x86_64.AppImage
+chmod +x TG_Drive-2.1.0-x86_64.AppImage
+./TG_Drive-2.1.0-x86_64.AppImage
 ```
 
 It runs on any 64-bit Linux from about 2019 onwards (glibc 2.28+: Ubuntu 20.04+, Debian 10+, Fedora 29+, Mint 20+, RHEL/Rocky/Alma 8+, openSUSE 15.1+, Arch, Manjaro, Pop!_OS …). The first start adds TG Drive to your applications menu. To remove that entry: `./TG_Drive-*.AppImage --uninstall-desktop-entry`.
 
 If it doesn't start, install FUSE (`sudo apt install fuse3`, `sudo dnf install fuse3`, `sudo pacman -S fuse3`) or run it with `--appimage-extract-and-run`.
+
+**Straight from this folder.** `bash start.sh` sets everything up on first run and opens TG Drive. `bash start.sh --install` adds it to your applications menu with its icon, creates a `tgdrive` command and adds **Send to TG Drive** to the right-click menu of Nautilus/Files, Nemo, Caja, Dolphin and Thunar; `bash start.sh --uninstall` removes all of that. `--browser` opens it in your web browser, `--demo` tries it on made-up data.
 
 **From source** (ARM computers, older systems, or if you prefer): `packaging/install_from_source.sh` creates a private Python environment, installs the dependencies and adds TG Drive to the menu. `--no-gui` skips the desktop window and opens TG Drive in your browser instead.
 
@@ -51,6 +53,21 @@ Each result shows how it matched (exact, variant, similar, related). Filters by 
 
 **Manage.** Storage view (by type, chat, kind of chat, year), duplicate finder (exact and similar), index manager (per-chat progress, pause, rescan, verify, exclude), activity log, several accounts, proxy (SOCKS5/4, HTTP, MTProto), app lock with a passcode and auto-lock, CSV export, database maintenance (optimise, vacuum, integrity check, rebuild search), logs.
 
+**New in 2.1.**
+
+- *Looks.* Redesigned folders (tiles, cards with cover pictures, or a list; emoji icons and colours), custom accent colour, high-contrast theme and text size (Settings → Appearance).
+- *Smart folders and subjects.* A smart folder shows everything that matches a rule; an auto-filing folder moves matching unfiled files into itself as they arrive. Files are tagged by subject automatically (Polity, Economy, History… plus your own subjects) and `subject:polity` works in search.
+- *Big lists.* Grid and list are virtualised, so scrolling stays smooth at 100k+ results. Choose, reorder and resize list columns. Albums show as stacks.
+- *Photos.* A timeline with a date scrubber, a map of geotagged photos (Places), and a slideshow.
+- *PDFs.* A reader with highlights, bookmarks and notes that sync between computers, and it remembers where you stopped.
+- *Context.* "Show in chat" opens the messages around a file: who sent it, what was said, replies.
+- *Two panes.* Split view (drag between panes) or open another window.
+- *Paste to upload.* Ctrl V with files or a screenshot on the clipboard uploads them to the folder you're in.
+- *Folder sync.* Keep a folder on this computer and a TG Drive folder the same, both ways. Shows what the first sync will do and waits for your OK; stops and asks if a run would remove many files; nothing is ever deleted outright (removed files go to `.tgdrive-trash`, conflicts keep both copies).
+- *Use from any app.* Settings → Drive on this computer mounts TG Drive in your file manager (WebDAV on 127.0.0.1 only, with a secret address), so any app can open its files.
+- *Bug reports.* Crashes are recorded on this computer; Settings → About can make a diagnostics zip with names, numbers, keys and addresses removed. Nothing is sent anywhere.
+- *Settings export and import* (Settings → About), without passwords or keys unless you ask.
+
 **Keyboard.** `/` or `Ctrl K` search · arrows move · `Enter` open · `Space` quick look · `S` star · `T` tags · `M` move · `D` download · `F2` rename · `L` copy link · `Delete` · `Ctrl Z` undo · `V` grid/list · `G` then `D`/`A`/`S`/`R` to jump · `Ctrl ,` settings · `?` all shortcuts.
 
 ## Where things are
@@ -61,7 +78,7 @@ Each result shows how it matched (exact, variant, similar, related). Filters by 
 | Downloads | `~/Downloads/TG Drive` (Settings → Downloads) |
 | Logs | Settings → About & logs, or `~/.local/share/tgdrive/logs/tgdrive.log` |
 
-Command line: `tgdrive --minimized` (start in the tray), `--browser` (use your web browser instead of the window), `--port N`, `--no-gpu` (graphics driver problems), `--data DIR`, `--version`.
+Command line: `tgdrive --send FILE…` (upload files or folders; what the right-click menu uses), `--open search|upload|new-window`, `tgdrive --minimized` (start in the tray), `--browser` (use your web browser instead of the window), `--port N`, `--no-gpu` (graphics driver problems), `--data DIR`, `--version`.
 
 ## Privacy and security
 

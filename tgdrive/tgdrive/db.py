@@ -10,6 +10,7 @@
 """
 import asyncio
 import itertools
+import json
 import logging
 import os
 import queue
@@ -24,7 +25,7 @@ from . import textproc
 
 log = logging.getLogger("tgdrive.db")
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 # ------------------------------------------------------------------ schema v1
 V1 = """
@@ -196,10 +197,45 @@ def _v3(c: sqlite3.Connection) -> None:
     """)
 
 
+def _v4(c: sqlite3.Connection) -> None:
+    """Folder icons, covers and rules (smart folders); subjects; photo places; PDF marks; folder sync."""
+    have = {r[1] for r in c.execute("PRAGMA table_info(folders)")}
+    for col in ("emoji", "cover", "rules", "kind"):
+        if col not in have:
+            c.execute(f"ALTER TABLE folders ADD COLUMN {col} TEXT")
+    run_script(c, """
+        CREATE TABLE IF NOT EXISTS file_subjects (
+            file_id INTEGER PRIMARY KEY, subject TEXT NOT NULL, score REAL, src TEXT);
+        CREATE INDEX IF NOT EXISTS file_subjects_subject ON file_subjects(subject);
+        CREATE TABLE IF NOT EXISTS geo (
+            file_id INTEGER PRIMARY KEY, lat REAL, lon REAL, taken INTEGER, checked INTEGER NOT NULL);
+        CREATE INDEX IF NOT EXISTS geo_ll ON geo(lat, lon) WHERE lat IS NOT NULL;
+        CREATE TRIGGER IF NOT EXISTS files_extra_ad AFTER DELETE ON files BEGIN
+          DELETE FROM file_subjects WHERE file_id=old.id;
+          DELETE FROM geo WHERE file_id=old.id;
+        END;
+        CREATE TABLE IF NOT EXISTS marks (
+            id TEXT PRIMARY KEY, chat_id INTEGER NOT NULL, msg_id INTEGER NOT NULL, kind TEXT NOT NULL,
+            page INTEGER NOT NULL DEFAULT 1, data TEXT, color TEXT, note TEXT, created INTEGER, mtime INTEGER DEFAULT 0);
+        CREATE INDEX IF NOT EXISTS marks_file ON marks(chat_id, msg_id);
+        CREATE TABLE IF NOT EXISTS reading (
+            chat_id INTEGER NOT NULL, msg_id INTEGER NOT NULL, page INTEGER NOT NULL, pages INTEGER,
+            at INTEGER NOT NULL, PRIMARY KEY (chat_id, msg_id)) WITHOUT ROWID;
+        CREATE TABLE IF NOT EXISTS sync_pairs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, local_path TEXT NOT NULL, folder_id TEXT NOT NULL,
+            enabled INTEGER NOT NULL DEFAULT 1, created INTEGER, last_run INTEGER, state TEXT, error TEXT,
+            stats TEXT, approved INTEGER NOT NULL DEFAULT 0);
+        CREATE TABLE IF NOT EXISTS sync_files (
+            pair_id INTEGER NOT NULL, rel TEXT NOT NULL, size INTEGER, mtime REAL, chat_id INTEGER, msg_id INTEGER,
+            pending TEXT, tid INTEGER, PRIMARY KEY (pair_id, rel));
+    """)
+
+
 MIGRATIONS: list[Callable[[sqlite3.Connection], None]] = [
     lambda c: run_script(c, V1),    # -> 1
     _v2,                            # -> 2
     _v3,                            # -> 3
+    _v4,                            # -> 4
 ]
 
 FILE_COLS = [
@@ -634,7 +670,8 @@ class Database:
 
     FILE_SELECT = """SELECT f.*, p.folder_id, p.starred, p.tags, p.note, c.kind AS chat_kind,
                       c.username AS chat_username, c.noforwards AS chat_noforwards, c.is_admin AS chat_is_admin,
-                      c.is_creator AS chat_is_creator, pb.pos AS play_pos, pb.dur AS play_dur, pb.done AS play_done
+                      c.is_creator AS chat_is_creator, pb.pos AS play_pos, pb.dur AS play_dur, pb.done AS play_done,
+                      (SELECT s.subject FROM file_subjects s WHERE s.file_id=f.id) AS subject
                FROM files f
                LEFT JOIN placements p ON p.chat_id=f.chat_id AND p.msg_id=f.msg_id
                LEFT JOIN chats c ON c.id=f.chat_id
@@ -691,6 +728,7 @@ class Database:
     def list_folders(self, conn=None) -> list[dict]:
         return (conn or self).q(
             """SELECT fo.id, fo.parent_id, fo.name, fo.created, fo.color, fo.description, fo.mtime,
+                      fo.emoji, fo.cover, fo.rules, fo.kind,
                       COALESCE(s.n, 0) AS file_count, COALESCE(s.bytes, 0) AS bytes
                FROM folders fo LEFT JOIN (
                  SELECT p.folder_id, COUNT(*) AS n, SUM(f.size) AS bytes FROM placements p
@@ -704,8 +742,13 @@ class Database:
 
     PLACEMENT_COLS = ["chat_id", "msg_id", "folder_id", "alias", "starred", "tags", "note", "mtime"]
 
+    FOLDER_COLS = ["id", "parent_id", "name", "created", "color", "description", "mtime", "emoji", "cover", "rules",
+                   "kind"]
+    MARK_COLS = ["id", "chat_id", "msg_id", "kind", "page", "data", "color", "note", "created", "mtime"]
+
     def replace_drive_state(self, folders: list[dict], placements: list[dict],
-                            saved: Optional[list[dict]] = None, tombstones: Optional[list[dict]] = None) -> None:
+                            saved: Optional[list[dict]] = None, tombstones: Optional[list[dict]] = None,
+                            marks: Optional[list[dict]] = None) -> None:
         """Replace the local mirror with the contents of a manifest."""
         old_alias = {(r["chat_id"], r["msg_id"]): r["alias"] for r in self.q(
             "SELECT chat_id, msg_id, alias FROM placements WHERE alias IS NOT NULL")}
@@ -713,10 +756,20 @@ class Database:
             self.x("DELETE FROM folders")
             self.x("DELETE FROM placements")
             self.conn.executemany(
-                "INSERT INTO folders(id, parent_id, name, created, color, description, mtime) VALUES(?,?,?,?,?,?,?)",
+                f"INSERT INTO folders({','.join(self.FOLDER_COLS)}) VALUES({','.join('?' * len(self.FOLDER_COLS))})",
                 [(f["id"], f.get("parent_id"), f["name"], f.get("created"), f.get("color"), f.get("description"),
-                  f.get("mtime") or 0) for f in folders],
+                  f.get("mtime") or 0, f.get("emoji") or None, f.get("cover") or None,
+                  (json.dumps(f["rules"]) if isinstance(f.get("rules"), dict) else f.get("rules")) or None,
+                  f.get("kind") or None) for f in folders],
             )
+            if marks is not None:
+                self.x("DELETE FROM marks")
+                self.conn.executemany(
+                    f"INSERT OR REPLACE INTO marks({','.join(self.MARK_COLS)}) VALUES({','.join('?' * len(self.MARK_COLS))})",
+                    [(m["id"], int(m["chat_id"]), int(m["msg_id"]), m.get("kind") or "highlight",
+                      int(m.get("page") or 1),
+                      json.dumps(m["data"]) if isinstance(m.get("data"), (dict, list)) else m.get("data"),
+                      m.get("color"), m.get("note"), m.get("created"), m.get("mtime") or 0) for m in marks])
             self.conn.executemany(
                 f"INSERT INTO placements({','.join(self.PLACEMENT_COLS)}) VALUES({','.join('?' * 8)})",
                 [(p["chat_id"], p["msg_id"], p.get("folder_id"), p.get("alias"), int(bool(p.get("starred"))),

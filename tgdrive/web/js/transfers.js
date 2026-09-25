@@ -1,6 +1,6 @@
 // Transfers panel and uploads.
 import { $, S, A, api, esc, icon, fmtSize, fmtEta, plural, bus, bridge, callBridge, qs } from './core.js';
-import { toast, fail, confirmDialog, chatPicker, promptDialog } from './ui.js';
+import { toast, fail, confirmDialog, chatPicker, promptDialog, dialog, folderPicker } from './ui.js';
 
 const openWhenDone = new Set();
 bus.on('open-when-done', (id) => openWhenDone.add(id));
@@ -229,4 +229,80 @@ export async function uploadToChat(preset = null) {
   input.multiple = true;
   input.onchange = () => uploadFiles(input.files, null, null, dest);
   input.click();
+}
+
+/* --------------------------------------------------------- paste to upload */
+// Ctrl+V: files copied in the file manager, or an image (screenshot) on the clipboard, upload into the
+// folder you're looking at, after one confirmation.
+function destFolder() { return S.view.type === 'drive' && S.folderById.get(S.view.folderId)?.kind !== 'smart' ? S.view.folderId : null; }
+function destLabel(fid) { return fid ? `“${S.folderById.get(fid)?.name}”` : 'My Drive'; }
+
+async function confirmPaste(n, what) {
+  const fid = destFolder();
+  return dialog({
+    title: `Upload ${what}?`,
+    body: `<p>${esc(n)} from the clipboard will be uploaded to <b>${esc(destLabel(fid))}</b>.</p>`,
+    actions: [{ label: 'Cancel' }, { label: 'Choose folder…', onClick: async () => { const r = await folderPicker({ title: 'Upload to', okLabel: 'Upload here', current: fid }); return r ? { fid: r.folderId } : false; } },
+      { label: 'Upload', cls: 'primary', submit: true, onClick: () => ({ fid }) }],
+  });
+}
+
+document.addEventListener('paste', async (e) => {
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  if (!S.aid || $('#layer').children.length) return;
+  const files = [...(e.clipboardData?.files || [])];
+  const uris = (e.clipboardData?.getData('text/uri-list') || '').split(/\r?\n/).filter((u) => u.startsWith('file://'));
+  if (!files.length && !uris.length) {
+    if (bridge.ready) { e.preventDefault(); pasteFromBridge(true); }
+    return;
+  }
+  e.preventDefault();
+  if (bridge.ready && uris.length) {
+    const paths = uris.map((u) => decodeURIComponent(u.slice(7)));
+    const r = await confirmPaste(paths.length === 1 ? `“${paths[0].split('/').pop()}”` : `${paths.length} items`, paths.length === 1 ? 'this file' : `${paths.length} items`);
+    if (r) uploadPaths(paths, r.fid);
+    return;
+  }
+  const named = files.map((f) => (f.name && f.name !== 'image.png' ? f : new File([f], `Pasted ${new Date().toISOString().slice(0, 19).replace('T', ' ').replace(/:/g, '.')}.${(f.type.split('/')[1] || 'png').replace('jpeg', 'jpg')}`, { type: f.type })));
+  const r = await confirmPaste(named.length === 1 ? `“${named[0].name}”` : `${named.length} files`, named.length === 1 ? 'this file' : `${named.length} files`);
+  if (r) uploadFiles(named, r.fid);
+});
+
+// The desktop app can read files copied in the file manager (the web page alone can't).
+export async function pasteFromBridge(quiet = false) {
+  if (!bridge.ready) {
+    if (!quiet) toast('Press Ctrl+V in the file list to paste copied files or a screenshot.');
+    return;
+  }
+  const paths = await callBridge('clipboardPaths');
+  if (!paths?.length) { if (!quiet) toast('Nothing to paste. Copy files in your file manager first (Ctrl+C).'); return; }
+  const r = await confirmPaste(paths.length === 1 ? `“${paths[0].split('/').pop()}”` : `${paths.length} items`, paths.length === 1 ? 'this file' : `${paths.length} items`);
+  if (r) uploadPaths(paths, r.fid);
+}
+
+/* ------------------------------------------------- "Send to TG Drive" menu */
+export async function sendToDialog(paths) {
+  if (!paths?.length) return;
+  let info = { items: paths.map((p) => ({ path: p, name: p.split('/').pop(), files: 1, bytes: 0 })) };
+  try { info = await api(`/api/paths/check?${qs({ paths: JSON.stringify(paths) })}`); } catch { /* sizes are optional */ }
+  const items = info.items;
+  const files = items.reduce((a, x) => a + x.files, 0);
+  const bytes = items.reduce((a, x) => a + x.bytes, 0);
+  let fid = destFolder();
+  let chat = null;
+  const where = () => (chat ? `chat “${S.chatById.get(chat)?.title || 'chat'}”` : destLabel(fid));
+  const r = await dialog({
+    title: items.length === 1 ? `Upload “${items[0].name}”` : `Upload ${items.length} items`,
+    body: `<ul class="send-list">${items.slice(0, 8).map((x) => `<li>${icon(x.dir ? 'folder' : 'document')}<span>${esc(x.name)}</span><small>${x.dir ? `${plural(x.files, 'file')} · ` : ''}${fmtSize(x.bytes)}</small></li>`).join('')}${items.length > 8 ? `<li class="subtle">and ${items.length - 8} more</li>` : ''}</ul>
+      <p>${plural(files, 'file')}, ${fmtSize(bytes)}. Folders keep their structure.</p>
+      <div class="send-dest"><span>Upload to</span><strong id="sendWhere">${esc(where())}</strong><button class="btn sm" id="sendPickFolder">${icon('folder')}Folder…</button><button class="btn sm" id="sendPickChat">${icon('send')}Chat…</button></div>`,
+    actions: [{ label: 'Cancel' }, { label: 'Upload', cls: 'primary', submit: true, onClick: () => ({ fid, chat }) }],
+    onOpen: (bd) => {
+      bd.querySelector('#sendPickFolder').addEventListener('click', async () => { const p = await folderPicker({ title: 'Upload to', okLabel: 'Choose', current: fid }); if (p) { fid = p.folderId; chat = null; bd.querySelector('#sendWhere').textContent = where(); } });
+      bd.querySelector('#sendPickChat').addEventListener('click', async () => { const p = await chatPicker({ title: 'Upload to a chat', okLabel: 'Choose', filterFn: (c) => c.can_post !== false && c.id !== S.driveChannel }); if (p) { chat = p.chatId; bd.querySelector('#sendWhere').textContent = where(); } });
+    },
+  });
+  if (!r) return;
+  uploadPaths(paths, r.chat ? null : r.fid, r.chat ? { chatId: r.chat } : {});
 }

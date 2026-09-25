@@ -40,6 +40,43 @@ def fake_jpeg(seed: int, w=320, h=240) -> bytes:
     return buf.getvalue()
 
 
+def demo_pdf() -> bytes:
+    """A real multi-page PDF with selectable text, for the PDF reader."""
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.pdfgen import canvas
+    except ImportError:
+        return b""
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4)
+    w, h = A4
+    body = ("Article 14 guarantees equality before the law and the equal protection of the laws within the territory "
+            "of India. Article 15 prohibits discrimination on grounds of religion, race, caste, sex or place of birth. "
+            "Article 16 provides equality of opportunity in matters of public employment. Article 17 abolishes "
+            "untouchability and forbids its practice in any form. Article 19 protects six freedoms of citizens.")
+    for p in range(1, 13):
+        c.setFont("Helvetica-Bold", 20)
+        c.drawString(60, h - 80, f"Fundamental Rights — Part {p}")
+        c.setFont("Helvetica", 12)
+        y = h - 120
+        words = (body + " ") * 3
+        line = ""
+        for word in words.split():
+            if c.stringWidth(line + " " + word, "Helvetica", 12) > w - 120:
+                c.drawString(60, y, line)
+                y -= 18
+                line = word
+                if y < 80:
+                    break
+            else:
+                line = (line + " " + word).strip()
+        c.setFont("Helvetica-Oblique", 9)
+        c.drawString(w / 2 - 20, 40, f"Page {p}")
+        c.showPage()
+    c.save()
+    return buf.getvalue()
+
+
 EXTRA = [
     ("Economy_TestSeries_2023.pdf", "application/pdf"), ("Mock Test Series Polity.pdf", "application/pdf"),
     ("Previous Year Questions Polity 2011-2024.pdf", "application/pdf"), ("PYQ Economy 2024.pdf", "application/pdf"),
@@ -61,6 +98,12 @@ async def setup(tmp: Path):
         if n.endswith(".txt"):
             client.content[m.media.document.id] = ("PRELIMS SYLLABUS\n\n" + "General Studies Paper I\n- Current events\n- History of India\n" * 30).encode()
             m.media.document.size = len(client.content[m.media.document.id])
+    pdf = demo_pdf()
+    if pdf:
+        m = doc_msg(cid, 6000, "Indian Polity - Fundamental Rights (notes).pdf", "application/pdf", len(pdf),
+                    world[0][cid][0].date, caption="Chapter 7 notes with PYQs")
+        client.content[m.media.document.id] = pdf
+        client.chats[cid].append(m)
     for msgs in client.chats.values():  # full-size photos for the viewer
         for m in msgs:
             if isinstance(m.media, types.MessageMediaPhoto):
@@ -98,9 +141,37 @@ async def setup(tmp: Path):
     await d.set_meta_items([(r["chat_id"], r["msg_id"]) for r in stars], starred=True, tags_add=["family"])
     await d.set_meta_items([(cid, 5000), (cid, 5002)], tags_add=["exam", "polity"])
     await d.save_search("Big lectures", "type:video size>500mb", {})
+    # Folder looks, a smart folder and an auto-filing folder.
+    await d.update_folder(study["id"], emoji="📚")
+    await d.update_folder(home["id"], emoji="🏠")
+    trav = next(f for f in acc.db.q("SELECT id FROM folders WHERE name='Travel 2026'"))
+    await d.update_folder(trav["id"], emoji="✈️")
+    await d.create_folder("Polity (smart)", study["id"], color="teal", emoji="⚖️",
+                          rules={"mode": "smart", "q": "polity", "params": {}})
+    await d.create_folder("PDF notes", study["id"], color="red", emoji="📝",
+                          rules={"mode": "auto", "q": "notes", "params": {"exts": "pdf"}})
+    for i, name in enumerate(["Economy", "History", "Geography", "Environment", "Current Affairs", "Ethics",
+                              "Science & Tech", "Art & Culture", "Answer writing", "Maps", "Newspapers", "Tests"]):
+        await d.create_folder(name, study["id"], color=["blue", "orange", "green", "teal", "red", "purple",
+                                                        "pink", "yellow", "grey", "blue", "orange", "green"][i],
+                              emoji="📈 🏛️ 🗺️ 🌿 📰 🧭 🔬 🎨 ✍️ 🧭 🗞️ 📝".split()[i])
+    # Photo locations (as if found in EXIF) for the Places map.
+    import random as _r
+    rnd = _r.Random(3)
+    spots = [(28.61, 77.21), (19.08, 72.88), (12.97, 77.59), (26.91, 75.79), (32.24, 77.19), (15.30, 74.12),
+             (48.86, 2.35), (51.51, -0.13), (35.68, 139.69), (40.71, -74.0)]
+    photos = acc.db.q("SELECT id, date FROM files WHERE kind='photo' LIMIT 60")
+    for i, r in enumerate(photos):
+        lat, lon = spots[i % len(spots)]
+        acc.db.x("INSERT OR REPLACE INTO geo(file_id, lat, lon, taken, checked) VALUES(?,?,?,?,?)",
+                 (r["id"], lat + rnd.uniform(-.05, .05), lon + rnd.uniform(-.05, .05), r["date"], 1))
     await d.flush_now()
     for r in acc.db.q("SELECT chat_id, msg_id FROM files WHERE chat_title='Design Resources' LIMIT 6"):
         await d.copy_to_drive(r["chat_id"], r["msg_id"], None)
+    fam = acc.db.q("SELECT id FROM files WHERE chat_title='Family Photos' AND kind='photo' ORDER BY date DESC, msg_id DESC LIMIT 12")
+    for i, r in enumerate(fam):  # albums (photos sent together) for the stacked cards
+        acc.db.x("UPDATE files SET grouped_id=? WHERE id=?", (777000 + i // 4, r["id"]))
+    print("albums:", len(fam), acc.db.q("SELECT COUNT(*) AS n FROM files WHERE grouped_id IS NOT NULL"), flush=True)
     return acc
 
 
@@ -115,6 +186,8 @@ def main():
 
     async def startup():
         acc.semantic.start()
+        acc.subjects.start()
+        acc.autofile.start()
 
     api.manager.startup = startup
     api.manager.shutdown = noop

@@ -150,7 +150,8 @@ class Transfers:
             n += 1
 
     def add_download(self, chat_id: int, msg_id: int, subdir: Optional[str] = None,
-                     batch: Optional[str] = None, dest_dir: Optional[str] = None) -> int:
+                     batch: Optional[str] = None, dest_dir: Optional[str] = None,
+                     exact_path: Optional[str] = None) -> int:
         f = self.db.get_file(chat_id, msg_id)
         if not f:
             raise TransferError("That file isn't in the index.")
@@ -160,14 +161,18 @@ class Transfers:
         if existing:
             return existing["id"]
         name = f["alias"] or f["name"]
-        directory = Path(dest_dir).expanduser() if dest_dir else self.down_dir
-        if subdir:
-            parts = [safe_filename(p) for p in subdir.split("/") if p.strip()]
-            directory = directory.joinpath(*parts)
-        directory.mkdir(parents=True, exist_ok=True)
+        if exact_path:  # folder sync: this exact file (an existing one is replaced when the download finishes)
+            target = Path(exact_path)
+            target.parent.mkdir(parents=True, exist_ok=True)
+        else:
+            directory = Path(dest_dir).expanduser() if dest_dir else self.down_dir
+            if subdir:
+                parts = [safe_filename(p) for p in subdir.split("/") if p.strip()]
+                directory = directory.joinpath(*parts)
+            directory.mkdir(parents=True, exist_ok=True)
+            target = self._unique_path(directory, name)
         tid = self.db.add_transfer(direction="down", chat_id=chat_id, msg_id=msg_id, name=name,
-                                   size=f["size"], path=str(self._unique_path(directory, name)), status="queued",
-                                   batch=batch)
+                                   size=f["size"], path=str(target), status="queued", batch=batch)
         self.db.touch_recent(chat_id, msg_id, "download")
         self._spawn(tid)
         return tid
@@ -246,13 +251,14 @@ class Transfers:
                 skipped.append(f"{p}: not found")
         return {"ids": ids, "skipped": skipped}
 
-    def _add_path(self, p: Path, folder_id: Optional[str], caption: str, target_chat: Optional[int]) -> int:
+    def _add_path(self, p: Path, folder_id: Optional[str], caption: str, target_chat: Optional[int],
+                  batch: Optional[str] = None) -> int:
         size = p.stat().st_size
         self._check_size(size)
         tid = self.db.add_transfer(direction="up", name=safe_filename(p.name), size=size, path=None,
                                    source_path=str(p), folder_id=folder_id, status="queued",
                                    caption=caption or None, target_chat=target_chat,
-                                   upload_file_id=helpers.generate_random_long())
+                                   upload_file_id=helpers.generate_random_long(), batch=batch)
         self._spawn(tid)
         return tid
 
@@ -378,11 +384,16 @@ class Transfers:
                 self.live.pop(tid, None)
 
     def _finished(self, t: dict) -> None:
+        batch = t.get("batch") or ""
+        if batch.startswith("sync:"):  # folder sync reports its own progress
+            sync = getattr(self.acc, "sync", None)
+            if sync is not None:
+                sync.poke()
+            return
         if t["direction"] == "down":
             self.acc.notify("Download finished", t["name"], path=t["path"])
-            if settings.get("open_after_download") and not t.get("batch"):
+            if settings.get("open_after_download") and not batch:
                 self.acc.open_path(t["path"])
-            batch = t.get("batch")
             if batch:
                 left = self.db.one("SELECT COUNT(*) AS n FROM transfers WHERE batch=? AND status NOT IN "
                                    "('done','cancelled')", (batch,))

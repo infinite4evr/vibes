@@ -21,6 +21,7 @@ import hashlib
 import io
 import json
 import logging
+import re
 import secrets
 import time
 from typing import TYPE_CHECKING, Optional
@@ -85,6 +86,46 @@ def clean_tags(tags) -> Optional[str]:
     return ",".join(out[:30])
 
 
+RULE_MODES = {"smart", "auto"}
+
+
+def clean_emoji(e: Optional[str]) -> Optional[str]:
+    e = " ".join(str(e or "").split())
+    if not e:
+        return None
+    if len(e) > 16:
+        raise DriveError("Use a single emoji (or up to a few characters).")
+    return e
+
+
+def clean_rules(rules: Optional[dict]) -> tuple[Optional[str], Optional[str]]:
+    """Folder rules: {"q": "...", "params": {...}, "mode": "smart"|"auto"}.
+    smart = the folder shows every matching file (nothing is moved);
+    auto  = matching files that aren't in a folder yet are filed here automatically."""
+    if not rules:
+        return None, None
+    if not isinstance(rules, dict):
+        raise DriveError("Folder rules must be an object.")
+    mode = rules.get("mode") or "smart"
+    if mode not in RULE_MODES:
+        raise DriveError("Rules mode is smart or auto.")
+    q = str(rules.get("q") or "").strip()[:500]
+    params = rules.get("params") or {}
+    if not isinstance(params, dict):
+        raise DriveError("Rule filters must be an object.")
+    params = {str(k): str(v) for k, v in params.items() if v not in (None, "") and not str(k).startswith("_")}
+    for bad in ("cursor", "limit", "sort", "order", "folder_id", "slot"):
+        params.pop(bad, None)
+    if not q and not params:
+        raise DriveError("Add at least one word or filter for the folder's rule.")
+    from . import query
+    try:  # validate now, not at every listing
+        query.from_params({**params, "q": q})
+    except query.QueryError as exc:
+        raise DriveError(f"The rule has a problem: {exc}")
+    return json.dumps({"q": q, "params": params, "mode": mode}, ensure_ascii=False), mode
+
+
 def encode_manifest(data: dict) -> bytes:
     raw = json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     return gzip.compress(raw, 6) if len(raw) > GZIP_OVER else raw
@@ -125,10 +166,11 @@ def merge_manifests(local: dict, remote: dict) -> dict:
     folders = merge("folder", lambda e: str(e["id"]), local.get("folders"), remote.get("folders"))
     items = merge("item", item_key, local.get("items"), remote.get("items"))
     saved = merge("saved", lambda e: str(e["id"]), local.get("saved"), remote.get("saved"))
+    marks = merge("mark", lambda e: str(e["id"]), local.get("marks"), remote.get("marks"))
     cutoff = ms() - TOMBSTONE_DAYS * 86400 * 1000
     return {
         "app": "tgdrive", "version": 2, "updated": int(time.time()),
-        "folders": folders, "items": items, "saved": saved,
+        "folders": folders, "items": items, "saved": saved, "marks": marks,
         "tombstones": [{"kind": k, "id": i, "at": at} for (k, i), at in tombs.items() if at > cutoff],
     }
 
@@ -173,9 +215,10 @@ class Drive:
     def snapshot(self) -> dict:
         return {
             "app": "tgdrive", "version": 2, "updated": int(time.time()), "writer": self.session_tag,
-            "folders": self.db.q("SELECT id, parent_id, name, created, color, description, mtime FROM folders"),
+            "folders": [_folder_out(f) for f in self.db.q(f"SELECT {','.join(self.db.FOLDER_COLS)} FROM folders")],
             "items": self.db.all_placements(),
             "saved": self.db.q("SELECT id, name, q, params, icon, created, mtime FROM saved_searches"),
+            "marks": [_mark_out(m) for m in self.db.q(f"SELECT {','.join(self.db.MARK_COLS)} FROM marks")],
             "tombstones": self.db.q("SELECT kind, id, at FROM tombstones"),
         }
 
@@ -207,7 +250,20 @@ class Drive:
                 continue
         items = [i for i in items if i["folder_id"] or i["alias"] or i["starred"] or i["tags"] or i["note"]]
         saved = [s for s in manifest.get("saved", []) or [] if s.get("id") and s.get("name")]
-        self.db.replace_drive_state(folders, items, saved=saved, tombstones=manifest.get("tombstones") or [])
+        marks = None
+        if "marks" in manifest:
+            marks = []
+            for m in manifest.get("marks") or []:
+                try:
+                    if m.get("id") and int(m["chat_id"]) and int(m["msg_id"]):
+                        marks.append(m)
+                except (KeyError, TypeError, ValueError):
+                    continue
+        for f in folders:
+            if f.get("emoji") and len(str(f["emoji"])) > 16:
+                f["emoji"] = None
+        self.db.replace_drive_state(folders, items, saved=saved, tombstones=manifest.get("tombstones") or [],
+                                    marks=marks)
 
     def _backup(self, data: bytes, reason: str) -> None:
         try:
@@ -237,14 +293,16 @@ class Drive:
         keep_f = {f["id"] for f in manifest.get("folders", [])}
         keep_i = {item_key(i) for i in manifest.get("items", [])}
         keep_s = {s["id"] for s in manifest.get("saved", []) or []}
+        keep_m = {m["id"] for m in manifest.get("marks", []) or []}
         tombs = [t for t in manifest.get("tombstones", []) or []]
+        tombs += [{"kind": "mark", "id": m["id"], "at": now} for m in cur.get("marks", []) if m["id"] not in keep_m]
         tombs += [{"kind": "folder", "id": f["id"], "at": now} for f in cur["folders"] if f["id"] not in keep_f]
         tombs += [{"kind": "item", "id": item_key(i), "at": now} for i in cur["items"] if item_key(i) not in keep_i]
         tombs += [{"kind": "saved", "id": s["id"], "at": now} for s in cur["saved"] if s["id"] not in keep_s]
-        for coll in ("folders", "items", "saved"):
+        for coll in ("folders", "items", "saved", "marks"):
             for e in manifest.get(coll, []) or []:
                 e["mtime"] = now
-        self.apply({**manifest, "app": "tgdrive", "tombstones": tombs})
+        self.apply({**manifest, "app": "tgdrive", "tombstones": tombs, "marks": manifest.get("marks") or []})
 
     async def load(self) -> None:
         async with self._load_lock:
@@ -444,7 +502,7 @@ class Drive:
             self._force_local(manifest)
         else:
             now = ms()
-            for coll in ("folders", "items", "saved"):
+            for coll in ("folders", "items", "saved", "marks"):
                 for e in manifest.get(coll, []) or []:
                     e.setdefault("mtime", now)
             self.apply(merge_manifests(self.snapshot(), manifest))
@@ -459,6 +517,7 @@ class Drive:
         if not self._undo:
             raise DriveError("Nothing to undo.")
         label, snap = self._undo.pop()
+        snap = {**snap, "marks": self.snapshot()["marks"]}  # highlights aren't part of folder undo
         self._force_local(snap)
         self._schedule()
         self.db.log_activity("undo", label)
@@ -504,20 +563,24 @@ class Drive:
             raise DriveError("That folder no longer exists.")
 
     async def create_folder(self, name: str, parent_id: Optional[str], color: str = "",
-                            description: str = "") -> dict:
+                            description: str = "", emoji: str = "", rules: Optional[dict] = None) -> dict:
         await self.load()
         name = clean_name(name)
         self._require_folder(parent_id)
         self._check_unique(name, parent_id)
         if color not in COLORS:
             raise DriveError("Unknown colour.")
+        rules_json, kind = clean_rules(rules)
         self.push_undo(f"Create folder “{name}”")
         fid = secrets.token_hex(6)
-        self.db.x("INSERT INTO folders(id, parent_id, name, created, color, description, mtime) VALUES(?,?,?,?,?,?,?)",
-                  (fid, parent_id or None, name, int(time.time()), color or None, description or None, ms()))
+        self.db.x("INSERT INTO folders(id, parent_id, name, created, color, description, mtime, emoji, rules, kind) "
+                  "VALUES(?,?,?,?,?,?,?,?,?,?)",
+                  (fid, parent_id or None, name, int(time.time()), color or None, description or None, ms(),
+                   clean_emoji(emoji), rules_json, kind))
         self._schedule()
         self.db.log_activity("folder", f"Created “{name}”")
-        return {"id": fid, "parent_id": parent_id or None, "name": name}
+        return {"id": fid, "parent_id": parent_id or None, "name": name, "kind": kind, "color": color or None,
+                "description": description or None, "emoji": clean_emoji(emoji), "rules": rules_json}
 
     async def ensure_path(self, parent_id: Optional[str], names: list[str]) -> Optional[str]:
         """Find or create nested folders parent/names[0]/names[1]/… (used by folder uploads)."""
@@ -538,7 +601,8 @@ class Drive:
 
     async def update_folder(self, folder_id: str, name: Optional[str] = None,
                             parent_id: Optional[str] = "__keep__", color: Optional[str] = None,
-                            description: Optional[str] = None) -> None:
+                            description: Optional[str] = None, emoji: Optional[str] = None,
+                            cover: Optional[str] = None, rules: Optional[object] = "__keep__") -> None:
         await self.load()
         f = self.db.get_folder(folder_id)
         if not f:
@@ -552,10 +616,19 @@ class Drive:
         self._check_unique(new_name, new_parent, exclude=folder_id)
         if color is not None and color not in COLORS:
             raise DriveError("Unknown colour.")
+        if cover is not None and cover and cover != "none" and not re.fullmatch(r"-?\d+:\d+", cover):
+            raise DriveError("A cover is a file (chat:message).")
+        if rules == "__keep__":
+            rules_json, kind = f.get("rules"), f.get("kind")
+        else:
+            rules_json, kind = clean_rules(rules)  # type: ignore[arg-type]
         self.push_undo(f"Change folder “{f['name']}”")
-        self.db.x("UPDATE folders SET name=?, parent_id=?, color=?, description=?, mtime=? WHERE id=?",
+        self.db.x("UPDATE folders SET name=?, parent_id=?, color=?, description=?, emoji=?, cover=?, rules=?, kind=?, "
+                  "mtime=? WHERE id=?",
                   (new_name, new_parent, (color if color is not None else f.get("color")) or None,
-                   (description if description is not None else f.get("description")) or None, ms(), folder_id))
+                   (description if description is not None else f.get("description")) or None,
+                   clean_emoji(emoji) if emoji is not None else f.get("emoji"),
+                   (cover if cover is not None else f.get("cover")) or None, rules_json, kind, ms(), folder_id))
         self._schedule()
 
     async def delete_folder(self, folder_id: str) -> int:
@@ -605,9 +678,10 @@ class Drive:
         self.push_undo("Rename file")
         self.db.set_placement(chat_id, msg_id, alias=alias, keep_alias=False, keep_folder=True)
         self._schedule()
-        sem = getattr(self.acc, "semantic", None)
-        if sem and f.get("id"):
-            sem.poke(f["id"])
+        for part in ("semantic", "subjects"):
+            obj = getattr(self.acc, part, None)
+            if obj and f.get("id"):
+                obj.poke(f["id"])
 
     async def bulk_rename(self, items: list[tuple[int, int]], pattern: str, start: int = 1) -> int:
         """Rename with a pattern: {name} {ext} {n} {n:03} {date} {chat}."""
@@ -696,6 +770,42 @@ class Drive:
                 r["params"] = {}
         return rows
 
+    # ------------------------------------------------------- PDF marks
+    MARK_KINDS = {"bookmark", "highlight", "note"}
+
+    def marks_for(self, chat_id: int, msg_id: int) -> list[dict]:
+        return [_mark_out(m) for m in self.db.q(
+            f"SELECT {','.join(self.db.MARK_COLS)} FROM marks WHERE chat_id=? AND msg_id=? ORDER BY page, created",
+            (chat_id, msg_id))]
+
+    async def save_mark(self, chat_id: int, msg_id: int, mark: dict) -> dict:
+        kind = mark.get("kind") or "highlight"
+        if kind not in self.MARK_KINDS:
+            raise DriveError("Unknown mark type.")
+        try:
+            page = max(1, int(mark.get("page") or 1))
+        except (TypeError, ValueError):
+            raise DriveError("page must be a number.")
+        data = mark.get("data")
+        raw = json.dumps(data, ensure_ascii=False) if data is not None else None
+        if raw and len(raw) > 20000:
+            raise DriveError("That highlight is too long.")
+        mid = str(mark.get("id") or secrets.token_hex(6))[:32]
+        note = (str(mark.get("note") or "")[:4000]) or None
+        color = (str(mark.get("color") or "")[:20]) or None
+        cur = self.db.one("SELECT created FROM marks WHERE id=?", (mid,))
+        self.db.x(f"INSERT OR REPLACE INTO marks({','.join(self.db.MARK_COLS)}) VALUES({','.join('?' * 10)})",
+                  (mid, chat_id, msg_id, kind, page, raw, color, note, (cur or {}).get("created") or int(time.time()),
+                   ms()))
+        self.db.x("DELETE FROM tombstones WHERE kind='mark' AND id=?", (mid,))
+        self._schedule()
+        return _mark_out(self.db.one(f"SELECT {','.join(self.db.MARK_COLS)} FROM marks WHERE id=?", (mid,)))
+
+    async def delete_mark(self, mark_id: str) -> None:
+        self.db.x("DELETE FROM marks WHERE id=?", (mark_id,))
+        self.db.x("INSERT OR REPLACE INTO tombstones(kind, id, at) VALUES('mark', ?, ?)", (mark_id, ms()))
+        self._schedule()
+
     # ------------------------------------------------------------ copy / send
     async def copy_to_drive(self, chat_id: int, msg_id: int, folder_id: Optional[str]) -> dict:
         """Re-send a file into the Drive channel (no re-upload) so you own a copy."""
@@ -757,4 +867,24 @@ class Drive:
 def _norm(m: dict) -> str:
     def key(coll, e):
         return json.dumps(e, sort_keys=True, default=str)
-    return json.dumps({c: sorted(key(c, e) for e in m.get(c, []) or []) for c in ("folders", "items", "saved")})
+    return json.dumps({c: sorted(key(c, e) for e in m.get(c, []) or []) for c in ("folders", "items", "saved", "marks")})
+
+
+def _folder_out(f: dict) -> dict:
+    out = {k: v for k, v in f.items() if v is not None or k in ("parent_id",)}
+    if isinstance(out.get("rules"), str):
+        try:
+            out["rules"] = json.loads(out["rules"])
+        except ValueError:
+            out.pop("rules", None)
+    return out
+
+
+def _mark_out(m: dict) -> dict:
+    out = {k: v for k, v in m.items() if v is not None}
+    if isinstance(out.get("data"), str):
+        try:
+            out["data"] = json.loads(out["data"])
+        except ValueError:
+            pass
+    return out

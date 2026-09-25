@@ -9,7 +9,7 @@ import time
 import urllib.request
 from pathlib import Path
 
-from PyQt6.QtCore import QEvent, QFile, QIODevice, QObject, QSettings, Qt, QTimer, QUrl, pyqtSlot
+from PyQt6.QtCore import QEvent, QFile, QIODevice, QObject, QPoint, QSettings, Qt, QTimer, QUrl, pyqtSlot
 from PyQt6.QtGui import QAction, QDesktopServices, QIcon, QKeySequence, QPixmap
 from PyQt6.QtNetwork import QLocalServer, QLocalSocket
 from PyQt6.QtWebChannel import QWebChannel
@@ -130,6 +130,26 @@ class Bridge(QObject):
     def notify(self, title, body):
         self.shell.notify(title, body, force=True)
 
+    @pyqtSlot(str)
+    def newWindow(self, hash_):
+        self.shell.new_window(hash_)
+
+    @pyqtSlot(result=list)
+    def clipboardPaths(self):
+        """Files copied in the file manager (Ctrl+C) as local paths."""
+        md = QApplication.clipboard().mimeData()
+        if md is None or not md.hasUrls():
+            return []
+        return [u.toLocalFile() for u in md.urls() if u.isLocalFile()]
+
+    @pyqtSlot(str, result=bool)
+    def openUrlExternal(self, url):
+        """dav:// and file manager locations (mount TG Drive as a drive)."""
+        from tgdrive.accounts import xdg_open
+        if not (url.startswith("dav://127.0.0.1:") or url.startswith("webdav://127.0.0.1:")):
+            return False
+        return xdg_open(url)
+
 
 class MainWindow(QMainWindow):
     def __init__(self, shell):
@@ -141,8 +161,10 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(420, 480)
 
     def closeEvent(self, e):
-        if self.shell.quitting:
+        if self.shell.quitting or getattr(self, "extra", False):
             e.accept()
+            if getattr(self, "extra", False):
+                self.shell.extra_closed(self)
             return
         self.shell.save_geometry()
         if self.shell.close_to_tray():
@@ -209,6 +231,10 @@ class Shell:
         start_hidden = (self.args.minimized or settings.get("start_minimized")) and self.tray is not None
         if not start_hidden:
             self.show()
+        if getattr(self.args, "send", None):
+            self.deliver("receivePaths", self.args.send)
+        if getattr(self.args, "open", None) and self.args.open != "new-window":
+            self.deliver("openTask", self.args.open)
         self.timer = QTimer()
         self.timer.timeout.connect(self.poll_events)
         self.timer.start(2000)
@@ -217,15 +243,22 @@ class Shell:
             QTimer.singleShot(9000, self.take_screenshot)
         return app.exec()
 
+    def startup_message(self) -> bytes:
+        if getattr(self.args, "send", None):
+            return b"send\n" + json.dumps(self.args.send).encode()
+        if getattr(self.args, "open", None):
+            return b"open\n" + self.args.open.encode()
+        return b"show\n"
+
     def already_running(self) -> bool:
         sock = QLocalSocket()
         sock.connectToServer(SOCKET)
         if sock.waitForConnected(500):
-            sock.write(b"show\n")
+            sock.write(self.startup_message())
             sock.flush()
-            sock.waitForBytesWritten(1000)
+            sock.waitForBytesWritten(2000)
             sock.disconnectFromServer()
-            print("TG Drive is already running; showing its window.")
+            print("TG Drive is already running; handing this over to it.")
             return True
         QLocalServer.removeServer(SOCKET)
         self.listener = QLocalServer()
@@ -235,11 +268,31 @@ class Shell:
 
     def on_second_instance(self):
         conn = self.listener.nextPendingConnection()
+        data = b""
         if conn:
-            conn.waitForReadyRead(300)
-            conn.readAll()
+            for _ in range(10):
+                if not conn.waitForReadyRead(200):
+                    break
+                data += bytes(conn.readAll())
             conn.close()
+        cmd, _, payload = data.partition(b"\n")
         self.show()
+        if cmd == b"send":
+            try:
+                self.deliver("receivePaths", json.loads(payload.decode() or "[]"))
+            except ValueError:
+                pass
+        elif cmd == b"open":
+            if payload == b"new-window":
+                self.new_window("")
+            else:
+                self.deliver("openTask", payload.decode())
+
+    def deliver(self, fn: str, arg) -> None:
+        """Call window.tgdrive.<fn>(arg) in the page, waiting for it to be ready."""
+        js = (f"(function t(n){{if(window.tgdrive&&window.tgdrive.{fn}&&window.tgdrive.ready)"
+              f"{{window.tgdrive.{fn}({json.dumps(arg)});}}else if(n<120){{setTimeout(function(){{t(n+1)}},500);}}}})(0)")
+        self.page.runJavaScript(js)
 
     def start_server(self) -> bool:
         import run
@@ -312,6 +365,8 @@ class Shell:
             self.win.restoreGeometry(geo)
         view.setUrl(QUrl(f"http://127.0.0.1:{self.port}/?t={self.token}"))
         page.loadFinished.connect(lambda ok: ok or log.warning("page failed to load"))
+        page.renderProcessTerminated.connect(self.on_renderer_gone)
+        self.profile = profile
         self.shortcuts()
         del data
 
@@ -329,6 +384,50 @@ class Shell:
         add(["F11"], self.toggle_fullscreen)
         add(["Ctrl+Q"], self.quit_confirmed)
         add(["Ctrl+Shift+R"], lambda: self.view.reload())
+        add(["Ctrl+Shift+N"], lambda: self.new_window(""))
+
+    def on_renderer_gone(self, status, code):
+        if self.quitting:
+            return
+        try:
+            from tgdrive import diagnostics
+            diagnostics.record_crash("renderer", f"The window's web renderer stopped: {status} (exit code {code})",
+                                     {"status": str(status), "code": code})
+        except Exception:
+            log.exception("could not record renderer crash")
+        log.error("renderer terminated (%s, %s); reloading", status, code)
+        QTimer.singleShot(800, lambda: self.view.setUrl(QUrl(f"http://127.0.0.1:{self.port}/?t={self.token}")))
+
+    def new_window(self, hash_: str = ""):
+        """Another TG Drive window (same account and data), e.g. to work in two folders side by side."""
+        w = MainWindow(self)
+        w.extra = True
+        w.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        local = [f"http://127.0.0.1:{self.port}/", f"http://127.0.0.1:{self.media}/"]
+        page = Page(self.profile, w, local)
+        channel = QWebChannel(page)
+        bridge = Bridge(self)
+        channel.registerObject("tgd", bridge)
+        page.setWebChannel(channel)
+        for script in self.page.scripts().toList():
+            page.scripts().insert(script)
+        view = QWebEngineView(w)
+        view.setPage(page)
+        view.setZoomFactor(self.view.zoomFactor())
+        w.setCentralWidget(view)
+        w.resize(self.win.size())
+        w.move(self.win.pos() + QPoint(40, 40))
+        frag = hash_.lstrip("#")
+        view.setUrl(QUrl(f"http://127.0.0.1:{self.port}/?t={self.token}" + (f"#{frag}" if frag else "")))
+        w.show()
+        self.extra_windows = [x for x in getattr(self, "extra_windows", []) if x is not w] + [w]
+        w._keep = (page, channel, bridge, view)
+
+    def extra_closed(self, w):
+        view = w.centralWidget()
+        if isinstance(view, QWebEngineView):
+            view.setPage(QWebEnginePage(view))
+        self.extra_windows = [x for x in getattr(self, "extra_windows", []) if x is not w]
 
     def zoom(self, d):
         z = 1.0 if d is None else max(0.5, min(2.5, self.view.zoomFactor() + d))
@@ -352,6 +451,7 @@ class Shell:
         menu = QMenu()
         show = menu.addAction("Show TG Drive")
         show.triggered.connect(self.show)
+        menu.addAction("New window").triggered.connect(lambda: self.new_window(""))
         self.pause_act = menu.addAction("Pause indexing")
         self.pause_act.triggered.connect(self.toggle_indexing)
         menu.addAction("Open downloads folder").triggered.connect(self.open_downloads)
@@ -483,6 +583,8 @@ class Shell:
             self.last_event = ev["id"]
             if ev["kind"] == "notify":
                 self.notify(ev["title"], ev.get("body", ""))
+            elif ev["kind"] == "focus":
+                self.show()
 
     def on_settings(self, changed):
         from tgdrive.settings import settings
@@ -536,6 +638,8 @@ class Shell:
         self.save_geometry()
         for p in self.players:
             p.close()
+        for w in list(getattr(self, "extra_windows", [])):
+            w.close()
         self.app.quit()
 
     def shutdown(self):

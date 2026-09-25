@@ -215,6 +215,10 @@ class Indexer:
                         if fresh and not fresh["excluded"]:
                             await self.index_chat(fresh)
                 self.phase, self.current_title, self.current_chat, self.error = "idle", None, None, None
+                for part in ("autofile", "subjects", "places"):
+                    obj = getattr(self.acc, part, None)
+                    if obj is not None:
+                        obj.poke()
                 self._wake.clear()
                 interval = max(300, int(settings.get("resync_minutes") or 30) * 60)
                 try:

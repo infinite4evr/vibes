@@ -129,7 +129,7 @@ def empty_filters() -> dict:
         "has_caption": None, "has_thumb": None, "starred": None, "has_note": None, "has_tags": None,
         "album": None, "recent": None, "match": None, "dialog_filter": None, "grouped_id": None,
         "watched": None, "in_progress": None,
-        "media_id": None, "ids": None,
+        "media_id": None, "ids": None, "subjects": [], "not_subjects": [], "has_geo": None,
     }
 
 
@@ -185,6 +185,9 @@ def parse(text: str, f: Optional[dict] = None) -> dict:
             f["tags"].append(value.lower())
         elif k == "topic":
             f["topic_like"].append(value)
+        elif k in ("subject", "subj"):
+            for v in _split_list(value):
+                (f["not_subjects"] if neg else f["subjects"]).append(subject_slug(v))
         elif k == "name":
             f["name_terms"].append(value)
         elif k in ("caption", "text"):
@@ -240,8 +243,10 @@ def parse(text: str, f: Optional[dict] = None) -> dict:
                 f["has_note"] = not neg
             elif v in ("tag", "tags", "label"):
                 f["has_tags"] = not neg
+            elif v in ("location", "gps", "geo", "place"):
+                f["has_geo"] = not neg
             else:
-                raise QueryError(f"Unknown flag 'has:{value}'. Use caption, thumb, note or tags.")
+                raise QueryError(f"Unknown flag 'has:{value}'. Use caption, thumb, note, tags or location.")
         else:
             # Not an operator (e.g. a URL fragment or "C:"): treat as plain text.
             (f["neg_terms"] if neg else f["terms"]).append(m.group(0).lstrip("-"))
@@ -253,6 +258,11 @@ def _int(v: str) -> int:
         return int(v)
     except ValueError:
         raise QueryError(f"'{v}' should be a whole number.")
+
+
+def subject_slug(v: str) -> str:
+    from .textproc import fold
+    return re.sub(r"[^\w]+", "_", fold(v.strip())).strip("_")
 
 
 def _like(v: str) -> str:
@@ -357,6 +367,29 @@ def build_where(f: dict, skip_kinds: bool = False, descendants=None) -> tuple[st
         where.append(PB.format("done=0 AND pos>0"))
     elif f["in_progress"] is False:
         where.append("NOT " + PB.format("done=0 AND pos>0"))
+    def subj_like(v: str) -> str:
+        return v.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+
+    pos = [v for v in f["subjects"] if v]
+    if pos:
+        none = [v for v in pos if v in ("none", "unknown", "unclassified", "other")]
+        named = [v for v in pos if v not in none]
+        alts = []
+        if named:
+            alts.append("f.id IN (SELECT file_id FROM file_subjects WHERE " +
+                        " OR ".join("subject LIKE ? ESCAPE '\\'" for _ in named) + ")")
+            params.extend(subj_like(v) for v in named)
+        if none:
+            alts.append("f.id NOT IN (SELECT file_id FROM file_subjects WHERE subject<>'_none')")
+        where.append("(" + " OR ".join(alts) + ")")
+    for v in f["not_subjects"]:
+        if v in ("none", "unknown", "unclassified", "other"):
+            where.append("f.id IN (SELECT file_id FROM file_subjects WHERE subject<>'_none')")
+        elif v:
+            where.append("f.id NOT IN (SELECT file_id FROM file_subjects WHERE subject LIKE ? ESCAPE '\\')")
+            params.append(subj_like(v))
+    if f["has_geo"] is not None:
+        where.append(("" if f["has_geo"] else "NOT ") + "f.id IN (SELECT file_id FROM geo WHERE lat IS NOT NULL)")
     if f["grouped_id"] is not None:
         where.append("f.grouped_id = ?")
         params.append(f["grouped_id"])
@@ -420,6 +453,13 @@ def from_params(p: dict[str, Any]) -> dict:
         f["sender_like"].append(p["sender"])
     if p.get("tag"):
         f["tags"].append(str(p["tag"]).lower())
+    if p.get("subject"):
+        f["subjects"].extend(subject_slug(v) for v in _split_list(p["subject"]))
+    if p.get("ids"):
+        try:
+            f["ids"] = [int(x) for x in _split_list(p["ids"])][:5000]
+        except ValueError:
+            raise QueryError("ids must be numbers.")
     if p.get("size_min"):
         f["size_min"] = parse_size(str(p["size_min"]))
     if p.get("size_max"):
@@ -444,7 +484,7 @@ def from_params(p: dict[str, Any]) -> dict:
     if p.get("match"):
         f["match"] = "exact" if p["match"] == "exact" else "smart"
     for key in ("filed", "forwarded", "mine", "has_caption", "has_thumb", "starred", "has_note", "has_tags",
-                "album", "recent", "watched", "in_progress"):
+                "album", "recent", "watched", "in_progress", "has_geo"):
         v = p.get(key)
         if v in ("1", "true", True):
             f[key] = True

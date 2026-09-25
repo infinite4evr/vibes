@@ -108,14 +108,17 @@ async function activity() {
 
 /* --------------------------------------------------------------- settings */
 const SECTIONS = [
-  ['general', 'General', 'settings'], ['search', 'Search', 'search'], ['downloads', 'Downloads & uploads', 'download'],
-  ['streaming', 'Streaming', 'play'], ['indexing', 'Indexing', 'database'], ['network', 'Network & proxy', 'external'],
-  ['telegram', 'Telegram API', 'telegram'], ['accounts', 'Accounts', 'user'], ['security', 'Security', 'lock'],
-  ['desktop', 'Desktop', 'maximize'], ['data', 'Data & maintenance', 'database'], ['about', 'About & logs', 'info'],
+  ['general', 'General', 'settings'], ['appearance', 'Appearance', 'palette'], ['search', 'Search', 'search'],
+  ['subjects', 'Subjects', 'book'], ['photos', 'Photos & places', 'image'], ['downloads', 'Downloads & uploads', 'download'],
+  ['streaming', 'Streaming', 'play'], ['indexing', 'Indexing', 'database'], ['drive', 'Drive on this computer', 'mount'],
+  ['sync', 'Folder sync', 'sync'], ['network', 'Network & proxy', 'external'], ['telegram', 'Telegram API', 'telegram'],
+  ['accounts', 'Accounts', 'user'], ['security', 'Security', 'lock'], ['desktop', 'Desktop', 'maximize'],
+  ['data', 'Data & maintenance', 'database'], ['about', 'About & diagnostics', 'info'],
 ];
+const ACCENTS = ['', '#2a7fc9', '#4f63d8', '#7a4fd0', '#c2418f', '#d2463b', '#e07a1f', '#b88a00', '#2f8f4e', '#128b86', '#4b5563'];
 async function settingsPage(section = 'general') {
   if (!SECTIONS.some(([k]) => k === section)) section = 'general';
-  page().innerHTML = `<div class="settings"><nav class="set-nav">${SECTIONS.filter(([k]) => k !== 'desktop' || S.desktop).map(([k, l, ic]) => `<button class="nav-item ${k === section ? 'active' : ''}" data-go="#settings/${k}">${icon(ic)}<span class="label">${l}</span></button>`).join('')}</nav>
+  page().innerHTML = `<div class="settings"><nav class="set-nav">${SECTIONS.map(([k, l, ic]) => `<button class="nav-item ${k === section ? 'active' : ''}" data-go="#settings/${k}">${icon(ic)}<span class="label">${l}</span></button>`).join('')}</nav>
     <div class="set-body" id="setBody"><div class="page-loading">Loading…</div></div></div>`;
   const s = await api('/api/settings').catch(() => S.settings);
   S.settings = s;
@@ -133,13 +136,61 @@ const txt = (k, s, ph = '', type = 'text') => `<input type="${type}" data-set="$
 
 const SECTION_HTML = {
   general: (s) => `<h2>General</h2>
-    ${row('Theme', '', sel('theme', s, [['system', 'Match the system'], ['light', 'Light'], ['dark', 'Dark']]))}
     ${row('Default view', 'Press V to switch any time.', sel('view', s, [['grid', 'Grid'], ['list', 'List']]))}
-    ${row('Card size', '', sel('grid_size', s, [['s', 'Small'], ['m', 'Medium'], ['l', 'Large']]))}
-    ${row('Density', 'Compact fits more rows in lists and the sidebar.', sel('density', s, [['comfortable', 'Comfortable'], ['compact', 'Compact']]))}
     ${row('Group by date', 'Section headers such as Today, Yesterday and months when sorted by date.', sw('group_by_date', s))}
+    ${row('Albums as stacks', 'Files sent together (an album) show as one stacked card in the grid. Open it to see them all.', sw('stack_albums', s))}
     ${row('Ask before deleting from Telegram', '', sw('confirm_delete', s))}
     ${row('Notifications', 'When downloads and uploads finish or fail.', sw('notifications', s))}`,
+  appearance: (s) => `<h2>Appearance</h2>
+    ${row('Theme', '', sel('theme', s, [['system', 'Match the system'], ['light', 'Light'], ['dark', 'Dark']]))}
+    <div class="set-row"><div class="set-l"><strong>Accent colour</strong><p>Buttons, selection and highlights.</p></div><div class="set-c"><div class="accent-pick">
+      ${ACCENTS.map((c) => `<button class="accent-sw ${(s.accent || '') === c ? 'on' : ''}" data-accent="${c}" style="--sw:${c || '#2a7fc9'}" title="${c || 'Default blue'}" aria-label="${c || 'Default'}"></button>`).join('')}
+      <label class="accent-custom" title="Any colour"><input type="color" data-accent-custom value="${esc(s.accent || '#2a7fc9')}"></label></div></div></div>
+    ${row('Contrast', 'High contrast makes text, borders and focus rings stronger.', sel('contrast', s, [['normal', 'Normal'], ['high', 'High contrast']]))}
+    <div class="set-row"><div class="set-l"><strong>Text size</strong><p>Scales text and rows everywhere in TG Drive. (Ctrl + / Ctrl − zoom the whole window in the desktop app.)</p></div>
+      <div class="set-c"><div class="fs-pick"><span class="fs-a small">A</span><input type="range" min="0.85" max="1.4" step="0.05" data-fontscale value="${esc(s.font_scale || 1)}"><span class="fs-a big">A</span><output>${Math.round((s.font_scale || 1) * 100)}%</output></div></div></div>
+    ${row('Density', 'Compact fits more rows in lists and the sidebar.', sel('density', s, [['comfortable', 'Comfortable'], ['compact', 'Compact']]))}
+    ${row('Card size', '', sel('grid_size', s, [['s', 'Small'], ['m', 'Medium'], ['l', 'Large']]))}
+    ${row('Folders', 'How folders show above the files. You can also switch with the buttons next to “Folders”.', sel('folder_style', s, [['tiles', 'Tiles'], ['cards', 'Cards with covers'], ['list', 'List']]))}
+    <div class="set-block"><strong>List columns</strong><p>Choose, reorder and resize the columns of the list view.</p><button class="btn" data-columns-dlg>${icon('columns')}Choose columns…</button></div>`,
+  subjects: async (s) => {
+    const r = await api(A('/subjects')).catch(() => ({ subjects: [], status: {} }));
+    const counts = r.subjects.filter((x) => x.n).sort((a, b) => b.n - a.n);
+    return `<h2>Subjects</h2>
+    <p class="set-intro">TG Drive tags every file with a subject (Polity, Economy, History …) from its name, caption and chat, in English and Hindi, and uses the offline meaning model when the words alone don't decide. Subjects appear in the sidebar, in search (<code>subject:polity</code>) and in folder rules. Set a file's subject by hand from its menu; TG Drive then leaves it alone.</p>
+    ${row('Tag files with subjects', `${r.status?.state === 'building' ? 'Working through your files now.' : ''}`, sw('subjects_enabled', s))}
+    ${row('Built-in study subjects', 'UPSC and general study subjects with English, Hindi and abbreviated keywords.', sw('subjects_builtin', s))}
+    <div class="set-block"><strong>Your subjects and keywords</strong><p>One subject per line: a name, a colon, then keywords separated by commas. Use an existing name to add keywords to it. An emoji before the name becomes its icon.</p>
+      <textarea data-set="subjects_custom" rows="6" spellcheck="false" placeholder="📑 Tax Law: income tax, gst, itr&#10;History: harappa, mauryan, gupta period">${esc(s.subjects_custom || '')}</textarea></div>
+    <div class="set-block"><strong>Now</strong><div class="subject-counts">${counts.map((x) => `<button class="chip" data-go="#subject/${esc(x.id)}">${x.emoji ? `<span>${x.emoji}</span>` : ''}${esc(x.name)}<small>${fmtNum(x.n)}</small></button>`).join('') || '<span class="subtle">No subjects found yet.</span>'}</div>
+      <div class="btn-row"><button class="btn" data-subjects-rebuild>${icon('refresh')}Tag everything again</button><button class="btn" data-subjects-tags>${icon('tag')}Turn subjects into tags…</button></div></div>`;
+  },
+  photos: (s) => `<h2>Photos & places</h2>
+    ${row('Find where photos were taken', 'Pictures sent as files keep their GPS location. TG Drive reads only the first 128 KB of each image file to find it, slowly, in the background. They then show on the Places map.', sw('places_scan', s))}
+    ${row('Detailed map tiles', 'Shows streets and places from OpenStreetMap on the Places map. This is the one feature that loads data from outside Telegram (tile images). Takes effect after reloading the window.', sw('map_online_tiles', s))}
+    ${row('Slideshow speed', 'Seconds per picture.', num('slideshow_seconds', s, 1, 60, 1, 's'))}`,
+  drive: async (s) => {
+    const d = await api('/api/dav').catch(() => ({}));
+    return `<h2>Drive on this computer</h2>
+    <p class="set-intro">Open TG Drive in your file manager like a disk, so any app can open, play or save files: videos stream, PDFs open in your PDF reader, and files copied into <b>My Drive</b> upload. It only answers on this computer, while TG Drive is running.</p>
+    ${row('Make TG Drive available as a drive', '', sw('dav_enabled', s))}
+    ${row('Allow changes', 'Copy files in to upload, create folders, rename and move. Deleting only takes a file out of its folder; it stays in Telegram.', sw('dav_write', s))}
+    ${s.dav_enabled ? `<div class="set-block"><strong>Open it</strong>
+      <div class="btn-row"><button class="btn primary" data-dav="mount">${icon('mount')}Open in file manager</button>${d.gio ? `<button class="btn" data-dav="unmount">Disconnect</button>` : ''}</div>
+      <p>Or use this address in any WebDAV client:</p>
+      <div class="link-row"><input type="text" readonly value="${esc(d.url || '')}" aria-label="Drive address"><button class="icon-btn" data-copy-val="${esc(d.url || '')}" title="Copy">${icon('copy')}</button></div>
+      <details><summary>Other file managers and a real mount point</summary><div class="help">
+        <p><b>GNOME Files, Nemo, Caja:</b> “Open in file manager” above, or <i>Other Locations → Connect to Server</i> with the address.</p>
+        <p><b>Dolphin (KDE):</b> type <code>${esc((d.url || '').replace('dav://', 'webdav://'))}</code> in the location bar.</p>
+        <p><b>A folder any program can use (davfs2):</b> <code>sudo mount -t davfs ${esc(d.http || '')} /mnt/tgdrive</code></p>
+        <p><b>rclone:</b> <code>rclone mount :webdav: ~/TGDrive --webdav-url=${esc(d.http || '')} --vfs-cache-mode full</code></p>
+        <p>The address contains a secret. <button class="linkish" data-dav="reset">Make a new one</button> if you shared it by mistake.</p></div></details></div>` : ''}`;
+  },
+  sync: (s) => `<h2>Folder sync</h2>
+    <p class="set-intro">Synced folders are listed on the <button class="linkish" data-go="#sync">Folder sync</button> page (Tools in the sidebar).</p>
+    ${row('Sync folders', 'Turn off to pause every synced folder.', sw('sync_enabled', s))}
+    ${row('Check for changes every', '', num('sync_interval', s, 15, 3600, 15, 's'))}
+    ${row('Deleting on this computer also deletes from Telegram', 'Off: a file you delete on this computer is only taken out of the TG Drive folder and stays in Telegram. On: files that live in your TG Drive channel are deleted there too.', sw('sync_delete_remote', s))}`,
   search: (s) => `<h2>Search</h2>
     ${row('Matching', 'Smart finds the same words written differently: joined or split (test series ↔ testseries ↔ TestSeries), text inside words, word endings, typos, abbreviations (pyq ↔ previous year questions), Hindi ↔ Latin script, and synonyms. Exact looks for your words only.', sel('search_mode', s, [['smart', 'Smart'], ['exact', 'Exact words']]))}
     ${row('Related by meaning', `Adds files with a similar meaning at the end of “Best match” results, using a small AI model that runs offline on this computer. <span id="semStatus" class="subtle"></span>`, sw('search_semantic', s))}
@@ -201,10 +252,22 @@ const SECTION_HTML = {
     ${row('Lock after being idle', '0 = only when TG Drive starts.', num('lock_after_minutes', s, 0, 1440, 5, 'min'))}
     ${s.lock_set ? row('Lock now', '', '<button class="btn" data-lock-now>Lock</button>') : ''}
     <div class="set-block"><strong>Your session</strong><p>The Telegram session is stored at <code>${esc(S.status?.data_dir || '')}/accounts/…/session.session</code> with owner-only permissions. Anyone with that file can use your account; keep backups private. To end it everywhere, remove the account here or terminate “TG Drive Desktop” in Telegram → Settings → Devices.</p></div>`,
-  desktop: (s) => `<h2>Desktop</h2>
-    ${row('Keep running in the tray when the window is closed', 'Indexing and transfers continue; quit from the tray icon.', sw('close_to_tray', s))}
+  desktop: async (s) => {
+    const ig = await api('/api/integration').catch(() => ({ file_managers: [] }));
+    const fms = ig.file_managers.filter((x) => x.present || x.installed);
+    return `<h2>Desktop</h2>
+    ${S.desktop ? `${row('Keep running in the tray when the window is closed', 'Indexing and transfers continue; quit from the tray icon.', sw('close_to_tray', s))}
     ${row('Start minimized', '', sw('start_minimized', s))}
-    ${row('Start when I log in', '', sw('autostart', s))}`,
+    ${row('Start when I log in', '', sw('autostart', s))}` : ''}
+    <div class="set-block"><strong>Applications menu</strong><p>${ig.menu ? 'TG Drive is in your applications menu, with its icon.' : 'Add TG Drive to your applications menu (with its icon) so you can start it like any other app.'}</p>
+      <div class="btn-row">${ig.menu ? `<button class="btn" data-integ="install-menu">${icon('refresh')}Update the menu entry</button><button class="btn ghost" data-integ="uninstall-menu">Remove from menu</button>` : `<button class="btn primary" data-integ="install-menu">${icon('plus')}Add to applications menu</button>`}</div>
+      <p class="help">Starts with: <code>${esc(ig.launcher || '')}</code></p></div>
+    <div class="set-block"><strong>“Send to TG Drive” in file managers</strong><p>Right-click files or folders in your file manager and choose “Send to TG Drive” to upload them.</p>
+      ${fms.length ? `<div class="fm-list">${fms.map((x) => `<span class="pill ${x.installed ? 'ok' : 'grey'}">${esc(x.label)}${x.installed ? ' ✓' : ''}</span>`).join('')}</div>` : '<p class="subtle">No supported file manager found (GNOME Files, Nemo, Caja, Dolphin, Thunar).</p>'}
+      <div class="btn-row"><button class="btn ${fms.some((x) => !x.installed) ? 'primary' : ''}" data-integ="install-file-managers">${icon('plus')}${fms.some((x) => x.installed) ? 'Update' : 'Add'} “Send to TG Drive”</button>${fms.some((x) => x.installed) ? '<button class="btn ghost" data-integ="uninstall-file-managers">Remove</button>' : ''}</div>
+      <p class="help">GNOME Files lists it under <i>Scripts</i>. Restart the file manager if the item doesn't show up at once.</p></div>
+    <div class="set-block"><strong>Windows</strong><p>Open another TG Drive window with <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>N</kbd> (or from the tray icon), or split the window in two with “Open in split view” in the ⋮ menu. Drag files between them to move them.</p></div>`;
+  },
   data: async () => {
     const about = await api('/api/about').catch(() => ({ data: {} }));
     const backups = await api(A('/drive/backups')).catch(() => ({ backups: [] }));
@@ -223,17 +286,33 @@ const SECTION_HTML = {
       ${legacy.candidates.map((c) => `<div class="sl-row static"><code class="grow">${esc(c.path)}</code><small>${plural(c.accounts.length, 'account')}</small><button class="btn sm" data-legacy="${esc(c.path)}">Import</button></div>`).join('')}
       <button class="btn" data-legacy-pick>${icon('folder')}Choose a data folder…</button></div>`;
   },
-  about: async () => {
+  about: async (s) => {
     const about = await api('/api/about').catch(() => ({}));
     const logs = await api('/api/logs?lines=300').catch(() => '');
-    return `<h2>About TG Drive</h2>
+    const cr = await api('/api/crashes').catch(() => ({ reports: [] }));
+    return `<h2>About & diagnostics</h2>
     <p class="set-intro">Version ${esc(about.version || S.version)} · meaning-based search ${about.semantic_available ? 'available' : 'not installed'} · log file <code>${esc(about.log || '')}</code></p>
     <div class="btn-row"><button class="btn" data-shortcuts>${icon('keyboard')}Keyboard shortcuts</button><button class="btn" data-copy-logs>${icon('copy')}Copy log</button></div>
-    <pre class="logs">${esc(logs || 'No log yet.')}</pre>`;
+    <div class="set-block"><strong>Crash reports</strong><p>When something goes wrong, TG Drive saves a short report on this computer. Nothing is sent anywhere.</p>
+      ${row('Save crash reports', '', sw('crash_reports', s))}
+      ${cr.reports.length ? `<div class="simple-list crash-list">${cr.reports.slice(0, 20).map((x) => `<div class="sl-row static"><span class="pill ${x.new ? 'red' : 'grey'}">${esc(x.kind)}</span><span class="grow"><strong>${esc(x.summary || 'Error')}</strong><small>${fmtDate(x.at, true)}</small></span><button class="btn sm" data-crash-view="${esc(x.id)}">View</button></div>`).join('')}</div>
+        <div class="btn-row"><button class="btn ghost" data-crash-clear>${icon('trash')}Delete all reports</button></div>` : '<p class="subtle">No crashes recorded. 🎉</p>'}</div>
+    <div class="set-block"><strong>Diagnostics file</strong><p>A .zip with logs, crash reports, versions and settings to attach to a bug report. Phone numbers, keys, tokens and e-mail addresses are removed; chat and file names too unless you include them.</p>
+      <button class="btn" data-diag>${icon('bug')}Create diagnostics file…</button></div>
+    <div class="set-block"><strong>Back up settings</strong><p>Save all your settings (appearance, search, synonyms, subjects, transfers…) to a file, and load them on another computer or after reinstalling. Folders, stars and tags already sync through Telegram.</p>
+      <div class="btn-row"><button class="btn" data-settings-export>${icon('download')}Export settings</button><button class="btn" data-settings-import>${icon('upload')}Import settings…</button></div></div>
+    <div class="set-block"><strong>Log</strong><pre class="logs">${esc(logs || 'No log yet.')}</pre></div>`;
   },
 };
 
 const SECTION_AFTER = {
+  appearance: (body) => {
+    const r = $('[data-fontscale]', body);
+    r?.addEventListener('input', () => {
+      document.documentElement.style.setProperty('--fs', r.value);
+      r.parentElement.querySelector('output').textContent = `${Math.round(r.value * 100)}%`;
+    });
+  },
   search: (body) => {
     const sem = S.status?.semantic;
     const el = $('#semStatus', body);
@@ -264,11 +343,15 @@ function flashSaved() {
 
 page().addEventListener('change', async (e) => {
   const t = e.target;
+  if (t.dataset.fontscale !== undefined) { saveSetting('font_scale', Number(t.value)); return; }
+  if (t.dataset.accentCustom !== undefined) { saveSetting('accent', t.value); $$('.accent-sw', page()).forEach((b) => b.classList.remove('on')); return; }
   if (t.dataset.set) {
     let v = t.type === 'checkbox' ? t.checked : t.value;
     if (t.dataset.num !== undefined) v = Number(v);
     if (t.dataset.set === 'proxy_pass' && !v) return;
-    saveSetting(t.dataset.set, v);
+    await saveSetting(t.dataset.set, v);
+    if (['dav_enabled', 'subjects_builtin'].includes(t.dataset.set)) settingsPage(page().querySelector('#setBody')?.dataset.section);
+    if (t.dataset.set === 'map_online_tiles') toast('Reload the window (Ctrl+Shift+R) to use map tiles.');
   }
   if (t.dataset.kindToggle) {
     const kinds = $$('[data-kind-toggle]', page()).filter((x) => x.checked).map((x) => x.dataset.kindToggle);
@@ -376,9 +459,115 @@ page().addEventListener('click', async (e) => {
     return;
   }
   if (d.shortcuts !== undefined) { (await import('./ui.js')).shortcutsDialog(); return; }
+  if (d.accent !== undefined) { await saveSetting('accent', d.accent); $$('.accent-sw', page()).forEach((b) => b.classList.toggle('on', b === t)); return; }
+  if (d.columnsDlg !== undefined) { (await import('./columns.js')).columnsDialog(); return; }
+  if (d.subjectsRebuild !== undefined) { await api(A('/subjects/rebuild'), { method: 'POST' }).catch(fail); toast('Tagging every file again in the background.'); return; }
+  if (d.subjectsTags !== undefined) { subjectsToTags(); return; }
+  if (d.dav) { davAction(d.dav); return; }
+  if (d.copyVal) { navigator.clipboard.writeText(d.copyVal).then(() => toast('Copied')); return; }
+  if (d.integ) {
+    t.disabled = true;
+    try { await api(`/api/integration/${d.integ}`, { method: 'POST' }); toast('Done'); settingsPage('desktop'); } catch (err) { fail(err); } finally { t.disabled = false; }
+    return;
+  }
+  if (d.crashView) { crashView(d.crashView); return; }
+  if (d.crashClear !== undefined) { await api('/api/crashes', { method: 'DELETE' }).catch(fail); settingsPage('about'); return; }
+  if (d.diag !== undefined) { diagnosticsDialog(); return; }
+  if (d.settingsExport !== undefined) { exportSettings(); return; }
+  if (d.settingsImport !== undefined) { importSettings(); return; }
   if (d.copyLogs !== undefined) { navigator.clipboard.writeText($('.logs', page()).textContent).then(() => toast('Log copied')); }
   if (d.idx) { api(A(`/index/${d.idx}`), { method: 'POST' }).then(() => { bus.emit('poll'); setTimeout(indexManager, 500); }).catch(fail); }
 });
+
+async function subjectsToTags() {
+  const r = await dialog({
+    title: 'Turn subjects into tags',
+    body: '<p>Adds each file\'s subject as a tag (e.g. “polity”). Tags sync to your other devices and work everywhere tags do. Choose which files:</p>',
+    actions: [{ label: 'Cancel' }, { label: 'Files in My Drive folders', onClick: () => ({ filed: '1' }) }, { label: 'Starred files', onClick: () => ({ starred: '1' }) }, { label: 'All files', cls: 'primary', onClick: () => ({}) }],
+  });
+  if (!r) return;
+  toast('Adding tags…');
+  try {
+    const res = await api(A('/subjects/tags'), { method: 'POST', body: { params: r } });
+    toast(`Tagged ${plural(res.tagged, 'file')}${res.tags.length ? ` (${res.tags.join(', ')})` : ''}`);
+    bus.emit('meta-changed');
+  } catch (e) { fail(e); }
+}
+
+async function davAction(a) {
+  try {
+    if (a === 'mount') {
+      const r = await api('/api/dav/mount', { method: 'POST', body: { open: true } });
+      if (r.mounted) toast('TG Drive is open in your file manager.');
+      else {
+        await navigator.clipboard.writeText(r.url).catch(() => {});
+        toast(`${r.message || 'Couldn\'t open it automatically.'} The address is copied.`, { err: true, ms: 9000 });
+      }
+    } else if (a === 'unmount') { await api('/api/dav/unmount', { method: 'POST' }); toast('Disconnected'); }
+    else if (a === 'reset') {
+      if (!await confirmDialog('Make a new address?', 'The old address stops working; open TG Drive in your file manager again afterwards.', 'Make a new one')) return;
+      await api('/api/dav', { method: 'POST', body: { reset_secret: true } });
+      settingsPage('drive');
+    }
+  } catch (e) { fail(e); }
+}
+
+async function crashView(id) {
+  const text = await api(`/api/crashes/${encodeURIComponent(id)}`).catch((e) => e.message);
+  await api('/api/crashes/seen', { method: 'POST' }).catch(() => {});
+  dialog({
+    title: 'Crash report', wide: true,
+    body: `<pre class="logs crash-text">${esc(text)}</pre>`,
+    actions: [{ label: 'Copy', onClick: () => { navigator.clipboard.writeText(text).then(() => toast('Copied')); return false; } }, { label: 'Create diagnostics file…', onClick: () => { setTimeout(diagnosticsDialog, 50); } }, { label: 'Close', cls: 'primary' }],
+  });
+}
+
+export async function diagnosticsDialog() {
+  const r = await dialog({
+    title: 'Create a diagnostics file',
+    body: `<p>A .zip with TG Drive's logs, crash reports, versions, settings (without passwords or keys) and index statistics, saved to your download folder. It is not sent anywhere; attach it to a bug report yourself.</p>
+      <label class="check-line"><input type="checkbox" id="diagNames"> Include chat and file names (off: they are replaced with [name])</label>`,
+    actions: [{ label: 'Cancel' }, { label: 'Create', cls: 'primary', submit: true, onClick: (bd) => ({ include_names: bd.querySelector('#diagNames').checked }) }],
+  });
+  if (!r) return;
+  try {
+    toast('Collecting…');
+    const res = await api('/api/diagnostics', { method: 'POST', body: r });
+    await api('/api/crashes/seen', { method: 'POST' }).catch(() => {});
+    $('#crashNotice')?.remove();
+    toast(`Saved ${res.path.split('/').pop()} (${fmtSize(res.bytes)})`, { action: S.localHost ? 'Show' : undefined, onAction: () => api('/api/open', { method: 'POST', body: { path: res.path, reveal: true } }).catch(fail), ms: 10000 });
+  } catch (e) { fail(e); }
+}
+
+async function exportSettings() {
+  const r = await dialog({
+    title: 'Export settings',
+    body: `<p>Saves every setting to a file you can import later or on another computer.</p>
+      <label class="check-line"><input type="checkbox" id="expApi"> Include the Telegram API key and proxy password (keep that file private)</label>`,
+    actions: [{ label: 'Cancel' }, { label: 'Export', cls: 'primary', submit: true, onClick: (bd) => ({ api: bd.querySelector('#expApi').checked }) }],
+  });
+  if (!r) return;
+  window.location.href = `/api/settings/export?include_api=${r.api ? 1 : 0}`;
+}
+
+async function importSettings() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.onchange = async () => {
+    try {
+      const doc = JSON.parse(await input.files[0].text());
+      const n = Object.keys(doc.settings || {}).length;
+      if (!await confirmDialog('Import settings?', `${n} settings from ${esc(input.files[0].name)} replace the current ones. Your passcode and accounts are not changed.`, 'Import')) return;
+      const res = await api('/api/settings/import', { method: 'POST', body: doc });
+      S.settings = res.settings;
+      bus.emit('settings-changed', 'theme');
+      toast(`Imported ${plural(res.applied.length, 'setting')}${res.skipped.length ? ` (${res.skipped.length} skipped)` : ''}`);
+      settingsPage('about');
+    } catch (e) { fail(e.message ? e : new Error("That file couldn't be read.")); }
+  };
+  input.click();
+}
 
 async function importLegacy(path) {
   try {

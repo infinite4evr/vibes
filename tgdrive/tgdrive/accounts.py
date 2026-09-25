@@ -22,12 +22,15 @@ from telethon.tl import functions, types
 
 from . import config
 from .db import Database
+from .autofile import AutoFiler
 from .drive import Drive
 from .indexer import Indexer
+from .places import PlaceScanner
 from .search import SearchEngine
 from .semantic import SemanticIndex
 from .settings import settings
 from .streaming import Streamer
+from .subjects import SubjectIndex
 from .thumbs import Thumbs
 from .transfers import Transfers
 
@@ -240,6 +243,12 @@ class Account:
         self.search = SearchEngine(self)
         self.semantic = SemanticIndex(path / "semantic", path / "index.db")
         self.semantic.enabled = bool(settings.get("search_semantic", True))
+        self.subjects = SubjectIndex(self)
+        self.subjects.enabled = bool(settings.get("subjects_enabled", True))
+        self.places = PlaceScanner(self)
+        self.autofile = AutoFiler(self)
+        from .sync import SyncEngine
+        self.sync = SyncEngine(self)
         self._runner: Optional[asyncio.Task] = None
         self._search_builder: Optional[asyncio.Task] = None
         self._dialogs_loaded = False
@@ -254,6 +263,10 @@ class Account:
         else:
             self.search.warm_up()
         self.semantic.start()
+        self.subjects.start()
+        self.places.start()
+        self.autofile.start()
+        self.sync.start()
 
     async def _build_search(self) -> None:
         """Fill the upgraded search index in the background (keeps the app usable meanwhile)."""
@@ -313,6 +326,8 @@ class Account:
             self._runner.cancel()
         if self._search_builder:
             self._search_builder.cancel()
+        for part in (self.sync, self.autofile, self.places):
+            await part.stop()
         await self.indexer.stop()
         await self.transfers.stop()
         try:
@@ -320,6 +335,7 @@ class Account:
         except Exception:
             pass
         await asyncio.get_running_loop().run_in_executor(None, self.semantic.stop)
+        await asyncio.get_running_loop().run_in_executor(None, self.subjects.stop)
         try:
             await self.client.disconnect()
         except Exception:
@@ -365,6 +381,10 @@ class Account:
 
     def notify_new_file(self, rec: dict) -> None:
         events.push("new_file", account=self.uid, chat_id=rec["chat_id"])
+        self.subjects.poke()
+        self.autofile.poke()
+        if rec.get("kind") == "document":
+            self.places.poke()
 
     def open_path(self, path: str, reveal: bool = False) -> None:
         open_path(path, reveal)
@@ -425,6 +445,16 @@ class AccountManager:
             for acc in self.accounts.values():
                 acc.semantic.enabled = bool(settings.get("search_semantic"))
                 acc.semantic.poke()
+        if "subjects_enabled" in changed:
+            for acc in self.accounts.values():
+                acc.subjects.enabled = bool(settings.get("subjects_enabled"))
+                acc.subjects.poke()
+        if changed & {"subjects_custom", "subjects_builtin"}:
+            for acc in self.accounts.values():
+                acc.subjects.rebuild()
+        if "places_scan" in changed:
+            for acc in self.accounts.values():
+                acc.places.poke()
         if "index_paused" in changed:
             for acc in self.accounts.values():
                 acc.indexer.pause() if settings.get("index_paused") else acc.indexer.resume()

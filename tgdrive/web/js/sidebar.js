@@ -39,18 +39,25 @@ export function renderNav() {
     ${item('#all', 'grid', 'All files', total, active('all'))}
     ${item('#starred', 'star', 'Starred', S.starredCount, active('starred'))}
     ${item('#recent', 'clock', 'Recent', 0, active('recent'))}
-    ${S.continueCount ? item('#continue', 'play', 'Continue watching', S.continueCount, active('continue')) : ''}`;
+    ${S.continueCount ? item('#continue', 'play', 'Continue watching', S.continueCount, active('continue')) : ''}
+    ${item('#photos', 'image', 'Photos', 0, active('photos'))}
+    ${item('#map', 'map', 'Places', 0, active('map'))}`;
   renderTree();
   const saved = S.saved.length ? `<div class="side-h">Saved searches</div>${S.saved.map((s) => `<div class="chat-row"><button class="nav-item ${active('saved', () => S.view.savedId === s.id) ? 'active' : ''}" data-go="#saved/${esc(s.id)}" title="${esc(s.q || '')}">
       ${icon('search')}<span class="label">${esc(s.name)}</span></button><button class="icon-btn more" data-saved-menu="${esc(s.id)}" aria-label="Saved search actions">${icon('more')}</button></div>`).join('')}` : '';
   const tags = S.tags.length ? `<div class="side-h collapsible" data-toggle="tags">Tags<span>${icon(S.openGroups.has('tags') ? 'down' : 'chevron')}</span></div>${S.openGroups.has('tags') ? `<div class="tag-cloud">${S.tags.slice(0, 40).map((t) => `<button class="chip ${active('tag', () => S.view.tag === t.tag) ? 'on' : ''}" data-go="#tag/${encodeURIComponent(t.tag)}">${esc(t.tag)}<small>${t.n}</small></button>`).join('')}</div>` : ''}` : '';
   const tg = S.dialogFilters.length ? `<div class="side-h collapsible" data-toggle="tg">Telegram folders<span>${icon(S.openGroups.has('tg') ? 'down' : 'chevron')}</span></div>${S.openGroups.has('tg') ? S.dialogFilters.map((d) => `<button class="nav-item ${active('tg', () => S.view.filterId === d.id) ? 'active' : ''}" data-go="#tg/${d.id}">
       <span class="emo">${esc(d.emoticon || '📁')}</span><span class="label">${esc(d.title)}</span><span class="count">${fmtNum(d.chat_ids.length)} chats</span></button>`).join('') : ''}` : '';
-  $('#navMid').innerHTML = saved + tg + tags;
+  const subj = (S.subjects || []).filter((x) => x.n > 0 && !x.id.startsWith('_')).sort((a, b) => b.n - a.n);
+  const subjects = subj.length ? `<div class="side-h collapsible" data-toggle="subjects">Subjects<span>${icon(S.openGroups.has('subjects') ? 'down' : 'chevron')}</span></div>${S.openGroups.has('subjects') ? subj.map((x) => `<button class="nav-item ${active('subject', () => S.view.subject === x.id) ? 'active' : ''}" data-go="#subject/${esc(x.id)}">
+      <span class="emo">${x.emoji ? esc(x.emoji) : icon('book')}</span><span class="label">${esc(x.name)}</span><span class="count">${fmtNum(x.n)}</span></button>`).join('') : ''}` : '';
+  $('#navMid').innerHTML = saved + subjects + tg + tags;
   $('#navTools').innerHTML = `<div class="side-h">Tools</div>
     ${item('#storage', 'chart', 'Storage', 0, active('storage'))}
     ${item('#duplicates', 'dupes', 'Duplicates', 0, active('duplicates'))}
     ${item('#index', 'database', 'Index manager', 0, active('index'))}
+    ${item('#sync', 'sync', 'Folder sync', 0, active('sync'))}
+    ${item('#marks', 'highlight', 'PDF highlights', 0, active('marks'))}
     ${item('#activity', 'activity', 'Activity', 0, active('activity'))}
     ${item('#settings', 'settings', 'Settings', 0, active('settings'))}`;
 }
@@ -65,8 +72,8 @@ export function renderTree() {
     return `<div role="treeitem" aria-expanded="${kids.length ? open : ''}">
       <button class="nav-item ${act ? 'active' : ''}" data-go="#drive/${esc(f.id)}" data-drop-folder="${esc(f.id)}" style="padding-left:${10 + depth * 14}px">
         <span class="twisty ${kids.length ? (open ? 'open' : '') : 'none'}" data-twisty="${esc(f.id)}" aria-hidden="true">${icon('chevron')}</span>
-        <span class="fold-ic" style="color:${folderColor(f)}">${icon('folder')}</span><span class="label">${esc(f.name)}</span>
-        ${f.file_count ? `<span class="count">${fmtNum(f.file_count)}</span>` : ''}</button>
+        ${f.emoji ? `<span class="fold-ic emo">${esc(f.emoji)}</span>` : `<span class="fold-ic" style="color:${folderColor(f)}">${icon(f.kind === 'smart' ? 'folderSmart' : 'folder')}</span>`}<span class="label">${esc(f.name)}</span>
+        ${f.kind === 'smart' ? `<span class="count">${icon('sparkle')}</span>` : f.file_count ? `<span class="count">${fmtNum(f.file_count)}</span>` : ''}</button>
       ${open ? `<div role="group">${kids.map((k) => row(k, depth + 1)).join('')}</div>` : ''}</div>`;
   };
   tree.innerHTML = childrenOf(null).map((f) => row(f, 1)).join('');

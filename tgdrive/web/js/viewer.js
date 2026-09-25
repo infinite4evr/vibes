@@ -29,6 +29,8 @@ export function openViewer(f, list) {
 
 export function closeViewer() {
   if (!cur) return;
+  stopShow();
+  if (cur.pdf) import('./pdfview.js').then((m) => m.closePdf());
   const media = cur.el.querySelector('video, audio');
   savePosition(cur.list[cur.i], media);
   if (media && !media.paused && (media.tagName === 'AUDIO')) {
@@ -44,8 +46,15 @@ export function closeViewer() {
 function onKey(e) {
   if (!cur) return;
   const tag = e.target.tagName;
-  if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); closeViewer(); return; }
+  if (e.key === 'Escape') {
+    e.stopPropagation(); e.preventDefault();
+    if (cur.show && document.fullscreenElement) { document.exitFullscreen?.(); return; }
+    closeViewer(); return;
+  }
   if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  if ($('#layer .backdrop')) return;
+  if (cur.pdf) return;   // the PDF reader handles its own keys
+  if (cur.show && e.key === ' ') { e.preventDefault(); e.stopPropagation(); toggleShow(); return; }
   if (e.key === 'ArrowRight' && !isMediaFocused(e)) { e.preventDefault(); e.stopPropagation(); step(1); }
   if (e.key === 'ArrowLeft' && !isMediaFocused(e)) { e.preventDefault(); e.stopPropagation(); step(-1); }
   if (e.key === ' ' && !isMediaFocused(e)) {
@@ -54,7 +63,11 @@ function onKey(e) {
     else { e.preventDefault(); e.stopPropagation(); closeViewer(); }
   }
   if (e.key.toLowerCase() === 'd' && !e.ctrlKey) { e.stopPropagation(); const f = cur.list[cur.i]; doDownload([[f.chat_id, f.msg_id]]); }
-  if (e.key.toLowerCase() === 'f' && !e.ctrlKey) { e.stopPropagation(); const m = cur.el.querySelector('video'); m?.requestFullscreen?.(); }
+  if (e.key.toLowerCase() === 'f' && !e.ctrlKey) {
+    e.stopPropagation();
+    const m = cur.el.querySelector('video');
+    if (m) m.requestFullscreen?.(); else if (document.fullscreenElement) document.exitFullscreen?.(); else cur.el.requestFullscreen?.();
+  }
 }
 const isMediaFocused = (e) => e.target.tagName === 'VIDEO' || e.target.tagName === 'AUDIO';
 
@@ -63,9 +76,11 @@ function step(d) {
   const n = cur.list.length;
   if (n < 2) return;
   savePosition(cur.list[cur.i], cur.el.querySelector('video, audio'));
-  cur.i = (cur.i + d + n) % n;
+  if (cur.pdf) { import('./pdfview.js').then((m) => m.closePdf()); cur.pdf = false; }
+  cur.i = cur.show?.shuffle ? Math.floor(Math.random() * n) : (cur.i + d + n) % n;
   cur.zoom = false;
   render();
+  if (cur.show?.playing) scheduleShow();
 }
 
 function onClick(e) {
@@ -83,6 +98,11 @@ function onClick(e) {
     player: () => api(A(`/play_external/${f.chat_id}/${f.msg_id}`), { method: 'POST' })
       .then((r) => { cur?.el.querySelector('video, audio')?.pause(); toast(`Opened in ${r.player}.`); }).catch(fail),
     zoom: () => { cur.zoom = !cur.zoom; cur.el.querySelector('.v-img')?.classList.toggle('zoomed', cur.zoom); },
+    slideshow: () => startShow(),
+    showtoggle: () => toggleShow(),
+    showshuffle: () => { cur.show.shuffle = !cur.show.shuffle; renderShowBar(); },
+    showexit: () => stopShow(true),
+    fullscreen: () => { if (document.fullscreenElement) document.exitFullscreen?.(); else cur.el.requestFullscreen?.(); },
     background: () => {
       const m = cur.el.querySelector('audio');
       miniPlayer.play(f, m ? m.currentTime : 0, cur.list.filter((x) => x.kind === 'audio' || x.kind === 'voice'));
@@ -155,7 +175,7 @@ function stageHtml(f) {
       <div class="v-atitle">${esc(f.audio_title || f.name)}</div><div class="v-asub">${esc(f.performer || f.chat_title || '')}</div>
       ${player}</div>`;
   }
-  if (isPdf(f)) return `<iframe class="v-pdf" src="${src}#view=FitH" title="${esc(f.name)}"></iframe>`;
+  if (isPdf(f)) return '<div class="v-pdfhost"><div class="page-loading"><span class="spin"></span> Opening PDF…</div></div>';
   if (isText(f)) return '<pre class="v-text">Loading…</pre>';
   return `<div class="v-none"><span class="docicon big" style="--ec:${extColor(f.ext)}"><span class="ext">${esc((f.ext || 'file').toUpperCase().slice(0, 5))}</span></span>
     <p>No preview for this kind of file.</p><div class="v-none-acts"><button class="btn primary" data-v="open">${icon('external')}Open with default app</button><button class="btn" data-v="download">${icon('download')}Download</button></div></div>`;
@@ -167,7 +187,9 @@ function render() {
   cur.el.setAttribute('aria-label', f.name);
   cur.el.innerHTML = `<div class="v-top"><div class="v-title"><strong title="${esc(f.name)}">${esc(f.name)}</strong>
       <small>${fmtSize(f.size)}${f.duration ? ` · ${fmtDur(f.duration)}` : ''} · ${esc(f.chat_title || '')} · ${fmtDate(f.date)}${n > 1 ? ` · ${cur.i + 1} of ${n}` : ''}</small></div>
+    <div class="v-tools" hidden></div>
     <div class="v-acts">
+      ${isPhotoLike(f) && photoCount() > 1 ? `<button class="icon-btn ${cur.show ? 'on' : ''}" data-v="slideshow" title="Slideshow">${icon('slides')}</button>` : ''}
       <button class="icon-btn" data-v="download" title="Download (D)">${icon('download')}</button>
       <button class="icon-btn" data-v="open" title="Open with default app">${icon('external')}</button>
       <button class="icon-btn" data-v="telegram" title="Open in Telegram">${icon('telegram')}</button>
@@ -178,6 +200,11 @@ function render() {
     <div class="v-stage">${stageHtml(f)}</div>
     ${n > 1 ? `<button class="v-nav prev" data-v="prev" aria-label="Previous">${icon('prev')}</button><button class="v-nav next" data-v="next" aria-label="Next">${icon('next')}</button>` : ''}
     ${f.caption ? `<div class="v-caption">${esc(f.caption)}</div>` : ''}`;
+  if (isPdf(f)) {
+    cur.pdf = true;
+    import('./pdfview.js').then((m) => { if (cur && cur.list[cur.i] === f) m.openPdf(f, cur.el.querySelector('.v-pdfhost'), cur.el.querySelector('.v-tools')); });
+  } else cur.pdf = false;
+  if (cur.show) renderShowBar();
   if (useNative(f) && f.kind !== 'gif') playNative(f);
   wireResume(f, cur.el.querySelector('video, audio'));
   const audio = cur.el.querySelector('audio');
@@ -215,6 +242,71 @@ function render() {
   }
   api(A(`/files/${f.chat_id}/${f.msg_id}`)).catch(() => {}); // records it under Recent
 }
+
+/* ------------------------------------------------------------ slideshow */
+const isPhotoLike = (f) => f.kind === 'photo' || isImageDoc(f);
+const photoCount = () => (cur ? cur.list.filter(isPhotoLike).length : 0);
+
+export function slideshow(list, start = 0) {
+  const pics = list.filter(isPhotoLike);
+  if (!pics.length) return;
+  openViewer(pics[Math.min(start, pics.length - 1)], pics);
+  startShow();
+}
+function startShow() {
+  if (!cur) return;
+  cur.list = cur.list.filter(isPhotoLike);
+  cur.i = Math.max(0, cur.list.findIndex((x) => x === cur.list[cur.i]));
+  cur.show = { playing: true, shuffle: false, timer: 0 };
+  cur.el.classList.add('show-mode');
+  cur.el.requestFullscreen?.().catch(() => {});
+  render();
+  scheduleShow();
+}
+function scheduleShow() {
+  clearTimeout(cur?.show?.timer);
+  if (!cur?.show?.playing) return;
+  const secs = Math.max(1, Number(S.settings.slideshow_seconds) || 4);
+  cur.show.timer = setTimeout(() => step(1), secs * 1000);
+  const bar = cur.el.querySelector('.show-progress i');
+  if (bar) { bar.style.transition = 'none'; bar.style.width = '0%'; void bar.offsetWidth; bar.style.transition = `width ${secs}s linear`; bar.style.width = '100%'; }
+}
+function toggleShow() {
+  if (!cur?.show) return;
+  cur.show.playing = !cur.show.playing;
+  if (cur.show.playing) scheduleShow(); else clearTimeout(cur.show.timer);
+  renderShowBar();
+}
+function stopShow(keepViewer = false) {
+  if (!cur?.show) return;
+  clearTimeout(cur.show.timer);
+  cur.show = null;
+  cur.el.classList.remove('show-mode');
+  cur.el.querySelector('.show-bar')?.remove();
+  if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+  if (keepViewer) render();
+}
+function renderShowBar() {
+  if (!cur?.show) return;
+  let bar = cur.el.querySelector('.show-bar');
+  if (!bar) { bar = document.createElement('div'); bar.className = 'show-bar'; cur.el.append(bar); }
+  const secs = Number(S.settings.slideshow_seconds) || 4;
+  bar.innerHTML = `<div class="show-progress"><i></i></div><div class="show-ctl">
+    <button class="icon-btn" data-v="prev" aria-label="Previous">${icon('prev')}</button>
+    <button class="icon-btn big" data-v="showtoggle" aria-label="${cur.show.playing ? 'Pause' : 'Play'}">${icon(cur.show.playing ? 'pause' : 'play')}</button>
+    <button class="icon-btn" data-v="next" aria-label="Next">${icon('next')}</button>
+    <select data-show-secs aria-label="Seconds per picture">${[2, 3, 4, 6, 8, 12, 20].map((n) => `<option value="${n}" ${n === secs ? 'selected' : ''}>${n} s</option>`).join('')}</select>
+    <button class="icon-btn ${cur.show.shuffle ? 'on' : ''}" data-v="showshuffle" title="Shuffle">${icon('shuffle')}</button>
+    <button class="icon-btn" data-v="fullscreen" title="Full screen (F)">${icon('maximize')}</button>
+    <button class="icon-btn" data-v="showexit" title="Stop slideshow">${icon('close')}</button></div>`;
+  if (cur.show.playing) scheduleShow();
+}
+document.addEventListener('change', (e) => {
+  if (!e.target.matches?.('[data-show-secs]')) return;
+  S.settings.slideshow_seconds = Number(e.target.value);
+  api('/api/settings', { method: 'PATCH', body: { slideshow_seconds: S.settings.slideshow_seconds } }).catch(() => {});
+  scheduleShow();
+});
 
 /* ------------------------------------------------------- resume playback */
 // Positions are kept per file on this computer (the index), so lectures continue where you stopped,

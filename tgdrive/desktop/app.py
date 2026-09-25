@@ -15,7 +15,6 @@ import shutil
 import subprocess
 import sys
 import time
-import traceback
 import webbrowser
 from pathlib import Path
 
@@ -34,78 +33,36 @@ def parse_args(argv=None):
     p.add_argument("--no-gpu", action="store_true", help="software rendering (for graphics driver problems)")
     p.add_argument("--install-desktop-entry", action="store_true")
     p.add_argument("--uninstall-desktop-entry", action="store_true")
+    p.add_argument("--send", nargs="+", metavar="PATH", help="upload files or folders (file manager menus use this)")
+    p.add_argument("--open", choices=["search", "upload", "new-window"], help="open TG Drive at a task")
     p.add_argument("--screenshot", help=argparse.SUPPRESS)
     p.add_argument("--version", action="store_true")
+    p.add_argument("paths", nargs="*", help=argparse.SUPPRESS)  # files dropped on the app icon: upload them
     return p.parse_args(argv)
 
 
 # ------------------------------------------------------------- desktop entry
-def launcher_command() -> str:
-    appimage = os.environ.get("APPIMAGE")
-    if appimage:
-        return f'"{appimage}"'
-    exe = os.environ.get("TGDRIVE_LAUNCHER")
-    if exe:
-        return f'"{exe}"'
-    return f'"{sys.executable}" -m desktop'
-
-
-def icon_source() -> Path:
-    for p in (ROOT / "packaging" / "icons" / "tgdrive-256.png", ROOT / "web" / "icon.svg"):
-        if p.exists():
-            return p
-    return ROOT / "web" / "icon.svg"
-
-
-def desktop_entry_text(extra_args: str = "") -> str:
-    return f"""[Desktop Entry]
-Type=Application
-Name=TG Drive
-GenericName=Telegram file manager
-Comment=Browse, search, stream and organise every file in your Telegram
-Exec={launcher_command()} {extra_args}%U
-Icon={APP_ID}
-Terminal=false
-Categories=Network;FileTransfer;FileManager;Utility;
-Keywords=telegram;files;drive;search;cloud;
-StartupWMClass={APP_ID}
-StartupNotify=true
-"""
+def _integration():
+    sys.path.insert(0, str(ROOT))
+    from tgdrive import integration
+    return integration
 
 
 def install_desktop_entry(quiet: bool = False) -> None:
-    home = Path.home()
-    apps = Path(os.environ.get("XDG_DATA_HOME", home / ".local/share")) / "applications"
-    icons = Path(os.environ.get("XDG_DATA_HOME", home / ".local/share")) / "icons/hicolor"
-    apps.mkdir(parents=True, exist_ok=True)
-    (apps / f"{APP_ID}.desktop").write_text(desktop_entry_text())
-    icon_dir = ROOT / "packaging" / "icons"
-    for size in (16, 24, 32, 48, 64, 128, 256, 512):
-        src = icon_dir / f"tgdrive-{size}.png"
-        if src.exists():
-            d = icons / f"{size}x{size}/apps"
-            d.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(src, d / f"{APP_ID}.png")
-    svg = ROOT / "web" / "icon.svg"
-    if svg.exists():
-        d = icons / "scalable/apps"
-        d.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(svg, d / f"{APP_ID}.svg")
-    for cmd in (["update-desktop-database", str(apps)], ["gtk-update-icon-cache", "-f", "-t", str(icons)]):
-        if shutil.which(cmd[0]):
-            subprocess.run(cmd, capture_output=True)
+    ig = _integration()
+    entry = ig.install_menu()
+    added = ig.install_file_manager_actions()
     if not quiet:
-        print(f"Installed {apps / (APP_ID + '.desktop')}")
+        print(f"Installed {entry}")
+        if added:
+            print("Added “Send to TG Drive” to: " + ", ".join(added))
 
 
 def uninstall_desktop_entry() -> None:
-    home = Path.home()
-    base = Path(os.environ.get("XDG_DATA_HOME", home / ".local/share"))
-    (base / "applications" / f"{APP_ID}.desktop").unlink(missing_ok=True)
-    for p in (base / "icons/hicolor").glob(f"*/apps/{APP_ID}.*"):
-        p.unlink(missing_ok=True)
-    (Path(os.environ.get("XDG_CONFIG_HOME", home / ".config")) / "autostart" / f"{APP_ID}.desktop").unlink(missing_ok=True)
-    print("Removed TG Drive from the applications menu.")
+    ig = _integration()
+    ig.uninstall_menu()
+    ig.uninstall_file_manager_actions()
+    print("Removed TG Drive from the applications menu and file managers.")
 
 
 def ensure_desktop_entry() -> None:
@@ -121,13 +78,7 @@ def ensure_desktop_entry() -> None:
 
 
 def set_autostart(on: bool) -> None:
-    d = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "autostart"
-    f = d / f"{APP_ID}.desktop"
-    if on:
-        d.mkdir(parents=True, exist_ok=True)
-        f.write_text(desktop_entry_text("--minimized ").replace("%U", "") + "X-GNOME-Autostart-enabled=true\n")
-    else:
-        f.unlink(missing_ok=True)
+    _integration().set_autostart(on)
 
 
 # ----------------------------------------------------------------- sandbox
@@ -185,8 +136,15 @@ def notify_system(title: str, body: str, icon: str) -> bool:
 # -------------------------------------------------------------------- main
 def main(argv=None) -> None:
     args = parse_args(argv)
+    from urllib.parse import unquote
+    dropped = [unquote(x[7:]) if x.startswith("file://") else x for x in args.paths if x and not x.startswith("-")]
+    dropped = [x for x in dropped if Path(x).exists()]
+    if dropped:
+        args.send = (args.send or []) + dropped
     if args.data:
         os.environ["TGDRIVE_DATA"] = str(Path(args.data).expanduser())
+    if args.send:
+        args.send = [str(Path(p).expanduser().resolve()) for p in args.send if p and not p.startswith("-")]
     if args.install_desktop_entry:
         install_desktop_entry()
         return
@@ -200,7 +158,8 @@ def main(argv=None) -> None:
         return
     log_path = maintenance.setup_logging()
     log.info("TG Drive %s starting (data %s)", config.VERSION, config.DATA_DIR)
-    sys.excepthook = lambda *e: log.error("uncaught error:\n%s", "".join(traceback.format_exception(*e)))
+    from tgdrive import diagnostics
+    diagnostics.install_hooks()
 
     if args.browser:
         return run_browser_mode(args, config)
