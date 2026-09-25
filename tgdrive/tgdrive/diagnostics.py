@@ -70,6 +70,7 @@ def record_crash(kind: str, text: str, context: Optional[dict] = None) -> Option
             log.warning("could not save crash report: %s", exc)
             return None
     log.error("crash recorded (%s): %s", kind, text.strip().splitlines()[-1][:300] if text.strip() else kind)
+    log.debug("crash report %s in full:\n%s", rid, "\n".join(body))
     try:
         from .accounts import events
         events.push("crash", id=rid, kind=kind)
@@ -106,6 +107,7 @@ def asyncio_handler(loop, context: dict) -> None:
     exc = context.get("exception")
     msg = context.get("message", "")
     if exc is None or isinstance(exc, (ConnectionError, TimeoutError)) or "Task was destroyed" in msg:
+        log.debug("asyncio: %s (%r)", msg, exc, exc_info=exc if isinstance(exc, BaseException) else None)
         loop.default_exception_handler(context)
         return
     record_exception("background", exc, {"message": msg})
@@ -274,7 +276,7 @@ def build_bundle(accounts: list, include_names: bool = False, dest_dir: Optional
                 z.writestr(f"account-{i}.json", r(json.dumps(account_info(acc), indent=2, default=str)))
             except Exception as exc:
                 z.writestr(f"account-{i}.json", json.dumps({"error": str(exc)}))
-        for p in sorted(config.LOG_DIR.glob("tgdrive.log*")):
+        for p in sorted(config.LOG_DIR.glob("tgdrive*.log*")):
             try:
                 z.writestr(f"logs/{p.name}", r(p.read_text(encoding="utf-8", errors="replace")[-3_000_000:]))
             except OSError:

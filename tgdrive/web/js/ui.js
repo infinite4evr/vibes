@@ -1,5 +1,5 @@
 // UI building blocks: toasts (with actions), menus, context menus, dialogs, pickers.
-import { $, $$, S, A, api, esc, icon, plural, fmtNum, CHAT_KIND_NAME, hue, initials } from './core.js';
+import { $, $$, S, A, api, esc, icon, plural, fmtNum, CHAT_KIND_NAME, hue, initials, busy } from './core.js';
 
 /* ----------------------------------------------------------------- toasts */
 export function toast(msg, opts = {}) {
@@ -7,11 +7,17 @@ export function toast(msg, opts = {}) {
   const el = document.createElement('div');
   el.className = `toast${err ? ' err' : ''}`;
   el.setAttribute('role', err ? 'alert' : 'status');
-  el.innerHTML = `<span>${esc(msg)}</span>${action ? `<button class="toast-act">${esc(action)}</button>` : ''}`;
-  el.querySelector('.toast-act')?.addEventListener('click', () => { el.remove(); onAction?.(); });
+  el.innerHTML = `<span class="toast-ic">${icon(err ? 'info' : 'check')}</span><span>${esc(msg)}</span>${action ? `<button class="toast-act">${esc(action)}</button>` : ''}`;
+  el.querySelector('.toast-act')?.addEventListener('click', () => { dismissToast(el); onAction?.(); });
   $('#toasts').append(el);
   while ($('#toasts').children.length > 4) $('#toasts').firstChild.remove();
-  setTimeout(() => el.remove(), ms || (action ? 8000 : err ? 6500 : 3500));
+  setTimeout(() => dismissToast(el), ms || (action ? 8000 : err ? 6500 : 3500));
+  return el;
+}
+export function dismissToast(el) {
+  if (!el?.isConnected || el.classList.contains('leaving')) return;
+  el.classList.add('leaving');
+  setTimeout(() => el.remove(), 200);
 }
 export const fail = (e) => { if (e?.name !== 'AbortError' && e?.status !== 423) toast(e?.message || String(e), { err: true }); };
 
@@ -98,7 +104,15 @@ export function dialog({ title, body = '', actions = [], onOpen, wide = false, c
       <div class="d-body">${body}</div>
       ${actions.length ? `<div class="d-foot">${actions.map((a, i) => a === '-' ? '<span class="spacer"></span>' : `<button class="btn ${a.cls || ''}" data-a="${i}" ${a.submit ? 'data-submit' : ''}>${a.icon ? icon(a.icon) : ''}${esc(a.label)}</button>`).join('')}</div>` : ''}</div>`;
     const prev = document.activeElement;
-    const done = (v) => { bd.remove(); prev?.focus?.(); resolve(v); };
+    let closed = false;
+    const done = (v) => {
+      if (closed) return;
+      closed = true;
+      bd.classList.add('leaving');
+      setTimeout(() => bd.remove(), 160);
+      prev?.focus?.();
+      resolve(v);
+    };
     bd.addEventListener('mousedown', (e) => { if (e.target === bd) bd.dataset.down = '1'; });
     bd.addEventListener('click', async (e) => {
       if (e.target === bd && bd.dataset.down) return done(null);
@@ -109,10 +123,11 @@ export function dialog({ title, body = '', actions = [], onOpen, wide = false, c
       const a = actions[+b.dataset.a];
       if (!a.onClick) return done(null);
       b.disabled = true;
+      const tok = busy.start(120, b);
       try {
         const v = await a.onClick(bd);
         if (v !== false) done(v === undefined ? true : v);
-      } catch (err) { fail(err); } finally { b.disabled = false; }
+      } catch (err) { fail(err); } finally { busy.end(tok); b.disabled = false; }
     });
     bd.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { e.stopPropagation(); done(null); }

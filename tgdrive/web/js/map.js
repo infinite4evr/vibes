@@ -1,6 +1,6 @@
 // Places: a map of photos that carry GPS coordinates (EXIF). The world map is drawn from data bundled
 // with TG Drive, so it works offline; detailed OpenStreetMap tiles are optional (Settings → Photos & places).
-import { $, S, A, api, esc, icon, fmtDate, fmtNum, plural, thumbUrl, inlineSrc, key, clamp, bus } from './core.js';
+import { $, S, A, api, esc, icon, fmtDate, fmtNum, plural, thumbUrl, inlineSrc, key, clamp, bus, copiesParam } from './core.js';
 import { fail, toast, contextMenu } from './ui.js';
 
 const TILE = 256;
@@ -67,7 +67,7 @@ export async function renderMap() {
 
 async function loadPoints() {
   try {
-    const r = await api(A('/places'));
+    const r = await api(A(`/places?copies=${copiesParam()}`));
     M.points = r.points;
     M.status = r.status;
     renderCard();

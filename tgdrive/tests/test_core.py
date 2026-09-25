@@ -208,7 +208,7 @@ def test_upgrade_of_old_index_keeps_everything(tmp_path):
     c.close()
     db = Database(path)
     from tgdrive.db import SCHEMA_VERSION
-    assert db.conn.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION == 4
+    assert db.conn.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION == 5
     st = db.search_upgrade_status()
     assert st["state"] == "migrating" and st["total"] == 300
     assert db.totals() == {"files": 300, "bytes": 30000}

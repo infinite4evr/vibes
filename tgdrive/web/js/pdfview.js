@@ -14,6 +14,35 @@ async function pdfjs() {
   return lib;
 }
 
+// First page only, for the details panel: only the bytes page 1 needs are fetched (range requests).
+export async function renderFirstPage(f, canvas, cssWidth, signal) {
+  const pdf = await pdfjs();
+  const url = A(`/stream/${f.chat_id}/${f.msg_id}/${encodeURIComponent(f.name || 'file.pdf')}`);
+  const task = pdf.getDocument({
+    url, withCredentials: true, rangeChunkSize: 256 * 1024, disableAutoFetch: true, disableStream: true,
+    isEvalSupported: false, cMapUrl: `${VENDOR}cmaps/`, cMapPacked: true, standardFontDataUrl: `${VENDOR}standard_fonts/`,
+    httpHeaders: { 'X-TGDrive': '1' },
+  });
+  const onAbort = () => task.destroy();
+  signal?.addEventListener('abort', onAbort, { once: true });
+  try {
+    const doc = await task.promise;
+    const page = await doc.getPage(1);
+    const base = page.getViewport({ scale: 1 });
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const vp = page.getViewport({ scale: (cssWidth / base.width) * dpr });
+    canvas.width = Math.round(vp.width);
+    canvas.height = Math.round(vp.height);
+    canvas.style.aspectRatio = `${vp.width} / ${vp.height}`;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+    const pages = doc.numPages;
+    doc.destroy();
+    return { pages };
+  } finally {
+    signal?.removeEventListener('abort', onAbort);
+  }
+}
+
 export const COLORS = { yellow: '#ffd43b', green: '#8ce99a', blue: '#74c0fc', pink: '#faa2c1', orange: '#ffa94d' };
 
 let R = null;   // the open reader

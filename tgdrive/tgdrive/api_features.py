@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import shutil
 import subprocess
 import time
@@ -471,6 +472,66 @@ async def crash_from_page(body: dict = Body(...)):
                                                   "source": str(body.get("source") or "")[:300],
                                                   "agent": str(body.get("agent") or "")[:300]})
     return {"ok": True, "id": rid}
+
+
+# ------------------------------------------------------------ debug logging
+_page_log = logging.getLogger("tgdrive.page")
+_PAGE_LEVELS = {"debug": logging.DEBUG, "info": logging.INFO, "warn": logging.WARNING, "warning": logging.WARNING,
+                "error": logging.ERROR}
+
+
+@router.get("/api/debuglog")
+async def debug_log(lines: int = 400, which: str = "debug"):
+    from . import maintenance
+    text = maintenance.tail_debug_log(min(lines, 20000)) if which == "debug" else maintenance.tail_log(min(lines, 20000))
+    return {"on": maintenance.debug_enabled(), "text": text, "files": maintenance.log_files(),
+            "path": str(maintenance.debug_log_path() if which == "debug" else maintenance.log_path())}
+
+
+@router.get("/api/logs/download")
+async def download_log(which: str = "debug"):
+    from fastapi.responses import FileResponse
+    from . import maintenance
+    p = maintenance.debug_log_path() if which == "debug" else maintenance.log_path()
+    if not p.exists():
+        return PlainTextResponse("", headers={"Content-Disposition": f'attachment; filename="{p.name}"'})
+    return FileResponse(p, media_type="text/plain; charset=utf-8", filename=f"{p.stem}-{time.strftime('%Y%m%d-%H%M%S')}.log")
+
+
+@router.delete("/api/logs")
+async def clear_logs(crashes: int = 0):
+    from . import maintenance
+    res = await asyncio.get_running_loop().run_in_executor(None, maintenance.clear_logs)
+    if crashes:
+        res["crashes"] = diagnostics.clear_crashes()
+    return res
+
+
+@router.post("/api/clientlog")
+async def client_log(body: dict = Body(default={})):
+    """What the page did (clicks, navigation, requests, errors), written to the debug log while it's on."""
+    from . import maintenance
+    if not maintenance.debug_enabled():
+        return {"ok": False, "on": False}
+    entries = body.get("entries") or []
+    for e in entries[:500]:
+        if not isinstance(e, dict):
+            continue
+        level = _PAGE_LEVELS.get(str(e.get("level") or "debug"), logging.DEBUG)
+        cat = str(e.get("cat") or "page")[:24]
+        msg = str(e.get("msg") or "")[:4000]
+        data = e.get("data")
+        at = e.get("t")
+        stamp = time.strftime("%H:%M:%S", time.localtime(float(at))) + f".{int((float(at) % 1) * 1000):03d}" \
+            if isinstance(at, (int, float)) else "?"
+        extra = ""
+        if data not in (None, "", {}, []):
+            try:
+                extra = " | " + json.dumps(data, ensure_ascii=False, default=str)[:6000]
+            except (TypeError, ValueError):
+                extra = " | " + str(data)[:6000]
+        _page_log.log(level, "[%s] %s (page %s)%s", cat, msg, stamp, extra)
+    return {"ok": True, "on": True}
 
 
 @router.post("/api/diagnostics")

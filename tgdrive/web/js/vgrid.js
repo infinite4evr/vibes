@@ -169,6 +169,7 @@ export class VGrid {
     const el = document.createElement('div');
     el.className = row.type === 'head' ? 'vrow vhead' : 'vrow';
     el.style.transform = `translateY(${row.top}px)`;
+    el.style.setProperty('--ri', Math.min(k, 10));
     el.dataset.row = k;
     if (row.type === 'head') el.innerHTML = this.o.renderHead(row.label);
     else {

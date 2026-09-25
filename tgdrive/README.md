@@ -4,11 +4,11 @@ Every file in your Telegram (every channel, group, private chat, bot and Saved M
 
 ## Install on Linux
 
-**AppImage (recommended).** Download `TG_Drive-2.1.0-x86_64.AppImage`, then:
+**AppImage (recommended).** Download `TG_Drive-2.2.0-x86_64.AppImage`, then:
 
 ```bash
-chmod +x TG_Drive-2.1.0-x86_64.AppImage
-./TG_Drive-2.1.0-x86_64.AppImage
+chmod +x TG_Drive-2.2.0-x86_64.AppImage
+./TG_Drive-2.2.0-x86_64.AppImage
 ```
 
 It runs on any 64-bit Linux from about 2019 onwards (glibc 2.28+: Ubuntu 20.04+, Debian 10+, Fedora 29+, Mint 20+, RHEL/Rocky/Alma 8+, openSUSE 15.1+, Arch, Manjaro, Pop!_OS …). The first start adds TG Drive to your applications menu. To remove that entry: `./TG_Drive-*.AppImage --uninstall-desktop-entry`.
@@ -53,6 +53,18 @@ Each result shows how it matched (exact, variant, similar, related). Filters by 
 
 **Manage.** Storage view (by type, chat, kind of chat, year), duplicate finder (exact and similar), index manager (per-chat progress, pause, rescan, verify, exclude), activity log, several accounts, proxy (SOCKS5/4, HTTP, MTProto), app lock with a passcode and auto-lock, CSV export, database maintenance (optimise, vacuum, integrity check, rebuild search), logs.
 
+**New in 2.2.**
+
+- *Preview on click.* Clicking a file opens its details with a live preview straight away: the full picture, a playable video or song, the first page of a PDF (with its page count), the start of a text file. Arrowing through files only starts streams for the one you stop on.
+- *Inter.* The interface uses Inter, the typeface most modern apps use, bundled so it looks the same everywhere.
+- *Always shows it's working.* A progress bar along the top of the window for anything you started that takes a moment, a spinner on the button you pressed, skeletons while details and pages load, shimmer on pictures still on their way.
+- *Motion.* Panels slide, menus and dialogs pop, lists fade in row by row, toasts rise and fall, cards lift on hover. Turned off with the system's "reduce motion" setting.
+- *Better meaning-based search.* Word weights learned from your own library (so "pdf", "notes" or a channel's "join @…" line stop counting), file names weigh more than captions, the vectors are centred, and synonyms and spelling fixes are handed to the model too. On a test set of 30 queries: right answer ranked first far more often (MRR 0.62 → 0.77), 40% more of the right files in the top 10 and about 40% fewer unrelated ones. Subjects found by meaning are much more accurate too. The meaning index rebuilds itself once after updating (seconds to a minute).
+- *Calmer screens.* Camera and Telegram file names (`photo_2026-05-07_01-50-00.jpg`) show as "Photo · 7 May, 1:50 AM"; one info line per card; star and download on hover; voice notes as waveforms. Filters sit behind one button (F) and the header shrinks as you scroll; the selection bar floats at the bottom; date headers stay pinned while you scroll. The details panel has the name as a title (click or F2 to rename) and one row of icons for the rarer actions. Collapsible sidebar sections, short counts (49.7k), a compact index status, a transfers button with a progress ring, a tuned dark theme and a consistent type scale.
+- *One title bar.* The desktop window draws its own title bar: drag the top bar to move it, double-click to maximize, window buttons at the right (Settings → Desktop to switch back to the system's).
+- *Hide duplicates* (on by default; the ⧉ button in the toolbar, or Settings → General). A file forwarded into many chats, or uploaded again with the same name and size, shows as one card with a ⧉ count; its details list every copy. The copy shown is the one in your folders, starred, downloaded or in your own channel, else the oldest. A chat still shows its own files, and counts match the list. `copies:show` in a search shows them all once. Runs in the background in a few seconds even for 400k+ files; scrolling and search stay as fast.
+- *Detailed debug logging* (Settings → About & diagnostics, or the account menu). Records every request with its timing, what the window did (navigation, clicks, shortcuts, errors with stack traces, failed media, slow frames), transfers, streaming, indexing, search plans and crashes with full tracebacks to `logs/tgdrive-debug.log`. Takes effect at once; a large striped banner stays at the top while it's on. View, download or clear all logs from the banner or Settings.
+
 **New in 2.1.**
 
 - *Looks.* Redesigned folders (tiles, cards with cover pictures, or a list; emoji icons and colours), custom accent colour, high-contrast theme and text size (Settings → Appearance).
@@ -76,7 +88,7 @@ Each result shows how it matched (exact, variant, similar, related). Filters by 
 | --- | --- |
 | Your data (accounts, index, cache, logs) | `~/.local/share/tgdrive` (change with `--data DIR` or `TGDRIVE_DATA`) |
 | Downloads | `~/Downloads/TG Drive` (Settings → Downloads) |
-| Logs | Settings → About & logs, or `~/.local/share/tgdrive/logs/tgdrive.log` |
+| Logs | Settings → About & diagnostics, or `~/.local/share/tgdrive/logs/tgdrive.log` (and `tgdrive-debug.log` while debug logging is on) |
 
 Command line: `tgdrive --send FILE…` (upload files or folders; what the right-click menu uses), `--open search|upload|new-window`, `tgdrive --minimized` (start in the tray), `--browser` (use your web browser instead of the window), `--port N`, `--no-gpu` (graphics driver problems), `--data DIR`, `--version`.
 

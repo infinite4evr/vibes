@@ -187,6 +187,7 @@ def main():
     async def startup():
         acc.semantic.start()
         acc.subjects.start()
+        acc.dupes.start()
         acc.autofile.start()
 
     api.manager.startup = startup

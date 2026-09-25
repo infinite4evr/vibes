@@ -48,6 +48,7 @@ RUNTIME: dict[str, Any] = {"media_port": None, "port": config.PORT, "desktop": F
 async def lifespan(app: FastAPI):
     from . import diagnostics
     asyncio.get_running_loop().set_exception_handler(diagnostics.asyncio_handler)
+    maintenance.init_debug_logging()
     await manager.startup()
     yield
     await manager.shutdown()
@@ -112,9 +113,34 @@ def _host_ok(request: Request) -> bool:
     return host in LOOPBACK
 
 
+def _asset_tag() -> str:
+    """Changes whenever the page's code or styles change (new version, or files edited), so the window's
+    cache can never keep serving an old copy after an update."""
+    import hashlib
+    h = hashlib.sha1(config.VERSION.encode())
+    for p in sorted(list((WEB / "js").glob("*.js")) + list((WEB / "css").glob("*.css")) + [WEB / "index.html"]):
+        try:
+            st = p.stat()
+            h.update(f"{p.name}:{st.st_size}:{st.st_mtime_ns}".encode())
+        except OSError:
+            pass
+    return h.hexdigest()[:12]
+
+
+ASSET_TAG = _asset_tag()
+_VERSIONED = re.compile(r"^/static/v/[0-9a-f]{6,40}/")
+
+
 @app.middleware("http")
 async def guard(request: Request, call_next):
     path = request.url.path
+    versioned = False
+    if _VERSIONED.match(path):
+        # /static/v/<tag>/js/app.js is /static/js/app.js; the tag only makes the address new after an update.
+        path = "/static/" + path.split("/", 4)[4]
+        request.scope["path"] = path
+        request.scope["raw_path"] = path.encode()
+        versioned = True
     if not _host_ok(request):
         return PlainTextResponse("Forbidden host", status_code=403)
     if config.PASSWORD:
@@ -146,7 +172,15 @@ async def guard(request: Request, call_next):
         return JSONResponse({"error": "TG Drive is locked.", "locked": True}, status_code=423)
     if path.startswith("/api/"):
         maintenance.app_lock.touch()
-    response = await call_next(request)
+    t0 = time.perf_counter()
+    try:
+        response = await call_next(request)
+    except Exception:
+        if maintenance.debug_enabled():
+            http_log.exception("HTTP %s %s failed after %.1f ms", request.method, path, (time.perf_counter() - t0) * 1000)
+        raise
+    if maintenance.debug_enabled():
+        _log_request(request, response, (time.perf_counter() - t0) * 1000)
     if config.ACCESS_TOKEN and not media_only and request.query_params.get("t") == config.ACCESS_TOKEN:
         response.set_cookie("tgd", config.ACCESS_TOKEN, httponly=True, samesite="strict")
     origin = request.headers.get("origin")
@@ -157,9 +191,35 @@ async def guard(request: Request, call_next):
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Expose-Headers"] = "Retry-After, Content-Range, Content-Length"
             response.headers["Vary"] = "Origin"
+    if path.startswith("/static/") and response.status_code < 400:
+        if versioned:
+            response.headers["Cache-Control"] = "private, max-age=31536000, immutable"
+        elif path.startswith(("/static/vendor/", "/static/fonts/", "/static/geo/")):
+            response.headers.setdefault("Cache-Control", "private, max-age=86400")
+        else:
+            response.headers["Cache-Control"] = "no-cache"   # always check for a newer copy
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("Referrer-Policy", "no-referrer")
     return response
+
+
+http_log = logging.getLogger("tgdrive.http")
+_POLLS = re.compile(r"^/api/(a/\d+/)?(status|events)$")
+_SECRET_Q = re.compile(r"([?&](?:t|token)=)[^&]+")
+
+
+def _log_request(request: Request, response: Response, ms: float) -> None:
+    """Debug log: one line per request. Polling that's fast and fine is left out (it runs every few seconds)."""
+    path = request.url.path
+    status = response.status_code
+    if path in ("/api/clientlog",) or (_POLLS.match(path) and status < 400 and ms < 1000):
+        return
+    q = _SECRET_Q.sub(r"\1…", ("?" + request.url.query) if request.url.query else "")
+    rng = request.headers.get("range")
+    size = response.headers.get("content-length")
+    level = logging.WARNING if status >= 500 else logging.INFO if status >= 400 or ms > 3000 else logging.DEBUG
+    http_log.log(level, "HTTP %s %s%s → %s in %.1f ms%s%s", request.method, path, q[:600], status, ms,
+                 f" range={rng}" if rng else "", f" bytes={size}" if size else "")
 
 
 # -------------------------------------------------------------------- helpers
@@ -207,6 +267,7 @@ def file_out(row: dict, full: bool = False) -> dict:
         "play_pos": row.get("play_pos") or 0,
         "play_dur": row.get("play_dur"),
         "watched": bool(row.get("play_done")),
+        "copies": row.get("copies") or 0,
         "link": message_link(row["chat_id"], row.get("chat_kind"), row.get("chat_username"), row["msg_id"]),
     }
 
@@ -345,7 +406,9 @@ async def logs(lines: int = 400):
 async def about():
     from . import semantic
     return {"version": config.VERSION, "data": maintenance.data_summary(),
-            "semantic_available": semantic.available(), "log": str(config.LOG_DIR / "tgdrive.log")}
+            "semantic_available": semantic.available(), "log": str(maintenance.log_path()),
+            "debug_log": str(maintenance.debug_log_path()), "debug_on": maintenance.debug_enabled(),
+            "log_files": maintenance.log_files()}
 
 
 # ------------------------------------------------------------------- login
@@ -387,6 +450,7 @@ async def account_status(aid: int):
     return {"account": a.info(), "index": a.indexer.status(), "drive": a.drive.info(),
             "transfers": a.transfers.summary(), "transfers_active": a.transfers.summary()["active"],
             "search": a.db.search_upgrade_status(), "semantic": a.semantic.status(),
+            "dupes": a.dupes.status(),
             "thumbs_backoff": max(0, int(a.thumbs.backoff_until - time.time()))}
 
 
@@ -522,8 +586,19 @@ async def file_detail(aid: int, cid: int, mid: int):
     out["tg_link"] = tg_link(chat, mid)
     out["album"] = a.db.one("SELECT COUNT(*) AS n FROM files WHERE grouped_id=? AND chat_id=?",
                             (row["grouped_id"], cid))["n"] if row.get("grouped_id") else 0
-    out["duplicates"] = a.db.one("SELECT COUNT(*) - 1 AS n FROM files WHERE media_id=?",
-                                 (row["media_id"],))["n"] if row.get("media_id") else 0
+    # Every copy of this file (same Telegram file, or same name and size), best first.
+    out["copy_list"] = [
+        {"chat_id": r["chat_id"], "msg_id": r["msg_id"], "name": r["name"], "chat_title": r["chat_title"],
+         "chat_kind": r["chat_kind"], "date": r["date"], "size": r["size"], "rank": r["rank"],
+         "this": r["chat_id"] == cid and r["msg_id"] == mid, "folder_id": r["folder_id"], "starred": bool(r["starred"])}
+        for r in a.db.q("SELECT f.chat_id, f.msg_id, COALESCE(f.alias, f.name) AS name, f.chat_title, f.date, f.size, "
+                        "d2.rank, c.kind AS chat_kind, p.folder_id, p.starred FROM dups d JOIN dups d2 ON d2.grp=d.grp "
+                        "JOIN files f ON f.id=d2.file_id LEFT JOIN chats c ON c.id=f.chat_id "
+                        "LEFT JOIN placements p ON p.chat_id=f.chat_id AND p.msg_id=f.msg_id "
+                        "WHERE d.file_id=? ORDER BY d2.rank LIMIT 60", (row["id"],))]
+    out["duplicates"] = max(0, len(out["copy_list"]) - 1) if out["copy_list"] else (
+        a.db.one("SELECT COUNT(*) - 1 AS n FROM files WHERE media_id=?", (row["media_id"],))["n"]
+        if row.get("media_id") else 0)
     t = a.db.one("SELECT id, path FROM transfers WHERE direction='down' AND chat_id=? AND msg_id=? AND status='done' "
                  "ORDER BY id DESC LIMIT 1", (cid, mid))
     out["local_path"] = t["path"] if t and t["path"] and Path(t["path"]).exists() else None
@@ -1060,7 +1135,10 @@ async def index(request: Request):
            f"font-src 'self' data:; img-src 'self' data: blob:{media}{tiles}; media-src 'self' blob:{media}; "
            f"connect-src 'self'{media}; frame-src 'self'{media}; object-src 'none'; base-uri 'none'; "
            f"form-action 'self'; frame-ancestors 'self'")
-    return FileResponse(WEB / "index.html", headers={"Cache-Control": "no-cache", "Content-Security-Policy": csp})
+    html = (WEB / "index.html").read_text(encoding="utf-8")
+    html = html.replace('"/static/css/', f'"/static/v/{ASSET_TAG}/css/').replace('"/static/js/', f'"/static/v/{ASSET_TAG}/js/')
+    return Response(html, media_type="text/html; charset=utf-8",
+                    headers={"Cache-Control": "no-store", "Content-Security-Policy": csp})
 
 
 @app.get("/favicon.svg")

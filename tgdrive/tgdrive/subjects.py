@@ -35,8 +35,9 @@ except Exception:  # pragma: no cover
 
 BATCH = 4000
 MIN_SCORE = 2.0      # one keyword in the file name, or two in the caption
-MEANING_SIM = 0.42
-MEANING_MARGIN = 0.04
+# Calibrated for the weighted, centered vectors of semantic.py v2 (≈86% agree with keyword subjects).
+MEANING_SIM = 0.26
+MEANING_MARGIN = 0.06
 
 
 def _stem(w: str) -> str:
@@ -333,10 +334,11 @@ class SubjectIndex:
             model = _Model.get()
             if model is None:
                 return []
-            if self._protos is None:
+            if self._protos is None or getattr(self, "_protos_at", None) != sem.meta.get("stats_at"):
+                self._protos_at = sem.meta.get("stats_at")
                 texts = [f"{s.name}. " + " ".join(sorted(
                     {w for w in s.words} | {" ".join(p) for p in s.phrases}))[:600] for s in subjects]
-                self._protos = model.embed(texts)
+                self._protos = sem.embed_query(texts)   # same space as the stored file vectors
             n = min(int(sem.meta.get("built_until") or 0) + 1, sem.vec.shape[0])
             arr = np.asarray([i for i in ids if 0 < i < n], dtype=np.int64)
             if not len(arr):

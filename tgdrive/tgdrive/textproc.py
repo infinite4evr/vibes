@@ -244,6 +244,24 @@ def synonym_expansions(ws: list[str], groups: dict[str, list[list[str]]]) -> lis
     return out
 
 
+_LINK_RE = re.compile(r"(?:https?://|www\.|t\.me/)\S+|@\w{3,}", re.I)
+_GENERIC_NAME_RE = re.compile(r"(photo|video|voice|round|gif|audio|document|file|IMG|VID|PXL|DSC|WA|Screenshot|Scan|"
+                              r"animation|Screen Recording|Recording)[\s_\-]*[\dA-Z_\-\s:.()]*", re.I)
+
+
+def embed_parts(name: Optional[str], caption: Optional[str], alias: Optional[str] = None) -> tuple[str, str]:
+    """(name text, caption text) for the meaning-based index. Camera / auto-generated names and
+    links or @handles in captions carry no meaning and are left out."""
+    n = strip_ext(alias or name)
+    if _GENERIC_NAME_RE.fullmatch(n or ""):
+        n = ""
+    ws: list[str] = []
+    for w in words(n):
+        ws.extend(split_compound(w))
+    cap = " ".join(words(_LINK_RE.sub(" ", caption or ""))[:48])
+    return " ".join(ws).strip(), cap.strip()
+
+
 def embed_text(name: Optional[str], caption: Optional[str], alias: Optional[str] = None) -> str:
     """Text used for the meaning-based index; empty for generic camera names without captions."""
     n = strip_ext(alias or name)

@@ -25,7 +25,7 @@ from . import textproc
 
 log = logging.getLogger("tgdrive.db")
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 # ------------------------------------------------------------------ schema v1
 V1 = """
@@ -231,11 +231,31 @@ def _v4(c: sqlite3.Connection) -> None:
     """)
 
 
+def _v5(c: sqlite3.Connection) -> None:
+    """Duplicate copies: which files are the same file (see dupes.py). Only files that have copies get a row.
+    grp: the group; rank: 0 for the copy shown when duplicates are hidden; n: copies in the group;
+    xc: 1 when a better copy exists in the same chat (for fast per-chat counts)."""
+    run_script(c, """
+        CREATE TABLE IF NOT EXISTS dups (
+            file_id INTEGER PRIMARY KEY, grp INTEGER NOT NULL, rank INTEGER NOT NULL, n INTEGER NOT NULL,
+            xc INTEGER NOT NULL DEFAULT 0);
+        CREATE INDEX IF NOT EXISTS dups_grp ON dups(grp, rank);
+        CREATE TABLE IF NOT EXISTS dups_stats (
+            chat_id INTEGER NOT NULL, kind TEXT NOT NULL, n INTEGER NOT NULL, bytes INTEGER NOT NULL,
+            PRIMARY KEY (chat_id, kind)) WITHOUT ROWID;
+        CREATE INDEX IF NOT EXISTS files_name_size ON files(name COLLATE NOCASE, size) WHERE size >= 10240;
+        CREATE TRIGGER IF NOT EXISTS files_dups_ad AFTER DELETE ON files BEGIN
+          DELETE FROM dups WHERE file_id=old.id;
+        END;
+    """)
+
+
 MIGRATIONS: list[Callable[[sqlite3.Connection], None]] = [
     lambda c: run_script(c, V1),    # -> 1
     _v2,                            # -> 2
     _v3,                            # -> 3
     _v4,                            # -> 4
+    _v5,                            # -> 5
 ]
 
 FILE_COLS = [
@@ -671,7 +691,8 @@ class Database:
     FILE_SELECT = """SELECT f.*, p.folder_id, p.starred, p.tags, p.note, c.kind AS chat_kind,
                       c.username AS chat_username, c.noforwards AS chat_noforwards, c.is_admin AS chat_is_admin,
                       c.is_creator AS chat_is_creator, pb.pos AS play_pos, pb.dur AS play_dur, pb.done AS play_done,
-                      (SELECT s.subject FROM file_subjects s WHERE s.file_id=f.id) AS subject
+                      (SELECT s.subject FROM file_subjects s WHERE s.file_id=f.id) AS subject,
+                      (SELECT d.n FROM dups d WHERE d.file_id=f.id) AS copies
                FROM files f
                LEFT JOIN placements p ON p.chat_id=f.chat_id AND p.msg_id=f.msg_id
                LEFT JOIN chats c ON c.id=f.chat_id

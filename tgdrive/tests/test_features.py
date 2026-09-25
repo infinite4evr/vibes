@@ -474,3 +474,169 @@ def test_desktop_integration(tmp_path, monkeypatch):
     integration.uninstall_file_manager_actions()
     integration.uninstall_menu()
     assert not integration.menu_installed()
+
+
+# ------------------------------------------------------------ 2.2: debug logging, meaning search
+def test_debug_logging_switch(tmp_path, fresh_settings, monkeypatch):
+    import logging
+    from fastapi.testclient import TestClient
+    from tgdrive import api, config, maintenance
+    monkeypatch.setattr(config, "LOG_DIR", tmp_path / "logs")
+    maintenance.setup_logging()
+    acc, _ = make_account(tmp_path)
+    run(index_all(acc))
+    api.manager.accounts = {acc.uid: acc}
+    c = TestClient(api.app, base_url="http://127.0.0.1:8765")
+    try:
+        assert not maintenance.debug_enabled()
+        # Off: page logs are ignored and nothing detailed is written.
+        assert c.post("/api/clientlog", json={"entries": [{"msg": "ignored"}]}, headers=H).json()["on"] is False
+        # On, straight from the settings (no restart).
+        assert c.patch("/api/settings", json={"debug_logging": True}, headers=H).status_code == 200
+        assert maintenance.debug_enabled() and logging.getLogger().level == logging.DEBUG
+        c.get(f"/api/a/{acc.uid}/files", params={"q": "polity"})
+        r = c.post("/api/clientlog", headers=H, json={"entries": [
+            {"t": time.time(), "level": "info", "cat": "nav", "msg": "→ #drive"},
+            {"t": time.time(), "level": "error", "cat": "error", "msg": "TypeError: boom", "data": {"stack": "at x.js:1"}}]})
+        assert r.json()["on"] is True
+        for h in logging.getLogger().handlers:
+            h.flush()
+        text = (tmp_path / "logs" / "tgdrive-debug.log").read_text()
+        assert "debug logging ON" in text
+        assert "HTTP GET /api/a/" in text and "/files?q=polity" in text      # every request, with its timing
+        assert "files q=['polity']" in text                                  # what the search did
+        assert "[nav] → #drive" in text and "TypeError: boom" in text        # what the page did
+        tail = c.get("/api/debuglog", params={"lines": 50}).json()
+        assert tail["on"] and "TypeError: boom" in tail["text"]
+        assert c.get("/api/logs/download", params={"which": "debug"}).status_code == 200
+        # Clearing empties both logs.
+        assert c.delete("/api/logs", headers=H).json()["freed"] > 0
+        assert "TypeError" not in (tmp_path / "logs" / "tgdrive-debug.log").read_text()
+        # Off again.
+        c.patch("/api/settings", json={"debug_logging": False}, headers=H)
+        assert not maintenance.debug_enabled() and logging.getLogger().level == logging.INFO
+        assert c.post("/api/clientlog", json={"entries": [{"msg": "late"}]}, headers=H).json()["on"] is False
+    finally:
+        maintenance.set_debug_logging(False)
+        acc.db.close()
+
+
+def test_embed_parts_drop_noise():
+    from tgdrive import textproc
+    assert textproc.embed_parts("IMG_20240101_123456.jpg", "")[0] == ""
+    assert textproc.embed_parts("PolityNotes_Chapter3.pdf", "")[0] == "Polity Notes Chapter 3"
+    name, cap = textproc.embed_parts("x.pdf", "Join @upsc_hub https://t.me/upsc_hub for Budget analysis")
+    assert "upsc_hub" not in cap and "Budget analysis" in cap
+
+
+def test_semantic_v2_library_statistics(tmp_path, fresh_settings):
+    import sqlite3
+    from tgdrive import semantic
+    if not semantic.available():
+        pytest.skip("embedding model not installed")
+    db = tmp_path / "i.db"
+    con = sqlite3.connect(db)
+    con.execute("CREATE TABLE files(id INTEGER PRIMARY KEY, name TEXT, alias TEXT, caption TEXT)")
+    spam = "Join @freenotes for daily updates, share with friends #upsc"
+    rows = [(f"Economy Mock Test {i}.pdf", spam) for i in range(300)]
+    rows += [("Global warming and Paris agreement.pdf", spam), ("Carbon emissions and greenhouse gases.pdf", spam),
+             ("Cricket world cup final highlights.mp4", spam), ("Honda City insurance renewal.pdf", "")]
+    con.executemany("INSERT INTO files(name, alias, caption) VALUES (?, NULL, ?)", rows)
+    con.commit()
+    idx = semantic.SemanticIndex(tmp_path / "sem", db)
+    model = semantic._Model.get()
+    while idx._step(sqlite3.connect(db), model):
+        pass
+    assert idx.meta["version"] == semantic.VERSION and idx.meta["stats_n"] == len(rows)
+    names = {i + 1: r[0] for i, r in enumerate(rows)}
+    # Boilerplate every file shares doesn't make everything "related"; the topic does.
+    hits = [names[i] for i, _ in idx.search("climate change")]
+    assert hits[:2] and set(hits[:2]) == {"Global warming and Paris agreement.pdf", "Carbon emissions and greenhouse gases.pdf"}
+    assert "Cricket world cup final highlights.mp4" not in hits[:3]
+    # Other phrasings (synonyms, corrected spelling) steer the query too.
+    assert idx.search("vehicle", extra=["car insurance"])[0][0] == len(rows)
+    # An old-format index starts over.
+    idx.meta["version"] = 1
+    idx._save_meta()
+    again = semantic.SemanticIndex(tmp_path / "sem", db)
+    assert again.meta["built_until"] == 0 and again.meta["version"] == semantic.VERSION
+
+
+def test_semantic_query_gets_synonyms(tmp_path, fresh_settings):
+    fresh_settings.data.update(search_semantic=True, search_mode="smart")
+    acc, _ = make_account(tmp_path)
+    run(index_all(acc))
+
+    class Sem:
+        enabled = True
+    acc.semantic = Sem()
+    plan = acc.search.plan({"terms": ["pyq", "polity"], "phrases": [], "neg_terms": []})
+    assert plan.semantic == "pyq polity"
+    assert any("previous year" in x for x in plan.semantic_extra), plan.semantic_extra
+    acc.db.close()
+
+
+def test_hide_duplicates(tmp_path, fresh_settings):
+    """Forwarded copies (same Telegram file) and re-uploads (same name and size) fold into one card."""
+    import sqlite3
+    from datetime import datetime, timezone
+    from telethon.tl import types as tt
+    from tests.fake import doc_msg, peer_of
+
+    def fwd(cid, mid, doc_id, name, size, when):
+        doc = tt.Document(id=doc_id, access_hash=1, file_reference=b"r", date=when, mime_type="application/pdf",
+                          size=size, dc_id=2, attributes=[tt.DocumentAttributeFilename(name)])
+        return tt.Message(id=mid, peer_id=peer_of(cid), date=when, message="",
+                          media=tt.MessageMediaDocument(document=doc))
+
+    acc, client = make_account(tmp_path)
+    a, b, g = -CH - 101, -CH - 102, -55
+    t1, t2, t3 = (datetime(2026, 1, d, tzinfo=timezone.utc) for d in (1, 2, 3))
+    client.chats[a] += [fwd(a, 9001, 777001, "Polity Laxmikanth.pdf", 5_000_000, t1),
+                        fwd(a, 9002, 777001, "Polity Laxmikanth.pdf", 5_000_000, t2)]   # twice in one chat
+    client.chats[b].append(fwd(b, 9003, 777001, "Polity Laxmikanth.pdf", 5_000_000, t3))    # forwarded elsewhere
+    client.chats[g].append(doc_msg(g, 9004, "Budget notes.pdf", "application/pdf", 2_000_000, t1))
+    client.chats[b].append(doc_msg(b, 9005, "Budget notes.pdf", "application/pdf", 2_000_000, t2))  # re-upload
+    run(index_all(acc))
+    conn = sqlite3.connect(acc.db.path, isolation_level=None)
+    st = acc.dupes.rebuild(conn)
+    assert st["groups"] >= 2 and st["extra"] >= 3
+
+    def names(**p):
+        return [f["name"] for f in run(acc.search.files(dict(p, limit=500)))["items"]]
+
+    every, one = names(copies="show"), names(copies="hide")
+    assert every.count("Polity Laxmikanth.pdf") == 3 and one.count("Polity Laxmikanth.pdf") == 1
+    assert every.count("Budget notes.pdf") == 2 and one.count("Budget notes.pdf") == 1
+    # The oldest copy is the one shown; its card knows how many copies there are.
+    shown = [f for f in run(acc.search.files({"copies": "hide", "limit": 500}))["items"] if f["name"] == "Polity Laxmikanth.pdf"]
+    assert shown[0]["msg_id"] == 9001 and shown[0]["copies"] == 3
+    # A chat still shows its own copy; repeats inside that chat fold.
+    assert names(copies="hide", chat_ids=str(b)).count("Polity Laxmikanth.pdf") == 1
+    assert names(copies="hide", chat_ids=str(a)).count("Polity Laxmikanth.pdf") == 1
+    assert names(copies="hide", chat_ids=str(b)).count("Budget notes.pdf") == 1
+    # Counts agree with the list, in every view.
+    for p in ({}, {"chat_ids": str(a)}, {"chat_ids": str(b)}, {"kinds": "document"}, {"q": "polity"}):
+        items = run(acc.search.files({**p, "copies": "hide", "limit": 500}))["items"]
+        assert run(acc.search.stats({**p, "copies": "hide"}))["total"] == len(items), p
+    # Search: one card, and a copies:show word in the query wins over the switch.
+    assert names(q="laxmikanth", copies="hide").count("Polity Laxmikanth.pdf") == 1
+    assert names(q="laxmikanth copies:show", copies="hide").count("Polity Laxmikanth.pdf") == 3
+    # Starring a copy makes it the one shown.
+    run(acc.drive.set_meta_items([(b, 9003)], starred=True))
+    acc.dupes.rebuild(conn)
+    shown = [f for f in run(acc.search.files({"copies": "hide", "limit": 500}))["items"] if f["name"] == "Polity Laxmikanth.pdf"]
+    assert [(f["chat_id"], f["msg_id"]) for f in shown] == [(b, 9003)]
+    # Deleting copies updates the groups.
+    acc.db.delete_files(b, [9005])
+    acc.dupes.rebuild(conn)
+    assert names(copies="hide").count("Budget notes.pdf") == 1
+    assert acc.db.one("SELECT COUNT(*) AS n FROM dups d JOIN files f ON f.id=d.file_id WHERE f.name='Budget notes.pdf'")["n"] == 0
+    # The details list every copy, best first.
+    from fastapi.testclient import TestClient
+    from tgdrive import api
+    api.manager.accounts = {acc.uid: acc}
+    det = TestClient(api.app, base_url="http://127.0.0.1:8765").get(f"/api/a/{acc.uid}/files/{a}/9002").json()
+    assert [c["msg_id"] for c in det["copy_list"]][0] == 9003 and det["duplicates"] == 2
+    conn.close()
+    acc.db.close()

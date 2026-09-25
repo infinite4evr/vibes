@@ -403,6 +403,9 @@ class Drive:
             log.exception("could not apply remote manifest")
 
     def _schedule(self) -> None:
+        dupes = getattr(self.acc, "dupes", None)
+        if dupes is not None:
+            dupes.poke()   # stars and folders decide which copy is shown
         self._dirty = True
         if not self._flush_task or self._flush_task.done():
             try:
@@ -433,6 +436,7 @@ class Drive:
                     except errors.RPCError:
                         pass
                 data = encode_manifest(self.snapshot())
+                log.debug("saving drive manifest (%d bytes) to channel %s", len(data), self.channel_id)
                 await self._write_manifest(peer, data)
                 self._last_hash = hashlib.sha1(data).hexdigest()
                 self.db.set_meta("drive_seeded", 1)

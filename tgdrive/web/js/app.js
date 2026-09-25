@@ -6,12 +6,13 @@ import {
   doDownload, doMove, doDelete, toggleStar, editTags, renameOne, doLinks, undoLast, openFile, rerenderItems,
 } from './files.js';
 import { loadFolders, loadChats, renderNav, renderTree, renderChats, renderIndexStatus } from './sidebar.js';
-import { renderDrawer, closeDrawer } from './details.js';
+import { renderDrawer, closeDrawer, startRenameInPanel } from './details.js';
 import { loadTransfers, openTransfers, pickUpload, pickUploadFolder, uploadToChat, updateBadge } from './transfers.js';
 import { renderChips, focusSearch, toggleAdv } from './search.js';
 import { renderPage } from './pages.js';
 import { showOnboarding, showLock } from './login.js';
 import { newFolder } from './folders.js';
+import { applyDebug, setDebug, debugOn, viewLog } from './debuglog.js';
 
 const PAGES = new Set(['storage', 'duplicates', 'index', 'activity', 'settings', 'photos', 'map', 'sync', 'marks']);
 const EMBED = new URLSearchParams(location.search).has('embed');
@@ -37,6 +38,7 @@ async function boot() {
   $('#newBtn').innerHTML = `${icon('plus')}<span>New</span>`;
   $('#chatSortBtn').innerHTML = icon('sliders');
   S.desktop = await initBridge();
+  if (S.desktop && !EMBED) import('./wintitle.js').then((m) => m.initWindowChrome()).catch(() => {});
   S.localHost = ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname);
   document.documentElement.classList.toggle('desktop', S.desktop);
   let st;
@@ -63,6 +65,7 @@ function applyStatus(st) {
   S.mediaToken = st.media_token || '';
   S.mediaBase = mp && S.localHost ? `${location.protocol}//${location.hostname}:${mp}` : '';
   applyTheme();
+  applyDebug(!!S.settings.debug_logging);
 }
 function luminance(hex) {
   const n = parseInt(hex.slice(1), 16);
@@ -77,6 +80,7 @@ export function applyTheme() {
   else delete root.dataset.theme;
   root.dataset.density = s.density || 'comfortable';
   if (s.contrast === 'high') root.dataset.contrast = 'high'; else delete root.dataset.contrast;
+  root.dataset.motion = ['on', 'system', 'off'].includes(s.motion) ? s.motion : 'on';
   if (/^#[0-9a-f]{6}$/i.test(s.accent || '')) {
     root.style.setProperty('--accent-base', s.accent);
     root.style.setProperty('--accent-ink-l', luminance(s.accent) > 0.45 ? '#10151d' : '#ffffff');
@@ -140,6 +144,9 @@ $('#accountBtn').addEventListener('click', (e) => {
   items.push('-', { label: 'Add account', icon: 'plus', onClick: () => showOnboarding(true) },
     { label: 'Settings', icon: 'settings', kbd: 'Ctrl ,', onClick: () => go('#settings') },
     { label: 'Keyboard shortcuts', icon: 'keyboard', kbd: '?', onClick: shortcutsDialog },
+    '-',
+    { label: 'Detailed debug logging', icon: 'bug', checked: debugOn(), onClick: () => setDebug(!debugOn()) },
+    debugOn() ? { label: 'View debug log', icon: 'document', onClick: viewLog } : null,
     S.settings.lock_set ? { label: 'Lock TG Drive', icon: 'lock', onClick: () => api('/api/lock/now', { method: 'POST' }).then(showLock) } : null,
     '-', { label: 'Sign out of this account…', icon: 'signout', danger: true, onClick: () => removeAccount(S.aid) });
   menu(e.currentTarget, items.filter(Boolean), { alignRight: true });
@@ -227,7 +234,9 @@ function route() {
   renderNav();
   renderChats();
   if (isPage) {
-    $('#pageView').className = 'page-view';
+    const pv = $('#pageView');
+    pv.className = 'page-view';
+    if (!sameKind) { void pv.offsetWidth; pv.classList.add('page-enter'); }
     if (v.type === 'photos') import('./photos.js').then((m) => m.renderPhotos(v.arg));
     else if (v.type === 'map') import('./map.js').then((m) => m.renderMap());
     else if (v.type === 'sync') import('./sync.js').then((m) => m.renderSyncPage());
@@ -257,6 +266,8 @@ bus.on('open-file-ref', async (f) => {
 });
 bus.on('settings-changed', (k) => {
   applyTheme();
+  if (k === 'debug_logging') applyDebug(!!S.settings.debug_logging, true);
+  if (k === 'hide_duplicates') broadcast('settings-refresh');
   if (['view', 'grid_size', 'group_by_date'].includes(k)) { /* next list render picks it up */ }
 });
 
@@ -316,11 +327,39 @@ $('#sort').addEventListener('change', () => {
   S.userSorted = true;
   reload();
 });
-$('#refreshBtn').addEventListener('click', async () => {
-  await Promise.all([loadFolders(), loadChats()]).catch(fail);
-  if (!$('#listView').hidden) reload(true); else route();
+$('#refreshBtn').addEventListener('click', async (e) => {
+  const b = e.currentTarget;
+  if (b.classList.contains('spinning')) return;
+  b.classList.add('spinning');
+  const t0 = Date.now();
+  try {
+    await Promise.all([loadFolders(), loadChats()]).catch(fail);
+    if (!$('#listView').hidden) reload(true); else route();
+  } finally {
+    setTimeout(() => b.classList.remove('spinning'), Math.max(0, 600 - (Date.now() - t0)));
+  }
 });
 $('#viewBtn').addEventListener('click', toggleView);
+$('#copiesBtn').addEventListener('click', () => setHideDuplicates(S.settings.hide_duplicates === false));
+async function setHideDuplicates(hide) {
+  S.settings.hide_duplicates = hide;
+  try {
+    const r = await api('/api/settings', { method: 'PATCH', body: { hide_duplicates: hide } });
+    S.settings = r.settings;
+  } catch (e) { fail(e); }
+  const extra = S.status?.dupes?.extra || 0;
+  toast(hide ? `Duplicates hidden: one card per file${extra ? ` (${plural(extra, 'extra copy', 'extra copies')} folded away)` : ''}` : 'Showing every copy of every file');
+  broadcast('settings-refresh');
+  renderNav();
+  if (!$('#listView').hidden) reload(true); else route();
+}
+bus.on('set-hide-duplicates', setHideDuplicates);
+// Another window changed a setting that changes lists: pick it up and show the list again.
+bus.on('settings-refresh', async () => {
+  try { S.settings = await api('/api/settings'); } catch { return; }
+  applyTheme();
+  if (!$('#listView').hidden) reload(true);
+});
 $('#moreBtn').addEventListener('click', (e) => {
   const p = listParams() || {};
   menu(e.currentTarget, [
@@ -386,12 +425,13 @@ document.addEventListener('keydown', (e) => {
   }
   if (e.key.toLowerCase() === 'g') { gPending = Date.now(); return; }
   if (e.key.toLowerCase() === 'v' && !$('#listView').hidden) { toggleView(); return; }
+  if (e.key.toLowerCase() === 'f' && !$('#listView').hidden) { import('./search.js').then((m) => m.toggleFilters()); return; }
   const files = selectedFiles();
   if (!files.length) return;
   const items = selectedItems();
   const k = e.key;
   if (k === 'Delete') { e.preventDefault(); doDelete(items); }
-  else if (k === 'F2') { e.preventDefault(); renameOne(files[0]); }
+  else if (k === 'F2') { e.preventDefault(); if (files.length > 1 || !startRenameInPanel()) renameOne(files[0]); }
   else if (k.toLowerCase() === 's') toggleStar(files);
   else if (k.toLowerCase() === 't') editTags(files);
   else if (k.toLowerCase() === 'm') doMove(items, files[0]?.folder_id);
@@ -413,6 +453,7 @@ async function poll() {
     const idx = S.accounts.findIndex((a) => a.id === aid);
     if (idx >= 0 && S.accounts[idx].status !== st.account.status) { S.accounts[idx] = st.account; renderAccountButton(); }
     renderIndexStatus();
+    if (before?.dupes?.extra !== st.dupes?.extra) renderNav();
     S.tsummary = st.transfers;
     updateBadge();
     if (S.drawer === 'transfers' || (before && before.transfers_active !== st.transfers_active)) loadTransfers();
@@ -502,6 +543,6 @@ function openTask(what) {
   else if (what === 'upload') pickUpload();
 }
 
-window.tgdrive = { S, go, reload, receivePaths, openTask, ready: false };
+window.tgdrive = { ...(window.tgdrive || {}), S, go, reload, receivePaths, openTask, ready: false };
 
 boot();

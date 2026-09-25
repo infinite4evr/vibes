@@ -34,6 +34,17 @@ export function updateBadge() {
   const active = (S.tsummary?.active || 0) + S.localUploads.length;
   $('#tBadge').hidden = !active;
   $('#tBadge').textContent = active;
+  // A ring around the button fills up as the active transfers progress.
+  const btn = $('#transfersBtn');
+  let ring = btn.querySelector('.t-ring');
+  if (!ring) {
+    btn.insertAdjacentHTML('beforeend', '<svg class="t-ring" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><circle class="p" cx="20" cy="20" r="17"/></svg>');
+    ring = btn.querySelector('.t-ring');
+  }
+  const size = S.tsummary?.size || 0;
+  const pct = size ? Math.min(1, (S.tsummary.done || 0) / size) : 0;
+  btn.classList.toggle('t-active', !!active);
+  ring.querySelector('.p').style.strokeDashoffset = String(106.8 * (1 - pct));
   const sp = S.tsummary?.speed;
   $('#transfersBtn').title = active ? `Transfers: ${active} active${sp ? `, ${fmtSize(sp)}/s` : ''}` : 'Transfers';
 }

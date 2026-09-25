@@ -23,21 +23,92 @@ log = logging.getLogger("tgdrive.maintenance")
 
 
 # ---------------------------------------------------------------------- logs
+# Two files: tgdrive.log (always, INFO and up) and, while "Detailed debug logging" is on,
+# tgdrive-debug.log with everything: every request with its timing, what the page did (clicks,
+# navigation, errors), transfers, streaming, indexing, search plans, crashes with full tracebacks.
+DEBUG_FORMAT = ("%(asctime)s.%(msecs)03d %(levelname)-7s [%(threadName)s] %(name)s "
+                "%(module)s:%(lineno)d %(funcName)s(): %(message)s")
+NOISY = ("telethon", "asyncio", "PIL", "multipart", "python_multipart", "hpack", "httpx", "httpcore",
+         "charset_normalizer", "urllib3", "filelock", "uvicorn.access")
+_debug_handler: Optional[RotatingFileHandler] = None
+_debug_since: float = 0.0
+
+
+def log_path() -> Path:
+    return config.LOG_DIR / "tgdrive.log"
+
+
+def debug_log_path() -> Path:
+    return config.LOG_DIR / "tgdrive-debug.log"
+
+
 def setup_logging(level: int = logging.INFO) -> Path:
     config.LOG_DIR.mkdir(parents=True, exist_ok=True)
-    path = config.LOG_DIR / "tgdrive.log"
+    path = log_path()
     root = logging.getLogger()
-    if not any(isinstance(h, RotatingFileHandler) for h in root.handlers):
+    if not any(isinstance(h, RotatingFileHandler) and Path(h.baseFilename) == path for h in root.handlers):
         fh = RotatingFileHandler(path, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8")
         fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+        fh.setLevel(level)
         root.addHandler(fh)
     root.setLevel(level)
     logging.getLogger("telethon").setLevel(logging.WARNING)
+    init_debug_logging()
     return path
 
 
-def tail_log(lines: int = 400) -> str:
-    path = config.LOG_DIR / "tgdrive.log"
+_listening = False
+
+
+def init_debug_logging() -> None:
+    """Follow the "Detailed debug logging" setting (safe to call more than once)."""
+    global _listening
+    if not _listening:
+        _listening = True
+        settings.on_change(lambda changed: "debug_logging" in changed and set_debug_logging(
+            bool(settings.get("debug_logging"))))
+    set_debug_logging(bool(settings.get("debug_logging")))
+
+
+def debug_enabled() -> bool:
+    return _debug_handler is not None
+
+
+def set_debug_logging(on: bool) -> None:
+    """Turn the detailed debug log on or off, right away (no restart)."""
+    global _debug_handler, _debug_since
+    root = logging.getLogger()
+    if on and _debug_handler is None:
+        config.LOG_DIR.mkdir(parents=True, exist_ok=True)
+        # Everything that already writes somewhere (the normal log, the terminal) stays at INFO.
+        for h in root.handlers:
+            if h.level == logging.NOTSET:
+                h.setLevel(logging.INFO)
+        h = RotatingFileHandler(debug_log_path(), maxBytes=20 * 1024 * 1024, backupCount=4, encoding="utf-8")
+        h.setLevel(logging.DEBUG)
+        h.setFormatter(logging.Formatter(DEBUG_FORMAT, "%Y-%m-%d %H:%M:%S"))
+        root.addHandler(h)
+        root.setLevel(logging.DEBUG)
+        for name in NOISY:
+            logging.getLogger(name).setLevel(logging.INFO if name in ("telethon", "asyncio") else logging.WARNING)
+        _debug_handler, _debug_since = h, time.time()
+        from . import diagnostics
+        info = diagnostics.system_info()
+        log.info("===== detailed debug logging ON (TG Drive %s, %s, python %s) =====", config.VERSION,
+                 info.get("platform"), (info.get("python") or "").split()[0])
+        log.debug("system: %s", json.dumps(info, default=str))
+        log.debug("settings: %s", json.dumps({k: v for k, v in settings.public().items()
+                                              if k not in ("dav_secret", "proxy_user")}, default=str))
+    elif not on and _debug_handler is not None:
+        log.info("===== detailed debug logging OFF (was on for %d s) =====", time.time() - _debug_since)
+        h, _debug_handler = _debug_handler, None
+        root.removeHandler(h)
+        h.close()
+        root.setLevel(logging.INFO)
+        logging.getLogger("telethon").setLevel(logging.WARNING)
+
+
+def _tail(path: Path, lines: int) -> str:
     if not path.exists():
         return ""
     with open(path, "rb") as fh:
@@ -46,6 +117,58 @@ def tail_log(lines: int = 400) -> str:
         fh.seek(max(0, size - 400_000))
         data = fh.read().decode("utf-8", "replace")
     return "\n".join(data.splitlines()[-lines:])
+
+
+def tail_log(lines: int = 400) -> str:
+    return _tail(log_path(), lines)
+
+
+def tail_debug_log(lines: int = 400) -> str:
+    return _tail(debug_log_path(), lines)
+
+
+def log_files() -> list[dict]:
+    out = []
+    for p in sorted(config.LOG_DIR.glob("tgdrive*.log*")):
+        try:
+            out.append({"name": p.name, "bytes": p.stat().st_size})
+        except OSError:
+            pass
+    return out
+
+
+def clear_logs() -> dict:
+    """Empty every log file (the open ones are truncated in place) and delete rotated copies."""
+    freed = 0
+    open_files = set()
+    for h in logging.getLogger().handlers:
+        if isinstance(h, logging.FileHandler):
+            p = Path(h.baseFilename)
+            open_files.add(p)
+            h.acquire()
+            try:
+                if h.stream:
+                    h.stream.flush()
+                    freed += p.stat().st_size if p.exists() else 0
+                    h.stream.seek(0)
+                    h.stream.truncate()
+            except OSError as exc:
+                log.warning("could not clear %s: %s", p, exc)
+            finally:
+                h.release()
+    for p in config.LOG_DIR.glob("tgdrive*.log*"):
+        if p in open_files:
+            continue
+        try:
+            freed += p.stat().st_size
+            if p.name in ("tgdrive.log", "tgdrive-debug.log"):
+                p.write_text("", encoding="utf-8")
+            else:
+                p.unlink()
+        except OSError:
+            pass
+    log.info("logs cleared (%d bytes)", freed)
+    return {"freed": freed}
 
 
 # ------------------------------------------------------------------ storage
@@ -168,8 +291,7 @@ async def run_task(acc: "Account", task: str) -> dict:
         import asyncio
         acc._search_builder = asyncio.create_task(acc._build_search())
     elif task == "rebuild_semantic":
-        acc.semantic.meta.update(built_until=0, count=0)
-        acc.semantic.poke()
+        acc.semantic.rebuild()
     elif task == "clear_thumbs":
         return {"removed": acc.thumbs.clear()}
     elif task == "clear_stream_cache":

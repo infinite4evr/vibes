@@ -170,6 +170,7 @@ class Streamer:
                 return fh.read(CHUNK)
         cc = self.cache_for(src) if cache else None
         if cc and cc.has(i):
+            log.debug("stream %s chunk %d: cache hit", src.key, i)
             self.stats["hits"] += 1
             try:
                 return cc.read(i)
@@ -186,6 +187,7 @@ class Streamer:
     async def _fetch(self, src: Source, i: int, cc: Optional[ChunkCache]) -> bytes:
         self.acc.require_online()
         async with self.sem:
+            t0 = time.perf_counter()
             for attempt in range(4):
                 try:
                     data = b""
@@ -200,6 +202,8 @@ class Streamer:
                         continue
                     self.stats["fetched"] += 1
                     self.stats["bytes_fetched"] += len(data)
+                    log.debug("stream %s chunk %d: %d bytes from Telegram (dc %s) in %.0f ms, attempt %d", src.key, i,
+                              len(data), src.dc_id, (time.perf_counter() - t0) * 1000, attempt + 1)
                     if cc is not None:
                         try:
                             await asyncio.get_running_loop().run_in_executor(None, cc.write, i, data)
@@ -208,15 +212,19 @@ class Streamer:
                         self._maybe_evict()
                     return data
                 except (errors.FileReferenceExpiredError, errors.FileReferenceInvalidError):
+                    log.debug("stream %s chunk %d: file reference expired, refreshing", src.key, i)
                     async with src.lock:
                         fresh = await self.source(src.chat_id, src.msg_id, fresh=True)
                         src.location, src.dc_id = fresh.location, fresh.dc_id
                 except errors.FloodWaitError as exc:
+                    log.info("stream %s chunk %d: flood wait %d s", src.key, i, exc.seconds)
                     if exc.seconds > 30:
                         raise StreamError(f"Telegram asks to wait {exc.seconds}s before reading more of this file.")
                     await asyncio.sleep(exc.seconds + 1)
-                except (ConnectionError, OSError, asyncio.TimeoutError):
+                except (ConnectionError, OSError, asyncio.TimeoutError) as exc:
+                    log.debug("stream %s chunk %d: attempt %d failed: %r", src.key, i, attempt + 1, exc)
                     await asyncio.sleep(1 + attempt)
+        log.warning("stream %s chunk %d: gave up after 4 attempts", src.key, i)
         raise StreamError("Telegram didn't return this part of the file. Try again.")
 
     def prefetch(self, src: Source, start: int, n: int) -> None:

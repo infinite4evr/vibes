@@ -28,6 +28,7 @@ from .indexer import Indexer
 from .places import PlaceScanner
 from .search import SearchEngine
 from .semantic import SemanticIndex
+from .dupes import DupeIndex
 from .settings import settings
 from .streaming import Streamer
 from .subjects import SubjectIndex
@@ -243,6 +244,7 @@ class Account:
         self.search = SearchEngine(self)
         self.semantic = SemanticIndex(path / "semantic", path / "index.db")
         self.semantic.enabled = bool(settings.get("search_semantic", True))
+        self.dupes = DupeIndex(self)
         self.subjects = SubjectIndex(self)
         self.subjects.enabled = bool(settings.get("subjects_enabled", True))
         self.places = PlaceScanner(self)
@@ -264,6 +266,7 @@ class Account:
             self.search.warm_up()
         self.semantic.start()
         self.subjects.start()
+        self.dupes.start()
         self.places.start()
         self.autofile.start()
         self.sync.start()
@@ -294,6 +297,7 @@ class Account:
         delay = 5
         while True:
             try:
+                log.debug("account %s: connecting to Telegram", self.uid)
                 await self.client.connect()
                 if not await self.client.is_user_authorized():
                     self.status = "logged_out"
@@ -305,6 +309,7 @@ class Account:
                 self.db.set_meta("phone", self.me.phone or "")
                 self.db.set_meta("premium", int(bool(self.me.premium)))
                 self.status, self.error = "online", None
+                log.info("account %s online (dc %s)", self.uid, getattr(self.client.session, "dc_id", "?"))
                 self.indexer.install_handlers()
                 self.indexer.start()
                 self.transfers.restore()
@@ -336,6 +341,7 @@ class Account:
             pass
         await asyncio.get_running_loop().run_in_executor(None, self.semantic.stop)
         await asyncio.get_running_loop().run_in_executor(None, self.subjects.stop)
+        await asyncio.get_running_loop().run_in_executor(None, self.dupes.stop)
         try:
             await self.client.disconnect()
         except Exception:
@@ -344,6 +350,7 @@ class Account:
 
     async def reconnect(self) -> None:
         """Recreate the Telegram connection (after proxy or API settings change)."""
+        log.info("account %s: reconnecting", self.uid)
         await self.indexer.stop()
         await self.transfers.stop()
         try:

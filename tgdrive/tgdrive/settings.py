@@ -24,8 +24,10 @@ DEFAULTS: dict[str, Any] = {
     "accent": "",                 # "" = default blue, or #rrggbb
     "contrast": "normal",         # normal | high
     "font_scale": 1.0,            # 0.85 – 1.4
+    "motion": "on",               # on | system (off when the desktop asks for less motion) | off
     "folder_style": "tiles",      # tiles | cards | list
     "stack_albums": True,         # albums as one stacked card in the grid
+    "hide_duplicates": True,      # one card per file: copies (forwards, re-uploads) are folded away
     "list_columns": ["name", "chat", "date", "size", "kind"],
     "list_widths": {},
     "slideshow_seconds": 4,
@@ -51,6 +53,7 @@ DEFAULTS: dict[str, Any] = {
     "sync_delete_remote": False,  # a file deleted on disk is also deleted from Telegram (else just unfiled)
     # Diagnostics
     "crash_reports": True,
+    "debug_logging": False,       # detailed log of everything (requests, page actions, errors) in tgdrive-debug.log
     # Transfers
     "download_dir": "",
     "open_after_download": False,
@@ -86,6 +89,7 @@ DEFAULTS: dict[str, Any] = {
     "notifications": True,
     "close_to_tray": True,
     "start_minimized": False,
+    "own_titlebar": True,         # the window draws its own title bar (one bar instead of two); applies at restart
     "autostart": False,
     # Security
     "lock_enabled": False,
@@ -104,6 +108,7 @@ CHOICES = {
     "search_scope_default": {"everywhere", "here"},
     "proxy_type": {"socks5", "socks4", "http", "mtproto"},
     "contrast": {"normal", "high"},
+    "motion": {"on", "system", "off"},
     "folder_style": {"tiles", "cards", "list"},
 }
 LIST_COLUMNS = {"name", "chat", "folder", "date", "size", "kind", "ext", "duration", "dims", "tags", "sender",

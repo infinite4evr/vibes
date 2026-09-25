@@ -17,7 +17,7 @@ export function debounce(fn, ms) {
 export const ICON = {
   search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   sliders: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
-  transfers: '<path d="M7 4v14M3 14l4 4 4-4M17 20V6M13 10l4-4 4 4"/>',
+  transfers: '<path d="M4 14.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3.5"/><path d="M8.5 4v9.5M5.5 10.5l3 3 3-3M15.5 13.5V4M12.5 7l3-3 3 3"/>',
   chevron: '<path d="m9 6 6 6-6 6"/>',
   down: '<path d="m6 9 6 6 6-6"/>',
   folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
@@ -146,6 +146,62 @@ export function fmtSize(b) {
   return `${i === 0 ? b : b.toFixed(b < 10 ? 1 : 0)} ${u[i]}`;
 }
 export const fmtNum = (n) => (n || 0).toLocaleString();
+// Short counts for tight places: 8,424 → 8.4k, 438,046 → 438k, 1,250,000 → 1.3M.
+export function fmtCompact(n) {
+  n = n || 0;
+  if (n < 1000) return String(n);
+  const [d, s] = n < 1e6 ? [1e3, 'k'] : [1e6, 'M'];
+  const v = n / d;
+  return `${v < 100 ? (Math.floor(v * 10) / 10).toLocaleString() : Math.floor(v).toLocaleString()}${s}`;
+}
+
+// Names cameras and Telegram make up ("photo_2026-05-07_01-50-00.jpg", "IMG_20240101_123456.jpg",
+// "voice_2026-07-15_10-10-01.ogg") become "Photo · 7 May, 1:50 AM". The real name stays in the tooltip,
+// the details panel, search and downloads.
+const GENERIC_NAME = [
+  [/^(photo|video|voice|round|audio|animation|file|document|sticker)[_\- ](\d{4})-(\d{2})-(\d{2})[_ ](\d{2})-(\d{2})-(\d{2})/i, 'tg'],
+  [/^(?:IMG|VID|PXL|MVIMG|PANO|DSC|Screenshot|Screen[_ ]?Recording|WhatsApp (?:Image|Video|Audio))?[_\- ]?(\d{4})-?(\d{2})-?(\d{2})[_\- T]?(?:at )?(\d{2})[.\-_]?(\d{2})[.\-_]?(\d{2})?/i, 'cam'],
+];
+const KIND_WORD = { photo: 'Photo', video: 'Video', voice: 'Voice message', round: 'Round video', audio: 'Audio', gif: 'GIF', document: 'File' };
+export function friendlyName(f) {
+  const raw = f?.name || '';
+  if (!raw || f.renamed) return null;
+  const base = raw.replace(/\.[a-z0-9]{2,5}$/i, '');
+  let m = base.match(GENERIC_NAME[0][0]);
+  let y, mo, d, h, mi;
+  if (m) [, , y, mo, d, h, mi] = m;
+  else {
+    m = base.match(GENERIC_NAME[1][0]);
+    if (!m || m.index !== 0 || base.length - m[0].length > 6) return null;   // must be (almost) the whole name
+    [, y, mo, d, h, mi] = m;
+  }
+  const dt = new Date(+y, +mo - 1, +d, +h || 0, +mi || 0);
+  if (Number.isNaN(dt.getTime()) || +y < 1995 || +y > 2100 || +mo > 12 || +d > 31) return null;
+  const now = new Date();
+  const day = dt.toLocaleDateString(undefined, { day: 'numeric', month: 'short', ...(dt.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {}) });
+  const time = dt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const kind = /^screenshot/i.test(base) ? 'Screenshot' : /^screen[_ ]?rec/i.test(base) ? 'Screen recording' : KIND_WORD[f.kind] || 'File';
+  return `${kind} · ${day}, ${time}`;
+}
+export const displayName = (f) => friendlyName(f) || f?.name || '';
+// "Hide duplicates" (toolbar switch, Settings → General): lists show one card per file.
+export const copiesParam = () => (S.settings?.hide_duplicates === false ? 'show' : 'hide');
+
+// Voice notes and songs without cover art: a waveform (drawn from the file's id, so it's stable) instead of an
+// empty tile with an icon.
+export function waveHtml(f, bars = 34) {
+  let h = hue(`${f.chat_id}:${f.msg_id}`) + 7;
+  const hs = [];
+  for (let i = 0; i < bars; i++) {
+    h = (h * 1103515245 + 12345) % 2147483648;
+    const env = Math.sin((i / (bars - 1)) * Math.PI) * 0.55 + 0.45;
+    hs.push(Math.max(0.12, env * (0.35 + (h % 1000) / 1540)));
+  }
+  const w = 100 / bars;
+  return `<svg class="wave" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">${hs.map((v, i) =>
+    `<rect x="${(i * w + w * 0.18).toFixed(2)}" y="${(20 - v * 18).toFixed(2)}" width="${(w * 0.64).toFixed(2)}" height="${(v * 36).toFixed(2)}" rx="${(w * 0.32).toFixed(2)}"/>`).join('')}</svg>`;
+}
+
 export const plural = (n, one, many) => `${fmtNum(n)} ${n === 1 ? one : (many || one + 's')}`;
 export function fmtDate(ts, long = false) {
   if (!ts) return '';
@@ -238,27 +294,119 @@ export function pref(k, v) {
 export class ApiError extends Error {
   constructor(message, status, data) { super(message); this.status = status; this.data = data; }
 }
+// Requests the app makes by itself (polling, progress saves, logs) never show a loader.
+const QUIET = /\/(status|events|suggest|playback\/|crash$|clientlog|debuglog)/;
 export async function api(path, opts = {}) {
   const init = { method: opts.method || 'GET', headers: { 'X-TGDrive': '1' }, signal: opts.signal, credentials: 'same-origin' };
   if (opts.body !== undefined) {
     init.headers['Content-Type'] = 'application/json';
     init.body = JSON.stringify(opts.body);
   }
+  const t0 = performance.now();
+  const token = opts.quiet || QUIET.test(path.split('?')[0]) ? null : busy.request(init.method !== 'GET');
   let res;
   try {
     res = await fetch(path, init);
   } catch (e) {
-    if (e.name === 'AbortError') throw e;
+    busy.end(token);
+    if (e.name === 'AbortError') { bus.emit('api', { method: init.method, path, aborted: true, ms: performance.now() - t0 }); throw e; }
+    bus.emit('api', { method: init.method, path, status: 0, ms: performance.now() - t0, error: String(e) });
     throw new ApiError("Can't reach TG Drive. If you closed the app, open it again.", 0);
   }
-  if (opts.raw) return res;
+  if (opts.raw) { busy.end(token); bus.emit('api', { method: init.method, path, status: res.status, ms: performance.now() - t0 }); return res; }
   let data = null;
   const ct = res.headers.get('content-type') || '';
-  try { data = ct.includes('json') ? await res.json() : await res.text(); } catch { /* empty */ }
+  try { data = ct.includes('json') ? await res.json() : await res.text(); } catch { /* empty */ } finally { busy.end(token); }
+  bus.emit('api', { method: init.method, path, status: res.status, ms: performance.now() - t0, body: opts.body,
+    error: res.ok ? undefined : (data && data.error) || `HTTP ${res.status}` });
   if (res.status === 423) { bus.emit('locked'); throw new ApiError('TG Drive is locked.', 423, data); }
   if (!res.ok) throw new ApiError((data && data.error) || `TG Drive answered ${res.status}.`, res.status, data);
   return data;
 }
+
+/* ------------------------------------------------------------ busy state */
+// Every request the user started shows progress: a thin bar along the top of the window, and a spinner
+// on the button that started it. Nothing flashes for fast answers (the bar waits a moment before showing).
+export const busy = (() => {
+  let seq = 0;
+  let visible = 0;
+  const pending = new Map();        // token -> { timer, shown, btn }
+  const btnCount = new WeakMap();
+  let lastInput = { el: null, t: 0 };
+  let bar = null;
+  let hideTimer = 0;
+  const TRIGGER = 'button, .btn, [role="menuitem"], [role="tab"], .nav-item, .crumb, .fitem, .tab, a[href^="#"]';
+  const note = (e) => { lastInput = { el: e.target?.closest?.(TRIGGER) || null, t: Date.now() }; };
+  document.addEventListener('pointerdown', note, true);
+  document.addEventListener('keydown', note, true);
+  window.addEventListener('hashchange', () => { lastInput = { el: Date.now() - lastInput.t < 700 ? lastInput.el : null, t: Date.now() }; });
+
+  function barEl() {
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'topProgress';
+      bar.setAttribute('role', 'progressbar');
+      bar.setAttribute('aria-label', 'Working');
+      bar.innerHTML = '<i></i>';
+      document.body.append(bar);
+    }
+    return bar;
+  }
+  function paint() {
+    const b = barEl();
+    clearTimeout(hideTimer);
+    if (visible > 0) { b.classList.remove('done'); b.classList.add('on'); }
+    else if (b.classList.contains('on')) {
+      b.classList.add('done');
+      hideTimer = setTimeout(() => b.classList.remove('on', 'done'), 420);
+    }
+    document.documentElement.classList.toggle('is-busy', visible > 0);
+  }
+  function markBtn(btn, on) {
+    if (!btn) return;
+    const n = (btnCount.get(btn) || 0) + (on ? 1 : -1);
+    btnCount.set(btn, Math.max(0, n));
+    btn.classList.toggle('is-busy', n > 0);
+    if (n > 0) btn.setAttribute('aria-busy', 'true'); else btn.removeAttribute('aria-busy');
+  }
+  function show(tok) {
+    const p = pending.get(tok);
+    if (!p || p.shown) return;
+    p.shown = true;
+    visible++;
+    paint();
+    if (p.btn?.isConnected) markBtn(p.btn, true); else p.btn = null;
+  }
+  return {
+    // A request: shows at once when the user just clicked something, after a short wait otherwise.
+    // Background reads (nobody touched anything lately) stay silent.
+    request(mutating) {
+      const recent = Date.now() - lastInput.t < 1500;
+      if (!mutating && !recent) return null;
+      const btn = recent && Date.now() - lastInput.t < 700 && lastInput.el?.isConnected ? lastInput.el : null;
+      return this.start(btn ? 60 : 220, btn);
+    },
+    start(delay = 0, btn = null) {
+      const tok = ++seq;
+      pending.set(tok, { btn, shown: false, timer: 0 });
+      if (delay <= 0) show(tok); else pending.get(tok).timer = setTimeout(() => show(tok), delay);
+      return tok;
+    },
+    end(tok) {
+      if (tok == null) return;
+      const p = pending.get(tok);
+      if (!p) return;
+      pending.delete(tok);
+      clearTimeout(p.timer);
+      if (p.shown) { visible--; paint(); markBtn(p.btn, false); }
+    },
+    // Wrap any async job (a promise, or a function returning one) in the same feedback.
+    async run(job, btn = null, delay = 0) {
+      const tok = this.start(delay, btn);
+      try { return await (typeof job === 'function' ? job() : job); } finally { this.end(tok); }
+    },
+  };
+})();
 export const A = (p) => `/api/a/${S.aid}${p}`;
 export const M = (p) => `${S.mediaBase}/api/a/${S.aid}${p}`;
 export const qs = (o) => new URLSearchParams(Object.entries(o).filter(([, v]) => v !== undefined && v !== null && v !== '')).toString();

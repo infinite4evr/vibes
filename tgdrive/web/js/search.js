@@ -180,7 +180,24 @@ export function renderChips() {
     ${any ? `<button class="fchip ghost" data-clear-filters>${icon('close')}Clear</button>` : ''}
     ${S.view.type === 'search' ? `<button class="fchip ghost" data-save-search>${icon('star')}Save search</button>` : ''}`;
   $('#filtersOn').hidden = !any;
+  // The chips live behind one "Filters" button; they stay open while any filter is on.
+  const open = S.showFilters || !!any;
+  $('#chips').hidden = !open;
+  const fb = $('#filtersBtn');
+  if (fb) {
+    fb.innerHTML = `${icon('filter')}<span>Filters</span>${any ? `<span class="fcount">${any}</span>` : ''}`;
+    fb.setAttribute('aria-expanded', String(open));
+    fb.classList.toggle('on', open);
+  }
 }
+S.showFilters = pref('showFilters') === '1';
+export function toggleFilters() {
+  S.showFilters = !($('#filtersBtn')?.getAttribute('aria-expanded') === 'true');
+  if (!S.showFilters && Object.keys(S.adv).some((k) => !k.startsWith('_'))) S.showFilters = true;   // can't hide active filters
+  pref('showFilters', S.showFilters ? '1' : '0');
+  renderChips();
+}
+document.addEventListener('click', (e) => { if (e.target.closest('#filtersBtn')) toggleFilters(); });
 function setAdv(changes) {
   for (const [k, v] of Object.entries(changes)) { if (v === '' || v == null) delete S.adv[k]; else S.adv[k] = v; }
   bus.emit('reload');

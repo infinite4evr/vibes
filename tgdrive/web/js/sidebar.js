@@ -1,5 +1,11 @@
 // Sidebar: Drive tree, quick views, saved searches, tags, Telegram folders, sources, tools, index status.
-import { $, $$, S, A, api, esc, icon, fmtNum, fmtSize, plural, pref, SOURCES, CHAT_KIND_NAME, bus, relTime } from './core.js';
+import { $, $$, S, A, api, esc, icon, fmtNum, fmtSize, fmtCompact, plural, pref, SOURCES, CHAT_KIND_NAME, bus, relTime } from './core.js';
+
+// Counts are short (49.7k); the exact number is in the tooltip.
+const cnt = (n, extra = '') => `<span class="count" title="${fmtNum(n)}${extra}">${fmtCompact(n)}</span>`;
+// A section header that folds its section away (remembered). `closedKey` sections are open by default.
+const isOpen = (id, openByDefault = false) => (openByDefault ? !S.openGroups.has(`${id}-closed`) : S.openGroups.has(id));
+const sectionH = (id, label, openByDefault = false) => `<div class="side-h collapsible" data-toggle="${openByDefault ? `${id}-closed` : id}" role="button" tabindex="0" aria-expanded="${isOpen(id, openByDefault)}"><span>${label}</span><span class="sh-chev ${isOpen(id, openByDefault) ? 'open' : ''}">${icon('chevron')}</span></div>`;
 import { childrenOf, folderPath, folderColor, chatAvatar, menu, toast, fail, confirmDialog, promptDialog } from './ui.js';
 
 export async function loadFolders() {
@@ -31,35 +37,43 @@ const active = (type, test = () => true) => S.view.type === type && test();
 
 export function renderNav() {
   const total = S.status?.index?.files ?? S.chats.reduce((a, c) => a + (c.file_count || 0), 0);
+  const hidden = S.settings?.hide_duplicates === false ? 0 : (S.status?.dupes?.extra || 0);   // one per file, like the list
   const item = (go, ic, label, count, isActive, extra = '') => `<button class="nav-item ${isActive ? 'active' : ''}" data-go="${go}" ${extra}>
-      ${icon(ic)}<span class="label">${esc(label)}</span>${count ? `<span class="count">${fmtNum(count)}</span>` : ''}</button>`;
+      ${icon(ic)}<span class="label">${esc(label)}</span>${count ? cnt(count) : ''}</button>`;
   $('#navTop').innerHTML = `
     ${item('#drive', 'folder', 'My Drive', 0, active('drive', () => !S.view.folderId), 'data-drop-folder=""')}
     <div class="tree" id="tree" role="tree" aria-label="Folders"></div>
-    ${item('#all', 'grid', 'All files', total, active('all'))}
+    ${item('#all', 'grid', 'All files', Math.max(0, total - hidden), active('all'))}
     ${item('#starred', 'star', 'Starred', S.starredCount, active('starred'))}
     ${item('#recent', 'clock', 'Recent', 0, active('recent'))}
     ${S.continueCount ? item('#continue', 'play', 'Continue watching', S.continueCount, active('continue')) : ''}
     ${item('#photos', 'image', 'Photos', 0, active('photos'))}
     ${item('#map', 'map', 'Places', 0, active('map'))}`;
   renderTree();
-  const saved = S.saved.length ? `<div class="side-h">Saved searches</div>${S.saved.map((s) => `<div class="chat-row"><button class="nav-item ${active('saved', () => S.view.savedId === s.id) ? 'active' : ''}" data-go="#saved/${esc(s.id)}" title="${esc(s.q || '')}">
+  const saved = S.saved.length ? `${sectionH('saved', 'Saved searches', true)}${!isOpen('saved', true) ? '' : S.saved.map((s) => `<div class="chat-row"><button class="nav-item ${active('saved', () => S.view.savedId === s.id) ? 'active' : ''}" data-go="#saved/${esc(s.id)}" title="${esc(s.q || '')}">
       ${icon('search')}<span class="label">${esc(s.name)}</span></button><button class="icon-btn more" data-saved-menu="${esc(s.id)}" aria-label="Saved search actions">${icon('more')}</button></div>`).join('')}` : '';
-  const tags = S.tags.length ? `<div class="side-h collapsible" data-toggle="tags">Tags<span>${icon(S.openGroups.has('tags') ? 'down' : 'chevron')}</span></div>${S.openGroups.has('tags') ? `<div class="tag-cloud">${S.tags.slice(0, 40).map((t) => `<button class="chip ${active('tag', () => S.view.tag === t.tag) ? 'on' : ''}" data-go="#tag/${encodeURIComponent(t.tag)}">${esc(t.tag)}<small>${t.n}</small></button>`).join('')}</div>` : ''}` : '';
-  const tg = S.dialogFilters.length ? `<div class="side-h collapsible" data-toggle="tg">Telegram folders<span>${icon(S.openGroups.has('tg') ? 'down' : 'chevron')}</span></div>${S.openGroups.has('tg') ? S.dialogFilters.map((d) => `<button class="nav-item ${active('tg', () => S.view.filterId === d.id) ? 'active' : ''}" data-go="#tg/${d.id}">
-      <span class="emo">${esc(d.emoticon || '📁')}</span><span class="label">${esc(d.title)}</span><span class="count">${fmtNum(d.chat_ids.length)} chats</span></button>`).join('') : ''}` : '';
+  const tags = S.tags.length ? `${sectionH('tags', 'Tags')}${S.openGroups.has('tags') ? `<div class="tag-cloud">${S.tags.slice(0, 40).map((t) => `<button class="chip ${active('tag', () => S.view.tag === t.tag) ? 'on' : ''}" data-go="#tag/${encodeURIComponent(t.tag)}">${esc(t.tag)}<small>${t.n}</small></button>`).join('')}</div>` : ''}` : '';
+  const tg = S.dialogFilters.length ? `${sectionH('tg', 'Telegram folders')}${S.openGroups.has('tg') ? S.dialogFilters.map((d) => `<button class="nav-item ${active('tg', () => S.view.filterId === d.id) ? 'active' : ''}" data-go="#tg/${d.id}">
+      <span class="emo">${esc(d.emoticon || '📁')}</span><span class="label" title="${esc(d.title)}">${esc(d.title)}</span>${cnt(d.chat_ids.length, ' chats')}</button>`).join('') : ''}` : '';
   const subj = (S.subjects || []).filter((x) => x.n > 0 && !x.id.startsWith('_')).sort((a, b) => b.n - a.n);
-  const subjects = subj.length ? `<div class="side-h collapsible" data-toggle="subjects">Subjects<span>${icon(S.openGroups.has('subjects') ? 'down' : 'chevron')}</span></div>${S.openGroups.has('subjects') ? subj.map((x) => `<button class="nav-item ${active('subject', () => S.view.subject === x.id) ? 'active' : ''}" data-go="#subject/${esc(x.id)}">
-      <span class="emo">${x.emoji ? esc(x.emoji) : icon('book')}</span><span class="label">${esc(x.name)}</span><span class="count">${fmtNum(x.n)}</span></button>`).join('') : ''}` : '';
+  const subjects = subj.length ? `${sectionH('subjects', 'Subjects')}${S.openGroups.has('subjects') ? subj.map((x) => `<button class="nav-item ${active('subject', () => S.view.subject === x.id) ? 'active' : ''}" data-go="#subject/${esc(x.id)}">
+      <span class="emo">${x.emoji ? esc(x.emoji) : icon('book')}</span><span class="label">${esc(x.name)}</span>${cnt(x.n)}</button>`).join('') : ''}` : '';
   $('#navMid').innerHTML = saved + subjects + tg + tags;
-  $('#navTools').innerHTML = `<div class="side-h">Tools</div>
+  const toolsOpen = isOpen('tools', true);
+  $('#navTools').innerHTML = `${sectionH('tools', 'Tools', true)}${!toolsOpen ? '' : `
     ${item('#storage', 'chart', 'Storage', 0, active('storage'))}
     ${item('#duplicates', 'dupes', 'Duplicates', 0, active('duplicates'))}
     ${item('#index', 'database', 'Index manager', 0, active('index'))}
     ${item('#sync', 'sync', 'Folder sync', 0, active('sync'))}
     ${item('#marks', 'highlight', 'PDF highlights', 0, active('marks'))}
     ${item('#activity', 'activity', 'Activity', 0, active('activity'))}
-    ${item('#settings', 'settings', 'Settings', 0, active('settings'))}`;
+    ${item('#settings', 'settings', 'Settings', 0, active('settings'))}`}`;
+  const srcOpen = isOpen('sources', true);
+  $('#sourcesBody').hidden = !srcOpen;
+  const sh = $('.sources-h');
+  sh.setAttribute('aria-expanded', String(srcOpen));
+  sh.querySelector('.sh-chev').innerHTML = icon('chevron');
+  sh.querySelector('.sh-chev').classList.toggle('open', srcOpen);
 }
 
 export function renderTree() {
@@ -72,8 +86,8 @@ export function renderTree() {
     return `<div role="treeitem" aria-expanded="${kids.length ? open : ''}">
       <button class="nav-item ${act ? 'active' : ''}" data-go="#drive/${esc(f.id)}" data-drop-folder="${esc(f.id)}" style="padding-left:${10 + depth * 14}px">
         <span class="twisty ${kids.length ? (open ? 'open' : '') : 'none'}" data-twisty="${esc(f.id)}" aria-hidden="true">${icon('chevron')}</span>
-        ${f.emoji ? `<span class="fold-ic emo">${esc(f.emoji)}</span>` : `<span class="fold-ic" style="color:${folderColor(f)}">${icon(f.kind === 'smart' ? 'folderSmart' : 'folder')}</span>`}<span class="label">${esc(f.name)}</span>
-        ${f.kind === 'smart' ? `<span class="count">${icon('sparkle')}</span>` : f.file_count ? `<span class="count">${fmtNum(f.file_count)}</span>` : ''}</button>
+        ${f.emoji ? `<span class="fold-ic emo">${esc(f.emoji)}</span>` : `<span class="fold-ic" style="color:${folderColor(f)}">${icon(f.kind === 'smart' ? 'folderSmart' : 'folder')}</span>`}<span class="label" title="${esc(f.name)}">${esc(f.name)}</span>
+        ${f.kind === 'smart' ? `<span class="count">${icon('sparkle')}</span>` : f.file_count ? cnt(f.file_count) : ''}</button>
       ${open ? `<div role="group">${kids.map((k) => row(k, depth + 1)).join('')}</div>` : ''}</div>`;
   };
   tree.innerHTML = childrenOf(null).map((f) => row(f, 1)).join('');
@@ -96,14 +110,14 @@ export function renderChats() {
     const open = q || S.openGroups.has(gid);
     const n = chats.reduce((a, c) => a + (c.file_count || 0), 0);
     const shown = withFiles.slice(0, cap);
-    return `<button class="group-h ${open ? 'open' : ''}" data-group="${gid}" aria-expanded="${!!open}">${icon('chevron')}${label}<span class="count">${fmtNum(n)}</span></button>
+    return `<button class="group-h ${open ? 'open' : ''}" data-group="${gid}" aria-expanded="${!!open}">${icon('chevron')}${label}${cnt(n)}</button>
       ${open ? shown.map((c) => {
         const act = S.view.type === 'chat' && S.view.chatId === c.id;
         const cls = c.excluded ? 'excluded' : c.index_state === 'gone' ? 'gone' : '';
         const note = c.index_state === 'error' ? `<span class="warn" title="${esc(c.index_error || '')}">!</span>`
           : c.index_state === 'running' ? `<span class="spin" title="Indexing now"></span>` : c.pinned ? `<span class="pin-mark">${icon('pin')}</span>` : '';
         return `<div class="chat-row ${cls}"><button class="nav-item ${act ? 'active' : ''}" data-go="#chat/${c.id}" title="${esc(c.title)}${c.excluded ? ' (excluded from index)' : c.index_state === 'gone' ? ' (you left this chat)' : ''}">
-          ${chatAvatar(c, 'xs')}<span class="label">${esc(c.title)}</span>${note}<span class="count">${c.file_count ? fmtNum(c.file_count) : ''}</span></button>
+          ${chatAvatar(c, 'xs')}<span class="label">${esc(c.title)}</span>${note}${c.file_count ? cnt(c.file_count) : '<span class="count"></span>'}</button>
           <button class="icon-btn more" data-chat-menu="${c.id}" aria-label="Actions for ${esc(c.title)}" aria-haspopup="menu">${icon('more')}</button></div>`;
       }).join('') + (withFiles.length > cap ? `<p class="more-note">${fmtNum(withFiles.length - cap)} more — type in the filter above</p>` : '') : ''}`;
   }).join('') || `<p class="more-note">${S.chats.length ? 'No chats match.' : 'Chats appear once indexing starts.'}</p>`;
@@ -126,18 +140,20 @@ export function renderIndexStatus() {
       <div class="idx-sub">One-time, about a minute per 400k files. Search keeps working meanwhile.</div></div>`;
   }
   const sem = st.semantic;
-  const semLine = sem && sem.enabled && sem.state === 'building' ? `<div class="idx-cur">Learning file meanings: ${fmtNum(sem.count)} files</div>` : '';
   const speed = !idle && !paused && i.files_per_min ? ` · ${fmtNum(i.files_per_min)}/min` : '';
+  const state = i.error || i.phase === 'error' ? 'err' : paused ? 'paused' : idle ? 'ok' : 'busy';
+  const sub = idle ? `${fmtCompact(i.files)} files · ${fmtSize(i.bytes)}${i.last_sync ? ` · checked ${relTime(i.last_sync)}` : ''}`
+    : `${fmtNum(i.chats_done)}/${fmtNum(i.chats_total)} chats · ${fmtCompact(i.files)} files${speed}`;
+  const extra = [i.current && !idle ? `Now: ${i.current}` : '', i.phase.startsWith('rate') ? i.phase : '',
+    sem && sem.enabled && sem.state === 'building' ? `Learning file meanings · ${fmtCompact(sem.count)}` : ''].filter(Boolean);
   $('#indexStatus').className = `idx${paused ? ' paused' : ''}`;
-  $('#indexStatus').innerHTML = `${upgrade}<div class="idx-line"><span>${title}</span>
-      ${idle ? '<button class="btn ghost sm" data-idx="resync" title="Check all chats for new files now">Check now</button>'
-        : `<button class="btn sm" data-idx="${paused ? 'resume' : 'pause'}">${paused ? 'Resume' : 'Pause'}</button>`}</div>
+  $('#indexStatus').innerHTML = `${upgrade}<div class="idx-row"><span class="idx-dot ${state}" aria-hidden="true"></span>
+      <div class="idx-text"><strong>${title}</strong><small title="${esc(sub)}">${esc(sub)}</small></div>
+      ${idle ? `<button class="icon-btn tiny" data-idx="resync" title="Check all chats for new files now" aria-label="Check now">${icon('refresh')}</button>`
+        : `<button class="icon-btn tiny" data-idx="${paused ? 'resume' : 'pause'}" title="${paused ? 'Resume indexing' : 'Pause indexing'}" aria-label="${paused ? 'Resume' : 'Pause'}">${icon(paused ? 'play' : 'pause')}</button>`}</div>
     ${idle ? '' : `<div class="bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>`}
-    <div class="idx-sub">${idle ? `${plural(i.files, 'file')}, ${fmtSize(i.bytes)}${i.last_sync ? ` · checked ${relTime(i.last_sync)}` : ''}`
-      : `${fmtNum(i.chats_done)} of ${plural(i.chats_total, 'chat')} · ${plural(i.files, 'file')}${speed}`}</div>
-    ${i.current && !idle ? `<div class="idx-cur">Now: ${esc(i.current)}</div>` : ''}
-    ${i.phase.startsWith('rate') ? `<div class="idx-cur">${esc(i.phase)}</div>` : ''}${semLine}
-    ${i.error ? `<div class="warn">${esc(i.error)}</div>` : ''}`;
+    ${extra.length ? `<div class="idx-cur" title="${esc(extra.join(' · '))}">${esc(extra.join(' · '))}</div>` : ''}
+    ${i.error ? `<div class="warn idx-cur" title="${esc(i.error)}">${esc(i.error)}</div>` : ''}`;
   const acct = st.account;
   let banner = acct.status !== 'online'
     ? `<div class="banner">${esc(acct.error || 'Not connected to Telegram. Browsing and searching still work; previews and transfers wait until it reconnects.')}</div>` : '';
@@ -220,6 +236,7 @@ document.addEventListener('click', (e) => {
   const tg = e.target.closest('[data-toggle]');
   if (tg) {
     const id = tg.dataset.toggle;
+    if (e.target.closest('#chatSortBtn')) return;
     S.openGroups.has(id) ? S.openGroups.delete(id) : S.openGroups.add(id);
     pref('openGroups', JSON.stringify([...S.openGroups]));
     renderNav();
@@ -235,3 +252,7 @@ document.addEventListener('click', (e) => {
 
 export { folderPath };
 export const kindLabel = (k) => CHAT_KIND_NAME[k] || k;
+document.addEventListener('keydown', (e) => {
+  const t = e.target.closest?.('.side-h[data-toggle]');
+  if (t && (e.key === 'Enter' || e.key === ' ') && e.target === t) { e.preventDefault(); t.click(); }
+});

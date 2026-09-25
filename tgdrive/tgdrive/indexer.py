@@ -323,6 +323,9 @@ class Indexer:
         self.phase = "indexing"
         self.db.set_chat_state(cid, "running")
         filters = wanted_filters()
+        t0 = time.time()
+        log.debug("indexing chat %s %r (%s, latest msg %s, kinds %s)", cid, chat["title"], chat.get("kind"),
+                  chat.get("latest_msg_id"), ",".join(filters))
         try:
             peer = await self.acc.peer(cid)
             counts = await self._counters(peer, filters)
@@ -343,17 +346,21 @@ class Indexer:
                     self.db.set_progress(cid, name, done=1)
             self.db.refresh_file_count(cid)
             self.db.set_chat_state(cid, "done")
+            log.debug("indexed chat %s %r in %.1f s (counters %s)", cid, chat["title"], time.time() - t0, counts)
         except asyncio.CancelledError:
             self.db.refresh_file_count(cid)
             raise
         except errors.FloodWaitError as exc:
+            log.info("indexing %s: Telegram asks to wait %d s", cid, exc.seconds)
             self.db.set_chat_state(cid, "pending")
             self.phase = f"rate limited by Telegram, waiting {exc.seconds}s"
             await asyncio.sleep(exc.seconds + 1)
         except SKIP_ERRORS as exc:
+            log.debug("indexing %s skipped: no access (%s)", cid, exc.__class__.__name__)
             self.db.set_chat_state(cid, "error", f"No access: {exc.__class__.__name__}")
         except Exception as exc:
             log.warning("indexing %s failed: %s", chat["title"], exc)
+            log.debug("indexing %s traceback", cid, exc_info=exc)
             self.db.set_chat_state(cid, "error", str(exc)[:300])
         finally:
             self.db.refresh_file_count(cid)
@@ -502,6 +509,7 @@ class Indexer:
                 )
             self.db.bump_latest(cid, msg.id)
             rec = self.record(msg, cid, chat["title"])
+            log.debug("live: new message %s in %s%s", msg.id, cid, f" with {rec['kind']} {rec.get('name')!r}" if rec else "")
             if rec and rec["kind"] in set(settings.get("index_kinds") or []):
                 self.db.upsert_files([rec])
                 self.db.refresh_file_count(cid)
@@ -516,6 +524,7 @@ class Indexer:
             if not chat:
                 return
             msg = ev.message
+            log.debug("live: edited message %s in %s", msg.id, chat["id"])
             self.acc.fetcher.forget(chat["id"], msg.id)
             rec = self.record(msg, chat["id"], chat["title"])
             if rec:
@@ -529,6 +538,7 @@ class Indexer:
     async def _on_delete(self, ev) -> None:
         try:
             ids = list(ev.deleted_ids or [])
+            log.debug("live: %d message(s) deleted in %s: %s", len(ids), ev.chat_id, ids[:50])
             self.db.delete_files(ev.chat_id, ids)
             for mid in ids:
                 if ev.chat_id is not None:

@@ -1,33 +1,74 @@
 // Details drawer (single file or a multi-selection).
-import { $, S, A, api, esc, icon, key, fmtSize, fmtDate, fmtDur, plural, KIND_NAME, CHAT_KIND_NAME, STREAMABLE, bus, callBridge, bridge, streamUrl, debounce } from './core.js';
-import { toast, fail } from './ui.js';
+import { $, S, A, api, esc, icon, key, fmtSize, fmtDate, fmtDur, plural, KIND_NAME, CHAT_KIND_NAME, STREAMABLE, bus, callBridge, bridge, debounce, thumbs, friendlyName, displayName, copiesParam } from './core.js';
+import { toast, fail, chatAvatar } from './ui.js';
 import {
   selectedFiles, selectedItems, setSelected, thumbHtml, refreshCard, openFile, doDownload, doMove, placeInto, doCopy, doSend,
   doLinks, doDelete, toggleStar, editTags, bulkRename, doOpenLocal, openInTelegram, viewTitle, undoLast,
 } from './files.js';
-import { canPlayInline } from './viewer.js';
+import { mountPreview, stopPreview } from './preview.js';
 
+// The panel slides in and out; its content cross-fades when it switches between details and transfers.
+let closeTimer = 0;
+let shownKind = null;
 export function renderDrawer() {
   const d = $('#drawer');
-  d.hidden = !S.drawer;
-  $('#app').classList.toggle('with-drawer', !!S.drawer);
+  clearTimeout(closeTimer);
   $('#transfersBtn').setAttribute('aria-expanded', String(S.drawer === 'transfers'));
+  if (!S.drawer) {
+    stopPreview();
+    shownKind = null;
+    if (d.hidden) return undefined;
+    d.classList.remove('opening');
+    d.classList.add('closing');
+    closeTimer = setTimeout(() => {
+      d.classList.remove('closing');
+      d.hidden = true;
+      $('#app').classList.remove('with-drawer');
+      d.innerHTML = '';
+    }, 190);
+    return undefined;
+  }
+  if (d.hidden || d.classList.contains('closing')) {
+    d.classList.remove('closing');
+    d.hidden = false;
+    d.classList.remove('opening');
+    void d.offsetWidth;
+    d.classList.add('opening');
+    setTimeout(() => d.classList.remove('opening'), 360);
+  } else if (shownKind && shownKind !== S.drawer) {
+    d.classList.remove('swap');
+    void d.offsetWidth;
+    d.classList.add('swap');
+  }
+  $('#app').classList.add('with-drawer');
+  if (S.drawer !== 'details') stopPreview();
+  shownKind = S.drawer;
   if (S.drawer === 'transfers') return import('./transfers.js').then((m) => m.renderTransfers());
   if (S.drawer === 'details') return renderDetails();
   if (S.drawer === 'context') return undefined;   // context.js owns the panel
   d.innerHTML = '';
+  return undefined;
 }
 export function closeDrawer() { S.drawer = null; renderDrawer(); }
 
-bus.on('open-details', () => { if (S.drawer !== 'transfers' || S.pinDetails) { S.drawer = 'details'; renderDrawer(); } else renderDrawer(); });
+// Clicking a file always shows its details and preview (also when the transfers list was open).
+bus.on('open-details', () => { S.drawer = 'details'; renderDrawer(); });
 bus.on('selection', () => {
   if (S.drawer === 'details') { if (!S.selected.size) closeDrawer(); else renderDetails(); }
 });
 
+const skel = (w) => `<i class="sk-line" style="width:${w}%"></i>`;
+function factsSkeleton() {
+  return `<div class="d-skel" aria-hidden="true">${skel(70)}${skel(40)}<div class="sk-row">${'<i class="sk-btn"></i>'.repeat(3)}</div>
+    ${[60, 45, 70, 50, 65, 40].map((w) => `<div class="sk-fact"><i></i>${skel(w)}</div>`).join('')}</div>`;
+}
+
+let detailsReq = 0;
 async function renderDetails() {
   const d = $('#drawer');
   const files = selectedFiles();
   if (files.length > 1) {
+    stopPreview();
     const bytes = files.reduce((a, f) => a + (f.size || 0), 0);
     const kinds = {};
     files.forEach((f) => { kinds[f.kind] = (kinds[f.kind] || 0) + 1; });
@@ -45,17 +86,30 @@ async function renderDetails() {
         <button class="btn" data-bulk-d="send">${icon('send')}Send to chat</button>
         <button class="btn" data-bulk-d="links">${icon('link')}Copy links</button>
         <button class="btn danger" data-bulk-d="delete">${icon('trash')}Delete from Telegram</button></div></div>`;
+    thumbs.observe(d);
+    shownDetail = null;
     return;
   }
   const f = files[0];
   if (!f) { closeDrawer(); return; }
   const k = key(f);
   S.detail = k;
-  d.innerHTML = `<div class="drawer-head"><h2>Details</h2><button class="icon-btn" data-close aria-label="Close">${icon('close')}</button></div>
-    <div class="drawer-body"><div class="preview">${previewHtml(f)}</div><p class="orig">Loading…</p></div>`;
+  const req = ++detailsReq;
+  // Same file again (after a star, tag or rename): keep the preview playing, refresh only the facts.
+  if (shownDetail !== k || !d.querySelector('.d-info')) {
+    d.innerHTML = `<div class="drawer-head"><h2>Details</h2><button class="icon-btn" data-close aria-label="Close">${icon('close')}</button></div>
+      <div class="drawer-body"><div class="preview"></div><div class="d-info"><div class="d-title-row"><div class="d-title"><span class="d-name">${esc(displayName(f))}</span></div></div>
+      <p class="d-sub">${esc([KIND_NAME[f.kind] || f.kind, fmtSize(f.size), f.duration ? fmtDur(f.duration) : '', fmtDate(f.date)].filter(Boolean).join(' · '))}</p>${factsSkeleton()}</div></div>`;
+    shownDetail = k;
+    mountPreview($('.preview', d), f, { onOpen: (x) => openFile(x) });
+    d.querySelector('.drawer-body').classList.add('fade-in');
+  }
   let det;
-  try { det = await api(A(`/files/${f.chat_id}/${f.msg_id}`)); } catch (e) { $('.orig', d).textContent = e.message; return; }
-  if (S.detail !== k || S.drawer !== 'details') return;
+  try { det = await api(A(`/files/${f.chat_id}/${f.msg_id}`)); } catch (e) {
+    if (req === detailsReq) $('.d-info', d).innerHTML = `<p class="orig err">${esc(e.message)}</p><button class="btn" data-one="retry-details">${icon('refresh')}Try again</button>`;
+    return;
+  }
+  if (S.detail !== k || S.drawer !== 'details' || req !== detailsReq) return;
   Object.assign(f, { starred: det.starred, tags: det.tags, name: det.name });
   const chat = S.chatById.get(det.chat_id);
   const facts = [
@@ -71,44 +125,70 @@ async function renderDetails() {
     det.fwd_from ? ['Forwarded from', esc(det.fwd_from)] : null,
     ['Folder', det.folder_path.length ? `<button data-go="#drive/${esc(det.folder_id)}">${det.folder_path.map((p) => esc(p.name)).join(' / ')}</button>` : 'Not in a folder'],
     det.album > 1 ? ['Album', `<button data-go="#album/${det.chat_id}/${det.grouped_id}">${det.album} files sent together</button>`] : null,
-    det.duplicates > 0 ? ['Copies', `<button data-dupes="1">${plural(det.duplicates, 'other copy', 'other copies')} in your chats</button>`] : null,
     det.local_path ? ['On this computer', `<button data-local="open">Open</button> · <button data-local="reveal">Show in folder</button>`] : null,
     ['Mime type', esc(det.mime || '')],
   ].filter(Boolean);
   const canPlay = STREAMABLE.has(det.kind);
-  $('.drawer-body', d).innerHTML = `<div class="preview">${previewHtml(det, true)}</div>
-    <div class="name-row"><form class="rename" id="renameForm"><label class="sr-only" for="renameInput">File name</label>
-      <input id="renameInput" type="text" value="${esc(det.name)}" maxlength="120"></form>
-      <button class="icon-btn star-btn ${det.starred ? 'on' : ''}" id="starBtn" aria-pressed="${det.starred}" title="${det.starred ? 'Remove star (S)' : 'Star (S)'}">${icon('star')}</button></div>
-    <p class="orig">${det.renamed ? `Original name: ${esc(det.original_name)}. <button type="button" id="resetName">Use original</button>` : 'Renaming only changes the name in TG Drive. Press Enter to save.'}</p>
-    <div class="tag-row">${(det.tags || []).map((t) => `<button class="chip" data-go="#tag/${encodeURIComponent(t)}">${esc(t)}</button>`).join('')}<button class="chip ghost" id="tagsBtn">${icon('tag')}${det.tags?.length ? 'Edit' : 'Add tags'}</button></div>
+  const info = $('.d-info', d);
+  info.classList.remove('fade-in');
+  void info.offsetWidth;
+  info.classList.add('fade-in');
+  const friendly = friendlyName(det);
+  const subjName = det.subject && det.subject !== '_none' ? (S.subjects || []).find((x) => x.id === det.subject)?.name || det.subject : '';
+  const tool = (act, ic, label, extra = '') => `<button class="icon-btn" data-one="${act}" title="${esc(label)}" aria-label="${esc(label)}" ${extra}>${icon(ic)}</button>`;
+  info.innerHTML = `<div class="d-title-row" id="dTitleRow">
+      <button class="d-title" data-rename title="Rename (F2)"><span class="d-name">${esc(friendly || det.name)}</span>${friendly ? `<small class="d-real">${esc(det.name)}</small>` : ''}</button>
+      <button class="icon-btn star-btn ${det.starred ? 'on' : ''}" id="starBtn" aria-pressed="${det.starred}" title="${det.starred ? 'Remove star (S)' : 'Star (S)'}">${icon('star')}</button>
+      <button class="icon-btn" data-rename title="Rename (F2)" aria-label="Rename">${icon('edit')}</button></div>
+    <form class="rename" id="renameForm" hidden><label class="sr-only" for="renameInput">File name</label>
+      <input id="renameInput" type="text" value="${esc(det.name)}" maxlength="120">
+      <small>Changes the name in TG Drive only · Enter to save · Esc to cancel</small></form>
+    ${det.renamed ? `<p class="orig">Original name: ${esc(det.original_name)} · <button type="button" id="resetName">Use original</button></p>` : ''}
+    <p class="d-sub">${esc([KIND_NAME[det.kind] || det.kind, fmtSize(det.size), det.duration ? fmtDur(det.duration) : '', fmtDate(det.date)].filter(Boolean).join(' · '))}</p>
+    <div class="tag-row">${(det.tags || []).map((t) => `<button class="chip" data-go="#tag/${encodeURIComponent(t)}">${esc(t)}</button>`).join('')}<button class="chip ghost" id="tagsBtn">${icon('tag')}${det.tags?.length ? 'Edit' : 'Add tags'}</button>${subjName ? `<button class="chip subj" data-one="subject" title="Subject (click to change)">${icon('book')}${esc(subjName)}</button>` : ''}</div>
     <div class="quick-acts">
       <button class="btn primary" data-one="${canPlay ? 'play' : 'view'}">${icon(canPlay ? 'play' : 'eye')}${canPlay ? 'Play' : 'Preview'}</button>
       <button class="btn" data-one="download">${icon('download')}Download</button>
       <button class="btn" data-one="open" title="Download if needed and open with the default app">${icon('external')}Open</button></div>
+    <div class="d-tools" role="toolbar" aria-label="More actions">
+      ${det.tg_link || det.link ? tool('telegram', 'telegram', 'Open in Telegram') : ''}
+      ${tool('context', 'chat', 'Show in chat')}
+      ${tool('move', 'move', det.folder_id ? 'Move to another folder' : 'Move to folder')}
+      ${det.folder_id ? tool('unfile', 'folder', 'Take out of folder') : ''}
+      ${det.can_copy ? tool('copy', 'copy', 'Save a copy to Drive') : ''}
+      ${det.can_forward ? tool('send', 'send', 'Send to chat') : ''}
+      ${det.link ? tool('link', 'link', 'Copy link') : ''}
+      ${tool('subject', 'book', subjName ? `Subject: ${subjName}` : 'Set subject')}
+      ${tool('related', 'sparkle', 'Find related files')}
+      <span class="spacer"></span>
+      ${det.can_delete ? tool('delete', 'trash', 'Delete from Telegram', 'data-danger') : ''}</div>
     <dl class="facts">${facts.map(([t, v]) => `<dt>${t}</dt><dd>${v}</dd>`).join('')}</dl>
+    ${copiesHtml(det)}
     ${det.caption ? `<div class="caption">${linkify(det.caption)}</div>` : ''}
     <label class="field note-field"><span>${icon('note')}Note <small>synced, searchable with has:note</small></span><textarea id="noteInput" rows="2" maxlength="2000" placeholder="Add a note…">${esc(det.note || '')}</textarea></label>
-    ${det.link ? `<div class="link-row"><input type="text" readonly value="${esc(det.link)}" aria-label="Telegram link"><button class="icon-btn" id="copyLink" title="Copy link" aria-label="Copy link">${icon('copy')}</button></div>`
-    : '<p class="orig">Messages in private chats and basic groups have no t.me link.</p>'}
-    <div class="actions">
-      ${det.tg_link || det.link ? `<button class="btn" data-one="telegram">${icon('telegram')}Open in Telegram</button>` : ''}
-      <button class="btn" data-one="move">${icon('move')}${det.folder_id ? 'Move to another folder' : 'Move to folder'}</button>
-      ${det.folder_id ? `<button class="btn" data-one="unfile">${icon('folder')}Take out of folder</button>` : ''}
-      ${det.can_copy ? `<button class="btn" data-one="copy">${icon('copy')}Save a copy to Drive</button>` : ''}
-      ${det.can_forward ? `<button class="btn" data-one="send">${icon('send')}Send to chat</button>` : ''}
-      <button class="btn" data-one="context">${icon('chat')}Show in chat</button>
-      <button class="btn" data-one="subject">${icon('book')}${det.subject && det.subject !== '_none' ? `Subject: ${esc((S.subjects || []).find((x) => x.id === det.subject)?.name || det.subject)}` : 'Set subject'}</button>
-      <button class="btn" data-one="related">${icon('sparkle')}Find related files</button>
-      ${det.can_delete ? `<button class="btn danger" data-one="delete">${icon('trash')}Delete from Telegram</button>` : ''}
-    </div>`;
+    ${det.link ? `<div class="link-row"><input type="text" readonly value="${esc(det.link)}" aria-label="Telegram link"><button class="icon-btn" id="copyLink" title="Copy link" aria-label="Copy link">${icon('copy')}</button></div>` : ''}`;
   const rf = $('#renameForm');
-  rf.addEventListener('submit', async (e) => { e.preventDefault(); await renameFile(det, $('#renameInput').value); });
-  $('#renameInput').addEventListener('blur', () => { if ($('#renameInput').value.trim() && $('#renameInput').value.trim() !== det.name) renameFile(det, $('#renameInput').value); });
+  const ri = $('#renameInput');
+  const startRename = () => {
+    $('#dTitleRow').hidden = true;
+    rf.hidden = false;
+    ri.focus();
+    const dot = ri.value.lastIndexOf('.');
+    ri.setSelectionRange(0, dot > 0 ? dot : ri.value.length);
+  };
+  const stopRename = () => { rf.hidden = true; $('#dTitleRow').hidden = false; ri.value = det.name; };
+  info.querySelectorAll('[data-rename]').forEach((b) => b.addEventListener('click', startRename));
+  rf.addEventListener('submit', async (e) => { e.preventDefault(); rf.dataset.saving = '1'; try { await renameFile(det, ri.value); } finally { delete rf.dataset.saving; } });
+  ri.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); stopRename(); } });
+  ri.addEventListener('blur', () => {
+    if (rf.dataset.saving) return;
+    if (ri.value.trim() && ri.value.trim() !== det.name) renameFile(det, ri.value); else stopRename();
+  });
   $('#resetName')?.addEventListener('click', () => renameFile(det, ''));
   $('#copyLink')?.addEventListener('click', () => navigator.clipboard.writeText(det.link).then(() => toast('Link copied'), () => fail(new Error("Couldn't copy to the clipboard."))));
   $('#starBtn').addEventListener('click', async () => { await toggleStar([f]); renderDetails(); });
   $('#tagsBtn').addEventListener('click', async () => { await editTags([f]); renderDetails(); });
+  watchTitle(d, friendly || det.name);
   const saveNote = debounce(async () => {
     try {
       await api(A('/files/meta'), { method: 'POST', body: { items: [[f.chat_id, f.msg_id]], note: $('#noteInput')?.value ?? '' } });
@@ -119,17 +199,43 @@ async function renderDetails() {
   $('#noteInput').addEventListener('input', saveNote);
   d.querySelector('[data-dupes]')?.addEventListener('click', () => bus.emit('go', '#duplicates'));
   d.querySelectorAll('[data-local]').forEach((b) => b.addEventListener('click', () => api('/api/open', { method: 'POST', body: { path: det.local_path, reveal: b.dataset.local === 'reveal' } }).catch(fail)));
-  d.querySelector('.preview [data-lightbox]')?.addEventListener('click', () => openFile(f));
+}
+let shownDetail = null;
+
+// Every copy of the file (forwarded into other chats, or uploaded again), best first.
+function copiesHtml(det) {
+  const list = det.copy_list || [];
+  if (list.length < 2) return '';
+  const hiding = copiesParam() === 'hide';
+  return `<section class="d-copies"><div class="d-sec-h">${icon('dupes')}<span>${list.length} copies of this file</span>
+      <small>${hiding ? 'Lists show only the first one' : 'Lists show all of them'}</small></div>
+    ${list.map((c, i) => `<div class="copy-row ${c.this ? 'this' : ''}">${chatAvatar({ title: c.chat_title || '?' }, 'xs')}
+      <span class="grow"><button class="linkish" data-go="#chat/${c.chat_id}" title="Go to this chat">${esc(c.chat_title || 'Chat')}</button>
+        <small>${esc(fmtDate(c.date))}${c.starred ? ' · starred' : ''}${c.folder_id ? ' · in a folder' : ''}${i === 0 ? ' · shown in lists' : ''}</small></span>
+      ${c.this ? '<span class="pill blue">This one</span>' : `<button class="btn sm ghost" data-copy-open="${c.chat_id}:${c.msg_id}" title="Open this copy">${icon('eye')}</button>`}</div>`).join('')}
+    <button class="linkish d-copies-all" data-go="#duplicates">Manage all duplicates…</button></section>`;
 }
 
-function previewHtml(f, live = false) {
-  if (live && (f.kind === 'audio' || f.kind === 'voice') && (!bridge.ready || canPlayInline(f))) {
-    return `<div class="audio-prev">${thumbHtml(f, 'b')}<audio controls preload="none" src="${streamUrl(f)}"></audio></div>`;
-  }
-  if (live && ['video', 'round', 'gif'].includes(f.kind)) {
-    return `<button data-lightbox aria-label="Play">${thumbHtml(f, 'b')}</button>`;
-  }
-  return `<button data-lightbox aria-label="Open preview">${thumbHtml(f, 'b')}</button>`;
+// The panel header shows the file's name once its title has scrolled out of view.
+let titleIO = null;
+function watchTitle(d, name) {
+  titleIO?.disconnect();
+  const h = d.querySelector('.drawer-head h2');
+  const row = d.querySelector('#dTitleRow');
+  if (!h || !row) return;
+  h.dataset.name = name;
+  titleIO = new IntersectionObserver(([en]) => {
+    const show = !en.isIntersecting && en.boundingClientRect.top < en.rootBounds.top + 10;
+    h.classList.toggle('as-name', show);
+    h.textContent = show ? h.dataset.name : 'Details';
+  }, { root: d.querySelector('.drawer-body'), threshold: 0 });
+  titleIO.observe(row);
+}
+export function startRenameInPanel() {
+  const b = document.querySelector('#drawer .d-title[data-rename]');
+  if (!b || S.drawer !== 'details') return false;
+  b.click();
+  return true;
 }
 
 function linkify(text) {
@@ -144,7 +250,7 @@ async function renameFile(det, name) {
   try {
     await api(A(`/files/${det.chat_id}/${det.msg_id}/rename`), { method: 'POST', body: { name } });
     const f = S.byKey.get(key(det));
-    if (f) { f.name = name || det.original_name; refreshCard(f); }
+    if (f) { f.name = name || det.original_name; f.renamed = !!name; refreshCard(f); }
     toast(name ? 'Renamed' : 'Name reset', { action: 'Undo', onAction: undoLast });
     renderDetails();
   } catch (e) { fail(e); }
@@ -164,6 +270,8 @@ $('#drawer').addEventListener('click', (e) => {
     if (!f) return;
     const items = [[f.chat_id, f.msg_id]];
     ({
+      'retry-details': () => { shownDetail = null; renderDetails(); },
+      link: () => (f.link ? navigator.clipboard.writeText(f.link).then(() => toast('Link copied'), () => fail(new Error("Couldn't copy to the clipboard."))) : doLinks([f])),
       play: () => openFile(f), view: () => openFile(f),
       download: () => doDownload(items), open: () => doOpenLocal(f),
       move: () => doMove(items, f.folder_id), unfile: () => placeInto(items, null),
@@ -175,6 +283,8 @@ $('#drawer').addEventListener('click', (e) => {
     })[one.dataset.one]?.();
     return;
   }
+  const co = e.target.closest('[data-copy-open]');
+  if (co) { const [c, m] = co.dataset.copyOpen.split(':').map(Number); bus.emit('open-file-ref', { chat_id: c, msg_id: m }); return; }
   const bulk = e.target.closest('[data-bulk-d]');
   if (bulk) {
     const items = selectedItems();

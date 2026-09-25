@@ -63,7 +63,9 @@ def serve_in_thread(on_ready: Optional[Callable[[int, int], None]] = None, **kw)
 def main() -> None:
     from tgdrive import maintenance
     log_path = maintenance.setup_logging()
-    logging.getLogger().addHandler(logging.StreamHandler(sys.stderr))
+    err = logging.StreamHandler(sys.stderr)
+    err.setLevel(logging.INFO)
+    logging.getLogger().addHandler(err)
     if config.HOST not in ("127.0.0.1", "localhost", "::1") and not config.PASSWORD:
         print("\n  Refusing to listen on a public interface without TGDRIVE_PASSWORD.\n"
               "  Anyone who can reach this port would get full access to your Telegram account.\n")

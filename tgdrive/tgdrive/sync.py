@@ -212,7 +212,11 @@ class SyncEngine:
             if not dry and not pair["approved"]:
                 dry = True
             try:
+                t0 = time.time()
+                log.debug("sync pair %s (%s) run: dry=%s force=%s", pid, pair["local_path"], dry, force)
                 plan = await self._run(pair, dry=dry or False, force=force)
+                log.debug("sync pair %s finished in %.1f s: %s", pid, time.time() - t0,
+                          {k: (len(v) if isinstance(v, list) else v) for k, v in (plan or {}).items()})
                 return plan
             except SyncError as exc:
                 self._state(pid, "stopped", str(exc))

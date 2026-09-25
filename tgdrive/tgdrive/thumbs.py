@@ -65,22 +65,28 @@ class Thumbs:
             return await asyncio.shield(self.inflight[key])
         fut = asyncio.get_running_loop().create_future()
         self.inflight[key] = fut
+        t0 = time.perf_counter()
         try:
             result = await asyncio.wait_for(self._fetch(chat_id, msg_id, variant, path), TIMEOUT)
             fut.set_result(result)
+            log.debug("preview %s:%s/%s %s in %.0f ms", chat_id, msg_id, variant, "fetched" if result else "none",
+                      (time.perf_counter() - t0) * 1000)
             return result
         except errors.FloodWaitError as exc:
+            log.info("preview %s:%s/%s: flood wait %d s", chat_id, msg_id, variant, exc.seconds)
             self.backoff_until = time.time() + exc.seconds
             err = ThumbsBusy(exc.seconds)
             fut.set_exception(err)
             fut.exception()
             raise err
         except asyncio.TimeoutError:
+            log.debug("preview %s:%s/%s timed out after %.0f s", chat_id, msg_id, variant, TIMEOUT)
             err = ThumbsBusy(10)
             fut.set_exception(err)
             fut.exception()
             raise err
         except Exception as exc:
+            log.debug("preview %s:%s/%s failed: %r", chat_id, msg_id, variant, exc)
             fut.set_exception(exc)
             fut.exception()  # mark retrieved
             raise

@@ -1,13 +1,13 @@
 // Photos: every photo and video on one timeline, grouped by month, with a date scrubber on the right.
 // Only the months on screen are loaded, so it stays fast with 100,000+ pictures.
-import { $, $$, S, A, api, esc, icon, qs, fmtDur, fmtNum, key, thumbs, thumbUrl, inlineSrc, bus, pref, clamp, plural } from './core.js';
+import { $, $$, S, A, api, esc, icon, qs, fmtDur, fmtNum, key, thumbs, thumbUrl, inlineSrc, bus, pref, clamp, plural, copiesParam } from './core.js';
 import { fail, contextMenu, chatPicker } from './ui.js';
 
 const SIZES = { s: 112, m: 164, l: 236 };
 let P = null;
 
 function filters() {
-  const p = { kinds: P.kind || 'photo,video' };
+  const p = { kinds: P.kind || 'photo,video', copies: copiesParam() };
   if (P.chat) p.chat_ids = P.chat;
   if (P.starred) p.starred = 1;
   return p;

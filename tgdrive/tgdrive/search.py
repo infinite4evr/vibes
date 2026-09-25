@@ -151,6 +151,7 @@ class TextPlan:
     steps: list[tuple[int, str, str, bool]] = field(default_factory=list)  # (tier, table, expr, ranked)
     neg: str = ""
     semantic: str = ""
+    semantic_extra: list[str] = field(default_factory=list)   # other phrasings, blended in at a lower weight
     corrected: Optional[str] = None
     signature: str = ""
     exact_only: bool = False
@@ -218,7 +219,8 @@ class SearchEngine:
 
         if not plan.exact_only and ws:
             syn = self.synonyms()
-            spans = {s: (e, alts) for s, e, alts in textproc.synonym_expansions(ws, syn)}
+            spans_list = textproc.synonym_expansions(ws, syn)
+            spans = {s: (e, alts) for s, e, alts in spans_list}
             groups: list[str] = []
             i = 0
             while i < len(ws):
@@ -282,12 +284,23 @@ class SearchEngine:
                 plan.steps.append((2, table, partial, True))
             if self.semantic_enabled():
                 plan.semantic = " ".join(raw_terms + phrases)
+                # The meaning model knows "previous year questions" far better than "pyq", and a typo not at
+                # all: give it the synonym-expanded and spelling-corrected forms of the query too.
+                extra: list[str] = []
+                for s, e, alts in spans_list:
+                    for a in alts[:3]:
+                        extra.append(" ".join(ws[:s] + list(a) + ws[e:]))
+                if plan.corrected:
+                    extra.append(plan.corrected)
+                seen = {plan.semantic.lower()}
+                plan.semantic_extra = [x for x in extra if not (x.lower() in seen or seen.add(x.lower()))][:6]
 
         neg = []
         for t in f["neg_terms"]:
             neg.extend(term(w) for w in textproc.query_words(t))
         plan.neg = fts_or(neg)
-        plan.signature = hashlib.sha1(json.dumps([plan.steps, plan.neg, plan.semantic, ready]).encode()).hexdigest()
+        plan.signature = hashlib.sha1(json.dumps([plan.steps, plan.neg, plan.semantic, plan.semantic_extra, ready]
+                                                 ).encode()).hexdigest()
         return plan
 
     # ------------------------------------------------------------ public
@@ -317,8 +330,16 @@ class SearchEngine:
             await self._ensure_vocab()
         return f, self.plan(f)
 
-    def _where(self, f: dict) -> tuple[str, list]:
-        return query.build_where(f, descendants=self.acc.drive._descendants)
+    def _where(self, f: dict, skip_kinds: bool = False) -> tuple[str, list]:
+        return query.build_where(f, skip_kinds=skip_kinds, descendants=self.acc.drive._descendants, dedupe=False)
+
+    @staticmethod
+    def _dedupe(f: dict, where: str, params: list, plan: Optional[TextPlan]) -> tuple[str, list]:
+        """With copies=hide, one card per file (query.dedupe_clause); for a text search, among the matches."""
+        if f.get("copies") != "hide":
+            return where, params
+        clause, cparams = query.dedupe_clause(where, params, in_cand=bool(plan))
+        return f"{where} AND {clause}", params + cparams
 
     async def files(self, p: dict, slot: Optional[str] = None) -> dict:
         t0 = time.perf_counter()
@@ -333,10 +354,16 @@ class SearchEngine:
         sem_ids = await self._semantic_ids(plan, f, where, params) if plan and plan.semantic else None
         self._maybe_refresh_vocab()
         self._scope_signature(plan, where, params)
-        res = await self.db.read.run(self._page_job, plan, sem_ids, where, params, sort, order, limit, cursor,
+        dwhere, dparams = self._dedupe(f, where, params, plan)
+        res = await self.db.read.run(self._page_job, plan, sem_ids, dwhere, dparams, sort, order, limit, cursor,
                                      key=plan.signature if plan else None, slot=slot, timeout=25)
         res["took_ms"] = round((time.perf_counter() - t0) * 1000)
         res["sort"] = sort
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug("files q=%r filters=%s sort=%s/%s cursor=%s → %d items in %d ms (plan: %s steps, related %s, "
+                      "corrected %r)", f.get("terms"), {k: v for k, v in p.items() if k not in ("q", "cursor", "limit")},
+                      sort, order, bool(cursor), len(res.get("items") or []), res["took_ms"],
+                      len(plan.steps) if plan else 0, len(sem_ids) if sem_ids else 0, plan.corrected if plan else None)
         if plan and plan.corrected and plan.corrected != " ".join(plan.words):
             res["corrected"] = await self.readable(
                 [c if c != w else None for c, w in zip(plan.corrected.split(" "), plan.words)], plan.words)
@@ -346,25 +373,46 @@ class SearchEngine:
 
     async def stats(self, p: dict, slot: Optional[str] = None) -> dict:
         f, plan = await self._parse(p)
+        hide = f.get("copies") == "hide"
         if not plan:
             scope = query.only_scope_filters(f)
-            if scope is not None:
+            if scope is not None and not (hide and scope[0] and len(scope[0]) > 1):
                 chat_ids, kinds = scope
-                return self._stats_from_table(chat_ids, kinds)
+                return self._stats_from_table(chat_ids, kinds, hide)
         where, params = self._where(f)
-        kwhere, kparams = query.build_where(f, skip_kinds=True, descendants=self.acc.drive._descendants)
+        kwhere, kparams = self._where(f, skip_kinds=True)
         sem_ids = await self._semantic_ids(plan, f, where, params) if plan and plan.semantic else None
         self._scope_signature(plan, where, params)
+        same = kwhere == where
+        where, params = self._dedupe(f, where, params, plan)
+        kwhere, kparams = (where, params) if same else self._dedupe(f, kwhere, kparams, plan)
         return await self.db.read.run(self._stats_job, plan, sem_ids, where, params, kwhere, kparams,
                                       key=plan.signature if plan else None, slot=slot, timeout=40)
 
-    def _stats_from_table(self, chat_ids: Optional[list[int]], kinds: set) -> dict:
+    def _stats_from_table(self, chat_ids: Optional[list[int]], kinds: set, hide: bool = False) -> dict:
         if chat_ids:
             marks = ",".join("?" * len(chat_ids))
             rows = self.db.q(f"SELECT kind, SUM(n) AS n, SUM(bytes) AS bytes FROM stats WHERE chat_id IN ({marks}) "
                              f"GROUP BY kind", chat_ids)
         else:
             rows = self.db.q("SELECT kind, SUM(n) AS n, SUM(bytes) AS bytes FROM stats GROUP BY kind")
+        rows = [dict(r) for r in rows]
+        if hide:
+            # Extra copies: anywhere (all files), or within the one chat shown (dups.xc).
+            # Precomputed by dupes.py: per kind (for the tabs and a one-type list), and all kinds together.
+            minus = {r["kind"]: r for r in self.db.q("SELECT kind, n, bytes FROM dups_stats WHERE chat_id=?",
+                                                    (chat_ids[0] if chat_ids else 0,))}
+            kc = {r["kind"]: max(0, (r["n"] or 0) - (minus.get(r["kind"]) or {"n": 0})["n"]) for r in rows}
+            if kinds:
+                sel = [r for r in rows if r["kind"] in kinds]
+                total = sum(kc[r["kind"]] for r in sel)
+                total_bytes = sum(max(0, (r["bytes"] or 0) - (minus.get(r["kind"]) or {"bytes": 0})["bytes"]) for r in sel)
+            else:
+                every = minus.get("*") or {"n": 0, "bytes": 0}
+                total = max(0, sum(r["n"] or 0 for r in rows) - every["n"])
+                total_bytes = max(0, sum(r["bytes"] or 0 for r in rows) - every["bytes"])
+            return {"total": total, "total_bytes": total_bytes, "kind_counts": {k: v for k, v in kc.items() if v},
+                    "tiers": {}, "exact": True}
         kc = {r["kind"]: r["n"] for r in rows if r["n"]}
         sel = [r for r in rows if not kinds or r["kind"] in kinds]
         return {"total": sum(r["n"] or 0 for r in sel), "total_bytes": sum(r["bytes"] or 0 for r in sel),
@@ -378,7 +426,8 @@ class SearchEngine:
                                           ).hexdigest() + "+scoped"
 
     async def _semantic_ids(self, plan: TextPlan, f: dict, where: str, params: list):
-        key = hashlib.sha1((plan.semantic + where + json.dumps(params, default=str)).encode()).hexdigest()
+        key = hashlib.sha1((plan.semantic + "|".join(plan.semantic_extra) + where + json.dumps(params, default=str)
+                            ).encode()).hexdigest()
         hit = self._sem_cache.get(key)
         if hit and time.time() - hit[0] < CAND_TTL:
             return hit[1]
@@ -399,8 +448,8 @@ class SearchEngine:
             if not len(ids):
                 return []
             allowed = ids
-        return await asyncio.get_running_loop().run_in_executor(None, lambda: sem.search(plan.semantic,
-                                                                                        allowed=allowed))
+        return await asyncio.get_running_loop().run_in_executor(
+            None, lambda: sem.search(plan.semantic, allowed=allowed, extra=plan.semantic_extra))
 
     def _maybe_refresh_vocab(self) -> None:
         if self.db.search_ready and self.vocab.stale():
@@ -490,7 +539,8 @@ class SearchEngine:
             full = {row["id"]: dict(row) for row in c.execute(
                 "SELECT f.*, p.folder_id, p.starred, p.tags, p.note, c.kind AS chat_kind, c.username AS chat_username, "
                 "pb.pos AS play_pos, pb.dur AS play_dur, pb.done AS play_done, "
-                "(SELECT s.subject FROM file_subjects s WHERE s.file_id=f.id) AS subject "
+                "(SELECT s.subject FROM file_subjects s WHERE s.file_id=f.id) AS subject, "
+                "(SELECT d.n FROM dups d WHERE d.file_id=f.id) AS copies "
                 "FROM files f LEFT JOIN placements p ON p.chat_id=f.chat_id AND p.msg_id=f.msg_id "
                 "LEFT JOIN chats c ON c.id=f.chat_id "
                 f"LEFT JOIN playback pb ON pb.chat_id=f.chat_id AND pb.msg_id=f.msg_id WHERE f.id IN ({marks})", ids)}
@@ -616,6 +666,9 @@ def operator_hints(last: str, q: str) -> list[dict]:
     m = re.fullmatch(r"(19|20)\d\d", lw)
     if m:
         out.append({"insert": f"date:{lw}", "label": f"Sent in {lw}"})
+    if lw in ("copies", "copy", "dupes", "duplicates", "duplicate"):
+        out.append({"insert": "copies:show", "label": "Show every copy of a file"})
+        out.append({"insert": "copies:hide", "label": "One card per file (hide duplicates)"})
     if re.fullmatch(r"\d+(\.\d+)?(k|kb|m|mb|g|gb)", lw):
         out.append({"insert": f"size>{lw}", "label": f"Bigger than {lw}"})
     return out

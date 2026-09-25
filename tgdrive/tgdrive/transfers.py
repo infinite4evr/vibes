@@ -356,6 +356,10 @@ class Transfers:
                 if not t or t["status"] != "queued":
                     return
                 self.db.update_transfer(tid, status="running", error=None)
+                started = time.time()
+                log.debug("transfer %s start: %s %r (%d bytes, done %d) chat=%s msg=%s path=%s", tid, t["direction"],
+                          t.get("name"), t.get("size") or 0, t.get("done") or 0, t.get("chat_id"), t.get("msg_id"),
+                          t.get("path"))
                 self.live[tid] = {"done": t["done"], "speed": 0.0, "mark": (time.time(), t["done"]),
                                   "task": asyncio.current_task()}
                 if t["direction"] == "down":
@@ -363,14 +367,18 @@ class Transfers:
                 else:
                     await self._upload(t)
                 self.db.update_transfer(tid, status="done", done=t["size"])
+                secs = max(0.001, time.time() - started)
+                log.debug("transfer %s done in %.1f s (%.0f KB/s)", tid, secs, (t.get("size") or 0) / 1024 / secs)
                 self._finished(t)
         except asyncio.CancelledError:
+            log.debug("transfer %s paused or cancelled", tid)
             live = self.live.get(tid)
             if live and live.get("task") is asyncio.current_task():
                 self.db.update_transfer(tid, done=live["done"])
             raise
         except Exception as exc:
             log.warning("transfer %s failed: %s", tid, exc)
+            log.debug("transfer %s traceback", tid, exc_info=exc)
             msg = str(exc) if isinstance(exc, (TransferError,)) or exc.__class__.__name__ in (
                 "AccountError", "StreamError") else f"{exc.__class__.__name__}: {exc}"
             live = self.live.get(tid)

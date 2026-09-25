@@ -64,6 +64,8 @@ class Page(QWebEnginePage):
     def javaScriptConsoleMessage(self, level, message, line, source):
         if level == QWebEnginePage.JavaScriptConsoleMessageLevel.ErrorMessageLevel:
             log.warning("page: %s (%s:%s)", message, source, line)
+        else:
+            log.debug("page console: %s (%s:%s)", message, source, line)
 
 
 EXTERNAL_SCHEMES = {"http", "https", "tg", "mailto"}
@@ -93,12 +95,62 @@ class ExternalPage(QWebEnginePage):
         return False
 
 
+EDGES = {"top": Qt.Edge.TopEdge, "bottom": Qt.Edge.BottomEdge, "left": Qt.Edge.LeftEdge, "right": Qt.Edge.RightEdge}
+
+
 class Bridge(QObject):
     """Native services for the web UI (window.qt → QWebChannel object 'tgd')."""
 
-    def __init__(self, shell):
+    def __init__(self, shell, win=None):
         super().__init__()
         self.shell = shell
+        self._win = win
+
+    @property
+    def win(self):
+        return self._win or self.shell.win
+
+    # ---- the window's own title bar (the page draws it; these move, resize and switch the window)
+    @pyqtSlot(result=str)
+    def windowChrome(self):
+        """'frameless' when the page should draw the title bar and window buttons."""
+        return "frameless" if getattr(self.win, "frameless", False) else ""
+
+    @pyqtSlot(result=str)
+    def windowState(self):
+        w = self.win
+        return "max" if w.isMaximized() else "full" if w.isFullScreen() else "normal"
+
+    @pyqtSlot()
+    def windowMove(self):
+        h = self.win.windowHandle()
+        if h is not None:
+            h.startSystemMove()
+
+    @pyqtSlot(str)
+    def windowResize(self, edges):
+        h = self.win.windowHandle()
+        flags = None
+        for part in edges.split("-"):
+            e = EDGES.get(part)
+            if e is not None:
+                flags = e if flags is None else flags | e
+        if h is not None and flags is not None:
+            h.startSystemResize(flags)
+
+    @pyqtSlot()
+    def windowMinimize(self):
+        self.win.showMinimized()
+
+    @pyqtSlot(result=str)
+    def windowToggleMaximize(self):
+        w = self.win
+        w.showNormal() if w.isMaximized() else w.showMaximized()
+        return self.windowState()
+
+    @pyqtSlot()
+    def windowClose(self):
+        self.win.close()
 
     @pyqtSlot(result=list)
     def pickFiles(self):
@@ -159,6 +211,22 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(shell.icon)
         self.resize(1360, 860)
         self.setMinimumSize(420, 480)
+        # One title bar instead of two: the page draws it (Settings → Desktop can turn this off).
+        try:
+            from tgdrive.settings import settings
+            self.frameless = bool(settings.get("own_titlebar", True)) and not os.environ.get("TGDRIVE_SYSTEM_TITLEBAR")
+        except Exception:
+            self.frameless = False
+        if self.frameless:
+            self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
+
+    def changeEvent(self, e):
+        super().changeEvent(e)
+        if e.type() == QEvent.Type.WindowStateChange and getattr(self, "frameless", False):
+            view = self.centralWidget()
+            if isinstance(view, QWebEngineView):
+                state = "max" if self.isMaximized() else "full" if self.isFullScreen() else "normal"
+                view.page().runJavaScript(f"window.tgdrive && window.tgdrive.winState && window.tgdrive.winState('{state}')")
 
     def closeEvent(self, e):
         if self.shell.quitting or getattr(self, "extra", False):
@@ -406,7 +474,7 @@ class Shell:
         local = [f"http://127.0.0.1:{self.port}/", f"http://127.0.0.1:{self.media}/"]
         page = Page(self.profile, w, local)
         channel = QWebChannel(page)
-        bridge = Bridge(self)
+        bridge = Bridge(self, w)
         channel.registerObject("tgd", bridge)
         page.setWebChannel(channel)
         for script in self.page.scripts().toList():

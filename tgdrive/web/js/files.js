@@ -2,7 +2,7 @@
 // File actions live in actions.js (re-exported here for older imports).
 import {
   $, $$, S, A, api, esc, key, unkey, icon, qs, fmtSize, fmtDate, fmtDur, fmtNum, plural, KINDS,
-  STREAMABLE, extColor, dateGroup, highlight, inlineSrc, thumbs, thumbUrl, bus, pref, streamUrl, M,
+  STREAMABLE, extColor, dateGroup, highlight, inlineSrc, thumbs, thumbUrl, bus, pref, streamUrl, M, friendlyName, waveHtml, copiesParam, fmtCompact,
 } from './core.js';
 import { contextMenu, childrenOf, folderPath, descendantIds, toast, fail } from './ui.js';
 import { VGrid } from './vgrid.js';
@@ -10,6 +10,7 @@ import { activeColumns, cellHtml, headHtml, applyTemplate, columnsDialog } from 
 import * as actions from './actions.js';
 
 export * from './actions.js';
+export { waveHtml };
 
 /* --------------------------------------------------------------- params */
 export function folderRules(folder) {
@@ -50,6 +51,7 @@ export function listParams(extra = {}) {
   if (!base) return null;
   const p = { ...base, ...S.adv, sort: S.sort, order: S.order, ...extra };
   if (S.kind) p.kinds = S.kind;
+  if (S.view.type !== 'album') p.copies = copiesParam();
   if (S.view.type === 'recent' && S.sort === 'date' && !S.userSorted) p.sort = 'recent';
   if (S.view.type === 'continue' && S.sort === 'date' && !S.userSorted) p.sort = 'played';
   return p;
@@ -101,6 +103,7 @@ export function reload(keepScroll = false) {
   S.corrected = null;
   thumbs.reset();
   rebuildEntries();
+  $('#stickyHead').classList.remove('on');
   $('#empty').innerHTML = '';
   if (!keepScroll) $('#content').scrollTop = 0;
   renderHeader();
@@ -109,6 +112,17 @@ export function reload(keepScroll = false) {
   showSkeleton(true);
   loadMore();
   loadStats();
+}
+
+// A fresh list fades in row by row instead of popping in all at once.
+let appearTimer = 0;
+function appear() {
+  const g = $('#grid');
+  clearTimeout(appearTimer);
+  g.classList.remove('appear');
+  void g.offsetWidth;
+  g.classList.add('appear');
+  appearTimer = setTimeout(() => g.classList.remove('appear'), 1100);
 }
 
 function showSkeleton(on) {
@@ -142,7 +156,9 @@ export async function loadMore() {
     fresh.forEach((f) => { S.items.push(f); S.byKey.set(key(f), f); });
     S.next = r.next;
     S.done = !r.next;
+    const firstPage = !S.entries.length;
     const from = addEntries(fresh);
+    if (firstPage && fresh.length) appear();
     vg.update(S.entries, from);
     S.loading = false;
     renderHeader();
@@ -185,6 +201,9 @@ const KIND_ICON = { audio: 'audio', voice: 'voice', video: 'video', round: 'roun
 
 export function thumbHtml(f, variant = 's') {
   const k = `k-${f.kind}`;
+  if ((f.kind === 'voice' || (f.kind === 'audio' && !f.has_thumb))) {
+    return `<div class="thumb ${k} wave-thumb">${waveHtml(f)}<span class="play-badge">${icon('play')}</span>${f.duration ? `<span class="tag">${fmtDur(f.duration)}</span>` : ''}${progressHtml(f)}</div>`;
+  }
   const dur = f.duration && STREAMABLE.has(f.kind) ? `<span class="tag">${fmtDur(f.duration)}</span>` : '';
   const play = STREAMABLE.has(f.kind) ? `<span class="play-badge">${icon('play')}</span>` : '';
   const lq = f.inline ? `<img class="lqip" src="${inlineSrc(f.inline)}" alt="" aria-hidden="true">` : '';
@@ -217,12 +236,16 @@ export function subjectInfo(id) {
   return (S.subjects || []).find((s) => s.id === id) || { id, name: id.replace(/_/g, ' '), emoji: '' };
 }
 
+// Where a file is from, when that tells you something: not inside a chat's own view, not "Deleted account".
+const NO_SOURCE = new Set(['', 'Deleted account', 'Deleted Account']);
 function srcLine(f) {
   const folder = f.folder_id && S.folderById.get(f.folder_id);
   if (f.kind === 'audio' && (f.performer || f.audio_title)) return esc([f.performer, f.audio_title].filter(Boolean).join(' · '));
-  if (S.view.type === 'drive' && folder && !isSmartFolder()) return esc(f.chat_title || '');
-  return folder ? `<span class="in-folder">${icon('folder')}${esc(folder.name)}</span> ${esc(f.chat_title || '')}` : esc(f.chat_title || '');
+  const chat = S.view.type === 'chat' || S.view.type === 'album' || NO_SOURCE.has(f.chat_title || '') ? '' : esc(f.chat_title || '');
+  if (S.view.type === 'drive' && folder && !isSmartFolder()) return chat;
+  return folder ? `<span class="in-folder">${icon('folder')}${esc(folder.name)}</span>${chat ? ` ${chat}` : ''}` : chat;
 }
+const stackNoun = (members) => (members.every((x) => x.kind === 'photo') ? 'photos' : members.every((x) => x.kind === 'video') ? 'videos' : 'files');
 
 const SAMPLE = { chat_id: 0, msg_id: 0, kind: 'document', name: 'Sample name that is long enough to wrap onto two lines.pdf', ext: 'pdf', size: 1, date: 0, chat_title: 'Chat' };
 
@@ -234,14 +257,15 @@ export function cardHtml(f, entry = null, i = 0) {
   const sel = keys.every((x) => S.selected.has(x)) && S.selected.size > 0;
   const subj = subjectInfo(f.subject);
   const stackBadge = members ? `<span class="stack-n" title="${members.length} files sent together">${icon('stack')}${members.length}</span>` : '';
-  const name = members ? `${esc(f.name)}` : highlight(f.name, S.words);
+  const friendly = friendlyName(f);
+  const name = members ? esc(friendly || f.name) : friendly ? `<span class="nm-auto">${esc(friendly)}</span>` : highlight(f.name, S.words);
+  const src = srcLine(f);
   return `<div class="card ${sel ? 'sel' : ''} ${members ? 'stack' : ''} ${f.match && f.match !== 'exact' ? 'm-soft' : ''}" role="option" tabindex="-1" draggable="true" data-key="${k}" data-i="${i}" aria-selected="${sel}">
     ${thumbHtml(f)}${matchBadge(f)}${stackBadge}
     ${f.starred ? `<span class="star-mark" title="Starred">${icon('star')}</span>` : ''}
-    <button class="c-more" data-card-menu tabindex="-1" aria-label="Actions">${icon('more')}</button>
-    <div class="card-body"><div class="name" title="${esc(f.name)}">${members ? `<span class="stack-label">${members.length} files · </span>` : ''}${name}</div>
-      <div class="meta"><span>${fmtSize(members ? members.reduce((a, x) => a + (x.size || 0), 0) : f.size)}</span><span>${fmtDate(f.date)}</span>${f.tags?.length ? `<span class="tags-mini" title="${esc(f.tags.join(', '))}">${icon('tag')}${f.tags.length}</span>` : ''}${subj ? `<span class="subj-mini" title="${esc(subj.name)}">${subj.emoji || icon('book')}</span>` : ''}</div>
-      <div class="src">${srcLine(f)}</div></div></div>`;
+    <div class="c-acts"><button class="c-q ${f.starred ? 'on' : ''}" data-quick="star" tabindex="-1" title="${f.starred ? 'Remove star' : 'Star'}" aria-label="${f.starred ? 'Remove star' : 'Star'}">${icon('star')}</button><button class="c-q" data-quick="download" tabindex="-1" title="Download" aria-label="Download">${icon('download')}</button><button class="c-more" data-card-menu tabindex="-1" aria-label="Actions" title="More">${icon('more')}</button></div>
+    <div class="card-body"><div class="name" title="${esc(f.name)}">${members ? `<span class="stack-label">${members.length} ${stackNoun(members)} · </span>` : ''}${name}</div>
+      <div class="meta"><span>${fmtSize(members ? members.reduce((a, x) => a + (x.size || 0), 0) : f.size)}</span><span>${fmtDate(f.date)}</span>${f.copies > 1 ? `<span class="copies-mini" title="${f.copies} copies of this file${copiesParam() === 'hide' ? ' (the others are hidden)' : ''}">${icon('dupes')}${f.copies}</span>` : ''}${src ? `<span class="src">${src}</span>` : ''}${f.tags?.length ? `<span class="tags-mini" title="${esc(f.tags.join(', '))}">${icon('tag')}${f.tags.length}</span>` : ''}${subj ? `<span class="subj-mini" title="${esc(subj.name)}">${subj.emoji || icon('book')}</span>` : ''}</div></div></div>`;
 }
 
 export function rowHtml(f, entry = null, i = 0) {
@@ -253,7 +277,7 @@ export function rowHtml(f, entry = null, i = 0) {
     : `<span class="mini k-${f.kind}">${icon(KIND_ICON[f.kind])}</span>`;
   const subj = subjectInfo(f.subject);
   const cells = activeColumns().map((c) => (c === 'name'
-    ? `<span class="c-name">${ic}<span class="nm" title="${esc(f.name)}">${highlight(f.name, S.words)}</span>${f.starred ? `<span class="star-mark in">${icon('star')}</span>` : ''}${matchBadge(f)}</span>`
+    ? `<span class="c-name">${ic}<span class="nm" title="${esc(f.name)}">${friendlyName(f) ? `<span class="nm-auto">${esc(friendlyName(f))}</span>` : highlight(f.name, S.words)}</span>${f.starred ? `<span class="star-mark in">${icon('star')}</span>` : ''}${f.copies > 1 ? `<span class="copies-mini" title="${f.copies} copies of this file">${icon('dupes')}${f.copies}</span>` : ''}${matchBadge(f)}</span>`
     : cellHtml(c, f, subj ? `${subj.emoji ? `${subj.emoji} ` : ''}${esc(subj.name)}` : ''))).join('');
   return `<div class="row ${sel ? 'sel' : ''}" role="option" tabindex="-1" draggable="true" data-key="${k}" data-i="${i}" aria-selected="${sel}">
     ${cells}<button class="c-more" data-card-menu tabindex="-1" aria-label="Actions">${icon('more')}</button></div>`;
@@ -306,6 +330,29 @@ export function refreshCard(f) {
   if (i !== undefined) vg.refreshEntry(i);
 }
 bus.on('columns-changed', () => { if (listMode()) rerenderItems(); });
+
+/* -------------------------------------------- scrolling: compact header, pinned date header */
+const content = $('#content');
+let scrollTick = 0;
+content.addEventListener('scroll', () => {
+  if (!scrollTick) scrollTick = requestAnimationFrame(() => { scrollTick = 0; onListScroll(); });
+}, { passive: true });
+export function onListScroll() {
+  $('#listView').classList.toggle('scrolled', content.scrollTop > 24);
+  const sh = $('#stickyHead');
+  const offset = listMode() ? 38 : 0;
+  const y = content.getBoundingClientRect().top - grid.getBoundingClientRect().top + offset;
+  let label = null;
+  if (vg.rows.length && y > 0) {
+    for (let k = vg.rowAt(y); k >= 0; k--) {
+      const r = vg.rows[k];
+      if (r.type === 'head') { if (r.top < y - 2) label = r.label; break; }
+    }
+  }
+  sh.classList.toggle('on', !!label);
+  sh.classList.toggle('in-list', listMode());
+  if (label) sh.firstElementChild.textContent = label;
+}
 bus.on('subjects-loaded', () => vg.refreshAll());
 
 /* ---------------------------------------------------------------- header */
@@ -360,6 +407,18 @@ export function renderHeader() {
       ${k ? `<span class="sw k-${k}"></span>` : ''}${label}<span class="count">${st && n ? fmtNum(n) : ''}</span></button>`;
   }).join('');
   $('#viewBtn').innerHTML = icon(listMode() ? 'grid' : 'list');
+  const cb = $('#copiesBtn');
+  if (cb) {
+    const hiding = copiesParam() === 'hide';
+    const extra = S.status?.dupes?.extra || 0;
+    cb.innerHTML = icon('dupes');
+    cb.classList.toggle('on', hiding);
+    cb.setAttribute('aria-pressed', String(hiding));
+    cb.hidden = S.view.type === 'album';
+    cb.title = hiding ? `Duplicates hidden: one card per file${extra ? ` (${fmtCompact(extra)} extra copies folded away)` : ''}. Click to show every copy.`
+      : 'Showing every copy. Click to hide duplicates (one card per file).';
+    cb.setAttribute('aria-label', hiding ? 'Show duplicates' : 'Hide duplicates');
+  }
   $('#viewBtn').title = listMode() ? 'Grid view (V)' : 'List view (V)';
   const sortSel = $('#sort');
   const rel = sortSel.querySelector('[value="relevance:desc"]');
@@ -442,8 +501,16 @@ export const selectedItems = () => [...S.selected].map(unkey);
 export function renderSelbar() {
   const n = S.selected.size;
   const bar = $('#selbar');
-  bar.hidden = !n;
-  if (!n) return;
+  document.body.classList.toggle('has-selbar', n > 0);
+  if (!n) {
+    if (!bar.hidden && !bar.classList.contains('leaving')) {
+      bar.classList.add('leaving');
+      setTimeout(() => { if (!S.selected.size) { bar.hidden = true; bar.classList.remove('leaving'); } }, 170);
+    }
+    return;
+  }
+  bar.classList.remove('leaving');
+  bar.hidden = false;
   const files = selectedFiles();
   const bytes = files.reduce((a, f) => a + (f.size || 0), 0);
   const allStarred = files.length && files.every((f) => f.starred);
@@ -462,11 +529,44 @@ function keysBetween(a, b) {
   return S.entries.slice(x, y + 1).flatMap(entryKeys);
 }
 
+// Double clicks are recognised by time and place, not by element: the first click opens the details panel,
+// the grid reflows to make room, and the second click lands on a freshly drawn card (or between cards).
+let lastClick = { key: null, t: 0, x: 0, y: 0 };
+function openEntryKey(k) {
+  const i = S.entryOf.get(k);
+  const ent = i === undefined ? null : S.entries[i];
+  if (ent?.stack) { bus.emit('go', `#album/${ent.f.chat_id}/${ent.f.grouped_id}`); return; }
+  const f = S.byKey.get(k);
+  if (f) actions.openFile(f);
+}
+// (The selection bar can appear too, moving everything down: the second click may even land on the tabs.)
+$('#listView').addEventListener('click', (e) => {
+  const now = performance.now();
+  if (lastClick.key && now - lastClick.t < 500 && Math.abs(e.clientX - lastClick.x) < 10
+      && Math.abs(e.clientY - lastClick.y) < 10 && !e.shiftKey && !e.ctrlKey && !e.metaKey
+      && !e.target.closest('[data-card-menu]')) {
+    e.stopPropagation();
+    e.preventDefault();
+    const k = lastClick.key;
+    lastClick = { key: null, t: 0, x: 0, y: 0 };
+    openEntryKey(k);
+  }
+}, true);
 grid.addEventListener('click', (e) => {
   const card = cardFromEvent(e);
   if (!card) return;
+  lastClick = { key: card.dataset.key, t: performance.now(), x: e.clientX, y: e.clientY };
   const ent = entryAt(card);
   const ks = ent ? entryKeys(ent) : [card.dataset.key];
+  const quick = e.target.closest('[data-quick]');
+  if (quick) {
+    e.stopPropagation();
+    lastClick = { key: null, t: 0, x: 0, y: 0 };
+    const files = ks.map((x) => S.byKey.get(x)).filter(Boolean);
+    if (quick.dataset.quick === 'star') actions.toggleStar(files).then(() => files.forEach(refreshCard));
+    else actions.doDownload(files.map((x) => [x.chat_id, x.msg_id]));
+    return;
+  }
   if (e.target.closest('[data-card-menu]')) {
     e.stopPropagation();
     if (!ks.every((k) => S.selected.has(k))) setSelected(ks, card.dataset.key);
@@ -489,14 +589,7 @@ grid.addEventListener('click', (e) => {
   }
 });
 function fileMenuItemsFor(files) { return actions.fileMenuItems(files); }
-grid.addEventListener('dblclick', (e) => {
-  const card = cardFromEvent(e);
-  if (!card) return;
-  const ent = entryAt(card);
-  if (ent?.stack) { bus.emit('go', `#album/${ent.f.chat_id}/${ent.f.grouped_id}`); return; }
-  const f = S.byKey.get(card.dataset.key);
-  if (f) actions.openFile(f);
-});
+
 grid.addEventListener('contextmenu', (e) => {
   const card = cardFromEvent(e);
   if (!card) return;

@@ -11,6 +11,7 @@ const isText = (f) => TEXT_EXT.has((f.ext || '').toLowerCase()) && f.size < 3 * 
 const isImageDoc = (f) => (f.mime || '').startsWith('image/') && f.size < 40 * 1024 * 1024;
 
 export function openViewer(f, list) {
+  document.querySelectorAll('#drawer video, #drawer audio').forEach((m) => m.pause());
   const items = (list || S.items).filter(viewable);
   let i = items.findIndex((x) => key(x) === key(f));
   if (i < 0) { items.unshift(f); i = 0; }
@@ -38,7 +39,10 @@ export function closeViewer() {
     miniPlayer.play(f, media.currentTime, cur.list.filter((x) => x.kind === 'audio' || x.kind === 'voice'));
   }
   media?.pause();
-  cur.el.remove();
+  const el = cur.el;
+  el.classList.add('leaving');
+  el.style.pointerEvents = 'none';
+  setTimeout(() => el.remove(), 170);
   document.removeEventListener('keydown', onKey, true);
   cur = null;
 }

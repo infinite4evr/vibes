@@ -6,6 +6,9 @@ const page = () => $('#pageView');
 const head = (title, sub = '', right = '') => `<div class="page-head"><div><h1>${esc(title)}</h1>${sub ? `<p>${sub}</p>` : ''}</div><div class="page-right">${right}</div></div>`;
 
 export function renderPage(type, arg) {
+  // Settings sections switch in place; other pages show a loader until their data is in.
+  const pv = page();
+  if (type !== 'settings' || !pv.querySelector('.settings')) pv.innerHTML = '<div class="page-loading big">Loading…</div>';
   ({ storage, duplicates, index: indexManager, activity, settings: settingsPage })[type]?.(arg);
 }
 
@@ -118,13 +121,24 @@ const SECTIONS = [
 const ACCENTS = ['', '#2a7fc9', '#4f63d8', '#7a4fd0', '#c2418f', '#d2463b', '#e07a1f', '#b88a00', '#2f8f4e', '#128b86', '#4b5563'];
 async function settingsPage(section = 'general') {
   if (!SECTIONS.some(([k]) => k === section)) section = 'general';
-  page().innerHTML = `<div class="settings"><nav class="set-nav">${SECTIONS.map(([k, l, ic]) => `<button class="nav-item ${k === section ? 'active' : ''}" data-go="#settings/${k}">${icon(ic)}<span class="label">${l}</span></button>`).join('')}</nav>
-    <div class="set-body" id="setBody"><div class="page-loading">Loading…</div></div></div>`;
+  const same = $('#setBody', page())?.dataset.section === section;
+  if (!page().querySelector('.settings')) {
+    page().innerHTML = `<div class="settings"><nav class="set-nav">${SECTIONS.map(([k, l, ic]) => `<button class="nav-item" data-go="#settings/${k}" data-sec="${k}">${icon(ic)}<span class="label">${l}</span></button>`).join('')}</nav>
+      <div class="set-body" id="setBody"></div></div>`;
+  }
+  $$('.set-nav [data-sec]', page()).forEach((b) => b.classList.toggle('active', b.dataset.sec === section));
+  const body = $('#setBody');
+  if (!same) body.innerHTML = '<div class="page-loading">Loading…</div>';
   const s = await api('/api/settings').catch(() => S.settings);
   S.settings = s;
-  const body = $('#setBody');
-  body.innerHTML = await SECTION_HTML[section](s);
+  const html = await SECTION_HTML[section](s);
+  if (!$('#setBody') || location.hash.split('/')[0] !== '#settings') return;
+  const keep = same ? body.scrollTop : 0;
+  body.innerHTML = html;
   body.dataset.section = section;
+  if (!same) { body.classList.remove('sec-enter'); void body.offsetWidth; body.classList.add('sec-enter'); }
+  page().scrollTop = same ? page().scrollTop : 0;
+  body.scrollTop = keep;
   SECTION_AFTER[section]?.(body, s);
 }
 
@@ -138,6 +152,7 @@ const SECTION_HTML = {
   general: (s) => `<h2>General</h2>
     ${row('Default view', 'Press V to switch any time.', sel('view', s, [['grid', 'Grid'], ['list', 'List']]))}
     ${row('Group by date', 'Section headers such as Today, Yesterday and months when sorted by date.', sw('group_by_date', s))}
+    ${row('Hide duplicates', `One card per file: copies forwarded into other chats, and files uploaded again with the same name and size, fold into the best copy (one in your folders, starred, downloaded, in your own channel, or else the oldest). A chat still shows its own files. Type <code>copies:show</code> in a search to see them all once.${S.status?.dupes?.extra ? ` Right now ${fmtNum(S.status.dupes.extra)} extra copies (${fmtSize(S.status.dupes.extra_bytes || 0)}) are folded away.` : ''}`, sw('hide_duplicates', s))}
     ${row('Albums as stacks', 'Files sent together (an album) show as one stacked card in the grid. Open it to see them all.', sw('stack_albums', s))}
     ${row('Ask before deleting from Telegram', '', sw('confirm_delete', s))}
     ${row('Notifications', 'When downloads and uploads finish or fail.', sw('notifications', s))}`,
@@ -149,6 +164,7 @@ const SECTION_HTML = {
     ${row('Contrast', 'High contrast makes text, borders and focus rings stronger.', sel('contrast', s, [['normal', 'Normal'], ['high', 'High contrast']]))}
     <div class="set-row"><div class="set-l"><strong>Text size</strong><p>Scales text and rows everywhere in TG Drive. (Ctrl + / Ctrl − zoom the whole window in the desktop app.)</p></div>
       <div class="set-c"><div class="fs-pick"><span class="fs-a small">A</span><input type="range" min="0.85" max="1.4" step="0.05" data-fontscale value="${esc(s.font_scale || 1)}"><span class="fs-a big">A</span><output>${Math.round((s.font_scale || 1) * 100)}%</output></div></div></div>
+    ${row('Animations', 'Panels sliding, lists fading in, menus and dialogs popping. “Follow the system” turns them off when your desktop is set to reduce motion (many Linux desktops are by default).', sel('motion', s, [['on', 'On'], ['system', 'Follow the system'], ['off', 'Off']]))}
     ${row('Density', 'Compact fits more rows in lists and the sidebar.', sel('density', s, [['comfortable', 'Comfortable'], ['compact', 'Compact']]))}
     ${row('Card size', '', sel('grid_size', s, [['s', 'Small'], ['m', 'Medium'], ['l', 'Large']]))}
     ${row('Folders', 'How folders show above the files. You can also switch with the buttons next to “Folders”.', sel('folder_style', s, [['tiles', 'Tiles'], ['cards', 'Cards with covers'], ['list', 'List']]))}
@@ -256,7 +272,8 @@ const SECTION_HTML = {
     const ig = await api('/api/integration').catch(() => ({ file_managers: [] }));
     const fms = ig.file_managers.filter((x) => x.present || x.installed);
     return `<h2>Desktop</h2>
-    ${S.desktop ? `${row('Keep running in the tray when the window is closed', 'Indexing and transfers continue; quit from the tray icon.', sw('close_to_tray', s))}
+    ${S.desktop ? `${row('Use TG Drive’s own title bar', 'One bar at the top instead of two: drag the top bar to move the window, double-click it to maximize. Turn off if your desktop handles it badly. Applies after restarting TG Drive.', sw('own_titlebar', s))}
+    ${row('Keep running in the tray when the window is closed', 'Indexing and transfers continue; quit from the tray icon.', sw('close_to_tray', s))}
     ${row('Start minimized', '', sw('start_minimized', s))}
     ${row('Start when I log in', '', sw('autostart', s))}` : ''}
     <div class="set-block"><strong>Applications menu</strong><p>${ig.menu ? 'TG Drive is in your applications menu, with its icon.' : 'Add TG Drive to your applications menu (with its icon) so you can start it like any other app.'}</p>
@@ -290,9 +307,15 @@ const SECTION_HTML = {
     const about = await api('/api/about').catch(() => ({}));
     const logs = await api('/api/logs?lines=300').catch(() => '');
     const cr = await api('/api/crashes').catch(() => ({ reports: [] }));
+    const logBytes = (about.log_files || []).reduce((a, x) => a + x.bytes, 0);
     return `<h2>About & diagnostics</h2>
     <p class="set-intro">Version ${esc(about.version || S.version)} · meaning-based search ${about.semantic_available ? 'available' : 'not installed'} · log file <code>${esc(about.log || '')}</code></p>
     <div class="btn-row"><button class="btn" data-shortcuts>${icon('keyboard')}Keyboard shortcuts</button><button class="btn" data-copy-logs>${icon('copy')}Copy log</button></div>
+    <div class="set-block debug-block ${s.debug_logging ? 'is-on' : ''}"><strong>${icon('bug')}Detailed debug logging</strong>
+      <p>Records everything in detail while it's on: every request and how long it took, what you clicked and where you went, transfers, streaming, indexing, search, errors and crashes with full tracebacks. It goes to <code>${esc(about.debug_log || 'tgdrive-debug.log')}</code> on this computer only. Turn it on to catch a problem, reproduce it, then send the log (or a diagnostics file) and turn it off again. A large banner shows while it's on.</p>
+      ${row(`Debug logging ${s.debug_logging ? '<span class="pill red">ON</span>' : '<span class="pill grey">Off</span>'}`, 'Takes effect at once, no restart. Makes the log grow quickly (kept to about 100 MB).', sw('debug_logging', s))}
+      <div class="btn-row"><button class="btn" data-debug="view">${icon('document')}View log</button><a class="btn" href="/api/logs/download?which=debug" download>${icon('download')}Download debug log</a>
+        <button class="btn danger" data-debug="clear">${icon('trash')}Clear all logs</button><span class="subtle">${fmtSize(logBytes)} of logs on disk</span></div></div>
     <div class="set-block"><strong>Crash reports</strong><p>When something goes wrong, TG Drive saves a short report on this computer. Nothing is sent anywhere.</p>
       ${row('Save crash reports', '', sw('crash_reports', s))}
       ${cr.reports.length ? `<div class="simple-list crash-list">${cr.reports.slice(0, 20).map((x) => `<div class="sl-row static"><span class="pill ${x.new ? 'red' : 'grey'}">${esc(x.kind)}</span><span class="grow"><strong>${esc(x.summary || 'Error')}</strong><small>${fmtDate(x.at, true)}</small></span><button class="btn sm" data-crash-view="${esc(x.id)}">View</button></div>`).join('')}</div>
@@ -350,7 +373,7 @@ page().addEventListener('change', async (e) => {
     if (t.dataset.num !== undefined) v = Number(v);
     if (t.dataset.set === 'proxy_pass' && !v) return;
     await saveSetting(t.dataset.set, v);
-    if (['dav_enabled', 'subjects_builtin'].includes(t.dataset.set)) settingsPage(page().querySelector('#setBody')?.dataset.section);
+    if (['dav_enabled', 'subjects_builtin', 'debug_logging'].includes(t.dataset.set)) settingsPage(page().querySelector('#setBody')?.dataset.section);
     if (t.dataset.set === 'map_online_tiles') toast('Reload the window (Ctrl+Shift+R) to use map tiles.');
   }
   if (t.dataset.kindToggle) {

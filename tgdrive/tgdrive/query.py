@@ -130,6 +130,7 @@ def empty_filters() -> dict:
         "album": None, "recent": None, "match": None, "dialog_filter": None, "grouped_id": None,
         "watched": None, "in_progress": None,
         "media_id": None, "ids": None, "subjects": [], "not_subjects": [], "has_geo": None,
+        "copies": None,   # "hide": one card per file (see dupes.py) · "show": every copy
     }
 
 
@@ -206,6 +207,14 @@ def parse(text: str, f: Optional[dict] = None) -> dict:
             f["date_to"] = parse_date_range(value)[0]
         elif k in ("date", "on"):
             f["date_from"], f["date_to"] = parse_date_range(value)
+        elif k in ("copies", "dupes", "duplicates"):
+            v = value.lower()
+            if v in ("show", "all", "yes", "on"):
+                f["copies"] = "show"
+            elif v in ("hide", "one", "unique", "no", "off"):
+                f["copies"] = "hide"
+            else:
+                raise QueryError(f"Unknown value 'copies:{value}'. Use copies:show or copies:hide.")
         elif k == "match":
             f["match"] = "exact" if value.lower() in ("exact", "strict", "words") else "smart"
         elif k == "is":
@@ -272,8 +281,22 @@ def _like(v: str) -> str:
 PL = "(f.chat_id, f.msg_id) IN (SELECT chat_id, msg_id FROM placements WHERE {})"
 
 
-def build_where(f: dict, skip_kinds: bool = False, descendants=None) -> tuple[str, list]:
-    """WHERE clause over `files f` for every non-text filter. No joins needed."""
+_F_ALIAS = re.compile(r"\bf\.")
+
+
+def dedupe_clause(where: str, params: list, in_cand: bool = False) -> tuple[str, list]:
+    """Hide a file when a better-ranked copy of it (dups.rank) is also in this list: the same filters hold for
+    that copy (and, for a text search, it is one of the matches too). So every list shows one card per file,
+    and a chat or folder still shows its own files."""
+    other = _F_ALIAS.sub("g.", where)
+    cand = " AND EXISTS (SELECT 1 FROM cand c2 WHERE c2.id=g.id)" if in_cand else ""
+    return (f"NOT EXISTS (SELECT 1 FROM dups d JOIN dups d2 ON d2.grp=d.grp AND d2.rank<d.rank "
+            f"JOIN files g ON g.id=d2.file_id WHERE d.file_id=f.id AND ({other}){cand})"), list(params)
+
+
+def build_where(f: dict, skip_kinds: bool = False, descendants=None, dedupe: bool = True) -> tuple[str, list]:
+    """WHERE clause over `files f` for every non-text filter. No joins needed.
+    With copies=hide (and dedupe), extra copies of a file are left out (see dedupe_clause)."""
     where: list[str] = []
     params: list = []
 
@@ -410,7 +433,11 @@ def build_where(f: dict, skip_kinds: bool = False, descendants=None) -> tuple[st
             where.append(sql_true)
         elif f[key] is False:
             where.append(sql_false)
-    return (" AND ".join(where) or "1"), params
+    base = " AND ".join(where) or "1"
+    if dedupe and f.get("copies") == "hide":
+        clause, cparams = dedupe_clause(base, params)
+        return f"{base} AND {clause}", params + cparams
+    return base, params
 
 
 def has_text(f: dict) -> bool:
@@ -425,7 +452,7 @@ def only_scope_filters(f: dict) -> Optional[tuple[Optional[list[int]], set]]:
             continue
         if v in (None, False, [], set(), "") and k != "match":
             continue
-        if k == "match":
+        if k in ("match", "copies"):
             continue
         return None
     return (list(f["chat_ids"]) or None, set(f["kinds"]))
@@ -481,6 +508,8 @@ def from_params(p: dict[str, Any]) -> dict:
         f["topic_ids"].append(int(p["topic_id"]))
     if p.get("grouped_id"):
         f["grouped_id"] = int(p["grouped_id"])
+    if p.get("copies") in ("show", "hide") and f["copies"] is None:   # a copies: word in the query wins
+        f["copies"] = p["copies"]
     if p.get("match"):
         f["match"] = "exact" if p["match"] == "exact" else "smart"
     for key in ("filed", "forwarded", "mine", "has_caption", "has_thumb", "starred", "has_note", "has_tags",
