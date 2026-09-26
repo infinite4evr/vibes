@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.2.3 — installer/version reliability hotfix
+
+- Installer now prints the source version before installing the GTK app.
+- Installer verifies the private GUI copy reports the same version after installation.
+- Detects an already-running PC Command Center and clearly warns that the old process must be fully quit/reopened before About can reflect newly installed code.
+- `pc-gui --version` now reports the GUI build version.
+- Prevents a stale running single-instance process from being mistaken for a failed update.
+
+## 2.2.2 — sidebar/page-loading hotfix
+
+- Fixed the v2.2.1 responsive-layout regression that made several GTK pages fail during construction and disappear from the sidebar.
+- Extended the shared `flow()` helper to support independent `column_spacing` / `row_spacing` overrides used by the responsive UI pass.
+- Restored the missing Storage, Network, Power, Logs, Developer and Maintenance navigation/pages; also prevents lazy controls on Services, Security, Tweaks and Updates from hitting the same argument mismatch.
+- Page construction failures no longer silently hide navigation rows. A visible fallback page now shows diagnostic details while keeping the rest of the app usable.
+- Page import failures are also represented in navigation instead of leaving empty section headers.
+- Tightened persisted/resized sidebar width to a 210–330 px range while reserving at least 560 px for page content when possible.
+- Added non-GTK regression tests for sidebar route/module consistency, responsive helper keyword compatibility, and no-silent-hide behavior.
+- Validation: 211 tests passed, 2 GTK screenshot tests skipped on this build host because PyGObject/libadwaita are unavailable.
+
 ## 2.2.1 — full UI responsiveness and interaction bug-fix pass
 
 - Reworked rigid action/filter rows across all high-density GTK pages into responsive wrapping layouts.

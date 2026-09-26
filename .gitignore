@@ -1,11 +1,726 @@
-dump/
-dump_old/
+# ============================================================================
+#  Vibes monorepo: root .gitignore
+# ============================================================================
+#
+#  Layout:
+#    commands/     personal CLI tools (bash, Python, Node)
+#    linux-setup/  machine setup scripts + "pc" command center (Python/GTK)
+#    tgdrive/      Telegram-backed drive (Python server, desktop app, web UI)
+#
+#  How this file is organised:
+#    1. Generic sections by OS / editor / language. Most are defensive: they
+#       cover tools this repo doesn't use yet, so a new project in any
+#       language starts out clean.
+#    2. Repo-specific rules for each project.
+#    3. Re-includes (lines starting with "!"), at the very end so they win
+#       over any broad rule above them.
+#
+#  Patterns deliberately left OUT, because they would hide real source here:
+#    lib/     linux-setup/lib/ is shell source (the stock Python template ignores lib/)
+#    vendor/  tgdrive/web/vendor/pdfjs is a bundled, tracked dependency
+#    bin/     generic enough to catch real scripts
+#    data     a bare "data" catches linux-setup/pc/data and pcctl/gui/data
+#    *.dat    upower test fixtures use it
+#    secrets.*  would hide src/pcctl/core/secrets.py
+#    package-lock.json / lockfiles  are committed on purpose (reproducible installs)
+#
+#  Already-committed files are NOT affected by this file. To stop tracking one:
+#    git rm -r --cached <path>   then commit.
+# ============================================================================
 
-# Never commit dependencies or credentials, anywhere in the repo
-node_modules/
+
+# ----------------------------------------------------------------------------
+# 1. SECRETS & CREDENTIALS
+# ----------------------------------------------------------------------------
+# Keep this section at the top: leaking any of these is the costliest mistake.
+
+# Environment files. Templates (.env.example / .env.sample) stay tracked (see the end).
+.env
+.env.*
+*.env
+.envrc
+.direnv/
+
+# Google OAuth (yt-subs-* tools) and other API tokens
 client_secret*.json
 token_*.json
-# the 266 MB test PDF; only its README is tracked
+credentials.json
+service-account*.json
+*-credentials.json
+
+# Generic secret stores
+secrets.json
+secrets.yaml
+secrets.yml
+secrets.toml
+.secrets/
+*.secret
+
+# Private keys, certificates, keystores
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.kdbx
+id_rsa*
+id_ecdsa*
+id_ed25519*
+*.gpg
+*.asc
+
+# Per-user auth files some tools drop into a project folder
+.netrc
+.pgpass
+.htpasswd
+
+# Telegram client sessions (Telethon / Pyrogram). These are full logins.
+*.session
+*.session-journal
+
+# WhatsApp Web automation sessions (whatsapp-web.js / Baileys)
+.wwebjs_auth/
+.wwebjs_cache/
+auth_info*/
+
+
+# ----------------------------------------------------------------------------
+# 2. OPERATING SYSTEMS
+# ----------------------------------------------------------------------------
+
+# Linux: editor backups, file-manager metadata, NFS temp files, trash
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# macOS: Finder metadata, resource forks, Spotlight/Time Machine folders
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.DocumentRevisions-V100
+.com.apple.timemachine.donotpresent
+
+# Windows: thumbnail caches, folder settings, shortcuts, recycle bin
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+*.stackdump
+
+
+# ----------------------------------------------------------------------------
+# 3. EDITORS & IDEs
+# ----------------------------------------------------------------------------
+
+# VS Code: ignore local state, keep shareable config if one is ever added.
+# (linux-setup/dotfiles/vscode-settings.json is not inside .vscode/, so it's unaffected.)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+
+# JetBrains (PyCharm, WebStorm, IntelliJ, CLion, GoLand, Rider, ...)
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.fleet/
+
+# Vim / Neovim: swap, undo and session files
+*.swp
+*.swo
+*.swn
+*.un~
+Session.vim
+Sessionx.vim
+.netrwhist
+tags
+
+# Emacs: autosaves, lock files, desktop state
+\#*\#
+.\#*
+*.elc
+auto-save-list/
+.emacs.desktop*
+.projectile
+.dir-locals-2.el
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Zed (local project settings)
+.zed/
+
+# Cursor / Windsurf / other AI-editor local caches
+.cursor/
+.windsurf/
+
+# Nova, Kate, Geany, Eclipse, NetBeans
+.nova/
+*.kate-swp
+.geany
+.project
+.classpath
+.settings/
+nbproject/private/
+
+
+# ----------------------------------------------------------------------------
+# 4. PYTHON   (stack-highlights, pcctl, tgdrive, md-to-pdf helpers)
+# ----------------------------------------------------------------------------
+
+# Bytecode and compiled extensions
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+
+# Virtual environments. "env/" matches folders only, so commands/env.sh is safe.
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.python-version.local
+__pypackages__/
+.pdm-python
+.pdm-build/
+.pixi/
+
+# Packaging and build output
+build/
+dist/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+parts/
+sdist/
+wheels/
+share/python-wheels/
+*.egg-info/
+*.egg
+.installed.cfg
+MANIFEST
+pip-wheel-metadata/
+
+# PyInstaller: generated spec files and build dirs
+*.spec
+*.manifest
+
+# pip / installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Test, coverage and type-checker caches
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+*.py,cover
+nosetests.xml
+htmlcov/
+.hypothesis/
+.cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+cython_debug/
+
+# Jupyter / IPython
+.ipynb_checkpoints/
+profile_default/
+ipython_config.py
+
+# Framework leftovers (Django, Flask, Scrapy, Celery, Sphinx, MkDocs)
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+instance/
+.webassets-cache
+.scrapy
+celerybeat-schedule
+celerybeat.pid
+docs/_build/
+/site
+
+
+# ----------------------------------------------------------------------------
+# 5. JAVASCRIPT / TYPESCRIPT / NODE   (wa-auto-delete, yt-subs-*, tgdrive web)
+# ----------------------------------------------------------------------------
+
+# Dependencies. Never committed; package-lock.json is enough to rebuild them.
+node_modules/
+jspm_packages/
+bower_components/
+web_modules/
+
+# Package-manager caches and debug logs
+.npm/
+.pnpm-store/
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+.yarn-integrity
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.bun/
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Framework / bundler build output and caches
+.next/
+.nuxt/
+.output/
+.svelte-kit/
+.astro/
+.vite/
+.parcel-cache/
+.turbo/
+.vercel/
+.netlify/
+.docusaurus/
+.expo/
+.angular/
+.serverless/
+.dynamodb/
+.fusebox/
+.webpack/
+storybook-static/
+.vuepress/dist
+
+# Lint / format caches
+.eslintcache
+.stylelintcache
+.prettiercache
+
+# Test runners and coverage (Jest, Vitest, nyc, Playwright, Cypress)
+coverage/
+.nyc_output/
+lib-cov/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+cypress/videos/
+cypress/screenshots/
+
+# Puppeteer / Chromium downloads that sometimes land in the project
+.local-chromium/
+.cache/puppeteer/
+
+# Process managers (pm2, forever) and runtime ids
+.pm2/
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+
+# ----------------------------------------------------------------------------
+# 6. SHELL
+# ----------------------------------------------------------------------------
+# Shell scripts are source. Only ignore their by-products.
+nohup.out
+*.shellcheck.log
+
+
+# ----------------------------------------------------------------------------
+# 7. GO
+# ----------------------------------------------------------------------------
+*.test
+*.prof
+go.work
+go.work.sum
+# Go builds binaries into the module root; name them in the project section.
+
+
+# ----------------------------------------------------------------------------
+# 8. RUST
+# ----------------------------------------------------------------------------
+target/
+**/*.rs.bk
+*.pdb
+# Cargo.lock is committed for binaries, ignored for libraries; kept tracked here.
+
+
+# ----------------------------------------------------------------------------
+# 9. JAVA / KOTLIN / SCALA / ANDROID
+# ----------------------------------------------------------------------------
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+.gradle/
+.kotlin/
+gradle-app.setting
+!gradle/wrapper/gradle-wrapper.jar
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+.bsp/
+.metals/
+.bloop/
+.scala-build/
+local.properties
+*.apk
+*.aab
+.externalNativeBuild/
+.cxx/
+captures/
+
+
+# ----------------------------------------------------------------------------
+# 10. C / C++ / CMAKE / MAKE by-products
+# ----------------------------------------------------------------------------
+# Object files, libraries and executables
+*.o
+*.obj
+*.ko
+*.lo
+*.la
+*.lai
+*.a
+*.lib
+*.dll
+*.dylib
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+*.gch
+*.pch
+*.dSYM/
+*.su
+*.idb
+*.d
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeUserPresets.json
+cmake-build-*/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# Autotools
+autom4te.cache/
+config.status
+config.cache
+.deps/
+.libs/
+
+
+# ----------------------------------------------------------------------------
+# 11. .NET / C# / F#
+# ----------------------------------------------------------------------------
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+*.userprefs
+*.nupkg
+.vs/
+TestResults/
+
+
+# ----------------------------------------------------------------------------
+# 12. OTHER LANGUAGES
+# ----------------------------------------------------------------------------
+
+# Ruby / Bundler / Rails
+.bundle/
+*.gem
+.rbenv-gemsets
+/tmp/
+/log/
+.byebug_history
+
+# PHP / Composer (Composer's vendor/ is NOT listed globally, see header)
+.phpunit.result.cache
+.php-cs-fixer.cache
+composer.phar
+
+# Swift / Xcode / CocoaPods
+DerivedData/
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+.swiftpm/
+.build/
+Pods/
+
+# Dart / Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+
+# Elixir / Erlang
+_build/
+deps/
+*.ez
+erl_crash.dump
+.elixir_ls/
+
+# Haskell
+dist-newstyle/
+.stack-work/
+.cabal-sandbox/
+cabal.sandbox.config
+*.hi
+*.dyn_o
+*.dyn_hi
+
+# Zig
+zig-cache/
+.zig-cache/
+zig-out/
+
+# Lua
+luac.out
+*.luac
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+.Ruserdata
+
+# Julia
+*.jl.cov
+*.jl.mem
+
+# Nim / Crystal / OCaml
+nimcache/
+.shards/
+_opam/
+*.cmi
+*.cmo
+*.cmx
+
+
+# ----------------------------------------------------------------------------
+# 13. INFRASTRUCTURE, CONTAINERS, CLOUD
+# ----------------------------------------------------------------------------
+# Terraform: local state holds secrets and should live in a remote backend
+.terraform/
+.terraform.lock.hcl.bak
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+override.tf
+override.tf.json
+
+# Docker / Compose: local overrides only; Dockerfiles stay tracked
+docker-compose.override.yml
+.docker/
+
+# Vagrant, Ansible, Pulumi
+.vagrant/
+*.retry
+Pulumi.*.yaml
+
+# Kubernetes local config
+kubeconfig
+*.kubeconfig
+
+
+# ----------------------------------------------------------------------------
+# 14. LINUX PACKAGING   (tgdrive AppImage, linux-setup)
+# ----------------------------------------------------------------------------
+*.AppImage
+*.AppImage.zsync
+AppDir/
+squashfs-root/
+.flatpak-builder/
+*.flatpak
+*.deb
+*.rpm
+*.snap
+*.pkg.tar.*
+
+
+# ----------------------------------------------------------------------------
+# 15. DOCUMENTS / LaTeX   (md-to-pdf uses pandoc + LaTeX)
+# ----------------------------------------------------------------------------
+# LaTeX build by-products. The .tex/.lua filters are source and stay tracked.
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.toc
+*.nav
+*.snm
+*.vrb
+*.run.xml
+*.synctex.gz
+*.synctex(busy)
+*.xdv
+_minted*/
+missfont.log
+texput.log
+
+# Office lock files created while a document is open
+~$*
+.~lock.*#
+
+
+# ----------------------------------------------------------------------------
+# 16. DATABASES & LOCAL STORAGE
+# ----------------------------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.rdb
+*.ldb
+dump.rdb
+
+
+# ----------------------------------------------------------------------------
+# 17. LOGS, TEMP FILES, BACKUPS
+# ----------------------------------------------------------------------------
+*.log
+logs/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+*.swp
+.tmp/
+tmp/
+temp/
+
+
+# ----------------------------------------------------------------------------
+# 18. AI ASSISTANT LOCAL STATE
+# ----------------------------------------------------------------------------
+# Per-machine settings and caches from coding assistants. Shared instruction
+# files such as CLAUDE.md / AGENTS.md stay tracked.
+.claude/settings.local.json
+.aider*
+.continue/
+
+
+# ============================================================================
+# 19. REPO-SPECIFIC RULES
+# ============================================================================
+
+# ---- Root ------------------------------------------------------------------
+# Personal scratch folders and prompt notes, not part of any project
+dump/
+dump_old/
+/todo.txt
+
+# ---- commands/ -------------------------------------------------------------
+# yt-subs-export / -subscribe / -sync: run state written on each run
+progress.json
+missing_channels.json
+
+# wa-auto-delete: the whole data/ folder is a live Chromium profile
+# (WhatsApp cookies, IndexedDB, login data, cache) plus runtime state.json
+# and status.json. It holds an active WhatsApp login.
+commands/wa-auto-delete/data/
+# Stray screenshots from the pc command center, saved into the wrong folder
+commands/wa-auto-delete/Claude outputs/
+
+# stack-highlights: local config (copy of the tracked .toml.example)
+commands/stack-highlights/stack-highlights.toml
+# test scratch output (~230 MB of merged-book renders)
+commands/stack-highlights/tests/.tmp/
+# dev/ work dirs, regression output and generated visual-test output
+commands/stack-highlights/dev/development-artifacts/work/
+commands/stack-highlights/dev/toolchain/regression-results/
+commands/stack-highlights/dev/visual-tests-500/outputs/
+commands/stack-highlights/dev/original-upload/*.zip
+# 266 MB test PDF + 159 MB zip; only the README explaining them is tracked
 **/source-pdfs/*
 !**/source-pdfs/README.md
-data
+
+# ---- linux-setup/ ----------------------------------------------------------
+# pc/data/ (polkit policy + pc-admin helper) and pcctl/gui/data/ (app icon)
+# are source and are tracked. Nothing extra to ignore beyond the generic
+# Python rules above.
+
+# ---- tgdrive/ --------------------------------------------------------------
+# Runtime data dir when TGDRIVE_DATA points inside the repo: accounts,
+# Telegram sessions, the search index, thumbnails, caches, logs
+tgdrive/data/
+# AppImage build workspace (tools stay tracked in packaging/)
+tgdrive/packaging/AppDir/
+tgdrive/packaging/build/
+
+
+# ============================================================================
+# 20. RE-INCLUDES: must stay last so they override the broad rules above
+# ============================================================================
+
+# Env templates are documentation, not secrets
+!.env.example
+!.env.sample
+!.env.template
+
+# Test fixtures are deliberately realistic samples (fake passwd/shadow,
+# clamscan.log, shell histories, upower .dat, ...). Keep all of them.
+!linux-setup/pc/tests/fixtures/**
+!**/tests/fixtures/**
+!**/tests/golden/**
+
+# Git keep-files, for committing otherwise-empty directories
+!.gitkeep
+!**/.gitkeep

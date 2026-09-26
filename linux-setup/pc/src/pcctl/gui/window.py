@@ -11,7 +11,13 @@ from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango  # noqa: E402
 from .. import __version__  # noqa: E402
 from ..core import debug, system, tasks  # noqa: E402
 from . import prefs, theme  # noqa: E402
-from .util import bg, esc, hbox, label, vbox  # noqa: E402
+from .util import bg, esc, hbox, label, scrolled, vbox  # noqa: E402
+
+SIDEBAR_MIN = 210
+SIDEBAR_DEFAULT = 250
+SIDEBAR_MAX = 330
+CONTENT_MIN_WHILE_SIDEBAR_VISIBLE = 560
+
 
 SECTIONS = [
     ("", ["dashboard"]),
@@ -62,19 +68,75 @@ def setting_rows() -> list[tuple[str, str, str]]:
     return rows
 
 
-def page_classes() -> dict[str, type]:
-    """Import every page; a page that fails to import is skipped (and reported) instead of killing the app."""
+def page_classes(include_errors: bool = False) -> dict[str, type] | tuple[dict[str, type], dict[str, tuple[Exception, str]]]:
+    """Import every page while preserving failures for an in-app fallback.
+
+    A broken optional dependency or page module must not silently erase its
+    navigation row.  Callers receive both successfully imported page classes
+    and import errors so every declared page can still be represented.
+    """
     import importlib
     import traceback
-    res = {}
+    res: dict[str, type] = {}
+    errors: dict[str, tuple[Exception, str]] = {}
     for _, ids in SECTIONS:
         for pid in ids:
             try:
                 mod = importlib.import_module(f".pages.{pid}", __package__)
                 res[mod.PAGE.ID] = mod.PAGE
-            except Exception:  # noqa: BLE001
+            except Exception as exc:  # noqa: BLE001
+                trace = traceback.format_exc()
                 traceback.print_exc()
-    return res
+                debug.exception(f"page import failed: {pid}", exc)
+                errors[pid] = (exc, trace)
+    return (res, errors) if include_errors else res
+
+
+class _UnavailablePage(Gtk.Box):
+    """Visible fallback for a page that failed to construct.
+
+    A page bug must never make its navigation item silently disappear.  Keeping
+    the row visible makes the failure obvious and gives the user a useful error
+    to include with a support bundle.
+    """
+
+    def __init__(self, win, pid: str, cls: type, exc: Exception, trace: str):
+        super().__init__(orientation=Gtk.Orientation.VERTICAL)
+        self.win = win
+        self.ID = pid
+        self.TITLE = getattr(cls, "TITLE", pid.replace("_", " ").title())
+        self.SUBTITLE = getattr(cls, "SUBTITLE", "")
+        self.ICON = getattr(cls, "ICON", "dialog-error-symbolic")
+        self.header_widgets: list[Gtk.Widget] = []
+        self.loaded = True
+        self._trace = trace
+
+        body = vbox(spacing=12)
+        body.set_margin_top(28)
+        body.set_margin_bottom(28)
+        body.set_margin_start(28)
+        body.set_margin_end(28)
+        body.append(label(f"{self.TITLE} could not be loaded", "page-title"))
+        body.append(label(
+            "This page hit an unexpected interface error. The rest of PC Command Center is still available. "
+            "Turn on detailed debug logs in Preferences and export a support bundle if this keeps happening.",
+            "page-sub", wrap=True))
+        detail = label(f"{type(exc).__name__}: {exc}", ["dim", "mono"], wrap=True, selectable=True)
+        body.append(detail)
+        copy = Gtk.Button(label="Copy diagnostic details")
+        copy.set_halign(Gtk.Align.START)
+        copy.connect("clicked", lambda *_: (self.get_clipboard().set(self._trace), win.toast("Diagnostic details copied.")))
+        body.append(copy)
+        self.append(scrolled(body, 900))
+
+    def activate(self) -> None:
+        return
+
+    def deactivate(self) -> None:
+        return
+
+    def reload(self) -> None:
+        self.win.toast("Restart PC Command Center after applying an update to retry this page.")
 
 
 class MainWindow(Adw.ApplicationWindow):
@@ -96,7 +158,8 @@ class MainWindow(Adw.ApplicationWindow):
         self.split.set_resize_end_child(True)
         self.split.set_shrink_start_child(True)
         self.split.set_shrink_end_child(False)
-        self._sidebar_width = int(prefs.get("sidebar_width", 252) or 252)
+        stored_sidebar_width = int(prefs.get("sidebar_width", SIDEBAR_DEFAULT) or SIDEBAR_DEFAULT)
+        self._sidebar_width = max(SIDEBAR_MIN, min(SIDEBAR_MAX, stored_sidebar_width))
         self._sidebar_visible = bool(prefs.get("sidebar_visible", True))
 
         # ---------- sidebar
@@ -136,8 +199,18 @@ class MainWindow(Adw.ApplicationWindow):
         side_tv.add_top_bar(side_hb)
         side_box = vbox(spacing=0)
         side_box.append(self._quick_button())
-        classes = page_classes()
-        self.classes = classes
+        classes, import_errors = page_classes(include_errors=True)
+        # Keep a metadata entry for every declared route, even if importing its
+        # page module failed. This prevents empty section headers in the sidebar.
+        self.classes = dict(classes)
+        for _section, ids in SECTIONS:
+            for pid in ids:
+                if pid not in self.classes:
+                    title = pid.replace("_", " ").title()
+                    self.classes[pid] = type(
+                        f"Unavailable_{pid}", (),
+                        {"TITLE": title, "SUBTITLE": "This page failed to load.", "ICON": "dialog-error-symbolic", "PALETTE": []},
+                    )
         for section, ids in SECTIONS:
             if section:
                 side_box.append(label(section.upper(), "nav-section"))
@@ -146,9 +219,7 @@ class MainWindow(Adw.ApplicationWindow):
             lb.set_selection_mode(Gtk.SelectionMode.SINGLE)
             lb.connect("row-activated", self._row_activated)
             for pid in ids:
-                cls = classes.get(pid)
-                if cls is None:
-                    continue
+                cls = self.classes[pid]
                 img = Gtk.Image.new_from_icon_name(cls.ICON)
                 badge = label("", "nav-badge", xalign=0.5)
                 badge.set_visible(False)
@@ -170,7 +241,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.sidebar_revealer = Gtk.Revealer()
         self.sidebar_revealer.set_transition_type(Gtk.RevealerTransitionType.CROSSFADE)
         self.sidebar_revealer.set_child(side_tv)
-        self.sidebar_revealer.set_size_request(210, -1)
+        self.sidebar_revealer.set_size_request(SIDEBAR_MIN, -1)
         self.sidebar_revealer.set_reveal_child(self._sidebar_visible)
         self.sidebar_revealer.set_visible(self._sidebar_visible)
         self.split.set_start_child(self.sidebar_revealer)
@@ -207,16 +278,23 @@ class MainWindow(Adw.ApplicationWindow):
         self.split.connect("notify::position", self._sidebar_resized)
         self.connect("notify::width", self._sidebar_resized)
 
-        for pid, cls in classes.items():
-            try:
-                page = cls(self)
-            except Exception:  # noqa: BLE001
-                import traceback
-                traceback.print_exc()
-                self.rows[pid].set_visible(False)
-                continue
-            self.pages[pid] = page
-            self.stack.add_named(page, pid)
+        for _section, ids in SECTIONS:
+            for pid in ids:
+                cls = classes.get(pid)
+                if cls is None:
+                    exc, trace = import_errors[pid]
+                    page = _UnavailablePage(self, pid, self.classes[pid], exc, trace)
+                else:
+                    try:
+                        page = cls(self)
+                    except Exception as exc:  # noqa: BLE001
+                        import traceback
+                        trace = traceback.format_exc()
+                        traceback.print_exc()
+                        debug.exception(f"page construction failed: {pid}", exc)
+                        page = _UnavailablePage(self, pid, cls, exc, trace)
+                self.pages[pid] = page
+                self.stack.add_named(page, pid)
 
         self.set_content(self.split)
         self.split.set_position(self._sidebar_width if self._sidebar_visible else 0)
@@ -264,14 +342,22 @@ class MainWindow(Adw.ApplicationWindow):
         self.sidebar_revealer.set_transition_type(Gtk.RevealerTransitionType.NONE if not ms else Gtk.RevealerTransitionType.CROSSFADE)
 
     def _sidebar_resized(self, *_a) -> None:
-        """Keep the resizable sidebar useful without letting it crush the current page."""
+        """Keep the sidebar useful without letting it dominate the application.
+
+        The width preference can come from an older release or a differently
+        scaled monitor, so always clamp it against both an absolute range and
+        the window's current content budget.
+        """
         if not self._sidebar_visible or self._sidebar_clamping:
             return
         pos = self.split.get_position()
         width = self.get_width()
-        # Leave at least 480 px for page content at compact window sizes.
-        max_width = 380 if width <= 0 else max(210, min(380, width - 480))
-        clamped = max(210, min(max_width, pos))
+        if width <= 0:
+            max_width = SIDEBAR_MAX
+        else:
+            content_limited = width - CONTENT_MIN_WHILE_SIDEBAR_VISIBLE
+            max_width = max(SIDEBAR_MIN, min(SIDEBAR_MAX, content_limited))
+        clamped = max(SIDEBAR_MIN, min(max_width, pos))
         if clamped != pos:
             self._sidebar_clamping = True
             self.split.set_position(clamped)
@@ -294,7 +380,7 @@ class MainWindow(Adw.ApplicationWindow):
         ms = self.motion_ms()
         if visible:
             self.sidebar_revealer.set_visible(True)
-            self.split.set_position(max(210, min(380, self._sidebar_width)))
+            self.split.set_position(max(SIDEBAR_MIN, min(SIDEBAR_MAX, self._sidebar_width)))
             self.sidebar_revealer.set_reveal_child(True)
         else:
             self.sidebar_revealer.set_reveal_child(False)

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>PC Command Center</vendor>
+  <icon_name>io.github.infinite4evr.PcCommandCenter</icon_name>
+  <action id="io.github.infinite4evr.PcCommandCenter.admin">
+    <description>Make changes to the system from PC Command Center</description>
+    <message>PC Command Center needs your password to make this change</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/local/libexec/pc-command-center/pc-admin</annotate>
+  </action>
+</policyconfig>

@@ -1,11 +1,11 @@
 # PC Command Center / linux-setup — Complete AI Handover
 
 **Authoritative handover for the current repository**  
-**Release:** `2.2.1`  
+**Release:** `2.2.3`  
 **Handover date:** 26 September 2026  
 **Primary product:** PC Command Center (GTK 4 + libadwaita desktop application)  
 **Also included:** Textual terminal UI, `pc` CLI, Ubuntu setup/cleanup shell scripts  
-**Current automated verification:** **208 passed, 2 skipped** (`pytest -q -rs`)  
+**Current automated verification:** **211 passed, 2 skipped** (`pytest -q -rs`)  
 **Important:** This file supersedes the older `docs/HANDOVER.md`. Start here before modifying the project.
 
 ---
@@ -31,6 +31,25 @@ If another AI takes over, do **not** assume that “everything in the audit is i
 - source code and tests — final authority if documentation differs.
 
 ---
+
+## 0.2 2.2.2 sidebar/page-loading hotfix (2026-09-26)
+
+The first 2.2.1 UI package had a serious GTK runtime regression that was not caught on the build host because GTK/PyGObject was unavailable there and the renderer smoke tests were skipped. The responsive `flow()` helper only accepted a single `spacing=` keyword, while several newly converted page layouts passed `column_spacing=` and `row_spacing=`. Those pages raised `TypeError` during construction; the shell then hid their navigation rows, which produced empty **Develop**/**Care** sections and removed several **Monitor** pages.
+
+2.2.2 fixes the root cause and hardens the shell against recurrence:
+
+- `flow()` now explicitly supports independent horizontal and vertical spacing overrides;
+- Storage, Network, Power, Logs, Developer and Maintenance construct again, and lazy responsive controls elsewhere use the same corrected helper contract;
+- page construction failures no longer call `row.set_visible(False)`; a visible diagnostic fallback page is inserted instead;
+- page import failures also keep a navigation entry rather than leaving an empty section;
+- sidebar width is clamped to 210–330 px and old persisted oversized widths are normalized;
+- three non-GTK source-contract tests were added so this class of regression is caught even when renderer tests cannot run.
+
+Validation on the packaging host: **211 passed, 2 skipped**. The two skips remain the real GTK screenshot tests because this environment does not provide PyGObject GTK 4/libadwaita. Run those tests on Ubuntu/CI with Xvfb before treating visual rendering as fully validated.
+
+## 0.0.2 2.2.3 installer/version reliability hotfix (2026-09-26)
+
+The installer now prints and verifies the GUI source/installed version and warns when an already-running single-instance GUI is still holding an older build in memory. `pc-gui --version` is available for verification. See `docs/INSTALLER-VERSION-HOTFIX-2.2.3.md`.
 
 ## 0.1 2.2.1 UI bug-fix pass (2026-09-26)
 
@@ -124,7 +143,7 @@ Version `2.2.0` now has:
 Automated validation at handover time:
 
 ```text
-208 passed, 2 skipped
+211 passed, 2 skipped
 ```
 
 The two skipped tests are the local GTK smoke tests when a display + GTK/libadwaita Python runtime are unavailable. CI includes an Ubuntu/Xvfb GTK smoke job for that reason.
@@ -1344,7 +1363,7 @@ python3 -m pytest -q -rs
 Result:
 
 ```text
-208 passed, 2 skipped
+211 passed, 2 skipped
 ```
 
 Skip reason:
@@ -1970,7 +1989,7 @@ python3 -m pytest -q -rs
 Latest result:
 
 ```text
-208 passed, 2 skipped in ~8 seconds
+211 passed, 2 skipped in ~4 seconds
 ```
 
 Skipped tests:
@@ -2044,8 +2063,8 @@ If you only have five minutes before continuing work:
 
 # 29. Final status
 
-**Version:** `2.2.1`  
-**Automated tests:** `208 passed, 2 skipped`  
+**Version:** `2.2.2`  
+**Automated tests:** `211 passed, 2 skipped`  
 **Primary UI:** GTK 4/libadwaita  
 **Debug logging:** implemented, opt-in, rotating, redacted  
 **Support bundle:** implemented  

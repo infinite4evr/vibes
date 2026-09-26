@@ -1,0 +1,27 @@
+#!/bin/bash
+# PC Command Center admin helper. pkexec runs this as root after you enter your password; it runs the batch of
+# commands the app showed you in its confirmation dialog (a script file the app writes for that one action).
+set -u
+script="${1:-}"
+if [[ -z $script || ! -f $script ]]; then
+  echo "pc-admin: expected the path of a script prepared by PC Command Center" >&2
+  exit 2
+fi
+case $script in
+  /tmp/pc-admin-*.sh) ;;
+  *) echo "pc-admin: refusing to run $script (not a PC Command Center script)" >&2; exit 2 ;;
+esac
+if [[ -L $script || ! -f $script ]]; then echo "pc-admin: refusing anything except a regular script" >&2; exit 2; fi
+# Resolve and re-check the path to stop odd /tmp aliases from crossing the helper boundary.
+resolved=$(readlink -f -- "$script") || exit 2
+[[ $resolved == "$script" ]] || { echo "pc-admin: refusing an indirect path" >&2; exit 2; }
+[[ $(stat -c %h -- "$script") == 1 ]] || { echo "pc-admin: refusing a hard-linked script" >&2; exit 2; }
+# must belong to the person who typed their password, and nobody else may be able to change it
+if [[ -n ${PKEXEC_UID:-} && $(stat -c %u -- "$script") != "$PKEXEC_UID" ]]; then
+  echo "pc-admin: the script doesn't belong to you" >&2; exit 2
+fi
+mode=$(stat -c %a -- "$script")
+if [[ $mode != 600 ]]; then
+  echo "pc-admin: script permissions must be exactly 0600" >&2; exit 2
+fi
+exec /bin/bash "$script"

@@ -125,14 +125,22 @@ def vbox(*children: Gtk.Widget, spacing: int = 8, css: str | None = None) -> Gtk
 
 
 def flow(*children: Gtk.Widget, spacing: int = 12, min_per_line: int = 1, max_per_line: int = 0, homogeneous: bool = False,
-         css: str | None = None, halign: Gtk.Align = Gtk.Align.FILL) -> Gtk.FlowBox:
+         css: str | None = None, halign: Gtk.Align = Gtk.Align.FILL,
+         column_spacing: int | None = None, row_spacing: int | None = None) -> Gtk.FlowBox:
     """A responsive row that wraps instead of clipping when the window gets narrow.
+
+    ``spacing`` remains the convenient shorthand for equal horizontal/vertical
+    gaps.  ``column_spacing`` and ``row_spacing`` may override it independently.
+    Keeping those explicit overrides in the helper matters because many dense
+    pages use tighter vertical spacing than horizontal spacing.
 
     GTK Box rows are easy to over-constrain in this app because the sidebar is
     resizable. FlowBox keeps controls usable at compact widths while preserving
     a normal single-row layout when there is room.
     """
-    f = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, homogeneous=homogeneous, column_spacing=spacing, row_spacing=spacing,
+    col_gap = spacing if column_spacing is None else column_spacing
+    row_gap = spacing if row_spacing is None else row_spacing
+    f = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, homogeneous=homogeneous, column_spacing=col_gap, row_spacing=row_gap,
                     min_children_per_line=min_per_line, max_children_per_line=max_per_line or max(1, len(children)))
     f.set_hexpand(True)
     f.set_halign(halign)

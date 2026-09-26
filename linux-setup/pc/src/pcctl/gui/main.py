@@ -12,6 +12,8 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Graphene, Gtk  # noqa: E402
 
+from .. import __version__  # noqa: E402
+
 APP_ID = "io.github.infinite4evr.PcCommandCenter"
 
 
@@ -140,6 +142,7 @@ class App(Adw.Application):
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="pc-gui", description="PC Command Center")
+    ap.add_argument("--version", action="version", version=f"PC Command Center {__version__}")
     ap.add_argument("--page", default=None, help="page to open (default: the one you had open last)")
     ap.add_argument("--action", default=None, help="run a palette action, e.g. maintenance:fix-sound or app:palette")
     ap.add_argument("--debug", action="store_true", help="enable detailed, privacy-redacted diagnostic logging for this run")

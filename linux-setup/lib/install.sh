@@ -496,6 +496,34 @@ install_pc_app() {
   local src="$SCRIPT_DIR/pc/src/pcctl"
   if [[ ! -d $src/gui ]]; then warn "The pc/src/pcctl folder is missing next to setup.sh - skipped"; return 1; fi
 
+  # Read and show the version we are about to install.  This also protects against
+  # accidentally running setup.sh from an older extracted folder.
+  local source_version
+  source_version=$(python3 - "$src/__init__.py" <<'PYVER'
+import re, sys
+try:
+    text = open(sys.argv[1], encoding="utf-8").read()
+except OSError:
+    raise SystemExit(1)
+m = re.search(r'__version__\s*=\s*["\']([^"\']+)', text)
+if m:
+    print(m.group(1))
+PYVER
+  ) || return 1
+  if [[ -z $source_version ]]; then warn "Couldn't determine the PC Command Center source version"; return 1; fi
+  info "Source version: $source_version"
+
+  # Replacing files underneath a running Python process does not replace the code
+  # already loaded in memory.  A subsequent dock click can reactivate that old
+  # single-instance process, making About appear to show an unsuccessful update.
+  local gui_was_running=0
+  if ps -u "$(id -u)" -o args= 2>/dev/null \
+      | grep -E '[p]ython3(\s+[^ ]+)*\s+-m\s+pcctl\.gui([[:space:]]|$)' \
+      | grep -vq -- '--search-provider'; then
+    gui_was_running=1
+    warn "PC Command Center is currently running. The new files will install, but that window keeps its old in-memory version until you fully quit it (Ctrl+Q) and reopen it."
+  fi
+
   # GTK 4 + libadwaita for Ubuntu's own Python (native look and the normal password popup)
   local missing=() p
   for p in "${APP_DEPS[@]}"; do dpkg -s "$p" >/dev/null 2>&1 || missing+=("$p"); done
@@ -602,13 +630,35 @@ d["setup_dir"] = sys.argv[1]
 json.dump(d, open(p, "w"), indent=2)
 PY
 
+  # Verify the private GUI copy really is the same version as this source tree.
+  local installed_version
+  installed_version=$(python3 - "$APP_DIR/pcctl/__init__.py" <<'PYVER'
+import re, sys
+try:
+    text = open(sys.argv[1], encoding="utf-8").read()
+except OSError:
+    raise SystemExit(1)
+m = re.search(r'__version__\s*=\s*["\']([^"\']+)', text)
+if m:
+    print(m.group(1))
+PYVER
+  ) || return 1
+  if [[ $installed_version != "$source_version" ]]; then
+    warn "Version verification failed: source is $source_version but installed GUI files report ${installed_version:-unknown}."
+    return 1
+  fi
+  dim "Verified installed GUI files: v$installed_version"
+
   # Pin it to the dock (keeps whatever is already there)
   local favs; favs=$(gsettings get org.gnome.shell favorite-apps 2>/dev/null || echo "")
   if [[ $favs == "["*"]" && $favs != *"$APP_ID"* ]]; then
     if [[ $favs == "@as []" || $favs == "[]" ]]; then gset_keep org.gnome.shell favorite-apps "['$APP_ID.desktop']"
     else gset_keep org.gnome.shell favorite-apps "${favs%]}, '$APP_ID.desktop']"; fi
   fi
-  ok "PC Command Center installed - it's in your dock and app grid (or run ${C_MAUVE}pc-gui${C_RESET})"
+  ok "PC Command Center v$installed_version installed - it's in your dock and app grid (or run ${C_MAUVE}pc-gui${C_RESET})"
+  if (( gui_was_running )); then
+    warn "Important: quit the old PC Command Center process with Ctrl+Q, then reopen it. Until then About can still show the previous version because the old Python process is still in memory."
+  fi
 }
 
 setup_main() {
