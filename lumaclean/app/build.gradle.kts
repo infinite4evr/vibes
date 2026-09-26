@@ -63,9 +63,5 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-compose:3.3.0")
     implementation("io.coil-kt.coil3:coil-video:3.3.0")
 
-    // Only for the old com.example.lumaclean sources, which are no longer used; remove both with that folder
-    implementation("androidx.documentfile:documentfile:1.1.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
-
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
