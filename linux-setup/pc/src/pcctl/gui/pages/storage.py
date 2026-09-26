@@ -235,13 +235,13 @@ class StoragePage(Page):
         self.history: list[str] = []
         self.crumb = label("", ["heading", "mono"], ellipsize=True, hexpand=True)
         self.explore_total = label("", "dim")
-        self.explore.append(hbox(
-            button(icon="go-previous-symbolic", tooltip="Back", on_click=self.back),
-            button(icon="go-up-symbolic", tooltip="Up one folder", on_click=lambda: self.go(os.path.dirname(self.path.rstrip("/")) or "/")),
-            button(icon="user-home-symbolic", tooltip="Home folder", on_click=lambda: self.go(str(HOME))),
-            button("/", tooltip="Whole disk (some folders need admin rights to measure)", on_click=lambda: self.go("/")),
-            self.crumb, self.explore_total, self._view_toggle(),
-            button("Open in Files", icon="folder-open-symbolic", on_click=lambda: open_path(self.path)), spacing=6))
+        nav = hbox(button(icon="go-previous-symbolic", tooltip="Back", on_click=self.back),
+                   button(icon="go-up-symbolic", tooltip="Up one folder", on_click=lambda: self.go(os.path.dirname(self.path.rstrip("/")) or "/")),
+                   button(icon="user-home-symbolic", tooltip="Home folder", on_click=lambda: self.go(str(HOME))),
+                   button("/", tooltip="Whole disk (some folders need admin rights to measure)", on_click=lambda: self.go("/")), spacing=0, css="linked")
+        self.explore.append(flow(nav, self.crumb, self.explore_total, self._view_toggle(),
+                                 button("Open in Files", icon="folder-open-symbolic", on_click=lambda: open_path(self.path)),
+                                 min_per_line=1, max_per_line=5, column_spacing=8, row_spacing=8))
         self.etable = DataTable([
             Column("name", "Name", "markup", expand=True),
             Column("share", "Share", "bar", width=150, fmt=lambda v, d: f"{(v or 0) * 100:.0f}%"),
@@ -257,9 +257,9 @@ class StoragePage(Page):
         self.estack.add_named(self.etable, "list")
         self.estack.add_named(self.treemap, "map")
         self.explore.append(self.estack)
-        self.explore.append(hbox(label("Double-click a folder to open it. Sizes include everything inside.", "dim", hexpand=True),
+        self.explore.append(flow(label("Double-click a folder to open it. Sizes include everything inside.", "dim", wrap=True, hexpand=True),
                                  button("Show in Files", css="flat", on_click=self._reveal),
-                                 button("Move to Trash…", icon="user-trash-symbolic", css="destructive-action", on_click=self._trash_sel)))
+                                 button("Move to Trash…", icon="user-trash-symbolic", css="destructive-action", on_click=self._trash_sel), spacing=8, max_per_line=3))
 
     def _view_toggle(self) -> Gtk.Box:
         lst = Gtk.ToggleButton(icon_name="view-list-symbolic", tooltip_text="List", active=True)
@@ -338,7 +338,7 @@ class StoragePage(Page):
         self.min_dd.set_selected(1)
         self.min_dd.connect("notify::selected", lambda *_: self.find_big())
         self.big_status = label("", "dim", hexpand=True)
-        self.big.append(hbox(self.min_dd, self.big_status, button("Search again", icon="view-refresh-symbolic", on_click=self.find_big)))
+        self.big.append(flow(self.min_dd, self.big_status, button("Search again", icon="view-refresh-symbolic", on_click=self.find_big), spacing=8, max_per_line=3))
         self.btable = DataTable([
             Column("name", "File", "bold", width=280),
             Column("size", "Size", "size", width=100),
@@ -347,11 +347,12 @@ class StoragePage(Page):
         ], on_activate=lambda r: open_path(os.path.dirname(r["key"])), empty="No big files found.", sort="size")
         self.btable.set_size_request(-1, 460)
         self.big.append(self.btable)
-        self.big.append(hbox(label("Only your home folder is searched. Double-click opens the folder.", "dim", hexpand=True),
+        self.big.append(flow(label("Only your home folder is searched. Double-click opens the folder.", "dim", wrap=True, hexpand=True),
                              button("Open file", css="flat", on_click=lambda: self._b(lambda r: open_path(r["key"]))),
                              button("Show in Files", css="flat", on_click=lambda: self._b(lambda r: open_path(os.path.dirname(r["key"])))),
                              button("Move to Trash…", icon="user-trash-symbolic", css="destructive-action",
-                                    on_click=lambda: self._b(lambda r: self.trash([r["key"]], r["size"], after=self.find_big)))))
+                                    on_click=lambda: self._b(lambda r: self.trash([r["key"]], r["size"], after=self.find_big))),
+                             spacing=8, max_per_line=4))
 
     def _b(self, fn) -> None:
         r = self.btable.selected()
@@ -396,7 +397,7 @@ class StoragePage(Page):
         self.dups.append(card(label("Duplicates: files with exactly the same content (compared byte for byte, not by name); the oldest copy is kept. "
                                     "Similar photos: the same picture resized or re-saved (WhatsApp/Telegram copies, edits); the biggest is kept.",
                                     "dim", wrap=True),
-                              flow(*boxes, spacing=14, min_per_line=3), hbox(self.dup_min, spacer(), self.empty_btn, self.sim_btn, self.dup_btn),
+                              flow(*boxes, spacing=14, min_per_line=2), flow(self.dup_min, self.empty_btn, self.sim_btn, self.dup_btn, spacing=8, max_per_line=4),
                               title="Where to look"))
         self.dup_status = label("", "subtle", wrap=True)
         self.dups.append(self.dup_status)
@@ -478,8 +479,9 @@ class StoragePage(Page):
         wasted = sum(g[0]["size"] * (len(g) - 1) for g in groups)
         self.dup_total = label("", "mid-num")
         trash_btn = button("Move ticked copies to Trash…", icon="user-trash-symbolic", css="destructive-action", on_click=self.trash_dups)
-        self.dup_list.append(hbox(self.dup_total, spacer(), button("Tick all copies", css="flat", on_click=lambda: self._tick_dups(True)),
-                                  button("Untick all", css="flat", on_click=lambda: self._tick_dups(False)), trash_btn))
+        self.dup_list.append(flow(self.dup_total, button("Tick all copies", css="flat", on_click=lambda: self._tick_dups(True)),
+                                   button("Untick all", css="flat", on_click=lambda: self._tick_dups(False)), trash_btn,
+                                   min_per_line=1, max_per_line=4, column_spacing=8, row_spacing=8))
         self.dup_status.set_text(f"{len(groups)} sets of identical files, {human(wasted)} of extra copies ({secs:.1f}s).")
         lb = boxed_list()
         for g in groups[:400]:
@@ -527,10 +529,11 @@ class StoragePage(Page):
     # ---------------------------------------------------------------- trash
     def _build_trash(self) -> None:
         self.trash_status = label("", "subtle", hexpand=True)
-        self.trash_box.append(hbox(self.trash_status,
-                                   button("Restore", icon="edit-undo-symbolic", on_click=lambda: self._t(self.restore)),
-                                   button("Delete for good…", css="destructive-action", on_click=lambda: self._t(lambda r: self.delete_forever([r]))),
-                                   button("Empty Trash…", icon="user-trash-full-symbolic", on_click=self.empty_trash), spacing=6))
+        self.trash_box.append(flow(self.trash_status,
+                                    button("Restore", icon="edit-undo-symbolic", on_click=lambda: self._t(self.restore)),
+                                    button("Delete for good…", css="destructive-action", on_click=lambda: self._t(lambda r: self.delete_forever([r]))),
+                                    button("Empty Trash…", icon="user-trash-full-symbolic", on_click=self.empty_trash),
+                                    min_per_line=1, max_per_line=4, column_spacing=6, row_spacing=6))
         self.ttable = DataTable([
             Column("name", "Name", "bold", width=240),
             Column("size", "Size", "size", width=90),
@@ -587,7 +590,7 @@ class StoragePage(Page):
         self.types_status = label("See what kind of files fill your home folder: videos, photos, music, documents, installers, code. "
                                   "Apps, caches and code dependencies are skipped.", "dim", wrap=True, hexpand=True)
         self.types_btn = button("Analyse", icon="system-search-symbolic", css="suggested-action", on_click=self.analyse_types)
-        self.types_box.append(hbox(self.types_status, self.types_btn))
+        self.types_box.append(flow(self.types_status, self.types_btn, min_per_line=1, max_per_line=2, column_spacing=8, row_spacing=8))
         self.types_result = vbox(spacing=14)
         self.types_box.append(self.types_result)
 
@@ -612,8 +615,9 @@ class StoragePage(Page):
         t.set_size_request(-1, 320)
         self.types_result.append(label("Biggest file types", "section-title"))
         self.types_result.append(t)
-        self.types_result.append(hbox(label("Find the actual files on the Big files tab.", "dim", hexpand=True),
-                                      button("Big files", css="flat", on_click=lambda: self.stack.set_visible_child_name("big"))))
+        self.types_result.append(flow(label("Find the actual files on the Big files tab.", "dim", wrap=True, hexpand=True),
+                                       button("Big files", css="flat", on_click=lambda: self.stack.set_visible_child_name("big")),
+                                       min_per_line=1, max_per_line=2, column_spacing=8, row_spacing=8))
 
 
 PAGE = StoragePage

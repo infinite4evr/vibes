@@ -10,7 +10,7 @@ import psutil
 from ...core import health, system
 from ...core.diagnose import pressure as diagnose_pressure
 from ...core.fmt import duration, human, rate
-from ..util import bg, button, clear, esc, hbox, label, spacer, status_icon, vbox
+from ..util import bg, button, clear, esc, flow, hbox, label, spacer, status_icon, vbox
 from ..widgets import LineGraph, MiniBar, RingGauge, card, level_color
 from .. import theme
 from .base import Page
@@ -33,13 +33,13 @@ class DashboardPage(Page):
         self.gauge = RingGauge(132, 12)
         self.hero_title = label("Checking your PC…", "mid-num", wrap=True)
         self.hero_sub = label("This takes a few seconds.", "subtle", wrap=True)
-        actions = hbox(
+        actions = flow(
             button("Clean up", icon="edit-clear-all-symbolic", css="suggested-action", on_click=lambda: self.win.goto("cleanup")),
             button("Why is it slow?", icon="power-profile-performance-symbolic", tooltip="Measures for two seconds and explains what's slowing the PC down",
                    on_click=self.why_slow),
             button("Updates", icon="software-update-available-symbolic", on_click=lambda: self.win.goto("updates")),
             button("Security", icon="security-high-symbolic", on_click=lambda: self.win.goto("security")),
-            spacing=8)
+            spacing=8, max_per_line=4)
         actions.set_margin_top(6)
         text = vbox(self.hero_title, self.hero_sub, actions, spacing=6)
         text.set_valign(Gtk.Align.CENTER)
@@ -66,14 +66,14 @@ class DashboardPage(Page):
         self._tile("CPU", self.cpu_num, self.cpu_info, self.strain, self.cpu_graph, self.cores)
 
         self.mem_num = label("0%", "big-num")
-        self.mem_info = label("", "dim")
+        self.mem_info = label("", "dim", wrap=True)
         self.mem_graph = LineGraph(("blue",))
         self.swap_bar = MiniBar(height=7, warn=50, crit=80)
         self.swap_info = label("", "dim")
         self._tile("Memory", self.mem_num, self.mem_info, self.mem_graph, hbox(label("Swap", "dim"), self.swap_bar, self.swap_info))
 
         self.net_num = label("", "mid-num")
-        self.net_info = label("", "dim")
+        self.net_info = label("", "dim", wrap=True)
         self.net_graph = LineGraph(("teal", "peach"), maximum=None)
         self._tile("Network", self.net_num, self.net_info, self.net_graph)
 
@@ -102,8 +102,8 @@ class DashboardPage(Page):
         left.set_hexpand(True)
         right = vbox(hbox(label("Busiest apps", "section-title"), spacer(),
                           button("All processes", css="flat", on_click=lambda: self.win.goto("processes"))), self.apps_list, spacing=8)
-        right.set_size_request(380, -1)
-        self.body.append(hbox(left, right, spacing=18))
+        right.set_hexpand(True)
+        self.body.append(flow(left, right, spacing=18, min_per_line=1, max_per_line=2, homogeneous=True))
 
         self.sampler = system.Sampler()
         self.watcher = system.ProcessWatcher()

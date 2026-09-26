@@ -168,7 +168,7 @@ class MainWindow(Adw.ApplicationWindow):
         body.add_css_class("side-body")
         side_tv.set_content(body)
         self.sidebar_revealer = Gtk.Revealer()
-        self.sidebar_revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_RIGHT)
+        self.sidebar_revealer.set_transition_type(Gtk.RevealerTransitionType.CROSSFADE)
         self.sidebar_revealer.set_child(side_tv)
         self.sidebar_revealer.set_size_request(210, -1)
         self.sidebar_revealer.set_reveal_child(self._sidebar_visible)
@@ -197,12 +197,15 @@ class MainWindow(Adw.ApplicationWindow):
         self.content_hb.pack_end(self.refresh_btn)
         self._header_extra: list[Gtk.Widget] = []
         self.content_tv.add_top_bar(self.content_hb)
-        self.stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT, transition_duration=220,
+        self.stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.CROSSFADE, transition_duration=180,
                                hhomogeneous=False, vhomogeneous=False)
         self.toasts = Adw.ToastOverlay()
         self.toasts.set_child(self.stack)
         self.content_tv.set_content(self.toasts)
         self.split.set_end_child(self.content_tv)
+        self._sidebar_clamping = False
+        self.split.connect("notify::position", self._sidebar_resized)
+        self.connect("notify::width", self._sidebar_resized)
 
         for pid, cls in classes.items():
             try:
@@ -251,14 +254,29 @@ class MainWindow(Adw.ApplicationWindow):
 
     # ---------------------------------------------------------------- window chrome
     def motion_ms(self) -> int:
-        return {"full": 220, "reduced": 110, "off": 0}.get(prefs.get("motion", "full"), 220)
+        return {"full": 180, "reduced": 90, "off": 0}.get(prefs.get("motion", "full"), 180)
 
     def apply_motion(self) -> None:
         ms = self.motion_ms()
         self.stack.set_transition_duration(ms)
-        self.stack.set_transition_type(Gtk.StackTransitionType.NONE if not ms else Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+        self.stack.set_transition_type(Gtk.StackTransitionType.NONE if not ms else Gtk.StackTransitionType.CROSSFADE)
         self.sidebar_revealer.set_transition_duration(ms)
-        self.sidebar_revealer.set_transition_type(Gtk.RevealerTransitionType.NONE if not ms else Gtk.RevealerTransitionType.SLIDE_RIGHT)
+        self.sidebar_revealer.set_transition_type(Gtk.RevealerTransitionType.NONE if not ms else Gtk.RevealerTransitionType.CROSSFADE)
+
+    def _sidebar_resized(self, *_a) -> None:
+        """Keep the resizable sidebar useful without letting it crush the current page."""
+        if not self._sidebar_visible or self._sidebar_clamping:
+            return
+        pos = self.split.get_position()
+        width = self.get_width()
+        # Leave at least 480 px for page content at compact window sizes.
+        max_width = 380 if width <= 0 else max(210, min(380, width - 480))
+        clamped = max(210, min(max_width, pos))
+        if clamped != pos:
+            self._sidebar_clamping = True
+            self.split.set_position(clamped)
+            self._sidebar_clamping = False
+        self._sidebar_width = clamped
 
     def toggle_sidebar(self) -> None:
         self.set_sidebar_visible(not self._sidebar_visible)
@@ -276,7 +294,7 @@ class MainWindow(Adw.ApplicationWindow):
         ms = self.motion_ms()
         if visible:
             self.sidebar_revealer.set_visible(True)
-            self.split.set_position(max(210, min(430, self._sidebar_width)))
+            self.split.set_position(max(210, min(380, self._sidebar_width)))
             self.sidebar_revealer.set_reveal_child(True)
         else:
             self.sidebar_revealer.set_reveal_child(False)
@@ -322,7 +340,8 @@ class MainWindow(Adw.ApplicationWindow):
         mb = Gtk.MenuButton(popover=pop)
         mb.set_child(hbox(Gtk.Image.new_from_icon_name("list-add-symbolic"), label("Quick actions"), spacing=10))
         mb.add_css_class("quick-btn")
-        mb.set_halign(Gtk.Align.START)
+        mb.set_halign(Gtk.Align.FILL)
+        mb.set_hexpand(True)
         mb.set_tooltip_text("Scan, update, fix and more")
         return mb
 
@@ -330,15 +349,16 @@ class MainWindow(Adw.ApplicationWindow):
         from .widgets import MiniBar
         self.sc_title = label("This PC", "side-card-title", hexpand=True)
         self.sc_score = label("", "pill")
-        self.sc_disk = label("Main disk", "side-card-sub")
+        self.sc_disk = label("Main disk", "side-card-sub", wrap=True)
         self.sc_bar = MiniBar(height=6, warn=80, crit=90)
-        self.sc_mem = label("", "side-card-sub")
+        self.sc_mem = label("", "side-card-sub", wrap=True)
         btn = Gtk.Button(label="Free up space →")
         btn.add_css_class("flat")
         btn.add_css_class("side-link")
         btn.connect("clicked", lambda *_: self.goto("cleanup"))
         self.sc_mem.set_hexpand(True)
-        box = vbox(hbox(self.sc_title, self.sc_score, spacing=6), self.sc_disk, self.sc_bar, hbox(self.sc_mem, btn, spacing=6), spacing=5)
+        btn.set_halign(Gtk.Align.START)
+        box = vbox(hbox(self.sc_title, self.sc_score, spacing=6), self.sc_disk, self.sc_bar, self.sc_mem, btn, spacing=5)
         box.add_css_class("side-card")
         return box
 
@@ -372,7 +392,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.search = Gtk.SearchEntry(placeholder_text="Search pages, actions and settings…   Ctrl+K")
         self.search.add_css_class("top-search")
         self.search.set_hexpand(True)
-        self.search.set_size_request(280, -1)
+        self.search.set_size_request(160, -1)
         clamp = Adw.Clamp(maximum_size=620, tightening_threshold=400)
         clamp.set_child(self.search)
         clamp.set_hexpand(True)
@@ -442,7 +462,9 @@ class MainWindow(Adw.ApplicationWindow):
                                   else "Nothing found. Try another word, e.g. “clean”, “battery”, “ports”.")
         if hits:
             self.results.select_row(self.results.get_row_at_index(0))
-        w = max(420, self.search.get_width())
+        # Keep the results inside compact windows / a wide resized sidebar.
+        root_w = self.get_width() or 760
+        w = max(300, min(620, self.search.get_width(), root_w - 48))
         self.search_pop.set_size_request(w, -1)
         self.search_pop.popup()
 

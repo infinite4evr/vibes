@@ -11,9 +11,9 @@ from gi.repository import Adw, GLib, Gtk
 from ...core import services
 from ...core.fmt import ago, duration, human
 from ...core.run import Step, out
-from ..util import button, clear, esc, hbox, label, open_in_terminal, pill, spacer, status_icon, vbox
+from ..util import button, clear, esc, flow, hbox, label, open_in_terminal, pill, spacer, status_icon, vbox
 from ..widgets import Column, DataTable
-from .base import Page, action_row, group, tabs
+from .base import Page, action_row, banner, group, tabs
 
 STATE = {"active": ("running", "ok"), "failed": ("failed", "bad"), "inactive": ("stopped", "neutral"), "activating": ("starting", "info"),
          "deactivating": ("stopping", "info"), "reloading": ("reloading", "info")}
@@ -46,7 +46,7 @@ class ScriptDialog(Adw.Dialog):
         spec = spec or services.ScriptSpec(name="", command="")
         self.set_title("Edit script" if self.editing else "Add a script")
         self.set_content_width(620)
-        self.set_content_height(720)
+        self.set_content_height(620)
         tv = Adw.ToolbarView()
         hb = Adw.HeaderBar()
         hb.set_show_end_title_buttons(False)
@@ -222,7 +222,7 @@ class ServicesPage(Page):
         self.scope.connect("notify::selected", lambda *_: self.load_services())
         self.state = Gtk.DropDown.new_from_strings(FILTERS)
         self.state.connect("notify::selected", lambda *_: self.render())
-        self.svc_box.append(hbox(self.search_entry, self.scope, self.state, spacing=8))
+        self.svc_box.append(flow(self.search_entry, self.scope, self.state, spacing=8, max_per_line=3))
         self.banner = vbox()
         self.svc_box.append(self.banner)
         self.table = DataTable([
@@ -239,16 +239,15 @@ class ServicesPage(Page):
         self.svc_box.append(self.table)
         self.block_btn = button("Block…", icon="action-unavailable-symbolic", tooltip="Stop it and never let anything start it (mask)",
                                 on_click=self.toggle_block)
-        self.actions = hbox(
+        self.actions = flow(
             button("Start", icon="media-playback-start-symbolic", on_click=lambda: self.act("start")),
             button("Stop", icon="media-playback-stop-symbolic", on_click=lambda: self.act("stop")),
             button("Restart", icon="view-refresh-symbolic", on_click=lambda: self.act("restart")),
             button("On at boot", tooltip="Start automatically at every boot", on_click=lambda: self.act("enable")),
             button("Off at boot", tooltip="Don't start it at boot (you can still start it by hand)", on_click=lambda: self.act("disable")),
             self.block_btn,
-            spacer(),
             button(icon="text-x-generic-symbolic", tooltip="Logs", on_click=self.show_logs),
-            button(icon="dialog-information-symbolic", tooltip="Details", on_click=self.details), spacing=6)
+            button(icon="dialog-information-symbolic", tooltip="Details", on_click=self.details), spacing=6, max_per_line=8)
         self.svc_box.append(self.actions)
         self.svc_box.append(label("Memory and CPU time are for running services (CPU time = total processor time used since it started). "
                                   "Click a column title to sort.", "dim", wrap=True))
@@ -298,17 +297,13 @@ class ServicesPage(Page):
         clear(self.banner)
         failed = [s for s in items if s.active == "failed"]
         if failed:
-            b = hbox(label(f"{len(failed)} service{'s' if len(failed) != 1 else ''} failed: " + ", ".join(s.name for s in failed[:6]),
-                           None, wrap=True, hexpand=True), css="banner-bad")
+            text = f"{len(failed)} service{'s' if len(failed) != 1 else ''} failed: " + ", ".join(s.name for s in failed[:6])
             show = button("Show", css="flat", on_click=lambda: self.state.set_selected(2))
             reset = button("Clear failed state", css="flat", on_click=lambda: self.run(
                 "Clear failed services", [Step("Reset failed services", ["systemctl", *(["--user"] if self.scope.get_selected() == 1 else []), "reset-failed"],
                                                root=self.scope.get_selected() == 0)],
                 "Forgets that they failed (they aren't restarted). Useful after you've fixed or removed the cause."))
-            for w in (show, reset):
-                w.set_valign(Gtk.Align.CENTER)
-                b.append(w)
-            self.banner.append(b)
+            self.banner.append(banner(text, "bad", show, reset))
         self.banner.set_visible(bool(failed))
         self.render()
         if self.scope.get_selected() == 0:
@@ -410,7 +405,7 @@ class ServicesPage(Page):
         intro = label("Keep a script or program running in the background, start it when you log in, or run it on a schedule. "
                       "Like pm2, but built on Ubuntu's own service manager, so it survives crashes and restarts. No admin rights needed.",
                       "dim", wrap=True, hexpand=True)
-        self.scripts_box.append(hbox(intro, again, add, spacing=10))
+        self.scripts_box.append(flow(intro, again, add, spacing=10, max_per_line=3))
         for w in (add, again):
             w.set_valign(Gtk.Align.CENTER)
         if not ok:
@@ -461,24 +456,24 @@ class ServicesPage(Page):
         row.add_row(cmd)
         row.add_row(Adw.ActionRow(title="Folder", subtitle=esc(spec.folder or "Your home folder")))
         sched = spec.mode == "schedule"
-        acts = hbox(spacing=6)
+        act_buttons = []
+        if j["on"]:
+            act_buttons.append(button("Pause schedule" if sched else "Stop", icon="media-playback-stop-symbolic", css="flat",
+                                      on_click=lambda: self.script_act(j, "stop")))
+        else:
+            act_buttons.append(button("Turn on" if sched else "Start", icon="media-playback-start-symbolic", css="flat",
+                                      on_click=lambda: self.script_act(j, "start")))
+        if spec.mode != "always":
+            act_buttons.append(button("Run now", css="flat", on_click=lambda: self.script_act(j, "run")))
+        elif j["on"]:
+            act_buttons.append(button("Restart", css="flat", on_click=lambda: self.script_act(j, "restart")))
+        act_buttons.append(button("Logs", icon="text-x-generic-symbolic", css="flat", on_click=lambda: self.bg(
+            lambda: services.script_logs(j["name"]), lambda t: self.text(f"Log: {j['name']}", t or "No output yet."))))
+        act_buttons.append(button("Edit", icon="document-edit-symbolic", css="flat", on_click=lambda: self.edit_script(j)))
+        act_buttons.append(button("Remove", icon="user-trash-symbolic", css="flat", on_click=lambda: self.remove_script(j)))
+        acts = flow(*act_buttons, min_per_line=1, max_per_line=5, column_spacing=6, row_spacing=6)
         for m in ("top", "bottom", "start"):
             getattr(acts, f"set_margin_{m}")(8)
-        if j["on"]:
-            acts.append(button("Pause schedule" if sched else "Stop", icon="media-playback-stop-symbolic", css="flat",
-                               on_click=lambda: self.script_act(j, "stop")))
-        else:
-            acts.append(button("Turn on" if sched else "Start", icon="media-playback-start-symbolic", css="flat",
-                               on_click=lambda: self.script_act(j, "start")))
-        if spec.mode != "always":
-            acts.append(button("Run now", css="flat", on_click=lambda: self.script_act(j, "run")))
-        elif j["on"]:
-            acts.append(button("Restart", css="flat", on_click=lambda: self.script_act(j, "restart")))
-        acts.append(button("Logs", icon="text-x-generic-symbolic", css="flat", on_click=lambda: self.bg(
-            lambda: services.script_logs(j["name"]), lambda t: self.text(f"Log: {j['name']}", t or "No output yet."))))
-        acts.append(button("Edit", icon="document-edit-symbolic", css="flat", on_click=lambda: self.edit_script(j)))
-        acts.append(spacer())
-        acts.append(button("Remove", icon="user-trash-symbolic", css="flat", on_click=lambda: self.remove_script(j)))
         row.add_row(acts)
         return row
 

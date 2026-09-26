@@ -5,7 +5,7 @@ from __future__ import annotations
 from gi.repository import Adw, Gtk
 
 from . import prefs
-from .util import button, esc, hbox, label, vbox
+from .util import button, esc, flow, hbox, label, vbox
 
 TOUR = [
     ("user-trash-symbolic", "Clean & update", "Free space safely and keep Ubuntu, snaps and flatpaks up to date. You always see the commands first."),
@@ -63,8 +63,8 @@ class WelcomeDialog(Adw.Dialog):
         for r in (self.weekly, self.alerts, self.taskmgr):
             opts.append(r)
         box.append(opts)
-        tip = hbox(label("Tip:", "dim"), label("Ctrl+K", "kbd"), label("finds any page, action or setting by typing.", "dim", wrap=True), spacing=6)
-        tip.set_halign(Gtk.Align.CENTER)
+        tip = flow(label("Tip:", "dim"), label("Ctrl+K", "kbd"), label("finds any page, action or setting by typing.", "dim", wrap=True),
+                   min_per_line=1, max_per_line=3, column_spacing=6, row_spacing=4, halign=Gtk.Align.CENTER)
         box.append(tip)
         skip = button("Not now", css="pill", on_click=self._skip)
         go = button("Start", css=["suggested-action", "pill"], on_click=self._start)
@@ -75,7 +75,7 @@ class WelcomeDialog(Adw.Dialog):
         sw.set_child(box)
         tv.set_content(sw)
         self.set_child(tv)
-        self.set_content_height(760)
+        self.set_content_height(640)
 
     def _prefill(self) -> None:
         """Show what's already on (e.g. the setup script turned the weekly checkup on)."""

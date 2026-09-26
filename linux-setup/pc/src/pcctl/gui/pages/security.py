@@ -14,7 +14,7 @@ from ...core.fmt import ago
 from ...core.run import HOME, Step, has, out, sh
 from ..dialogs import ask_text
 from ..runner import capture
-from ..util import button, clear, hbox, label, launch, open_in_terminal, open_path, pill, status_icon, vbox
+from ..util import button, clear, flow, hbox, label, launch, open_in_terminal, open_path, pill, status_icon, vbox
 from ..widgets import RingGauge, card
 from .base import Page, action_row, banner, group, switch_row, tabs
 
@@ -467,10 +467,11 @@ class SecurityPage(Page):
         scan_btn = button("Scan Downloads", icon="system-search-symbolic", css=["suggested-action", "pill"],
                           on_click=lambda: self.scan_folder(st.get("downloads") or antivirus.downloads()))
         other_btn = button("Scan another folder…", css="pill", on_click=self.pick_folder)
-        box.append(card(hbox(vbox(label("Scan for viruses", "mid-num"),
-                                  label(f"Checks every file in {secrets.short(st.get('downloads', '~/Downloads'))} and its subfolders. Loading the virus list takes "
-                                        "about a minute; nothing is changed or deleted without asking.", "subtle", wrap=True), spacing=4),
-                             spacing=12), hbox(scan_btn, other_btn, spacing=8), spacing=12))
+        scan_copy = vbox(label("Scan for viruses", "mid-num"),
+                         label(f"Checks every file in {secrets.short(st.get('downloads', '~/Downloads'))} and its subfolders. Loading the virus list takes "
+                               "about a minute; nothing is changed or deleted without asking.", "subtle", wrap=True), spacing=4)
+        scan_actions = flow(scan_btn, other_btn, min_per_line=1, max_per_line=2, column_spacing=8, row_spacing=8)
+        box.append(card(scan_copy, scan_actions, spacing=12))
         box.append(group("Virus list", f"ClamAV {st.get('engine', '')}".strip(),
                          action_row("Virus definitions", f"{db_text} {upd}".strip(),
                                     button("Update now", css="flat", on_click=lambda: self.run(

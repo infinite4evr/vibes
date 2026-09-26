@@ -12,7 +12,7 @@ from gi.repository import Adw, GLib, Gtk
 from ...core import logs, services, tasks
 from ...core.fmt import ago, human
 from ...core.run import C_ENV, Step, out
-from ..util import button, clear, esc, hbox, label, pill, status_icon, vbox
+from ..util import button, clear, esc, flow, hbox, label, pill, status_icon, vbox
 from ..widgets import Column, DataTable, Row
 from .base import Page, action_row, boxed_list, group, tabs
 
@@ -102,7 +102,7 @@ class LogsPage(Page):
         self.k_list = vbox(spacing=10)
         self.kernel_box.append(label("Messages from the core of Linux (the kernel): hardware, drivers, USB, disks, Wi-Fi, graphics. "
                                      "Most are harmless chatter; the ones worth a look are explained.", "dim", wrap=True))
-        self.kernel_box.append(hbox(self.k_level, self.k_summary, self.k_raw, spacing=10))
+        self.kernel_box.append(flow(self.k_level, self.k_summary, self.k_raw, min_per_line=1, max_per_line=3, column_spacing=10, row_spacing=8))
         self.kernel_box.append(self.k_list)
 
     def _query(self) -> dict:
@@ -169,7 +169,7 @@ class LogsPage(Page):
                 r.set_title_lines(3)
                 r.set_title_selectable(True)
                 row.add_row(r)
-            actions = hbox(spacing=6)
+            actions = flow(min_per_line=1, max_per_line=3, column_spacing=6, row_spacing=6)
             actions.set_margin_top(6)
             actions.set_margin_bottom(6)
             actions.set_margin_start(12)

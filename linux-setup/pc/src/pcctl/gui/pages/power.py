@@ -12,7 +12,7 @@ from gi.repository import Adw, Gtk, Pango
 from ...core import devices, power, system
 from ...core.fmt import duration, human
 from ...core.run import Step, has, out, read, sh
-from ..util import button, clear, esc, hbox, label, launch, pill, status_icon, vbox
+from ..util import button, clear, esc, flow, hbox, label, launch, pill, status_icon, vbox
 from ..widgets import LineGraph, MiniBar, RingGauge, card, rgb
 from .base import Page, action_row, group, tabs
 
@@ -198,7 +198,7 @@ class PowerPage(Page):
     # ---------------------------------------------------------------- power tab
     def _build_power_tab(self) -> None:
         # power modes
-        self.mode_box = hbox(spacing=12, homogeneous=True)
+        mode_widgets: list[Gtk.ToggleButton] = []
         self.mode_buttons: dict[str, Gtk.ToggleButton] = {}
         group_btn = None
         for key, title, desc, icon in MODES:
@@ -215,7 +215,8 @@ class PowerPage(Page):
                 b.set_group(group_btn)
             b.connect("toggled", self._mode_toggled, key)
             self.mode_buttons[key] = b
-            self.mode_box.append(b)
+            mode_widgets.append(b)
+        self.mode_box = flow(*mode_widgets, min_per_line=1, max_per_line=3, homogeneous=True, column_spacing=12, row_spacing=12)
         self.mode_note = label("", "dim", wrap=True)
         self.power_box.append(vbox(label("Power mode", "section-title"), self.mode_box, self.mode_note, spacing=8))
         self._mode_guard = False
@@ -299,7 +300,7 @@ class PowerPage(Page):
         kr.connect("toggled", lambda b: b.get_active() and self._set_hist(kind="rate"))
         seg1 = hbox(r24, r7, spacing=0, css="linked")
         seg2 = hbox(kc, kr, spacing=0, css="linked")
-        self.hist_controls = hbox(seg1, seg2, spacing=12)
+        self.hist_controls = flow(seg1, seg2, min_per_line=1, max_per_line=2, column_spacing=12, row_spacing=8)
         self.hist_graph = HistoryGraph(220)
         self.hist_note = label("", "dim", wrap=True)
         self.hist_summary = label("", None, wrap=True)

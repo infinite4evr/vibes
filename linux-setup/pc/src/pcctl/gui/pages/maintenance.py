@@ -256,7 +256,7 @@ class MaintenancePage(Page):
         self.report_box.append(self.report_status)
         me = button("Create report", icon="x-office-document-symbolic", css=["suggested-action", "pill"], on_click=lambda: self.make_report(False))
         share = button("Create a copy to share", icon="send-to-symbolic", css="pill", on_click=lambda: self.make_report(True))
-        self.report_box.append(hbox(me, share, spacing=10))
+        self.report_box.append(flow(me, share, min_per_line=1, max_per_line=2, column_spacing=10, row_spacing=8))
         self.report_quick = Adw.SwitchRow(title="Quick report", subtitle="Skip the update check and the error log (takes a second instead of ~20).")
         self.report_box.append(group("", "", self.report_quick))
         self.report_result = vbox(spacing=10)

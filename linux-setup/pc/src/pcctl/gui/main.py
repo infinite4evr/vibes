@@ -45,9 +45,11 @@ def _install_crash_guard() -> None:
 
 
 class App(Adw.Application):
-    def __init__(self, start: str | None = None, shots: str | None = None, pages: list[str] | None = None, wait: float = 3.0):
+    def __init__(self, start: str | None = None, shots: str | None = None, pages: list[str] | None = None, wait: float = 3.0,
+                 shot_width: int | None = None, shot_height: int | None = None):
         super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.NON_UNIQUE if shots else Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
         self.start, self.shots, self.shot_pages, self.wait = start, shots, pages, wait
+        self.shot_width, self.shot_height = shot_width, shot_height
         GLib.set_application_name("PC Command Center")
 
     def do_startup(self) -> None:
@@ -74,6 +76,8 @@ class App(Adw.Application):
         if not win:
             from .window import MainWindow
             win = MainWindow(self, self.start)
+            if self.shots and self.shot_width and self.shot_height:
+                win.set_default_size(max(760, self.shot_width), max(520, self.shot_height))
             from . import prefs
             if not self.shots and not prefs.get("welcomed") and not os.environ.get("PC_NO_WELCOME"):
                 GLib.timeout_add(900, lambda: (win.welcome(), False)[1])
@@ -142,12 +146,14 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--screenshots", help=argparse.SUPPRESS)
     ap.add_argument("--pages", help=argparse.SUPPRESS)
     ap.add_argument("--wait", type=float, default=3.0, help=argparse.SUPPRESS)
+    ap.add_argument("--width", type=int, help=argparse.SUPPRESS)
+    ap.add_argument("--height", type=int, help=argparse.SUPPRESS)
     args = argv if argv is not None else sys.argv[1:]
     a = ap.parse_args(args)
     if a.debug:
         os.environ["PC_DEBUG"] = "1"
     if a.screenshots:
-        return App(a.page, a.screenshots, a.pages.split(",") if a.pages else None, a.wait).run([sys.argv[0]])
+        return App(a.page, a.screenshots, a.pages.split(",") if a.pages else None, a.wait, a.width, a.height).run([sys.argv[0]])
     return App(a.page).run([sys.argv[0], *args])
 
 

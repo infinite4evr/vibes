@@ -91,7 +91,7 @@ class StartupPage(Page):
         parts.set_valign(Gtk.Align.CENTER)
         self.blame = HBars("peach", row=24, label_width=300)
         self.blame_title = label("SLOWEST TO START", "tile-title")
-        hero = card(hbox(left, parts, spacing=18), self.blame_title, self.blame, spacing=12)
+        hero = card(flow(left, parts, spacing=18, min_per_line=1, max_per_line=2), self.blame_title, self.blame, spacing=12)
         hero.add_css_class("hero")
         self.body.append(hero)
         self.tip_box = vbox()

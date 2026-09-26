@@ -10,7 +10,7 @@ from gi.repository import Adw, GLib, Graphene, Gtk
 from ...core import desktop, extensions, shortcuts, tweaks
 from ...core.run import Step
 from ..dialogs import ChoiceDialog, ask_text
-from ..util import button, clear, esc, hbox, label, launch, pill, spacer, status_icon, vbox
+from ..util import button, clear, esc, flow, hbox, label, launch, pill, spacer, status_icon, vbox
 from ..widgets import card
 from .. import theme
 from .base import Page, action_row, banner, group, switch_row, tabs
@@ -485,9 +485,10 @@ class TweaksPage(Page):
             return
         self.dock.append(label("Ubuntu Dock is the bar with your apps. Changes show up instantly.", "dim", wrap=True))
         self._opt_groups(self.dock, items, values, DOCK_GROUPS)
-        self.dock.append(hbox(spacer(), button("Reset the dock to Ubuntu's defaults", css="flat", on_click=lambda: self.run(
+        reset_dock = button("Reset the dock to Ubuntu's defaults", css="flat", on_click=lambda: self.run(
             "Reset the dock", desktop.reset_steps(desktop.DOCK_OPTS), "Every dock option on this tab goes back to how Ubuntu ships it.",
-            ok_label="Reset", reload=False, done=lambda ok: ok and self.load_dock()))))
+            ok_label="Reset", reload=False, done=lambda ok: ok and self.load_dock()))
+        self.dock.append(flow(reset_dock, min_per_line=1, max_per_line=1, halign=Gtk.Align.END))
 
     # ---------------------------------------------------------------- files
     def load_files(self) -> None:
@@ -517,9 +518,10 @@ class TweaksPage(Page):
         more = button("Get more extensions", icon="list-add-symbolic", css="suggested-action",
                       on_click=lambda: launch(mgr) if mgr else launch(["xdg-open", extensions.WEBSITE]))
         more.set_tooltip_text("Opens Extension Manager" if mgr else "Opens extensions.gnome.org in your browser")
-        self.ext.append(hbox(label("Extensions add features to the desktop: a clipboard history, blur, a keep-awake button… "
-                                   "Too many (or broken ones) can make the desktop slow or crash.", "dim", wrap=True, hexpand=True),
-                             more, button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_ext), spacing=10))
+        self.ext.append(flow(label("Extensions add features to the desktop: a clipboard history, blur, a keep-awake button… "
+                                    "Too many (or broken ones) can make the desktop slow or crash.", "dim", wrap=True, hexpand=True),
+                             more, button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_ext),
+                             min_per_line=1, max_per_line=3, column_spacing=10, row_spacing=8))
         if res["reason"]:
             self.ext.append(banner(res["reason"], "warn" if not res["items"] else "info"))
         if not res["items"]:

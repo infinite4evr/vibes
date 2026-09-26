@@ -12,7 +12,7 @@ from ...core import junk
 from ...core.fmt import ago, human
 from ...core.run import HOME, Step
 from ...core.state import atomic_write_text
-from ..util import button, clear, esc, hbox, idle, label, pill, vbox
+from ..util import button, clear, esc, flow, hbox, idle, label, pill, vbox
 from ..widgets import HBars, card
 from .. import prefs, theme
 from .base import Page, action_row, group
@@ -89,7 +89,7 @@ class CleanupPage(Page):
         none = button("None", css="flat", on_click=self.select_none)
         left = vbox(hbox(self.total, self.spinner, spacing=12), self.total_sub, spacing=2)
         left.set_hexpand(True)
-        right = vbox(self.sel_label, hbox(rec, none, self.clean_btn, spacing=6), spacing=6)
+        right = vbox(self.sel_label, flow(rec, none, self.clean_btn, spacing=6, max_per_line=3, halign=Gtk.Align.END), spacing=6)
         right.set_valign(Gtk.Align.CENTER)
         self.sel_label.set_xalign(1)
         self.bars = HBars("green", row=22, label_width=150)
@@ -97,7 +97,7 @@ class CleanupPage(Page):
         self.history_label = label("", "dim", wrap=True)
         self.history_label.set_hexpand(True)
         hist = hbox(self.history_label, button("History", icon="document-open-recent-symbolic", css="flat", on_click=self.show_history))
-        hero = card(hbox(left, right, spacing=18), self.bars, hist, spacing=12)
+        hero = card(flow(left, right, spacing=18, min_per_line=1, max_per_line=2), self.bars, hist, spacing=12)
         hero.add_css_class("hero")
         self.body.append(hero)
 
@@ -208,7 +208,6 @@ class CleanupPage(Page):
             tags.append(pill("you choose", "accent"))
         if j.deep:
             tags.append(pill("deep", "neutral"))
-        only = button(icon="user-trash-symbolic", css="flat", tooltip="Clean just this", on_click=lambda jj=j: self.clean([jj]))
         more = Gtk.MenuButton(icon_name="view-more-symbolic", tooltip_text="More")
         more.add_css_class("flat")
         pop = Gtk.Popover()
@@ -224,7 +223,7 @@ class CleanupPage(Page):
         pop.set_child(mbox)
         more.set_popover(pop)
         # one box, so the order is the same on every libadwaita version
-        suffix = hbox(*tags, size, only, more, spacing=6)
+        suffix = hbox(*tags, size, more, spacing=6)
         suffix.set_valign(Gtk.Align.CENTER)
 
         if j.items:

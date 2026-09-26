@@ -124,12 +124,23 @@ def vbox(*children: Gtk.Widget, spacing: int = 8, css: str | None = None) -> Gtk
     return b
 
 
-def flow(*children: Gtk.Widget, spacing: int = 12, min_per_line: int = 1, max_per_line: int = 0, homogeneous: bool = False) -> Gtk.FlowBox:
-    """A row that wraps onto more lines when the window is narrow."""
+def flow(*children: Gtk.Widget, spacing: int = 12, min_per_line: int = 1, max_per_line: int = 0, homogeneous: bool = False,
+         css: str | None = None, halign: Gtk.Align = Gtk.Align.FILL) -> Gtk.FlowBox:
+    """A responsive row that wraps instead of clipping when the window gets narrow.
+
+    GTK Box rows are easy to over-constrain in this app because the sidebar is
+    resizable. FlowBox keeps controls usable at compact widths while preserving
+    a normal single-row layout when there is room.
+    """
     f = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, homogeneous=homogeneous, column_spacing=spacing, row_spacing=spacing,
                     min_children_per_line=min_per_line, max_children_per_line=max_per_line or max(1, len(children)))
-    for c in children:
-        f.append(c)
+    f.set_hexpand(True)
+    f.set_halign(halign)
+    f.set_valign(Gtk.Align.START)
+    if css:
+        f.add_css_class(css)
+    for child in children:
+        f.append(child)
     c = f.get_first_child()
     while c is not None:
         c.set_focusable(False)

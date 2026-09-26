@@ -48,11 +48,11 @@ class UpdatesPage(Page):
         self.update_btn = button("Update everything", icon="software-update-available-symbolic", css=["suggested-action", "pill"],
                                  on_click=self.update_all)
         self.sec_btn = button("Security fixes only", css="pill", on_click=self.security_only)
-        left = vbox(self.status, self.status_sub, hbox(self.update_btn, self.sec_btn, spacing=8), spacing=6)
+        left = vbox(self.status, self.status_sub, flow(self.update_btn, self.sec_btn, spacing=8, max_per_line=2), spacing=6)
         left.set_hexpand(True)
         stats = flow(self.s_total, self.s_sec, self.s_snap, self.s_flat, spacing=22, min_per_line=2)
         stats.set_valign(Gtk.Align.CENTER)
-        hero = card(hbox(left, stats, spacing=20))
+        hero = card(flow(left, stats, spacing=20, min_per_line=1, max_per_line=2))
         hero.add_css_class("hero")
         self.body.append(hero)
         self.reboot_box = vbox()
@@ -88,7 +88,7 @@ class UpdatesPage(Page):
         self.one_btn = button("Update selected", icon="go-down-symbolic", on_click=lambda: self.update_one(self.table.selected()))
         self.log_btn = button("What's new?", icon="text-x-generic-symbolic", tooltip="Changelog of the selected package",
                               on_click=lambda: self.changelog(self.table.selected()))
-        self.waiting_box.append(hbox(self.search_entry, spacer(), self.log_btn, self.one_btn))
+        self.waiting_box.append(flow(self.search_entry, self.log_btn, self.one_btn, spacing=8, max_per_line=3))
         self.waiting_box.append(self.table)
         self.waiting_box.append(label("Updating is safe: apps you're using keep running, and some updates finish after a restart. "
                                       "Double-click a row to update just that package; right-click for more.", "dim", wrap=True))
@@ -269,10 +269,10 @@ class UpdatesPage(Page):
                 box.set_margin_start(12)
                 row.add_row(box)
             lb.append(row)
-        self.history_box.append(hbox(label(f"Last {len(entries)} changes made with apt (newest first).", "dim", hexpand=True),
-                                     button("Full log", css="flat", on_click=lambda: self.text("apt history", "\n".join(
-                                         f"{e['date']}  {e['cmd']}\n  + {' '.join(e['installed'])}\n  ^ {' '.join(e['upgraded'])}\n  - {' '.join(e['removed'])}\n"
-                                         for e in entries)))))
+        self.history_box.append(flow(label(f"Last {len(entries)} changes made with apt (newest first).", "dim", wrap=True, hexpand=True),
+                                      button("Full log", css="flat", on_click=lambda: self.text("apt history", "\n".join(
+                                          f"{e['date']}  {e['cmd']}\n  + {' '.join(e['installed'])}\n  ^ {' '.join(e['upgraded'])}\n  - {' '.join(e['removed'])}\n"
+                                          for e in entries))), min_per_line=1, max_per_line=2, column_spacing=8, row_spacing=8))
         self.history_box.append(lb)
 
     # ---------------------------------------------------------------- drivers, firmware, kernels

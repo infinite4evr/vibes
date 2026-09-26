@@ -13,9 +13,9 @@ from ...core import network, security
 from ...core.fmt import human, rate
 from ...core.run import Step, has, out, sh
 from ..dialogs import ask_text
-from ..util import button, clear, hbox, idle, label, launch, pill, spacer, vbox
+from ..util import button, clear, flow, hbox, idle, label, launch, pill, spacer, vbox
 from ..widgets import Column, DataTable, LineGraph, MiniBar, card
-from .base import Page, action_row, boxed_list, group, stat, switch_row, tabs
+from .base import Page, action_row, banner, boxed_list, group, stat, switch_row, tabs
 
 ME = os.environ.get("USER", "")
 
@@ -50,7 +50,7 @@ class NetworkPage(Page):
                          spacing=30), self.totals, spacing=4)
         right = vbox(self.conn, self.conn_sub, spacing=4)
         right.set_hexpand(True)
-        hero = card(hbox(left, right, spacing=30), self.graph, spacing=12)
+        hero = card(flow(left, right, spacing=24, min_per_line=1, max_per_line=2), self.graph, spacing=12)
         hero.add_css_class("hero")
         self.body.append(hero)
 
@@ -259,7 +259,7 @@ class NetworkPage(Page):
     # ---------------------------------------------------------------- who the PC is talking to
     def _build_talk(self) -> None:
         self.talk_status = label("Apps with an open connection to the internet right now.", "dim", hexpand=True)
-        self.talk_box.append(hbox(self.talk_status, button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_talk)))
+        self.talk_box.append(flow(self.talk_status, button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_talk), spacing=8, max_per_line=2))
         self.ttable = DataTable([
             Column("process", "App", "bold", width=170),
             Column("host", "Talking to", "text", expand=True),
@@ -304,7 +304,7 @@ class NetworkPage(Page):
     def _build_lan(self) -> None:
         self.lan_status = label("Phones, TVs, printers and other computers on the same network as this PC.", "dim", hexpand=True)
         self.lan_btn = button("Scan", icon="system-search-symbolic", css="suggested-action", on_click=self.scan_lan)
-        self.lan_box.append(hbox(self.lan_status, self.lan_btn))
+        self.lan_box.append(flow(self.lan_status, self.lan_btn, spacing=8, max_per_line=2))
         self.ltable = DataTable([
             Column("name", "Name", "bold", expand=True),
             Column("ip", "Address", "mono", width=150, sort="ipkey"),
@@ -354,7 +354,7 @@ class NetworkPage(Page):
         self.search_entry.connect("search-changed", lambda e: self.ptable.set_filter(e.get_text()))
         self.only_exposed = Gtk.CheckButton(label="Only reachable from other devices")
         self.only_exposed.connect("toggled", lambda *_: self.show_ports(self.port_items))
-        self.ports_box.append(hbox(self.search_entry, self.only_exposed, button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_ports)))
+        self.ports_box.append(flow(self.search_entry, self.only_exposed, button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_ports), spacing=8, max_per_line=3))
         self.ptable = DataTable([
             Column("port", "Port", "bold", width=80),
             Column("proto", "Type", "muted", width=60),
@@ -367,10 +367,11 @@ class NetworkPage(Page):
         ], on_activate=self._port_open, empty="Nothing is listening.", sort="port", descending=False)
         self.ptable.set_size_request(-1, 400)
         self.ports_box.append(self.ptable)
-        self.ports_box.append(hbox(label("“Only this PC” is private. “Your network” means phones and laptops on the same Wi-Fi can connect.", "dim", wrap=True, hexpand=True),
-                                   button("Open in browser", css="flat", on_click=lambda: self._port_sel(self._port_open)),
-                                   button("Allow in firewall…", css="flat", on_click=lambda: self._port_sel(self.allow)),
-                                   button("Stop app…", icon="process-stop-symbolic", css="destructive-action", on_click=lambda: self._port_sel(self.stop_port))))
+        self.ports_box.append(flow(label("“Only this PC” is private. “Your network” means phones and laptops on the same Wi-Fi can connect.", "dim", wrap=True, hexpand=True),
+                                    button("Open in browser", css="flat", on_click=lambda: self._port_sel(self._port_open)),
+                                    button("Allow in firewall…", css="flat", on_click=lambda: self._port_sel(self.allow)),
+                                    button("Stop app…", icon="process-stop-symbolic", css="destructive-action", on_click=lambda: self._port_sel(self.stop_port)),
+                                    min_per_line=1, max_per_line=4, column_spacing=8, row_spacing=8))
         self.port_items: list[network.Port] = []
 
     def load_ports(self) -> None:
@@ -382,12 +383,11 @@ class NetworkPage(Page):
         self.fw = fw
         clear(self.fw_banner)
         if fw.level != "ok":
-            b = hbox(label(fw.detail, None, wrap=True, hexpand=True), css="banner-bad")
+            actions = []
             if fw.steps:
-                fix = button(fw.fix_label or "Turn on", css="suggested-action", on_click=lambda: self.run(fw.fix_label or "Firewall", fw.steps, fw.detail))
-                fix.set_valign(Gtk.Align.CENTER)
-                b.append(fix)
-            self.fw_banner.append(b)
+                actions.append(button(fw.fix_label or "Turn on", css="suggested-action",
+                                      on_click=lambda: self.run(fw.fix_label or "Firewall", fw.steps, fw.detail)))
+            self.fw_banner.append(banner(fw.detail, "bad", *actions))
         self.show_ports(items)
 
     def show_ports(self, items: list[network.Port]) -> None:
@@ -445,7 +445,7 @@ class NetworkPage(Page):
         self.sp_down, self.sp_up, self.sp_ping = stat("-", "download Mbps", "teal-text"), stat("-", "upload Mbps", "peach-text"), stat("-", "latency ms")
         self.sp_status = label("Uses Cloudflare's speed test (about 30 MB of data).", "dim", wrap=True)
         self.sp_btn = button("Start speed test", icon="media-playback-start-symbolic", css="suggested-action", on_click=self.speed)
-        self.diag_box.append(card(hbox(self.sp_down, self.sp_up, self.sp_ping, spacer(), self.sp_btn, spacing=34), self.sp_status, title="Speed test"))
+        self.diag_box.append(card(flow(self.sp_down, self.sp_up, self.sp_ping, self.sp_btn, spacing=22, min_per_line=2, max_per_line=4), self.sp_status, title="Speed test"))
 
         fixes = [
             action_row("Flush DNS cache", "Fixes “site not found” after a website or your router changed.",

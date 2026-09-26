@@ -31,11 +31,12 @@ HAS_DISPLAY = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"
 
 
 @pytest.mark.skipif(PY is None or not HAS_DISPLAY, reason="needs a display and Python with GTK 4 + libadwaita")
-@pytest.mark.parametrize("style", ["light", "dark"])
-def test_every_page_opens(style):
+@pytest.mark.parametrize("style,width,height", [("light", 920, 620), ("dark", 1320, 860)])
+def test_every_page_opens(style, width, height):
     with tempfile.TemporaryDirectory() as out:
         env = {**os.environ, "PYTHONPATH": str(SRC), "PC_STYLE": style, "PC_NO_WELCOME": "1", "GSK_RENDERER": os.environ.get("GSK_RENDERER", "cairo")}
-        r = subprocess.run([PY, "-m", "pcctl.gui", "--screenshots", out, "--pages", ",".join(PAGES), "--wait", "2.5"],
+        r = subprocess.run([PY, "-m", "pcctl.gui", "--screenshots", out, "--pages", ",".join(PAGES), "--wait", "2.5",
+                            "--width", str(width), "--height", str(height)],
                            capture_output=True, text=True, env=env, timeout=240)
         errors = r.stderr + r.stdout
         assert r.returncode == 0, errors[-3000:]

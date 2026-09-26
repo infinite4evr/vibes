@@ -150,10 +150,10 @@ class DevPage(Page):
         self.attn_btn = Gtk.ToggleButton(label="Needs attention")
         self.attn_btn.set_tooltip_text("Only projects with uncommitted changes or work that isn't on GitHub yet")
         self.attn_btn.connect("toggled", lambda *_: self.show_projects(self.repos))
-        self.proj.append(hbox(self.search_entry, self.attn_btn,
+        self.proj.append(flow(self.search_entry, self.attn_btn,
                               button("Fetch all", icon="emblem-synchronizing-symbolic", tooltip="Check every project for new commits on GitHub",
                                      on_click=self.fetch_all),
-                              button(icon="view-refresh-symbolic", tooltip="Rescan", on_click=self.load_projects), spacing=6))
+                              button(icon="view-refresh-symbolic", tooltip="Rescan", on_click=self.load_projects), spacing=6, max_per_line=4))
         self.proj_banner = vbox()
         self.proj.append(self.proj_banner)
         self.ptable = DataTable([
@@ -295,9 +295,9 @@ class DevPage(Page):
             Column("cmd", "Command", "mono", expand=True),
         ], on_activate=lambda r: launch(["xdg-open", r["url"]]), empty="No dev servers running.", sort="port", descending=False)
         self.stable.set_size_request(-1, 280)
-        self.srv.append(hbox(label("Dev servers", "section-title"), label("Programs of yours listening on a port (npm run dev, Django, Vite…).", "dim",
+        self.srv.append(flow(label("Dev servers", "section-title"), label("Programs of yours listening on a port (npm run dev, Django, Vite…).", "dim",
                                                                           hexpand=True, wrap=True),
-                             button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_servers)))
+                             button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_servers), spacing=8, max_per_line=3))
         self.srv.append(self.stable)
         t = self.stable
         self.srv.append(flow(button("Open in browser", icon="web-browser-symbolic", css="suggested-action", on_click=lambda: self._table_sel(t, lambda r: launch(["xdg-open", r["url"]]))),
@@ -391,18 +391,20 @@ class DevPage(Page):
         ], on_activate=lambda r: self._pm2_logs(r), empty="pm2 isn't running any apps.", sort="name", descending=False)
         self.pm2table.set_size_request(-1, 240)
         self.pm2.set_margin_top(12)
-        self.pm2.append(hbox(label("pm2", "section-title"), label("Node apps and bots kept alive by pm2 (they restart by themselves if stopped here).", "dim",
-                                                                  hexpand=True, wrap=True),
-                             button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_pm2)))
+        self.pm2.append(flow(label("pm2", "section-title"),
+                             label("Node apps and bots kept alive by pm2 (they restart by themselves if stopped here).", "dim", hexpand=True, wrap=True),
+                             button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_pm2),
+                             min_per_line=1, max_per_line=3, column_spacing=8, row_spacing=8))
         self.pm2.append(self.pm2table)
         t = self.pm2table
-        self.pm2.append(hbox(*[button(a.title(), on_click=lambda a=a: self._table_sel(t, lambda r: self.run(f"pm2 {a} {r['name']}", dev.pm2_steps(a, r["name"]),
-                                                                                                          ask=a in ("stop", "delete"), reload=False, done=lambda ok: self.load_pm2())))
-                               for a in ("restart", "stop", "start")],
-                             button("Logs", icon="text-x-generic-symbolic", on_click=lambda: self._table_sel(t, self._pm2_logs)), spacer(),
-                             button("Remove from pm2", css="destructive-action", on_click=lambda: self._table_sel(t, lambda r: self.run(
-                                 f"Remove {r['name']} from pm2", dev.pm2_steps("delete", r["name"]), "pm2 stops it and forgets it. Your code isn't touched.",
-                                 danger=True, ok_label="Remove", reload=False, done=lambda ok: self.load_pm2()))), spacing=6))
+        pm2_actions = [button(a.title(), on_click=lambda a=a: self._table_sel(t, lambda r: self.run(
+            f"pm2 {a} {r['name']}", dev.pm2_steps(a, r["name"]), ask=a in ("stop", "delete"), reload=False, done=lambda ok: self.load_pm2())))
+            for a in ("restart", "stop", "start")]
+        pm2_actions += [button("Logs", icon="text-x-generic-symbolic", on_click=lambda: self._table_sel(t, self._pm2_logs)),
+                        button("Remove from pm2", css="destructive-action", on_click=lambda: self._table_sel(t, lambda r: self.run(
+                            f"Remove {r['name']} from pm2", dev.pm2_steps("delete", r["name"]), "pm2 stops it and forgets it. Your code isn't touched.",
+                            danger=True, ok_label="Remove", reload=False, done=lambda ok: self.load_pm2())))]
+        self.pm2.append(flow(*pm2_actions, min_per_line=1, max_per_line=5, column_spacing=6, row_spacing=6))
 
     def load_pm2(self) -> None:
         self.bg(dev.pm2_list, self.show_pm2)
@@ -433,7 +435,7 @@ class DevPage(Page):
         ], on_activate=lambda r: self._ct_logs(r), empty="No containers.", sort="state", descending=False)
         self.cttable.set_size_request(-1, 300)
         self.ct_tool = label("", "dim", hexpand=True, wrap=True)
-        self.ct.append(hbox(label("Containers", "section-title"), self.ct_tool, button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_containers)))
+        self.ct.append(flow(label("Containers", "section-title"), self.ct_tool, button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_containers), spacing=8, max_per_line=3))
         self.ct.append(self.cttable)
         t = self.cttable
         self.ct.append(flow(button("Start", on_click=lambda: self._table_sel(t, lambda r: self._ct("start", r))),
@@ -659,7 +661,8 @@ class DevPage(Page):
             ex2.add_row(action_row(f"{e['index'] + 1}. {e['shown']}", "", *tags))
         copy = button("Copy PATH", icon="edit-copy-symbolic", css="flat", on_click=lambda: (self.get_clipboard().set(rep["path"]), self.toast("Copied.")))
         self.path_box.append(group("", "", ex, ex2))
-        self.path_box.append(hbox(label("Change PATH in ~/.zshrc (or ~/.bashrc) and open a new terminal.", "dim", hexpand=True, wrap=True), copy))
+        self.path_box.append(flow(label("Change PATH in ~/.zshrc (or ~/.bashrc) and open a new terminal.", "dim", hexpand=True, wrap=True), copy,
+                                  min_per_line=1, max_per_line=2, column_spacing=8, row_spacing=8))
 
     # ---------------------------------------------------------------- git & GitHub
     def load_git(self) -> None:
@@ -896,8 +899,8 @@ class DevPage(Page):
         self.gtable.set_size_request(-1, 300)
         self.gtable.set_context(lambda r: [("Uninstall", self._uninstall)], "global-packages")
         self.g_info = label("", "dim", hexpand=True, wrap=True)
-        self.tools.append(hbox(label("Global packages", "section-title"), self.g_info,
-                               button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_tools)))
+        self.tools.append(flow(label("Global packages", "section-title"), self.g_info,
+                               button(icon="view-refresh-symbolic", tooltip="Refresh", on_click=self.load_tools), spacing=8, max_per_line=3))
         self.tools.append(label("Command-line programs you installed for your whole account with npm -g, pipx, uv tool, cargo install or go install.",
                                 "dim", wrap=True))
         self.tools.append(self.gtable)

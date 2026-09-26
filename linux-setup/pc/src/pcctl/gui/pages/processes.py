@@ -65,11 +65,11 @@ class ProcessesPage(Page):
             items.append(b)
         pop.set_child(items)
         more.set_popover(pop)
-        self.body.append(hbox(self.search_entry, self.mode_dd, self.pause_btn,
+        self.body.append(flow(self.search_entry, self.mode_dd, self.pause_btn,
                               button("Details", icon="dialog-information-symbolic", on_click=self.details),
                               button("End", icon="window-close-symbolic", tooltip="Ask it to close (Delete)", on_click=lambda: self.signal(signal.SIGTERM)),
                               button("Force quit", icon="process-stop-symbolic", css="destructive-action", tooltip="Kill it now; unsaved work is lost",
-                                     on_click=lambda: self.signal(signal.SIGKILL)), more, spacing=8))
+                                     on_click=lambda: self.signal(signal.SIGKILL)), more, spacing=8, max_per_line=7))
 
         self.table = DataTable([
             Column("name", "Name", "bold", width=230),
@@ -85,7 +85,7 @@ class ProcessesPage(Page):
         self.table.set_vexpand(True)
         self.table.set_context(self._row_menu, "processes")
         self.body.append(self.table)
-        self.hint = label("Double-click a row for details. End asks nicely; Force quit doesn't wait.", "dim")
+        self.hint = label("Double-click a row for details. End asks nicely; Force quit doesn't wait.", "dim", wrap=True)
         self.body.append(self.hint)
 
         key = Gtk.EventControllerKey()

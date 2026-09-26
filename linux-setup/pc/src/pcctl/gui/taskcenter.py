@@ -17,7 +17,7 @@ class TaskCenterDialog(Adw.Dialog):
         self.win = win
         self.set_title("Background tasks")
         self.set_content_width(820)
-        self.set_content_height(660)
+        self.set_content_height(620)
         tv = Adw.ToolbarView()
         hb = Adw.HeaderBar()
         self.clear_btn = button("Clear finished", css="flat", on_click=self._clear_finished)

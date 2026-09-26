@@ -1,7 +1,7 @@
 # PC Command Center / linux-setup — Complete AI Handover
 
 **Authoritative handover for the current repository**  
-**Release:** `2.2.0`  
+**Release:** `2.2.1`  
 **Handover date:** 26 September 2026  
 **Primary product:** PC Command Center (GTK 4 + libadwaita desktop application)  
 **Also included:** Textual terminal UI, `pc` CLI, Ubuntu setup/cleanup shell scripts  
@@ -31,6 +31,20 @@ If another AI takes over, do **not** assume that “everything in the audit is i
 - source code and tests — final authority if documentation differs.
 
 ---
+
+## 0.1 2.2.1 UI bug-fix pass (2026-09-26)
+
+A complete GTK UI responsiveness pass was performed after 2.2.0. The detailed page-by-page record is in `docs/UI-AUDIT-2026-09-26.md`. Key points:
+
+- rigid multi-control rows were converted to wrapping layouts across the high-density pages;
+- the Ctrl+K palette duplicate-action bug was fixed;
+- slide motion was replaced with gentle crossfades (180/90/0 ms for Full/Reduced/Off);
+- the resizable sidebar is now content-safe and capped around 210–380 px while preserving page width;
+- HBars charts now size their gutters from real allocation;
+- welcome/task/script dialogs were made friendlier to laptop-height screens;
+- GTK screenshot smoke coverage now includes compact 920×620 and full 1320×860 layouts.
+
+Local non-GTK test result for this patch: **208 passed, 2 skipped**. The two skips are the GTK renderer tests because the build container lacks PyGObject GTK/libadwaita; CI/Ubuntu+Xvfb remains the renderer validation path.
 
 # 1. Executive summary
 
@@ -835,7 +849,7 @@ GUI preference keys:
 }
 ```
 
-When showing, stored width is clamped to roughly `210..430` px.
+When showing, stored width is clamped to roughly `210..380` px and dynamically preserves about 480 px for page content.
 
 ---
 
@@ -864,15 +878,15 @@ off
 Current durations:
 
 ```text
-Full:     ~220 ms
-Reduced:  ~110 ms
+Full:     ~180 ms
+Reduced:  ~90 ms
 Off:      0 ms
 ```
 
 Used for:
 
-- page stack transitions,
-- sidebar reveal/hide.
+- page stack crossfades,
+- sidebar crossfade reveal/hide.
 
 ### Future improvement
 
@@ -2030,7 +2044,7 @@ If you only have five minutes before continuing work:
 
 # 29. Final status
 
-**Version:** `2.2.0`  
+**Version:** `2.2.1`  
 **Automated tests:** `208 passed, 2 skipped`  
 **Primary UI:** GTK 4/libadwaita  
 **Debug logging:** implemented, opt-in, rotating, redacted  

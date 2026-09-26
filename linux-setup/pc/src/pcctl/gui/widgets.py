@@ -202,22 +202,27 @@ class HBars(Gtk.DrawingArea):
         top = max(v for _, v, _ in self.items) or 1
         cr.select_font_face("Sans", 0, 0)
         cr.set_font_size(12.5)
-        vw = 90
-        bw = max(40, w - self.lw - vw - 12)
+        # Adapt the label/value gutters to the actual allocation. A fixed 300px
+        # label gutter used to push the bars and value text off-screen when the
+        # sidebar was widened or the window was compact.
+        vw = min(90, max(56, int(w * 0.18)))
+        lw = min(self.lw, max(80, w - vw - 120))
+        bw = max(40, w - lw - vw - 12)
+        max_chars = max(8, int((lw - 8) / 7.2))
         for i, (name, v, vt) in enumerate(self.items):
             y = i * self.row
             cr.set_source_rgba(*rgb("subtext1", 1))
-            txt = name if len(name) < 34 else name[:32] + "…"
+            txt = name if len(name) <= max_chars else name[: max(1, max_chars - 1)] + "…"
             cr.move_to(0, y + self.row * 0.68)
             cr.show_text(txt)
             cr.set_source_rgba(*rgb("surface0", 1))
-            _round_rect(cr, self.lw, y + 6, bw, self.row - 12, 4)
+            _round_rect(cr, lw, y + 6, bw, self.row - 12, 4)
             cr.fill()
             cr.set_source_rgba(*rgb(self.color, 0.9))
-            _round_rect(cr, self.lw, y + 6, max(4, bw * v / top), self.row - 12, 4)
+            _round_rect(cr, lw, y + 6, max(4, bw * v / top), self.row - 12, 4)
             cr.fill()
             cr.set_source_rgba(*rgb("overlay2", 1))
-            cr.move_to(self.lw + bw + 10, y + self.row * 0.68)
+            cr.move_to(lw + bw + 8, y + self.row * 0.68)
             cr.show_text(vt)
 
 

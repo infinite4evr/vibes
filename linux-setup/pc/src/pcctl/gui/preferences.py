@@ -13,7 +13,7 @@ from .util import bg, button, esc, launch
 APPEARANCE = [("system", "Follow the system"), ("light", "Light"), ("dark", "Dark")]
 LOOKS = [("modern", "Modern"), ("catppuccin", "Catppuccin")]
 REFRESH = [("fast", "Fast (every second)"), ("normal", "Normal"), ("slow", "Battery saver (slower graphs)")]
-MOTION = [("full", "Full — smooth transitions"), ("reduced", "Reduced — shorter transitions"), ("off", "Off — no interface motion")]
+MOTION = [("full", "Gentle — soft fades"), ("reduced", "Reduced — quick fades"), ("off", "Off — no interface motion")]
 
 
 def _combo(title: str, subtitle: str, options: list[tuple[str, str]], current: str, on_pick: Callable[[str], None]) -> Adw.ComboRow:
@@ -88,7 +88,7 @@ class PreferencesDialog(Adw.PreferencesDialog):
         def motion(v: str) -> None:
             prefs.set("motion", v)
             self.win.apply_motion()
-        beh.add(_combo("Interface motion", "Smooth page and sidebar transitions. Use Reduced or Off if you prefer less motion.",
+        beh.add(_combo("Interface motion", "Subtle fade transitions for pages and the sidebar. Use Reduced or Off if you prefer less motion.",
                        MOTION, prefs.get("motion"), motion))
         beh.add(_switch("Pause when hidden", "Stop live updates while the window is minimised or in the background.", prefs.get("pause_hidden"),
                         lambda v: prefs.set("pause_hidden", v)))

@@ -12,7 +12,7 @@ from ...core import appmgr, packages
 from ...core.fmt import ago, human
 from ...core.run import HOME, out, read
 from ..dialogs import ChoiceDialog, PickDialog
-from ..util import button, clear, hbox, label, launch, pill, spacer, vbox
+from ..util import button, clear, flow, hbox, label, launch, pill, spacer, vbox
 from ..widgets import Column, DataTable, card
 from .base import Page, action_row, banner, boxed_list, group, stat, switch_row, tabs
 
@@ -189,7 +189,7 @@ class AppsPage(Page):
                                  "AppImage or .snap file you downloaded", on_click=self.pick_file))
         self.s_count, self.s_size = stat("…", "apps"), stat("…", "space used")
         self.s_by = {k: stat("…", k) for k in ("apt", "snap", "flatpak", "appimage")}
-        self.body.append(card(hbox(self.s_count, self.s_size, spacer(), *self.s_by.values(), spacing=28)))
+        self.body.append(card(flow(self.s_count, self.s_size, *self.s_by.values(), spacing=22, min_per_line=2, homogeneous=True)))
 
         self.installed_box = vbox(spacing=10)
         self.get_box = vbox(spacing=14)
@@ -214,7 +214,7 @@ class AppsPage(Page):
         self.source.connect("notify::selected", lambda *_: self.render())
         self.all_switch = Gtk.Switch(valign=Gtk.Align.CENTER, tooltip_text="Also list command-line packages you installed with apt")
         self.all_switch.connect("notify::active", self._toggle_all)
-        self.installed_box.append(hbox(self.search_entry, self.source, label("All packages", "dim"), self.all_switch, spacing=10))
+        self.installed_box.append(flow(self.search_entry, self.source, hbox(label("All packages", "dim"), self.all_switch, spacing=8), spacing=10, max_per_line=3))
         self.table = DataTable([
             Column("name", "App", "bold", expand=True),
             Column("src", "From", "pill", width=100, sort="source"),
@@ -225,16 +225,16 @@ class AppsPage(Page):
         self.table.set_size_request(-1, 460)
         self.table.set_context(self._row_menu, "apps")
         self.installed_box.append(self.table)
-        self.installed_box.append(hbox(
+        self.installed_box.append(flow(
             button("Open", icon="media-playback-start-symbolic", on_click=self.open_selected),
             button("Details", icon="dialog-information-symbolic", on_click=lambda: self.info(self.table.selected())),
             button("Permissions", icon="security-medium-symbolic", tooltip="What a Snap or Flatpak app is allowed to do",
                    on_click=self.perms_selected),
             button(icon="folder-open-symbolic", tooltip="Show its files", on_click=self.files_selected),
-            spacer(),
             button("Several…", icon="edit-select-all-symbolic", tooltip="Tick several apps and uninstall them in one go",
                    on_click=self.remove_several),
-            button("Uninstall…", icon="user-trash-symbolic", css="destructive-action", on_click=self.remove_selected)))
+            button("Uninstall…", icon="user-trash-symbolic", css="destructive-action", on_click=self.remove_selected),
+            spacing=8, max_per_line=6))
 
         # get apps
         self.get_entry = Gtk.SearchEntry(placeholder_text="Search Ubuntu, Snap Store and Flathub. Example: vlc, obsidian, postman")

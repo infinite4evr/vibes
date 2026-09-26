@@ -1,6 +1,6 @@
 [project]
 name = "pc-control"
-version = "2.2.0"
+version = "2.2.1"
 description = "PC Command Center - monitor, clean, update, secure and tune Ubuntu (desktop app + terminal app)"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -12,7 +12,7 @@ from gi.repository import Adw, GLib, Gtk  # noqa: E402
 
 from ...core.run import Step  # noqa: E402
 from .. import dialogs  # noqa: E402
-from ..util import bg, button, clear, hbox, label, scrolled, spacer, vbox  # noqa: E402
+from ..util import bg, button, clear, flow, hbox, label, scrolled, spacer, vbox  # noqa: E402
 
 
 class Page(Gtk.Box):
@@ -81,11 +81,16 @@ class Page(Gtk.Box):
     # -- helpers
     def header(self, subtitle: str | None = None, *actions: Gtk.Widget) -> Gtk.Box:
         """Big title + subtitle + right-aligned actions."""
-        t = vbox(label(self.TITLE, "page-title"), label(subtitle if subtitle is not None else self.SUBTITLE, ["page-sub"], wrap=True), spacing=2)
+        title = label(self.TITLE, "page-title")
+        sub = label(subtitle if subtitle is not None else self.SUBTITLE, ["page-sub"], wrap=True)
+        t = vbox(title, sub, spacing=2)
         t.set_hexpand(True)
-        row = hbox(t, *actions, spacing=8)
-        for a in actions:
-            a.set_valign(Gtk.Align.CENTER)
+        if actions:
+            acts = flow(*actions, spacing=8, min_per_line=1, max_per_line=len(actions), css="page-actions", halign=Gtk.Align.END)
+            acts.set_valign(Gtk.Align.CENTER)
+            row = hbox(t, acts, spacing=12)
+        else:
+            row = hbox(t)
         self.body.append(row)
         return row
 
@@ -233,14 +238,21 @@ def set_switch_quiet(row: Adw.SwitchRow, active: bool) -> None:
     row._guard = False
 
 
-def banner(text: str, kind: str = "warn", *buttons: Gtk.Widget, icon: str | None = None) -> Gtk.Box:
+def banner(text: str, kind: str = "warn", *buttons: Gtk.Widget, icon: str | None = None) -> Gtk.Widget:
     icons = {"warn": "dialog-warning-symbolic", "bad": "dialog-error-symbolic", "ok": "emblem-ok-symbolic", "info": "dialog-information-symbolic"}
     img = Gtk.Image.new_from_icon_name(icon or icons.get(kind, icons["info"]))
     img.add_css_class(f"lvl-{kind}")
+    img.set_valign(Gtk.Align.START)
     lb = label(text, None, wrap=True, hexpand=True)
-    b = hbox(img, lb, *buttons, spacing=12, css=f"banner-{kind if kind in ('warn', 'bad', 'ok', 'info') else 'warn'}")
-    for w in buttons:
-        w.set_valign(Gtk.Align.CENTER)
+    message = hbox(img, lb, spacing=12)
+    message.set_hexpand(True)
+    kind_css = f"banner-{kind if kind in ('warn', 'bad', 'ok', 'info') else 'warn'}"
+    if buttons:
+        for w in buttons:
+            w.set_valign(Gtk.Align.CENTER)
+        b = flow(message, *buttons, spacing=10, min_per_line=1, max_per_line=len(buttons) + 1, css=kind_css)
+    else:
+        b = hbox(message, css=kind_css)
     b._label = lb
     return b
 
