@@ -35,9 +35,6 @@ jobs:
         with:
           packages: "platform-tools"
 
-      - name: Show available Android platforms
-        run: sdkmanager --list 2>/dev/null | grep -E "platforms;android-3[6-9]" || true
-
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "9.6.0"
@@ -52,8 +49,9 @@ jobs:
           mkdir -p ~/.android
           echo "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
 
-      - name: Build debug APK
-        run: gradle --no-daemon :app:assembleDebug -PversionCode=${{ github.run_number }}
+      # release build: R8-shrunk and optimised, signed with the (restored) debug key
+      - name: Build release APK
+        run: gradle --no-daemon :app:assembleRelease -PversionCode=${{ github.run_number }}
 
       - name: Name the APK
         id: apk
@@ -61,7 +59,7 @@ jobs:
           version=$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' app/build.gradle.kts)
           sha=$(git rev-parse --short HEAD)
           name="LumaClean-${version}-${{ github.run_number }}.apk"
-          cp app/build/outputs/apk/debug/app-debug.apk "$name"
+          cp app/build/outputs/apk/release/app-release.apk "$name"
           echo "name=$name" >> "$GITHUB_OUTPUT"
           echo "tag=lumaclean-v${version}-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
@@ -80,6 +78,6 @@ jobs:
           # builds from branches other than main are marked pre-release
           prerelease: ${{ github.ref != 'refs/heads/main' }}
           body: |
-            Debug APK built from `${{ steps.apk.outputs.sha }}` on `${{ github.ref_name }}`.
+            APK built from `${{ steps.apk.outputs.sha }}` on `${{ github.ref_name }}`.
             Download the `.apk` below and open it on your phone (allow installs from unknown sources).
           files: lumaclean/${{ steps.apk.outputs.name }}

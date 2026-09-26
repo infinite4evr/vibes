@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_clean"
+        android:shortcutId="clean"
+        android:shortcutLongLabel="@string/shortcut_clean_long"
+        android:shortcutShortLabel="@string/shortcut_clean_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="app.lumaclean.MainActivity"
+            android:targetPackage="app.lumaclean">
+            <extra android:name="route" android:value="clean" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_ram"
+        android:shortcutId="ram"
+        android:shortcutLongLabel="@string/shortcut_ram_long"
+        android:shortcutShortLabel="@string/shortcut_ram_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="app.lumaclean.MainActivity"
+            android:targetPackage="app.lumaclean">
+            <extra android:name="route" android:value="ram" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_large"
+        android:shortcutId="large"
+        android:shortcutLongLabel="@string/shortcut_large_long"
+        android:shortcutShortLabel="@string/shortcut_large_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="app.lumaclean.MainActivity"
+            android:targetPackage="app.lumaclean">
+            <extra android:name="route" android:value="large" />
+        </intent>
+    </shortcut>
+</shortcuts>
