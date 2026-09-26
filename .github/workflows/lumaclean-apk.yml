@@ -29,10 +29,14 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      # the action's default package list includes "tools", which no longer exists
+      # the action's default package list includes "tools", which no longer exists.
+      # The compile SDK is left to AGP, which downloads it once licenses are accepted.
       - uses: android-actions/setup-android@v3
         with:
-          packages: "platforms;android-37 platform-tools"
+          packages: "platform-tools"
+
+      - name: Show available Android platforms
+        run: sdkmanager --list 2>/dev/null | grep -E "platforms;android-3[6-9]" || true
 
       - uses: gradle/actions/setup-gradle@v4
         with:
