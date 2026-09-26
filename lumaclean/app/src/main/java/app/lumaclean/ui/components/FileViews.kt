@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.InsertDriveFile
+import androidx.compose.material.icons.automirrored.rounded.InsertDriveFile
 import androidx.compose.material.icons.rounded.Android
 import androidx.compose.material.icons.rounded.AudioFile
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -64,7 +64,7 @@ fun categoryIcon(category: FileCategory): ImageVector = when (category) {
     FileCategory.DOCUMENTS -> Icons.Rounded.Description
     FileCategory.APKS -> Icons.Rounded.Android
     FileCategory.ARCHIVES -> Icons.Rounded.FolderZip
-    FileCategory.OTHER -> Icons.Rounded.InsertDriveFile
+    FileCategory.OTHER -> Icons.AutoMirrored.Rounded.InsertDriveFile
 }
 
 @Composable

@@ -29,7 +29,7 @@ import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.Image
-import androidx.compose.material.icons.rounded.InsertDriveFile
+import androidx.compose.material.icons.automirrored.rounded.InsertDriveFile
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material3.Checkbox
@@ -89,7 +89,7 @@ private fun kindIcon(kind: JunkKind): ImageVector = when (kind) {
     JunkKind.APKS -> Icons.Rounded.Android
     JunkKind.LEFTOVERS -> Icons.Rounded.Folder
     JunkKind.EMPTY_FOLDERS -> Icons.Rounded.FolderOpen
-    JunkKind.EMPTY_FILES -> Icons.Rounded.InsertDriveFile
+    JunkKind.EMPTY_FILES -> Icons.AutoMirrored.Rounded.InsertDriveFile
     JunkKind.DELETED_MEDIA -> Icons.Rounded.Delete
     JunkKind.OLD_DOWNLOADS -> Icons.Rounded.Download
 }

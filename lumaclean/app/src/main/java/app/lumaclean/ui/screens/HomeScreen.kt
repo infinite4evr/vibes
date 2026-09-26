@@ -88,7 +88,7 @@ fun HomeScreen() {
     val bin by c.bin.items.collectAsStateWithLifecycle()
     val settings by c.settings.flow.collectAsStateWithLifecycle()
     val index by c.index.current.collectAsStateWithLifecycle()
-    val storage by produceState<VolumeInfo?>(null, junkState, index) {
+    val storage by produceState<VolumeInfo?>(null, junkState.value, index) {
         value = withContext(Dispatchers.IO) { c.storage.primary() }
     }
 

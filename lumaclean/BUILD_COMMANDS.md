@@ -2,13 +2,12 @@
 
 ## Fast path
 
-### 1. Extract the ZIP
+### 1. Go to the project
 
-From the directory where you downloaded it:
+From the root of the `vibes` repository:
 
 ```bash
-unzip LumaClean-Final-Linux.zip
-cd LumaClean
+cd lumaclean
 ```
 
 ### 2. Make the scripts executable
