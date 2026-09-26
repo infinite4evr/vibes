@@ -155,16 +155,6 @@ async def setup(tmp: Path):
         await d.create_folder(name, study["id"], color=["blue", "orange", "green", "teal", "red", "purple",
                                                         "pink", "yellow", "grey", "blue", "orange", "green"][i],
                               emoji="📈 🏛️ 🗺️ 🌿 📰 🧭 🔬 🎨 ✍️ 🧭 🗞️ 📝".split()[i])
-    # Photo locations (as if found in EXIF) for the Places map.
-    import random as _r
-    rnd = _r.Random(3)
-    spots = [(28.61, 77.21), (19.08, 72.88), (12.97, 77.59), (26.91, 75.79), (32.24, 77.19), (15.30, 74.12),
-             (48.86, 2.35), (51.51, -0.13), (35.68, 139.69), (40.71, -74.0)]
-    photos = acc.db.q("SELECT id, date FROM files WHERE kind='photo' LIMIT 60")
-    for i, r in enumerate(photos):
-        lat, lon = spots[i % len(spots)]
-        acc.db.x("INSERT OR REPLACE INTO geo(file_id, lat, lon, taken, checked) VALUES(?,?,?,?,?)",
-                 (r["id"], lat + rnd.uniform(-.05, .05), lon + rnd.uniform(-.05, .05), r["date"], 1))
     await d.flush_now()
     for r in acc.db.q("SELECT chat_id, msg_id FROM files WHERE chat_title='Design Resources' LIMIT 6"):
         await d.copy_to_drive(r["chat_id"], r["msg_id"], None)

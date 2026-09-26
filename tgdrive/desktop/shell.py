@@ -4,21 +4,23 @@ import re
 import logging
 import os
 import secrets
+import subprocess
 import sys
+import threading
 import time
 import urllib.request
 from pathlib import Path
 
 from PyQt6.QtCore import QEvent, QFile, QIODevice, QObject, QPoint, QSettings, Qt, QTimer, QUrl, pyqtSlot
 from PyQt6.QtGui import QAction, QDesktopServices, QIcon, QKeySequence, QPixmap
-from PyQt6.QtNetwork import QLocalServer, QLocalSocket
+from PyQt6.QtNetwork import QLocalServer, QLocalSocket, QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWebChannel import QWebChannel
 from PyQt6.QtWebEngineCore import (QWebEngineDownloadRequest, QWebEnginePage, QWebEngineProfile, QWebEngineScript,
                                    QWebEngineSettings)
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMenu, QMessageBox, QSplashScreen, QSystemTrayIcon
 
-from .app import APP_ID, ROOT, ensure_desktop_entry, notify_system, set_autostart
+from .app import APP_ID, ROOT, ensure_desktop_entry, notify_system
 
 log = logging.getLogger("tgdrive.desktop")
 SOCKET = f"tgdrive-{os.getuid()}" if hasattr(os, "getuid") else "tgdrive"
@@ -258,7 +260,10 @@ class Shell:
         self.icon = load_icon()
         self.qs = QSettings("tgdrive", "desktop")
         self.token = secrets.token_urlsafe(24)
-        self.server = self.thread = None
+        self.media_token = secrets.token_urlsafe(18)
+        self.server = self.thread = None      # in-process server (only when a child process can't be used)
+        self.proc: "subprocess.Popen | None" = None
+        self.restarts: list[float] = []
         self.port = self.media = 0
         self.last_event = 0
         self.tray = None
@@ -292,8 +297,7 @@ class Shell:
             return 1
         self.build_window()
         self.build_tray()
-        from tgdrive.settings import settings
-        settings.on_change(self.on_settings)
+        settings = self.settings()
         if splash:
             splash.finish(self.win)
         start_hidden = (self.args.minimized or settings.get("start_minimized")) and self.tray is not None
@@ -303,9 +307,13 @@ class Shell:
             self.deliver("receivePaths", self.args.send)
         if getattr(self.args, "open", None) and self.args.open != "new-window":
             self.deliver("openTask", self.args.open)
+        self.net = QNetworkAccessManager()
         self.timer = QTimer()
         self.timer.timeout.connect(self.poll_events)
         self.timer.start(2000)
+        self.svc_timer = QTimer()
+        self.svc_timer.timeout.connect(self.watch_service)
+        self.svc_timer.start(3000)
         app.aboutToQuit.connect(self.shutdown)
         if self.args.screenshot:
             QTimer.singleShot(9000, self.take_screenshot)
@@ -363,7 +371,18 @@ class Shell:
         self.page.runJavaScript(js)
 
     def start_server(self) -> bool:
+        """Start TG Drive's service as its own process (run.py --child). The window then never waits on
+        the server's work (they don't share Python's interpreter lock), and if the service crashes the
+        window stays up and starts it again."""
+        from tgdrive import config
+        config.MEDIA_TOKEN = self.media_token   # the native player's stream links use it
+        if getattr(sys, "frozen", False) or os.environ.get("TGDRIVE_IN_PROCESS"):
+            return self._start_in_thread()
+        return self._spawn_service(self.args.port)
+
+    def _start_in_thread(self) -> bool:
         import run
+        os.environ["TGDRIVE_MEDIA_TOKEN"] = self.media_token
         try:
             self.server, self.thread, self.port, self.media = run.serve_in_thread(
                 port=self.args.port, token=self.token, desktop=True)
@@ -379,6 +398,111 @@ class Shell:
             self.app.processEvents()
             time.sleep(0.05)
         return False
+
+    def _service_log(self) -> Path:
+        from tgdrive import config
+        config.LOG_DIR.mkdir(parents=True, exist_ok=True)
+        return config.LOG_DIR / "service-output.log"
+
+    def _spawn_service(self, port: int, media_port: "int | None" = None) -> bool:
+        env = dict(os.environ)
+        env.update(TGDRIVE_TOKEN=self.token, TGDRIVE_MEDIA_TOKEN=self.media_token, PYTHONUNBUFFERED="1")
+        for k in ("QT_QPA_PLATFORM", "QTWEBENGINE_CHROMIUM_FLAGS", "QTWEBENGINE_DISABLE_SANDBOX"):
+            env.pop(k, None)   # Qt settings are for the window only
+        from tgdrive import config
+        py = [sys.executable, "-s"] if config.PACKAGED else [sys.executable]   # packaged: ignore user site-packages
+        cmd = [*py, str(ROOT / "run.py"), "--child", "--port", str(port or 0),
+               "--parent-pid", str(os.getpid())]
+        if media_port:
+            cmd += ["--media-port", str(media_port)]
+        out = open(self._service_log(), "ab")
+        try:
+            proc = subprocess.Popen(cmd, cwd=str(ROOT), env=env, stdout=subprocess.PIPE, stderr=out,
+                                    stdin=subprocess.DEVNULL, start_new_session=False)
+        except OSError as exc:
+            log.error("could not start the TG Drive service: %s", exc)
+            return False
+        finally:
+            out.close()   # the service has its own copy of the file
+        ready: dict = {}
+
+        def read():
+            for raw in proc.stdout:
+                try:
+                    msg = json.loads(raw.decode("utf-8", "replace"))
+                except ValueError:
+                    continue
+                if msg.get("ready"):
+                    ready.update(msg)
+                    break
+            # keep draining so the service never blocks on a full pipe
+            for _ in proc.stdout:
+                pass
+
+        threading.Thread(target=read, name="tgdrive-service-stdout", daemon=True).start()
+        deadline = time.time() + 300
+        while time.time() < deadline:
+            if ready:
+                self.proc = proc
+                self.port, self.media = ready["port"], ready["media"]
+                log.info("service running (pid %s, ports %s/%s)", proc.pid, self.port, self.media)
+                return True
+            if proc.poll() is not None:
+                log.error("the TG Drive service exited at start (code %s); see %s", proc.returncode,
+                          self._service_log())
+                return False
+            self.app.processEvents()
+            time.sleep(0.05)
+        proc.kill()
+        return False
+
+    def watch_service(self):
+        """Every few seconds: if the service process died, record why and start it again."""
+        if self.quitting or self.proc is None or self.proc.poll() is None:
+            return
+        code = self.proc.returncode
+        tail = ""
+        try:
+            with open(self._service_log(), "rb") as fh:
+                fh.seek(max(0, fh.seek(0, 2) - 6000))
+                tail = fh.read().decode("utf-8", "replace")
+        except OSError:
+            pass
+        log.error("the TG Drive service stopped unexpectedly (exit code %s); restarting", code)
+        try:
+            from tgdrive import diagnostics
+            how = f"killed by signal {-code}" if code and code < 0 else f"exit code {code}"
+            diagnostics.record_crash("service", f"Its last output:\n{tail.strip() or '(nothing)'}\n\n"
+                                                f"The TG Drive service stopped ({how}); it was started again.",
+                                     {"exit_code": code})
+        except Exception:
+            log.exception("could not record the service crash")
+        now = time.time()
+        self.restarts = [t for t in self.restarts if now - t < 300] + [now]
+        if len(self.restarts) > 3:
+            QMessageBox.critical(self.win, "TG Drive stopped",
+                                 "TG Drive's service keeps stopping. Details are in Settings → About & diagnostics "
+                                 f"(crash reports) and in the log:\n{self.log_path}")
+            self.proc = None
+            return
+        old = (self.port, self.media)
+        if self._spawn_service(self.port, self.media):
+            if (self.port, self.media) != old:
+                self.set_local_prefixes()
+            for view in [self.view] + [w.centralWidget() for w in getattr(self, "extra_windows", [])]:
+                if isinstance(view, QWebEngineView):
+                    view.reload() if (self.port, self.media) == old else view.setUrl(self.start_url())
+        else:
+            self.proc = None
+
+    def start_url(self, frag: str = "") -> QUrl:
+        return QUrl(f"http://127.0.0.1:{self.port}/?t={self.token}" + (f"#{frag}" if frag else ""))
+
+    def set_local_prefixes(self):
+        local = [f"http://127.0.0.1:{self.port}/", f"http://127.0.0.1:{self.media}/"]
+        for page in [getattr(self, "page", None)] + [getattr(w, "_keep", (None,))[0] for w in getattr(self, "extra_windows", [])]:
+            if page is not None:
+                page.local = local
 
     def build_window(self):
         self.win = MainWindow(self)
@@ -431,7 +555,7 @@ class Shell:
         geo = self.qs.value("geometry")
         if geo is not None:
             self.win.restoreGeometry(geo)
-        view.setUrl(QUrl(f"http://127.0.0.1:{self.port}/?t={self.token}"))
+        view.setUrl(self.start_url())
         page.loadFinished.connect(lambda ok: ok or log.warning("page failed to load"))
         page.renderProcessTerminated.connect(self.on_renderer_gone)
         self.profile = profile
@@ -464,7 +588,7 @@ class Shell:
         except Exception:
             log.exception("could not record renderer crash")
         log.error("renderer terminated (%s, %s); reloading", status, code)
-        QTimer.singleShot(800, lambda: self.view.setUrl(QUrl(f"http://127.0.0.1:{self.port}/?t={self.token}")))
+        QTimer.singleShot(800, lambda: self.view.setUrl(self.start_url()))
 
     def new_window(self, hash_: str = ""):
         """Another TG Drive window (same account and data), e.g. to work in two folders side by side."""
@@ -485,8 +609,7 @@ class Shell:
         w.setCentralWidget(view)
         w.resize(self.win.size())
         w.move(self.win.pos() + QPoint(40, 40))
-        frag = hash_.lstrip("#")
-        view.setUrl(QUrl(f"http://127.0.0.1:{self.port}/?t={self.token}" + (f"#{frag}" if frag else "")))
+        view.setUrl(self.start_url(hash_.lstrip("#")))
         w.show()
         self.extra_windows = [x for x in getattr(self, "extra_windows", []) if x is not w] + [w]
         w._keep = (page, channel, bridge, view)
@@ -533,19 +656,26 @@ class Shell:
         self.tray_menu = menu
 
     def refresh_tray_menu(self):
-        from tgdrive.settings import settings
+        settings = self.settings()
         self.pause_act.setText("Resume indexing" if settings.get("index_paused") else "Pause indexing")
 
-    def api(self, method, path, body=None):
+    @staticmethod
+    def settings():
+        """Settings as the service last saved them (it runs in another process)."""
+        from tgdrive.settings import settings
+        settings.refresh()
+        return settings
+
+    def api(self, method, path, body=None, timeout=10):
         req = urllib.request.Request(f"http://127.0.0.1:{self.port}{path}", method=method,
                                      data=json.dumps(body).encode() if body is not None else None,
                                      headers={"X-TGDrive": "1", "X-TGDrive-Token": self.token,
-                                              "Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=10) as r:
+                                              "X-TGDrive-Bg": "1", "Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.loads(r.read() or b"null")
 
     def toggle_indexing(self):
-        from tgdrive.settings import settings
+        settings = self.settings()
         try:
             self.api("PATCH", "/api/settings", {"index_paused": not settings.get("index_paused")})
         except Exception as exc:
@@ -553,7 +683,7 @@ class Shell:
 
     def open_downloads(self):
         from tgdrive import config
-        from tgdrive.settings import settings
+        settings = self.settings()
         d = Path(settings.get("download_dir") or config.default_download_dir())
         d.mkdir(parents=True, exist_ok=True)
         from tgdrive.accounts import xdg_open
@@ -573,7 +703,7 @@ class Shell:
             self.qs.setValue("tray_hint_shown", True)
 
     def close_to_tray(self) -> bool:
-        from tgdrive.settings import settings
+        settings = self.settings()
         return bool(self.tray and settings.get("close_to_tray", True))
 
     # --------------------------------------------------------------- misc
@@ -637,7 +767,7 @@ class Shell:
         return True
 
     def notify(self, title: str, body: str, force: bool = False):
-        from tgdrive.settings import settings
+        settings = self.settings()
         if not settings.get("notifications", True):
             return
         if not force and self.win.isVisible() and self.win.isActiveWindow():
@@ -646,26 +776,48 @@ class Shell:
             self.tray.showMessage(title, body, self.icon, 5000)
 
     def poll_events(self):
-        from tgdrive.accounts import events
-        for ev in events.since(self.last_event):
-            self.last_event = ev["id"]
-            if ev["kind"] == "notify":
-                self.notify(ev["title"], ev.get("body", ""))
-            elif ev["kind"] == "focus":
-                self.show()
+        """Notifications from the service (it runs in its own process): asked for without blocking the window."""
+        if self.server is not None:   # in-process fallback
+            from tgdrive.accounts import events
+            self.handle_events(events.since(self.last_event))
+            return
+        if self.proc is None or getattr(self, "_events_reply", None) is not None:
+            return
+        req = QNetworkRequest(QUrl(f"http://127.0.0.1:{self.port}/api/events?after={self.last_event}"))
+        for k, v in (("X-TGDrive", "1"), ("X-TGDrive-Token", self.token), ("X-TGDrive-Bg", "1")):
+            req.setRawHeader(k.encode(), v.encode())
+        req.setTransferTimeout(5000)
+        reply = self.net.get(req)
+        self._events_reply = reply
 
-    def on_settings(self, changed):
-        from tgdrive.settings import settings
-        if "autostart" in changed:
+        def done():
+            self._events_reply = None
             try:
-                set_autostart(bool(settings.get("autostart")))
-            except OSError as exc:
-                log.warning("autostart: %s", exc)
+                data = json.loads(bytes(reply.readAll()) or b"{}")
+            except ValueError:
+                data = {}
+            reply.deleteLater()
+            first = self.last_event == 0 and not getattr(self, "_events_seen", False)
+            self._events_seen = True
+            if first:   # don't replay what happened before the window was there
+                self.last_event = int(data.get("last") or 0)
+                return
+            self.handle_events(data.get("events") or [])
+
+        reply.finished.connect(done)
+
+    def handle_events(self, evs):
+        for ev in evs:
+            self.last_event = max(self.last_event, int(ev.get("id") or 0))
+            if ev.get("kind") == "notify":
+                self.notify(ev.get("title", ""), ev.get("body", ""))
+            elif ev.get("kind") == "focus":
+                self.show()
 
     def on_download(self, req: QWebEngineDownloadRequest):
         """Exports and saved files from inside the page (CSV, manifest, playlists)."""
         from tgdrive import config
-        from tgdrive.settings import settings
+        settings = self.settings()
         d = Path(settings.get("download_dir") or config.default_download_dir())
         d.mkdir(parents=True, exist_ok=True)
         name = req.downloadFileName() or "download"
@@ -682,8 +834,10 @@ class Shell:
 
     def active_transfers(self) -> int:
         try:
-            from tgdrive import api
-            return sum(a.transfers.summary()["active"] for a in api.manager.accounts.values())
+            if self.server is not None:
+                from tgdrive import api
+                return sum(a.transfers.summary()["active"] for a in api.manager.accounts.values())
+            return int(self.api("GET", "/api/transfers/active", timeout=3).get("active") or 0)
         except Exception:
             return 0
 
@@ -716,6 +870,14 @@ class Shell:
         if self.server:
             self.server.should_exit = True
             self.thread.join(40)
+        if self.proc is not None and self.proc.poll() is None:
+            self.proc.terminate()          # graceful: transfers are saved, folders flushed
+            try:
+                self.proc.wait(45)
+            except subprocess.TimeoutExpired:
+                log.warning("the service didn't stop in time; killing it")
+                self.proc.kill()
+        self.proc = None
         if self.tray:
             self.tray.hide()
         # Web pages must go before their profile, or Chromium complains on exit.

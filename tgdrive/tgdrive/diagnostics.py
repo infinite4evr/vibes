@@ -20,7 +20,7 @@ import time
 import traceback
 import zipfile
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from . import config
 
@@ -61,6 +61,7 @@ def record_crash(kind: str, text: str, context: Optional[dict] = None) -> Option
         for k, v in (context or {}).items():
             body.append(f"{k}: {str(v)[:2000]}")
         body += ["", text.rstrip()[:50_000], ""]
+        body += _state_sections()
         try:
             (crash_dir() / f"{rid}.txt").write_text("\n".join(body), encoding="utf-8")
             reports = sorted(crash_dir().glob("*.txt"))
@@ -77,6 +78,130 @@ def record_crash(kind: str, text: str, context: Optional[dict] = None) -> Option
     except Exception:
         pass
     return rid
+
+
+# ------------------------------------------------------- context for reports
+# Every crash report ends with what the app was doing: a snapshot from each registered provider
+# (accounts, transfers, running background tasks, threads, memory) and the last log lines, so a
+# report on its own is usually enough to see what went wrong.
+_providers: dict[str, Callable[[], Any]] = {}
+_STARTED = time.time()
+
+
+def add_state_provider(name: str, fn: Callable[[], Any]) -> None:
+    _providers[name] = fn
+
+
+def _state_sections() -> list[str]:
+    out = ["--- state ---", f"uptime: {int(time.time() - _STARTED)} s", f"pid: {os.getpid()}"]
+    try:
+        rss = next((ln.split()[1] for ln in Path("/proc/self/status").read_text().splitlines()
+                    if ln.startswith("VmRSS:")), None)
+        if rss:
+            out.append(f"memory (RSS): {int(rss) // 1024} MB")
+    except (OSError, ValueError):
+        pass
+    out.append("threads: " + ", ".join(sorted(th.name for th in threading.enumerate())))
+    for name, fn in list(_providers.items()):
+        try:
+            out.append(f"{name}: {json.dumps(fn(), default=str)[:4000]}")
+        except Exception as exc:  # a provider must never stop a report
+            out.append(f"{name}: (unavailable: {exc!r})")
+    lines = ring.lines()
+    if lines:
+        out += ["", f"--- last {len(lines)} log lines ---", *lines]
+    return out + [""]
+
+
+class RingHandler(logging.Handler):
+    """Keeps the last few hundred log lines in memory for crash reports."""
+
+    def __init__(self, size: int = 300):
+        super().__init__(logging.DEBUG)
+        from collections import deque
+        self.buf: "deque[str]" = deque(maxlen=size)
+        self.setFormatter(logging.Formatter("%(asctime)s %(levelname).1s %(name)s [%(threadName)s] %(message)s",
+                                            "%H:%M:%S"))
+
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            msg = self.format(record)
+            if record.exc_info and "Traceback" not in msg:
+                msg += "\n" + "".join(traceback.format_exception(*record.exc_info))[-3000:]
+            self.buf.append(msg[:4000])
+        except Exception:
+            pass
+
+    def lines(self, n: int = 120) -> list[str]:
+        return list(self.buf)[-n:]
+
+
+ring = RingHandler()
+
+
+def enable_faulthandler(name: str) -> None:
+    """Hard crashes (a segfault in a native library) leave no Python traceback; faulthandler writes the
+    stacks of all threads to a file instead. A non-empty file found at the next start becomes a crash
+    report. `kill -USR1 <pid>` also dumps the stacks there (for a hang)."""
+    import faulthandler
+    import signal
+    path = crash_dir() / f"faulthandler-{name}.log"
+    try:
+        if path.exists() and path.stat().st_size > 0:
+            text = path.read_text(encoding="utf-8", errors="replace")
+            if "Fatal Python error" in text or "Segmentation fault" in text or "Aborted" in text:
+                record_crash("native", text, {"process": name, "note": "found at startup: the previous run "
+                                                                     "crashed inside native code"})
+            path.unlink(missing_ok=True)
+        fh = open(path, "a", encoding="utf-8")
+        faulthandler.enable(file=fh, all_threads=True)
+        if hasattr(signal, "SIGUSR1"):
+            faulthandler.register(signal.SIGUSR1, file=fh, all_threads=True, chain=False)
+        global _fault_file
+        _fault_file = fh   # keep it open for the life of the process
+    except (OSError, RuntimeError, ValueError) as exc:
+        log.warning("faulthandler unavailable: %s", exc)
+
+
+_fault_file = None
+
+
+class LoopWatchdog:
+    """Notices when the event loop stops answering (something blocking it) and records a "hang" report
+    with the stack of the loop's thread, which shows exactly what blocked it."""
+
+    def __init__(self, loop, threshold: float = 10.0):
+        self.loop = loop
+        self.threshold = threshold
+        self.loop_thread = threading.get_ident()
+        self.stop = threading.Event()
+        self.reported = False
+        threading.Thread(target=self._run, name="tgdrive-loop-watchdog", daemon=True).start()
+
+    def _stamp(self) -> None:   # runs on the loop: it answered
+        self.waiting_since = 0.0
+        self.reported = False
+
+    def _run(self) -> None:
+        # One ping at a time: the loop answers it at its next turn. How long the oldest unanswered ping has
+        # waited is how long the loop has been stuck (an idle loop answers at once).
+        self.waiting_since = 0.0
+        while not self.stop.wait(0.5):
+            now = time.monotonic()
+            if not self.waiting_since:
+                self.waiting_since = now
+                try:
+                    self.loop.call_soon_threadsafe(self._stamp)
+                except RuntimeError:   # loop closed
+                    return
+                continue
+            late = now - self.waiting_since
+            if late > self.threshold and not self.reported:
+                self.reported = True
+                frame = sys._current_frames().get(self.loop_thread)
+                stack = "".join(traceback.format_stack(frame)) if frame else "(no stack)"
+                record_crash("hang", f"The service stopped responding for {late:.0f} s. What it was doing:\n{stack}",
+                             {"blocked_for": f"{late:.1f} s"})
 
 
 def record_exception(kind: str, exc: BaseException, context: Optional[dict] = None) -> Optional[str]:

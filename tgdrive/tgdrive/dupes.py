@@ -214,25 +214,26 @@ class DupeIndex:
         stats = {"groups": groups, "extra": extra, "extra_bytes": saved, "built_at": int(time.time()),
                  "seconds": round(time.time() - t0, 2)}
         if gone or changed or stats.get("extra") != self.stats.get("extra"):
-            conn.execute("BEGIN IMMEDIATE")
-            try:
-                # Counts of the copies that hidden duplicates leave out, so list totals stay instant:
-                # chat_id 0 = anywhere (all files), otherwise repeats within that one chat.
-                conn.execute("CREATE TABLE IF NOT EXISTS dups_stats (chat_id INTEGER NOT NULL, kind TEXT NOT NULL, "
-                             "n INTEGER NOT NULL, bytes INTEGER NOT NULL, PRIMARY KEY (chat_id, kind)) WITHOUT ROWID")
-                conn.executemany("DELETE FROM dups WHERE file_id=?", gone)
-                conn.executemany("INSERT INTO dups(file_id, grp, rank, n, xc) VALUES(?,?,?,?,?) ON CONFLICT(file_id) "
-                                 "DO UPDATE SET grp=excluded.grp, rank=excluded.rank, n=excluded.n, xc=excluded.xc",
-                                 changed)
-                conn.execute("DELETE FROM dups_stats")
-                conn.executemany("INSERT INTO dups_stats(chat_id, kind, n, bytes) VALUES(?,?,?,?)",
-                                 [(c, k, n, b) for (c, k), (n, b) in counts.items()])
-                conn.execute("INSERT INTO meta(key, value) VALUES('dups_stats', ?) "
-                             "ON CONFLICT(key) DO UPDATE SET value=excluded.value", (json.dumps(stats),))
-                conn.execute("COMMIT")
-            except Exception:
-                conn.execute("ROLLBACK")
-                raise
+            with self.acc.db.wlock:  # one writer at a time (see Database.wlock)
+                conn.execute("BEGIN IMMEDIATE")
+                try:
+                    # Counts of the copies that hidden duplicates leave out, so list totals stay instant:
+                    # chat_id 0 = anywhere (all files), otherwise repeats within that one chat.
+                    conn.execute("CREATE TABLE IF NOT EXISTS dups_stats (chat_id INTEGER NOT NULL, kind TEXT NOT NULL, "
+                                 "n INTEGER NOT NULL, bytes INTEGER NOT NULL, PRIMARY KEY (chat_id, kind)) WITHOUT ROWID")
+                    conn.executemany("DELETE FROM dups WHERE file_id=?", gone)
+                    conn.executemany("INSERT INTO dups(file_id, grp, rank, n, xc) VALUES(?,?,?,?,?) ON CONFLICT(file_id) "
+                                     "DO UPDATE SET grp=excluded.grp, rank=excluded.rank, n=excluded.n, xc=excluded.xc",
+                                     changed)
+                    conn.execute("DELETE FROM dups_stats")
+                    conn.executemany("INSERT INTO dups_stats(chat_id, kind, n, bytes) VALUES(?,?,?,?)",
+                                     [(c, k, n, b) for (c, k), (n, b) in counts.items()])
+                    conn.execute("INSERT INTO meta(key, value) VALUES('dups_stats', ?) "
+                                 "ON CONFLICT(key) DO UPDATE SET value=excluded.value", (json.dumps(stats),))
+                    conn.execute("COMMIT")
+                except Exception:
+                    conn.execute("ROLLBACK")
+                    raise
         self.stats = stats
         log.info("duplicates: %d groups, %d extra copies (%d changed, %d removed) in %.2f s",
                  groups, extra, len(changed), len(gone), time.time() - t0)

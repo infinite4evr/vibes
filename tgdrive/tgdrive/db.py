@@ -17,7 +17,7 @@ import queue
 import sqlite3
 import threading
 import time
-from concurrent.futures import Future
+from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional
 
@@ -25,7 +25,7 @@ from . import textproc
 
 log = logging.getLogger("tgdrive.db")
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 # ------------------------------------------------------------------ schema v1
 V1 = """
@@ -198,7 +198,7 @@ def _v3(c: sqlite3.Connection) -> None:
 
 
 def _v4(c: sqlite3.Connection) -> None:
-    """Folder icons, covers and rules (smart folders); subjects; photo places; PDF marks; folder sync."""
+    """Folder icons, covers and rules (smart folders); subjects; folder sync."""
     have = {r[1] for r in c.execute("PRAGMA table_info(folders)")}
     for col in ("emoji", "cover", "rules", "kind"):
         if col not in have:
@@ -207,20 +207,9 @@ def _v4(c: sqlite3.Connection) -> None:
         CREATE TABLE IF NOT EXISTS file_subjects (
             file_id INTEGER PRIMARY KEY, subject TEXT NOT NULL, score REAL, src TEXT);
         CREATE INDEX IF NOT EXISTS file_subjects_subject ON file_subjects(subject);
-        CREATE TABLE IF NOT EXISTS geo (
-            file_id INTEGER PRIMARY KEY, lat REAL, lon REAL, taken INTEGER, checked INTEGER NOT NULL);
-        CREATE INDEX IF NOT EXISTS geo_ll ON geo(lat, lon) WHERE lat IS NOT NULL;
         CREATE TRIGGER IF NOT EXISTS files_extra_ad AFTER DELETE ON files BEGIN
           DELETE FROM file_subjects WHERE file_id=old.id;
-          DELETE FROM geo WHERE file_id=old.id;
         END;
-        CREATE TABLE IF NOT EXISTS marks (
-            id TEXT PRIMARY KEY, chat_id INTEGER NOT NULL, msg_id INTEGER NOT NULL, kind TEXT NOT NULL,
-            page INTEGER NOT NULL DEFAULT 1, data TEXT, color TEXT, note TEXT, created INTEGER, mtime INTEGER DEFAULT 0);
-        CREATE INDEX IF NOT EXISTS marks_file ON marks(chat_id, msg_id);
-        CREATE TABLE IF NOT EXISTS reading (
-            chat_id INTEGER NOT NULL, msg_id INTEGER NOT NULL, page INTEGER NOT NULL, pages INTEGER,
-            at INTEGER NOT NULL, PRIMARY KEY (chat_id, msg_id)) WITHOUT ROWID;
         CREATE TABLE IF NOT EXISTS sync_pairs (
             id INTEGER PRIMARY KEY AUTOINCREMENT, local_path TEXT NOT NULL, folder_id TEXT NOT NULL,
             enabled INTEGER NOT NULL DEFAULT 1, created INTEGER, last_run INTEGER, state TEXT, error TEXT,
@@ -250,12 +239,31 @@ def _v5(c: sqlite3.Connection) -> None:
     """)
 
 
+def _v6(c: sqlite3.Connection) -> None:
+    """TG Drive 2.3 dropped photo places and PDF highlights/bookmarks/reading position: remove their data.
+    Uploads remember the id of the message they send (so a retry can't post the file twice)."""
+    have = {r[1] for r in c.execute("PRAGMA table_info(transfers)")}
+    if "send_id" not in have:
+        c.execute("ALTER TABLE transfers ADD COLUMN send_id INTEGER")
+    run_script(c, """
+        DROP TRIGGER IF EXISTS files_extra_ad;
+        DROP TABLE IF EXISTS geo;
+        DROP TABLE IF EXISTS marks;
+        DROP TABLE IF EXISTS reading;
+        DELETE FROM tombstones WHERE kind='mark';
+        CREATE TRIGGER IF NOT EXISTS files_extra_ad AFTER DELETE ON files BEGIN
+          DELETE FROM file_subjects WHERE file_id=old.id;
+        END;
+    """)
+
+
 MIGRATIONS: list[Callable[[sqlite3.Connection], None]] = [
     lambda c: run_script(c, V1),    # -> 1
     _v2,                            # -> 2
     _v3,                            # -> 3
     _v4,                            # -> 4
     _v5,                            # -> 5
+    _v6,                            # -> 6
 ]
 
 FILE_COLS = [
@@ -272,7 +280,7 @@ CHAT_EXTRA = ["is_forum", "archived", "members"]
 
 TRANSFER_COLS = [
     "direction", "chat_id", "msg_id", "name", "size", "done", "path", "folder_id",
-    "status", "error", "upload_file_id", "dest", "source_path", "batch", "caption", "target_chat",
+    "status", "error", "upload_file_id", "dest", "source_path", "batch", "caption", "target_chat", "send_id",
 ]
 
 
@@ -371,6 +379,7 @@ class ReadPool:
         if slot:
             prev = self.slots.get(slot)
             if prev and not prev[1].done():
+                prev[1].superseded = True   # the waiting request answers "superseded" (408), not nothing
                 prev[1].cancel()
                 prev[0].interrupt(prev[1])
             self.slots[slot] = (reader, fut)
@@ -383,6 +392,10 @@ class ReadPool:
         try:
             return await asyncio.wrap_future(fut)
         except asyncio.CancelledError:
+            if getattr(fut, "superseded", False):
+                # A newer request took this one's place: say so, rather than letting the cancellation
+                # end the HTTP request without any answer.
+                raise QueryTimeout("Superseded by a newer search.")
             for r in self.readers:
                 r.interrupt(fut)
             fut.cancel()
@@ -417,6 +430,12 @@ class Database:
         self.conn = _connect(self.path)
         self.conn.execute("PRAGMA journal_mode=WAL")
         self.conn.execute("PRAGMA synchronous=NORMAL")
+        # One writer at a time inside this process. Every write transaction (the main connection, the
+        # writer thread, and the background workers' connections) takes this lock first, so nobody spins in
+        # SQLite's busy handler and a wait is never longer than one short transaction.
+        self.wlock = threading.RLock()
+        self._wexec: Optional[ThreadPoolExecutor] = None
+        self._wconn: Optional[sqlite3.Connection] = None
         self.migrate()
         self._read: Optional[ReadPool] = None
         self._readers = readers
@@ -431,7 +450,38 @@ class Database:
     def close(self) -> None:
         if self._read:
             self._read.close()
+        if self._wexec is not None:
+            self._wexec.submit(self._close_writer).result(timeout=30)
+            self._wexec.shutdown(wait=True)
+            self._wexec = None
         self.conn.close()
+
+    # ------------------------------------------------------------ writer thread
+    async def write(self, fn: Callable, *args):
+        """Run fn(conn, *args) in one transaction on the writer thread, off the event loop. Use it for
+        the frequent writes (indexing pages, live updates) so a slow disk never freezes the app."""
+        if self._wexec is None:
+            self._wexec = ThreadPoolExecutor(max_workers=1, thread_name_prefix="tgdrive-writer")
+        return await asyncio.get_running_loop().run_in_executor(self._wexec, self._write_job, fn, args)
+
+    def _write_job(self, fn: Callable, args: tuple):
+        if self._wconn is None:
+            self._wconn = _connect(self.path)
+        c = self._wconn
+        with self.wlock:
+            c.execute("BEGIN IMMEDIATE")
+            try:
+                out = fn(c, *args)
+                c.execute("COMMIT")
+                return out
+            except BaseException:
+                c.execute("ROLLBACK")
+                raise
+
+    def _close_writer(self) -> None:
+        if self._wconn is not None:
+            self._wconn.close()
+            self._wconn = None
 
     def prewarm(self) -> None:
         """Ask the OS to pull the index into its file cache in the background, so the first search
@@ -480,10 +530,15 @@ class Database:
             return 0
         ids = [r["id"] for r in rows]
         marks = ",".join("?" * len(ids))
+        kw = [(textproc.keywords(r["name"], r["caption"], r["alias"]), r["id"]) for r in rows]   # outside the lock
+        with self.wlock:
+            self._build_batch_tx(c, kw, ids, marks)
+        return len(rows)
+
+    def _build_batch_tx(self, c: sqlite3.Connection, kw: list, ids: list, marks: str) -> None:
         c.execute("BEGIN IMMEDIATE")
         try:
-            c.executemany("UPDATE files SET keywords=?, fts_v=1 WHERE id=? AND fts_v=0",
-                          [(textproc.keywords(r["name"], r["caption"], r["alias"]), r["id"]) for r in rows])
+            c.executemany("UPDATE files SET keywords=?, fts_v=1 WHERE id=? AND fts_v=0", kw)
             c.execute(f"INSERT INTO search_fts(rowid, {', '.join(SEARCH_COLS)}) "
                       f"SELECT id, {', '.join(SEARCH_COLS)} FROM files WHERE id IN ({marks})", ids)
             c.execute(f"INSERT INTO names_tri(rowid, name, alias) SELECT id, name, alias FROM files "
@@ -492,11 +547,15 @@ class Database:
         except Exception:
             c.execute("ROLLBACK")
             raise
-        return len(rows)
 
     def _finish_search_build(self, c: sqlite3.Connection) -> None:
         if (c.execute("SELECT value FROM meta WHERE key='search_state'").fetchone() or [None])[0] == "ready":
             return
+        with self.wlock:
+            self._finish_search_tx(c)
+        self._optimize_search(c)
+
+    def _finish_search_tx(self, c: sqlite3.Connection) -> None:
         c.execute("BEGIN IMMEDIATE")
         try:
             for t in ("files_ai", "files_ad", "files_au"):
@@ -507,6 +566,8 @@ class Database:
         except Exception:
             c.execute("ROLLBACK")
             raise
+
+    def _optimize_search(self, c: sqlite3.Connection) -> None:
         try:
             c.execute("INSERT INTO search_fts(search_fts) VALUES('optimize')")
             c.execute("INSERT INTO names_tri(names_tri) VALUES('optimize')")
@@ -528,11 +589,12 @@ class Database:
         return dict(row) if row else None
 
     def x(self, sql: str, params: Iterable[Any] = ()) -> sqlite3.Cursor:
-        return self.conn.execute(sql, tuple(params))
+        with self.wlock:
+            return self.conn.execute(sql, tuple(params))
 
     def tx(self):
         """Usage: with db.tx(): ... (explicit transaction for batched writes)."""
-        return _Tx(self.conn)
+        return _Tx(self.conn, self.wlock)
 
     # ------------------------------------------------------------------- meta
     def get_meta(self, key: str, default: Optional[str] = None) -> Optional[str]:
@@ -600,8 +662,8 @@ class Database:
     def bump_latest(self, chat_id: int, msg_id: int) -> None:
         self.x("UPDATE chats SET latest_msg_id=MAX(latest_msg_id, ?) WHERE id=?", (msg_id, chat_id))
 
-    def refresh_file_count(self, chat_id: int) -> None:
-        self.x(
+    def refresh_file_count(self, chat_id: int, conn: Optional[sqlite3.Connection] = None) -> None:
+        (conn.execute if conn is not None else self.x)(
             "UPDATE chats SET file_count=COALESCE((SELECT SUM(n) FROM stats WHERE chat_id=?), 0), "
             "total_bytes=COALESCE((SELECT SUM(bytes) FROM stats WHERE chat_id=?), 0) WHERE id=?",
             (chat_id, chat_id, chat_id),
@@ -625,14 +687,19 @@ class Database:
         self.refresh_file_count(chat_id)
 
     # --------------------------------------------------------------- progress
-    def get_progress(self, chat_id: int, filt: str) -> dict:
-        row = self.one("SELECT * FROM index_progress WHERE chat_id=? AND filter=?", (chat_id, filt))
+    def get_progress(self, chat_id: int, filt: str, conn: Optional[sqlite3.Connection] = None) -> dict:
+        sql, args = "SELECT * FROM index_progress WHERE chat_id=? AND filter=?", (chat_id, filt)
+        if conn is not None:
+            r = conn.execute(sql, args).fetchone()
+            row = dict(r) if r else None
+        else:
+            row = self.one(sql, args)
         return row or {"chat_id": chat_id, "filter": filt, "newest_id": 0, "oldest_id": 0, "done": 0}
 
-    def set_progress(self, chat_id: int, filt: str, **fields: Any) -> None:
-        cur = self.get_progress(chat_id, filt)
+    def set_progress(self, chat_id: int, filt: str, conn: Optional[sqlite3.Connection] = None, **fields: Any) -> None:
+        cur = self.get_progress(chat_id, filt, conn)
         cur.update(fields)
-        self.x(
+        (conn.execute if conn is not None else self.x)(
             """INSERT INTO index_progress(chat_id, filter, newest_id, oldest_id, done) VALUES(?,?,?,?,?)
                ON CONFLICT(chat_id, filter) DO UPDATE SET newest_id=excluded.newest_id,
                  oldest_id=excluded.oldest_id, done=excluded.done""",
@@ -644,13 +711,17 @@ class Database:
         return {r["msg_id"]: r["alias"] for r in self.q(
             "SELECT msg_id, alias FROM placements WHERE chat_id=? AND alias IS NOT NULL", (chat_id,))}
 
-    def upsert_files(self, recs: list[dict]) -> None:
+    def upsert_files(self, recs: list[dict], conn: Optional[sqlite3.Connection] = None) -> None:
         if not recs:
             return
         aliases: dict[int, dict[int, str]] = {}
         for r in recs:
             if r["chat_id"] not in aliases:
-                aliases[r["chat_id"]] = self._aliases_for(r["chat_id"])
+                if conn is not None:
+                    aliases[r["chat_id"]] = {m: a for m, a in conn.execute(
+                        "SELECT msg_id, alias FROM placements WHERE chat_id=? AND alias IS NOT NULL", (r["chat_id"],))}
+                else:
+                    aliases[r["chat_id"]] = self._aliases_for(r["chat_id"])
             alias = aliases[r["chat_id"]].get(r["msg_id"])
             r["keywords"] = textproc.keywords(r.get("name"), r.get("caption"), alias)
         cols = ",".join(FILE_COLS)
@@ -664,8 +735,19 @@ class Database:
             f"ON CONFLICT(chat_id, msg_id) DO UPDATE SET {updates}"
         )
         rows = [[r.get(c) for c in FILE_COLS] + [r["chat_id"], r["msg_id"]] for r in recs]
+        if conn is not None:
+            conn.executemany(sql, rows)
+            return
         with self.tx():
             self.conn.executemany(sql, rows)
+
+    def index_page(self, conn: sqlite3.Connection, recs: list[dict], chat_id: int,
+                   progress: Optional[tuple[str, dict]] = None) -> None:
+        """One indexing step in one transaction (runs on the writer thread via write())."""
+        self.upsert_files(recs, conn)
+        if progress:
+            self.set_progress(chat_id, progress[0], conn, **progress[1])
+        self.refresh_file_count(chat_id, conn)
 
     def delete_files(self, chat_id: Optional[int], msg_ids: list[int]) -> int:
         """Delete by id. chat_id=None means 'any non-channel chat' (Telegram does not say which)."""
@@ -765,11 +847,9 @@ class Database:
 
     FOLDER_COLS = ["id", "parent_id", "name", "created", "color", "description", "mtime", "emoji", "cover", "rules",
                    "kind"]
-    MARK_COLS = ["id", "chat_id", "msg_id", "kind", "page", "data", "color", "note", "created", "mtime"]
 
     def replace_drive_state(self, folders: list[dict], placements: list[dict],
-                            saved: Optional[list[dict]] = None, tombstones: Optional[list[dict]] = None,
-                            marks: Optional[list[dict]] = None) -> None:
+                            saved: Optional[list[dict]] = None, tombstones: Optional[list[dict]] = None) -> None:
         """Replace the local mirror with the contents of a manifest."""
         old_alias = {(r["chat_id"], r["msg_id"]): r["alias"] for r in self.q(
             "SELECT chat_id, msg_id, alias FROM placements WHERE alias IS NOT NULL")}
@@ -783,14 +863,6 @@ class Database:
                   (json.dumps(f["rules"]) if isinstance(f.get("rules"), dict) else f.get("rules")) or None,
                   f.get("kind") or None) for f in folders],
             )
-            if marks is not None:
-                self.x("DELETE FROM marks")
-                self.conn.executemany(
-                    f"INSERT OR REPLACE INTO marks({','.join(self.MARK_COLS)}) VALUES({','.join('?' * len(self.MARK_COLS))})",
-                    [(m["id"], int(m["chat_id"]), int(m["msg_id"]), m.get("kind") or "highlight",
-                      int(m.get("page") or 1),
-                      json.dumps(m["data"]) if isinstance(m.get("data"), (dict, list)) else m.get("data"),
-                      m.get("color"), m.get("note"), m.get("created"), m.get("mtime") or 0) for m in marks])
             self.conn.executemany(
                 f"INSERT INTO placements({','.join(self.PLACEMENT_COLS)}) VALUES({','.join('?' * 8)})",
                 [(p["chat_id"], p["msg_id"], p.get("folder_id"), p.get("alias"), int(bool(p.get("starred"))),
@@ -877,19 +949,30 @@ class Database:
 
 
 class _Tx:
-    def __init__(self, conn: sqlite3.Connection):
+    def __init__(self, conn: sqlite3.Connection, lock=None):
         self.conn = conn
+        self.lock = lock
         self.nested = False
 
     def __enter__(self):
+        if self.lock is not None:
+            self.lock.acquire()
         if self.conn.in_transaction:
             self.nested = True
             return self
-        self.conn.execute("BEGIN IMMEDIATE")
+        try:
+            self.conn.execute("BEGIN IMMEDIATE")
+        except BaseException:
+            if self.lock is not None:
+                self.lock.release()
+            raise
         return self
 
     def __exit__(self, exc_type, exc, tb):
-        if self.nested:
-            return False
-        self.conn.execute("ROLLBACK" if exc_type else "COMMIT")
+        try:
+            if not self.nested:
+                self.conn.execute("ROLLBACK" if exc_type else "COMMIT")
+        finally:
+            if self.lock is not None:
+                self.lock.release()
         return False

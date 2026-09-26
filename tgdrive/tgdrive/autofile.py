@@ -14,6 +14,8 @@ import logging
 import time
 from typing import TYPE_CHECKING, Optional
 
+from .tasks import spawn
+
 if TYPE_CHECKING:
     from .accounts import Account
 
@@ -52,7 +54,7 @@ class AutoFiler:
 
     def start(self) -> None:
         if not self.task or self.task.done():
-            self.task = asyncio.create_task(self._loop())
+            self.task = spawn(self._loop(), "auto-filing")
 
     async def stop(self) -> None:
         if self.task:

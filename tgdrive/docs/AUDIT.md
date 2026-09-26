@@ -159,7 +159,7 @@ Grouped by area and roughly ordered by value within each group.
 **Browsing and interface**
 16. Virtualised grid (recycled cards) for smooth scrolling through 100k+ results
 17. Photo timeline with a date scrubber
-18. Map of geotagged photos
+18. ~~Map of geotagged photos~~ (built in 2.1, removed in 2.3)
 19. Slideshow mode
 20. Customisable list columns (choose, resize, reorder)
 21. Dual-pane view and multiple windows or tabs
@@ -180,7 +180,7 @@ Grouped by area and roughly ordered by value within each group.
 34. Trash: deletions go to a private channel first, restorable for 30 days
 35. Version groups: newer uploads of the same document are grouped
 36. Ordered collections and playlists (a lecture series in order)
-37. PDF bookmarks, highlights and reading progress
+37. ~~PDF bookmarks, highlights and reading progress~~ (built in 2.1, removed in 2.3)
 38. Shared folders with other Telegram users (a shared manifest channel)
 39. Duplicate clean-up with rules (keep the oldest, or the copy in Drive) in one click
 40. Import a folder structure from disk; export the tree as JSON or HTML

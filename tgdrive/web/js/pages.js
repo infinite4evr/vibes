@@ -112,7 +112,7 @@ async function activity() {
 /* --------------------------------------------------------------- settings */
 const SECTIONS = [
   ['general', 'General', 'settings'], ['appearance', 'Appearance', 'palette'], ['search', 'Search', 'search'],
-  ['subjects', 'Subjects', 'book'], ['photos', 'Photos & places', 'image'], ['downloads', 'Downloads & uploads', 'download'],
+  ['subjects', 'Subjects', 'book'], ['photos', 'Photos', 'image'], ['downloads', 'Downloads & uploads', 'download'],
   ['streaming', 'Streaming', 'play'], ['indexing', 'Indexing', 'database'], ['drive', 'Drive on this computer', 'mount'],
   ['sync', 'Folder sync', 'sync'], ['network', 'Network & proxy', 'external'], ['telegram', 'Telegram API', 'telegram'],
   ['accounts', 'Accounts', 'user'], ['security', 'Security', 'lock'], ['desktop', 'Desktop', 'maximize'],
@@ -123,7 +123,7 @@ async function settingsPage(section = 'general') {
   if (!SECTIONS.some(([k]) => k === section)) section = 'general';
   const same = $('#setBody', page())?.dataset.section === section;
   if (!page().querySelector('.settings')) {
-    page().innerHTML = `<div class="settings"><nav class="set-nav">${SECTIONS.map(([k, l, ic]) => `<button class="nav-item" data-go="#settings/${k}" data-sec="${k}">${icon(ic)}<span class="label">${l}</span></button>`).join('')}</nav>
+    page().innerHTML = `<div class="settings"><nav class="set-nav"><label class="set-find">${icon('search')}<input type="search" id="setFind" placeholder="Search settings" aria-label="Search settings" autocomplete="off" spellcheck="false"></label>${SECTIONS.map(([k, l, ic]) => `<button class="nav-item" data-go="#settings/${k}" data-sec="${k}">${icon(ic)}<span class="label">${l}</span></button>`).join('')}</nav>
       <div class="set-body" id="setBody"></div></div>`;
   }
   $$('.set-nav [data-sec]', page()).forEach((b) => b.classList.toggle('active', b.dataset.sec === section));
@@ -141,6 +141,58 @@ async function settingsPage(section = 'general') {
   body.scrollTop = keep;
   SECTION_AFTER[section]?.(body, s);
 }
+
+// Search settings: every section is rendered once, off screen, and its rows (title + help text) indexed.
+let setIndex = null;
+async function settingsIndex() {
+  if (setIndex) return setIndex;
+  const s = S.settings;
+  const out = [];
+  const tmp = document.createElement('div');
+  for (const [k, label] of SECTIONS) {
+    try { tmp.innerHTML = await SECTION_HTML[k](s); } catch { continue; }
+    for (const r of tmp.querySelectorAll('.set-row, .set-block')) {
+      const title = r.querySelector('strong')?.textContent?.trim();
+      if (!title) continue;
+      const help = r.querySelector('p')?.textContent?.trim() || '';
+      out.push({ section: k, sectionLabel: label, title, help, text: `${title} ${help} ${label}`.toLowerCase() });
+    }
+  }
+  setIndex = out;
+  return out;
+}
+async function findSettings(q) {
+  const body = $('#setBody');
+  if (!body) return;
+  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) { settingsPage(location.hash.split('/')[1] || 'general'); return; }
+  const idx = await settingsIndex();
+  if ($('#setFind')?.value.trim().toLowerCase() !== q.trim().toLowerCase()) return;   // typed on meanwhile
+  const hits = idx.filter((e) => words.every((w) => e.text.includes(w)));
+  $$('.set-nav [data-sec]', page()).forEach((b) => b.classList.remove('active'));
+  body.dataset.section = '';
+  body.innerHTML = `<h2>Settings matching “${esc(q.trim())}”</h2>${hits.length ? `<div class="set-hits">${hits.map((h) => `<button class="set-hit" data-go="#settings/${h.section}" data-find-title="${esc(h.title)}"><span class="sh-sec">${esc(h.sectionLabel)}</span><strong>${esc(h.title)}</strong>${h.help ? `<small>${esc(h.help.slice(0, 180))}${h.help.length > 180 ? '…' : ''}</small>` : ''}</button>`).join('')}</div>`
+    : '<p class="subtle">No setting matches that. Try another word, like “proxy”, “cache” or “theme”.</p>'}`;
+}
+let findTimer = 0;
+page().addEventListener('input', (e) => {
+  if (e.target.id !== 'setFind') return;
+  clearTimeout(findTimer);
+  findTimer = setTimeout(() => findSettings(e.target.value), 120);
+});
+page().addEventListener('click', (e) => {
+  const hit = e.target.closest('[data-find-title]');
+  if (!hit) return;
+  const title = hit.dataset.findTitle;
+  const input = $('#setFind');
+  if (input) input.value = '';
+  // After the section renders, bring the row into view and flash it.
+  setTimeout(() => {
+    const el = $$('#setBody .set-row strong, #setBody .set-block strong').find((s) => s.textContent.trim() === title);
+    const rowEl = el?.closest('.set-row, .set-block');
+    if (rowEl) { rowEl.scrollIntoView({ block: 'center', behavior: 'smooth' }); rowEl.classList.add('flash'); setTimeout(() => rowEl.classList.remove('flash'), 1600); }
+  }, 350);
+}, true);
 
 const row = (label, help, control) => `<div class="set-row"><div class="set-l"><strong>${label}</strong>${help ? `<p>${help}</p>` : ''}</div><div class="set-c">${control}</div></div>`;
 const sw = (k, s) => `<label class="switch"><input type="checkbox" data-set="${k}" ${s[k] ? 'checked' : ''}><span></span></label>`;
@@ -167,7 +219,12 @@ const SECTION_HTML = {
     ${row('Animations', 'Panels sliding, lists fading in, menus and dialogs popping. “Follow the system” turns them off when your desktop is set to reduce motion (many Linux desktops are by default).', sel('motion', s, [['on', 'On'], ['system', 'Follow the system'], ['off', 'Off']]))}
     ${row('Density', 'Compact fits more rows in lists and the sidebar.', sel('density', s, [['comfortable', 'Comfortable'], ['compact', 'Compact']]))}
     ${row('Card size', '', sel('grid_size', s, [['s', 'Small'], ['m', 'Medium'], ['l', 'Large']]))}
-    ${row('Folders', 'How folders show above the files. You can also switch with the buttons next to “Folders”.', sel('folder_style', s, [['tiles', 'Tiles'], ['cards', 'Cards with covers'], ['list', 'List']]))}
+    ${row('Folders', 'How folders show above the files. You can also switch in the View menu above the files.', sel('folder_style', s, [['tiles', 'Tiles'], ['cards', 'Cards with covers'], ['list', 'List']]))}
+    ${row('PDF pages as card pictures', 'Most PDFs on Telegram come without a preview. TG Drive draws the first page of each PDF card you see (fetching only what that page needs) and keeps the picture.', sw('pdf_card_previews', s))}
+    <div class="set-row"><div class="set-l"><strong>Sidebar width</strong><p>You can also drag the sidebar's right edge. Double-click the edge for the default width.</p></div>
+      <div class="set-c"><div class="fs-pick"><input type="range" min="180" max="560" step="4" data-sidebarw value="${esc(s.sidebar_width || 272)}" aria-label="Sidebar width"><output>${esc(s.sidebar_width || 272)} px</output></div></div></div>
+    <div class="set-row"><div class="set-l"><strong>Show the sidebar</strong><p>Hide it for more room: the <kbd>Ctrl B</kbd> shortcut, the sidebar button at the top left, or the « on the sidebar's edge bring it back and forth.</p></div>
+      <div class="set-c"><label class="switch"><input type="checkbox" data-sidebar-shown ${s.sidebar_hidden ? '' : 'checked'}><span></span></label></div></div>
     <div class="set-block"><strong>List columns</strong><p>Choose, reorder and resize the columns of the list view.</p><button class="btn" data-columns-dlg>${icon('columns')}Choose columns…</button></div>`,
   subjects: async (s) => {
     const r = await api(A('/subjects')).catch(() => ({ subjects: [], status: {} }));
@@ -181,9 +238,7 @@ const SECTION_HTML = {
     <div class="set-block"><strong>Now</strong><div class="subject-counts">${counts.map((x) => `<button class="chip" data-go="#subject/${esc(x.id)}">${x.emoji ? `<span>${x.emoji}</span>` : ''}${esc(x.name)}<small>${fmtNum(x.n)}</small></button>`).join('') || '<span class="subtle">No subjects found yet.</span>'}</div>
       <div class="btn-row"><button class="btn" data-subjects-rebuild>${icon('refresh')}Tag everything again</button><button class="btn" data-subjects-tags>${icon('tag')}Turn subjects into tags…</button></div></div>`;
   },
-  photos: (s) => `<h2>Photos & places</h2>
-    ${row('Find where photos were taken', 'Pictures sent as files keep their GPS location. TG Drive reads only the first 128 KB of each image file to find it, slowly, in the background. They then show on the Places map.', sw('places_scan', s))}
-    ${row('Detailed map tiles', 'Shows streets and places from OpenStreetMap on the Places map. This is the one feature that loads data from outside Telegram (tile images). Takes effect after reloading the window.', sw('map_online_tiles', s))}
+  photos: (s) => `<h2>Photos</h2>
     ${row('Slideshow speed', 'Seconds per picture.', num('slideshow_seconds', s, 1, 60, 1, 's'))}`,
   drive: async (s) => {
     const d = await api('/api/dav').catch(() => ({}));
@@ -330,6 +385,11 @@ const SECTION_HTML = {
 
 const SECTION_AFTER = {
   appearance: (body) => {
+    const w = $('[data-sidebarw]', body);
+    w?.addEventListener('input', () => {
+      import('./layout.js').then((m) => m.setSidebarWidth(Number(w.value), false));
+      w.parentElement.querySelector('output').textContent = `${w.value} px`;
+    });
     const r = $('[data-fontscale]', body);
     r?.addEventListener('input', () => {
       document.documentElement.style.setProperty('--fs', r.value);
@@ -367,6 +427,8 @@ function flashSaved() {
 page().addEventListener('change', async (e) => {
   const t = e.target;
   if (t.dataset.fontscale !== undefined) { saveSetting('font_scale', Number(t.value)); return; }
+  if (t.dataset.sidebarw !== undefined) { await saveSetting('sidebar_width', Number(t.value)); import('./layout.js').then((m) => m.applySidebar()); return; }
+  if (t.dataset.sidebarShown !== undefined) { await saveSetting('sidebar_hidden', !t.checked); import('./layout.js').then((m) => m.applySidebar()); return; }
   if (t.dataset.accentCustom !== undefined) { saveSetting('accent', t.value); $$('.accent-sw', page()).forEach((b) => b.classList.remove('on')); return; }
   if (t.dataset.set) {
     let v = t.type === 'checkbox' ? t.checked : t.value;
@@ -374,7 +436,6 @@ page().addEventListener('change', async (e) => {
     if (t.dataset.set === 'proxy_pass' && !v) return;
     await saveSetting(t.dataset.set, v);
     if (['dav_enabled', 'subjects_builtin', 'debug_logging'].includes(t.dataset.set)) settingsPage(page().querySelector('#setBody')?.dataset.section);
-    if (t.dataset.set === 'map_online_tiles') toast('Reload the window (Ctrl+Shift+R) to use map tiles.');
   }
   if (t.dataset.kindToggle) {
     const kinds = $$('[data-kind-toggle]', page()).filter((x) => x.checked).map((x) => x.dataset.kindToggle);

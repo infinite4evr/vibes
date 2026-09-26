@@ -210,7 +210,9 @@ export function thumbHtml(f, variant = 's') {
   let fallback;
   if (f.kind === 'document' || (f.kind === 'photo' && f.ext && !['jpg', 'jpeg'].includes(f.ext) && !f.has_thumb)) fallback = docIcon(f);
   else fallback = `<span class="glyph icon">${icon(KIND_ICON[f.kind] || 'document')}</span>`;
-  const img = f.has_thumb ? `<img class="real" data-src="${thumbUrl(f, variant)}" alt="" decoding="async">` : '';
+  const pdfPage = !f.has_thumb && variant === 's' && (f.ext || '').toLowerCase() === 'pdf' && S.settings.pdf_card_previews !== false;
+  const img = f.has_thumb ? `<img class="real" data-src="${thumbUrl(f, variant)}" alt="" decoding="async">`
+    : pdfPage ? `<img class="real pdfp" data-src="${M(`/docthumb/${f.chat_id}/${f.msg_id}`)}" data-pdf="${f.chat_id}:${f.msg_id}" alt="" decoding="async">` : '';
   return `<div class="thumb ${k} ${f.inline ? 'has-lq' : ''}">${fallback}${lq}${img}${play}${dur}${progressHtml(f)}</div>`;
 }
 // How far you got (videos/audio): a bar along the bottom, or a tick when watched.
@@ -264,8 +266,10 @@ export function cardHtml(f, entry = null, i = 0) {
     ${thumbHtml(f)}${matchBadge(f)}${stackBadge}
     ${f.starred ? `<span class="star-mark" title="Starred">${icon('star')}</span>` : ''}
     <div class="c-acts"><button class="c-q ${f.starred ? 'on' : ''}" data-quick="star" tabindex="-1" title="${f.starred ? 'Remove star' : 'Star'}" aria-label="${f.starred ? 'Remove star' : 'Star'}">${icon('star')}</button><button class="c-q" data-quick="download" tabindex="-1" title="Download" aria-label="Download">${icon('download')}</button><button class="c-more" data-card-menu tabindex="-1" aria-label="Actions" title="More">${icon('more')}</button></div>
+    ${f.copies > 1 ? `<span class="copies-mini on-thumb" title="${f.copies} copies of this file${copiesParam() === 'hide' ? ' (the others are hidden)' : ''}">${icon('dupes')}${f.copies}</span>` : ''}
     <div class="card-body"><div class="name" title="${esc(f.name)}">${members ? `<span class="stack-label">${members.length} ${stackNoun(members)} · </span>` : ''}${name}</div>
-      <div class="meta"><span>${fmtSize(members ? members.reduce((a, x) => a + (x.size || 0), 0) : f.size)}</span><span>${fmtDate(f.date)}</span>${f.copies > 1 ? `<span class="copies-mini" title="${f.copies} copies of this file${copiesParam() === 'hide' ? ' (the others are hidden)' : ''}">${icon('dupes')}${f.copies}</span>` : ''}${src ? `<span class="src">${src}</span>` : ''}${f.tags?.length ? `<span class="tags-mini" title="${esc(f.tags.join(', '))}">${icon('tag')}${f.tags.length}</span>` : ''}${subj ? `<span class="subj-mini" title="${esc(subj.name)}">${subj.emoji || icon('book')}</span>` : ''}</div></div></div>`;
+      <div class="src-line" title="${esc(f.chat_title || '')}">${src || ''}</div>
+      <div class="meta"><span>${fmtSize(members ? members.reduce((a, x) => a + (x.size || 0), 0) : f.size)}</span>${friendly && !members ? '' : `<span>${fmtDate(f.date)}</span>`}${f.tags?.length ? `<span class="tags-mini" title="${esc(f.tags.join(', '))}">${icon('tag')}${f.tags.length}</span>` : ''}${subj ? `<span class="subj-mini" title="${esc(subj.name)}">${subj.emoji || icon('book')}</span>` : ''}</div></div></div>`;
 }
 
 export function rowHtml(f, entry = null, i = 0) {
@@ -406,7 +410,7 @@ export function renderHeader() {
     return `<button class="tab" role="tab" data-kind="${k}" aria-selected="${S.kind === k}">
       ${k ? `<span class="sw k-${k}"></span>` : ''}${label}<span class="count">${st && n ? fmtNum(n) : ''}</span></button>`;
   }).join('');
-  $('#viewBtn').innerHTML = icon(listMode() ? 'grid' : 'list');
+  $('#viewBtn').innerHTML = `${icon(listMode() ? 'list' : 'grid')}<span class="vb-label">View</span>${icon('chevronDown')}`;
   const cb = $('#copiesBtn');
   if (cb) {
     const hiding = copiesParam() === 'hide';
@@ -419,7 +423,8 @@ export function renderHeader() {
       : 'Showing every copy. Click to hide duplicates (one card per file).';
     cb.setAttribute('aria-label', hiding ? 'Show duplicates' : 'Hide duplicates');
   }
-  $('#viewBtn').title = listMode() ? 'Grid view (V)' : 'List view (V)';
+  $('#viewBtn').title = 'View options: grid or list, card size, folders, sidebar';
+  $('#viewBtn').setAttribute('aria-haspopup', 'menu');
   const sortSel = $('#sort');
   const rel = sortSel.querySelector('[value="relevance:desc"]');
   rel.hidden = !isTextSearch();

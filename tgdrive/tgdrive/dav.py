@@ -33,9 +33,10 @@ from xml.sax.saxutils import escape
 from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse, HTMLResponse, Response, StreamingResponse
 
+from .tasks import spawn
 from .settings import settings
 from .streaming import StreamError, parse_range
-from .transfers import safe_filename
+from .transfers import TransferError, ensure_space, safe_filename
 
 log = logging.getLogger("tgdrive.dav")
 router = APIRouter()
@@ -480,11 +481,23 @@ async def _put(request: Request, tree: Tree, parts: list[str], base: str) -> Res
     existing = await tree.node(parts)
     old = (existing.chat_id, existing.msg_id) if existing and not existing.is_dir and not existing.pending else None
     tmp = acc.transfers.new_upload_path()
+    try:
+        length = int(request.headers.get("content-length") or 0)
+    except ValueError:
+        length = 0
+    try:
+        ensure_space(tmp, length, f"“{name}”")
+    except TransferError as exc:
+        return Response(str(exc), status_code=507)
     size = 0
-    with open(tmp, "wb") as fh:
-        async for chunk in request.stream():
-            fh.write(chunk)
-            size += len(chunk)
+    try:
+        with open(tmp, "wb") as fh:
+            async for chunk in request.stream():
+                fh.write(chunk)
+                size += len(chunk)
+    except BaseException:   # the client went away mid-upload: don't leave the partial copy behind
+        Path(tmp).unlink(missing_ok=True)
+        raise
     if size == 0:
         Path(tmp).unlink(missing_ok=True)
         return Response(status_code=201)  # clients create empty files first; the real PUT follows
@@ -492,9 +505,10 @@ async def _put(request: Request, tree: Tree, parts: list[str], base: str) -> Res
     try:
         tid = acc.transfers.add_upload(Path(tmp), name, fid)
     except Exception as exc:
+        Path(tmp).unlink(missing_ok=True)
         return Response(str(exc), status_code=507)
     Tree.uploads.setdefault(key, {})[name] = [size, tid]
-    asyncio.get_running_loop().create_task(_forget_when_done(acc, tid, key, name, old))
+    spawn(_forget_when_done(acc, tid, key, name, old), f"webdav upload {tid}")
     tree.invalidate()
     return Response(status_code=204 if old else 201)
 

@@ -47,6 +47,29 @@ class Thumbs:
         sub.mkdir(exist_ok=True)
         return sub / f"{chat_id}_{msg_id}_{variant}"
 
+    # ---- first pages of PDFs, rendered by the window (pdf.js) and kept here, so the grid shows them
+    DOC_MAX = 400 * 1024
+    DOC_MAGIC = (b"RIFF", b"\xff\xd8\xff", b"\x89PNG")
+
+    def doc_state(self, chat_id: int, msg_id: int) -> tuple[Optional[Path], bool]:
+        """(picture, failed before)."""
+        p = self._path(chat_id, msg_id, "pdf")
+        if p.exists():
+            return p, False
+        return None, Path(str(p) + ".none").exists()
+
+    def save_doc(self, chat_id: int, msg_id: int, data: bytes) -> None:
+        if not data or len(data) > self.DOC_MAX or not data.startswith(self.DOC_MAGIC):
+            raise ValueError("That isn't a small WebP, JPEG or PNG picture.")
+        p = self._path(chat_id, msg_id, "pdf")
+        tmp = p.with_name(p.name + ".tmp")
+        tmp.write_bytes(data)
+        tmp.replace(p)
+        Path(str(p) + ".none").unlink(missing_ok=True)
+
+    def doc_failed(self, chat_id: int, msg_id: int) -> None:
+        Path(str(self._path(chat_id, msg_id, "pdf")) + ".none").touch()
+
     def cached(self, chat_id: int, msg_id: int, variant: str = "s") -> Optional[Path]:
         p = self._path(chat_id, msg_id, variant)
         return p if p.exists() else None

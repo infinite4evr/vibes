@@ -87,6 +87,16 @@ class FakeClient:
         self.pinned: dict[int, int] = {}
         self.fail_iter_after = None
         self.iter_calls = 0
+        self.connected = True
+        self.caught_up = 0
+        self.sent_random_ids: set[int] = set()
+        self.lose_send_answer = 0      # the next N sends succeed, but the answer "gets lost"
+
+    def is_connected(self):
+        return self.connected
+
+    async def catch_up(self):
+        self.caught_up += 1
 
     # ---- entities
     async def get_input_entity(self, cid):
@@ -224,6 +234,10 @@ class FakeClient:
             self.parts.setdefault(req.file_id, {})[req.file_part] = req.bytes
             return True
         if isinstance(req, functions.messages.SendMediaRequest):
+            if req.random_id in self.sent_random_ids:
+                from telethon import errors
+                raise errors.RandomIdDuplicateError(request=req)
+            self.sent_random_ids.add(req.random_id)
             f = req.media.file
             data = b"".join(v for _, v in sorted(self.parts[f.id].items()))
             mid = self._new_id(req.peer)
@@ -231,6 +245,9 @@ class FakeClient:
             msg = doc_msg(req.peer, mid, name, req.media.mime_type, len(data), datetime.now(timezone.utc), out=True)
             self.content[msg.media.document.id] = data
             self.chats.setdefault(req.peer, []).append(msg)
+            if self.lose_send_answer:
+                self.lose_send_answer -= 1
+                raise ConnectionError("connection reset while waiting for the answer")
             return types.Updates(updates=[types.UpdateNewChannelMessage(message=msg, pts=1, pts_count=1)],
                                  users=[], chats=[], date=datetime.now(timezone.utc), seq=0)
         if isinstance(req, functions.messages.GetDialogFiltersRequest):

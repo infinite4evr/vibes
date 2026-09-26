@@ -26,6 +26,7 @@ from telethon import errors, events, utils
 from telethon.tl import functions, types
 
 from . import config
+from .tasks import spawn
 from .extract import extract
 from .settings import settings
 
@@ -130,9 +131,9 @@ class Indexer:
     # ---------------------------------------------------------------- control
     def start(self) -> None:
         if not self.task or self.task.done():
-            self.task = asyncio.create_task(self._loop())
+            self.task = spawn(self._loop(), "indexer")
         if not self.verify_task or self.verify_task.done():
-            self.verify_task = asyncio.create_task(self._verify_loop())
+            self.verify_task = spawn(self._verify_loop(), "verify deleted files")
 
     async def stop(self) -> None:
         for task in (self.task, self.verify_task):
@@ -201,6 +202,8 @@ class Indexer:
                     except Exception as exc:
                         log.warning("loading drive manifest failed: %s", exc)
                         self.acc.drive.error = f"Couldn't load folders: {exc}"
+                if self.acc.drive.loaded:
+                    self.acc.drive.resume_pending()
                 attempted: set[int] = set()
                 skip_kinds = set(settings.get("index_skip_kinds_of_chat") or [])
                 while True:
@@ -215,7 +218,7 @@ class Indexer:
                         if fresh and not fresh["excluded"]:
                             await self.index_chat(fresh)
                 self.phase, self.current_title, self.current_chat, self.error = "idle", None, None, None
-                for part in ("autofile", "subjects", "places"):
+                for part in ("autofile", "subjects"):
                     obj = getattr(self.acc, part, None)
                     if obj is not None:
                         obj.poke()
@@ -249,9 +252,9 @@ class Indexer:
             self.db.x("UPDATE chats SET index_state='gone' WHERE updated_at < ?", (started,))
         self.acc._dialogs_loaded = True
         self.last_sync = time.time()
-        for row in rows:
-            if row.get("is_forum"):
-                asyncio.create_task(self._sync_topics(row["id"]))
+        forums = [row["id"] for row in rows if row.get("is_forum")]
+        if forums:
+            spawn(self._sync_all_topics(forums), "sync forum topics")
 
     async def sync_dialog_filters(self) -> None:
         """Mirror the user's Telegram chat folders (Personal, Work, …) as sources."""
@@ -285,6 +288,15 @@ class Indexer:
             self.db.x("DELETE FROM dialog_filters")
             self.db.conn.executemany(
                 "INSERT INTO dialog_filters(id, title, emoticon, position, chat_ids) VALUES(?,?,?,?,?)", out)
+
+    async def _sync_all_topics(self, ids: list[int]) -> None:
+        # A few at a time: hundreds of forums at once would only earn flood waits.
+        sem = asyncio.Semaphore(3)
+
+        async def one(cid: int) -> None:
+            async with sem:
+                await self._sync_topics(cid)
+        await asyncio.gather(*(one(c) for c in ids))
 
     async def _sync_topics(self, cid: int) -> None:
         try:
@@ -383,18 +395,16 @@ class Indexer:
             if rec and rec["kind"] in kinds:
                 batch.append(rec)
             if seen % PAGE == 0:
-                self.db.upsert_files(batch)
+                # Files, progress and counts in one transaction, on the writer thread (never blocks the loop).
+                await self.db.write(self.db.index_page, batch, cid,
+                                    (backfill, {"oldest_id": low}) if backfill else None)
                 self.indexed_this_run += len(batch)
                 self._sample()
                 batch = []
-                if backfill:
-                    self.db.set_progress(cid, backfill, oldest_id=low)
-                self.db.refresh_file_count(cid)
                 await self._run_gate.wait()
-        self.db.upsert_files(batch)
+        await self.db.write(self.db.index_page, batch, cid,
+                            (backfill, {"oldest_id": low}) if backfill and low else None)
         self.indexed_this_run += len(batch)
-        if backfill and low:
-            self.db.set_progress(cid, backfill, oldest_id=low)
         return top
 
     def record(self, msg, cid: int, chat_title: str) -> Optional[dict]:
@@ -511,8 +521,7 @@ class Indexer:
             rec = self.record(msg, cid, chat["title"])
             log.debug("live: new message %s in %s%s", msg.id, cid, f" with {rec['kind']} {rec.get('name')!r}" if rec else "")
             if rec and rec["kind"] in set(settings.get("index_kinds") or []):
-                self.db.upsert_files([rec])
-                self.db.refresh_file_count(cid)
+                await self.db.write(self.db.index_page, [rec], cid)
                 self.acc.notify_new_file(rec)
             await self.acc.drive.on_message(cid, msg)
         except Exception:

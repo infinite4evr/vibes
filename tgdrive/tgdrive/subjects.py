@@ -308,18 +308,19 @@ class SubjectIndex:
                 unresolved.append(fid)
         out += self._by_meaning(unresolved, subjects)
         ids = [r[0] for r in rows if r[0] not in manual]
-        conn.execute("BEGIN IMMEDIATE")
-        try:
-            if ids:
-                conn.execute(f"DELETE FROM file_subjects WHERE src<>'manual' AND file_id IN ({','.join(map(str, ids))})")
-            conn.executemany("INSERT OR REPLACE INTO file_subjects(file_id, subject, score, src) VALUES(?,?,?,?)", out)
-            new_until = max((r[0] for r in rows if r[0] > start), default=start)
-            conn.execute("INSERT INTO meta(key, value) VALUES('subjects_until', ?) "
-                         "ON CONFLICT(key) DO UPDATE SET value=excluded.value", (str(new_until),))
-            conn.execute("COMMIT")
-        except Exception:
-            conn.execute("ROLLBACK")
-            raise
+        with self.acc.db.wlock:  # one writer at a time (see Database.wlock)
+            conn.execute("BEGIN IMMEDIATE")
+            try:
+                if ids:
+                    conn.execute(f"DELETE FROM file_subjects WHERE src<>'manual' AND file_id IN ({','.join(map(str, ids))})")
+                conn.executemany("INSERT OR REPLACE INTO file_subjects(file_id, subject, score, src) VALUES(?,?,?,?)", out)
+                new_until = max((r[0] for r in rows if r[0] > start), default=start)
+                conn.execute("INSERT INTO meta(key, value) VALUES('subjects_until', ?) "
+                             "ON CONFLICT(key) DO UPDATE SET value=excluded.value", (str(new_until),))
+                conn.execute("COMMIT")
+            except Exception:
+                conn.execute("ROLLBACK")
+                raise
         self.done += len(out)
         return True
 

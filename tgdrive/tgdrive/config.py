@@ -13,7 +13,7 @@ from pathlib import Path
 
 APP_NAME = "TG Drive"
 APP_ID = "tgdrive"
-VERSION = "2.2.0"
+VERSION = "2.3.0"
 
 if getattr(sys, "frozen", False):  # PyInstaller bundle
     ROOT = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
@@ -64,7 +64,7 @@ PASSWORD = os.environ.get("TGDRIVE_PASSWORD", "")
 ACCESS_TOKEN = os.environ.get("TGDRIVE_TOKEN", "")
 # Grants only GET/HEAD on stream URLs: goes into playlists, copied VLC/mpv links and the native
 # player, so a leaked link can play that file while TG Drive runs but can't reach the rest of the API.
-MEDIA_TOKEN = secrets.token_urlsafe(18)
+MEDIA_TOKEN = os.environ.get("TGDRIVE_MEDIA_TOKEN") or secrets.token_urlsafe(18)   # the desktop app passes its own
 RESYNC_INTERVAL = int(os.environ.get("TGDRIVE_RESYNC", "1800"))
 
 

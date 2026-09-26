@@ -19,6 +19,9 @@ export const ICON = {
   sliders: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
   transfers: '<path d="M4 14.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3.5"/><path d="M8.5 4v9.5M5.5 10.5l3 3 3-3M15.5 13.5V4M12.5 7l3-3 3 3"/>',
   chevron: '<path d="m9 6 6 6-6 6"/>',
+  chevronDown: '<path d="m6 9 6 6 6-6"/>',
+  chevLeft: '<path d="m15 6-6 6 6 6"/>',
+  sidebar: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M9.5 4.5v15"/>',
   down: '<path d="m6 9 6 6 6-6"/>',
   folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   folderPlus: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5h5"/>',
@@ -94,10 +97,8 @@ export const ICON = {
   sync: '<path d="M20 12a8 8 0 0 1-14 5.3M4 12A8 8 0 0 1 18 6.7"/><path d="M18 3v4h-4M6 21v-4h4"/>',
   disk: '<rect x="3" y="13" width="18" height="7" rx="2"/><path d="M5 13 7.5 5h9L19 13"/><path d="M16.5 16.5h.01"/>',
   bug: '<rect x="7" y="8" width="10" height="12" rx="5"/><path d="M12 8v12M9 5l1.5 3M15 5l-1.5 3M3 13h4M17 13h4M4 19l3-2M20 19l-3-2M4 8l3 2M20 8l-3 2"/>',
-  map: '<path d="m3 6 6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>',
   photos: '<rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/>',
   bookmark: '<path d="M6 3h12v18l-6-4-6 4z"/>',
-  highlight: '<path d="m14 4 6 6-9 9H5v-6z"/><path d="M4 21h16"/>',
   paste: '<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 11h6M9 15h4"/>',
   contrast: '<circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor"/>',
   text: '<path d="M4 7V5h11v2M9.5 5v14M7 19h5M14 12v-1.5h7V12M17.5 10.5V19M16 19h3"/>',
@@ -296,6 +297,18 @@ export class ApiError extends Error {
 }
 // Requests the app makes by itself (polling, progress saves, logs) never show a loader.
 const QUIET = /\/(status|events|suggest|playback\/|crash$|clientlog|debuglog)/;
+// Requests the app makes on its own; they must not keep auto-lock from locking.
+const BACKGROUND = /\/(status|events|crash|clientlog|debuglog)$/;
+// Someone using the window (keys, clicks, scrolling) counts as activity for auto-lock: tell the server,
+// at most once a minute.
+let lastActivity = 0;
+function reportActivity() {
+  const now = Date.now();
+  if (now - lastActivity < 60000) return;
+  lastActivity = now;
+  fetch('/api/activity', { method: 'POST', headers: { 'X-TGDrive': '1' }, credentials: 'same-origin' }).catch(() => {});
+}
+for (const ev of ['pointerdown', 'keydown', 'wheel']) document.addEventListener(ev, reportActivity, { capture: true, passive: true });
 export async function api(path, opts = {}) {
   const init = { method: opts.method || 'GET', headers: { 'X-TGDrive': '1' }, signal: opts.signal, credentials: 'same-origin' };
   if (opts.body !== undefined) {
@@ -303,7 +316,9 @@ export async function api(path, opts = {}) {
     init.body = JSON.stringify(opts.body);
   }
   const t0 = performance.now();
-  const token = opts.quiet || QUIET.test(path.split('?')[0]) ? null : busy.request(init.method !== 'GET');
+  const bare = path.split('?')[0];
+  if (opts.background || BACKGROUND.test(bare)) init.headers['X-TGDrive-Bg'] = '1';   // doesn't count as activity
+  const token = opts.quiet || QUIET.test(bare) ? null : busy.request(init.method !== 'GET');
   let res;
   try {
     res = await fetch(path, init);
@@ -492,7 +507,13 @@ export const thumbs = (() => {
           setTimeout(() => { if (img.isConnected) { img.dataset.state = 'queued'; queue.push(img); pump(); } }, wait * 1000 + 100);
           return;
         }
-        if (!r.ok) { img.closest('.thumb')?.classList.add('no-thumb'); done(false); return; }
+        if (!r.ok || r.status === 204) {
+          // A PDF without a picture yet: draw its first page (pdfthumbs.js), then keep it on the server.
+          if (img.dataset.pdf && r.headers.get('X-Doc-Thumb') === 'missing') import('./pdfthumbs.js').then((m) => m.enqueue(img));
+          else img.closest('.thumb')?.classList.add('no-thumb');
+          done(false);
+          return;
+        }
         const blob = await r.blob();
         img.src = URL.createObjectURL(blob);
         img.onload = () => { img.classList.add('loaded'); img.closest('.thumb')?.classList.add('has-img'); };

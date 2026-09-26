@@ -22,6 +22,7 @@ import mimetypes
 import os
 import re
 import secrets
+import shutil
 import time
 import zipfile
 from pathlib import Path
@@ -31,6 +32,7 @@ from telethon import errors, helpers, utils
 from telethon.tl import functions, types
 
 from . import config
+from .tasks import spawn
 from .settings import settings
 from .streaming import CHUNK
 
@@ -50,6 +52,40 @@ def safe_filename(name: str) -> str:
         stem, dot, ext = name.rpartition(".")
         name = (stem[:170] + dot + ext) if dot and len(ext) <= 10 else name[:180]
     return name
+
+
+RESERVE_BYTES = 256 * 1024 * 1024   # always leave this much free on a disk we write to
+
+
+def free_bytes(path: Path) -> int:
+    """Free space on the disk that holds `path` (or its nearest existing parent)."""
+    p = Path(path)
+    while not p.exists() and p != p.parent:
+        p = p.parent
+    try:
+        return shutil.disk_usage(p).free
+    except OSError:
+        return 1 << 62   # unknown: don't block
+
+
+def ensure_space(path: Path, need: int, what: str = "this") -> None:
+    """Refuse to start writing `need` bytes when that would fill the disk."""
+    free = free_bytes(path)
+    if need + RESERVE_BYTES > free:
+        raise TransferError(f"Not enough free space for {what}: it needs {_fmt(need)} and only "
+                            f"{_fmt(max(0, free - RESERVE_BYTES))} is available on that disk. Free some space, "
+                            f"then press resume.")
+
+
+def _fmt(n: int) -> str:
+    for unit in ("bytes", "KB", "MB", "GB", "TB"):
+        if n < 1024 or unit == "TB":
+            return f"{n:.0f} {unit}" if unit == "bytes" else f"{n:.1f} {unit}"
+        n /= 1024
+    return str(n)
+
+
+OFFLINE_ERROR = "Waiting for the connection to Telegram. It continues by itself."
 
 
 class TransferError(Exception):
@@ -88,7 +124,7 @@ class Transfers:
                     for _ in range(n):
                         await self.sem.acquire()
                 try:
-                    asyncio.get_running_loop().create_task(shrink())
+                    spawn(shrink(), "shrink transfer slots")
                 except RuntimeError:
                     pass
 
@@ -101,7 +137,8 @@ class Transfers:
     # ------------------------------------------------------------------ api
     def restore(self) -> None:
         """After a restart, continue whatever was queued or running."""
-        for t in self.db.q("SELECT id FROM transfers WHERE status IN ('queued','running')"):
+        for t in self.db.q("SELECT id FROM transfers WHERE status IN ('queued','running') OR "
+                           "(status='error' AND error=?)", (OFFLINE_ERROR,)):
             self.db.update_transfer(t["id"], status="queued")
             self._spawn(t["id"])
 
@@ -346,7 +383,7 @@ class Transfers:
     def _spawn(self, tid: int) -> None:
         if tid in self.tasks and not self.tasks[tid].done():
             return
-        self.tasks[tid] = asyncio.create_task(self._run(tid))
+        self.tasks[tid] = spawn(self._run(tid), f"transfer {tid}")
 
     async def _run(self, tid: int) -> None:
         t: Optional[dict] = None
@@ -381,6 +418,8 @@ class Transfers:
             log.debug("transfer %s traceback", tid, exc_info=exc)
             msg = str(exc) if isinstance(exc, (TransferError,)) or exc.__class__.__name__ in (
                 "AccountError", "StreamError") else f"{exc.__class__.__name__}: {exc}"
+            if self.acc.status != "online" or isinstance(exc, (ConnectionError, asyncio.TimeoutError)):
+                msg = OFFLINE_ERROR   # resumed automatically when the connection is back
             live = self.live.get(tid)
             self.db.update_transfer(tid, status="error", error=msg[:300], **({"done": live["done"]} if live else {}))
             self.acc.notify("Transfer failed", f"{(t or {}).get('name', tid)}: {msg[:120]}")
@@ -406,7 +445,7 @@ class Transfers:
                 left = self.db.one("SELECT COUNT(*) AS n FROM transfers WHERE batch=? AND status NOT IN "
                                    "('done','cancelled')", (batch,))
                 if left and left["n"] == 0:
-                    asyncio.create_task(self._batch_done(batch))
+                    spawn(self._batch_done(batch), f"finish batch {batch}")
         else:
             self.acc.notify("Upload finished", t["name"])
 
@@ -419,6 +458,13 @@ class Transfers:
             return
         root = Path(self.batches.get(batch, {}).get("root") or Path(rows[0]["path"]).parent)
         zpath = self._unique_path(self.down_dir, f"{name}.zip")
+
+        need = sum(Path(r["path"]).stat().st_size for r in rows if Path(r["path"]).exists())
+        try:
+            ensure_space(zpath, need, f"the zip “{zpath.name}”")
+        except TransferError as exc:
+            self.acc.notify("Zip not made", str(exc))
+            return
 
         def pack() -> None:
             tmp = Path(str(zpath) + ".part")
@@ -479,6 +525,7 @@ class Transfers:
         n = src.chunks
         cached = streamer.cached_copy(src)
         if cached:  # fully streamed before: just copy the cache file
+            ensure_space(path, size, f"“{t['name']}”")
             await asyncio.get_running_loop().run_in_executor(None, _copy, cached, path, size)
             return
         bits = bytearray((n + 7) // 8)
@@ -494,16 +541,35 @@ class Transfers:
         def has(i: int) -> bool:
             return bool(bits[i >> 3] & (1 << (i & 7)))
 
+        def expected(i: int) -> int:
+            return max(0, min(CHUNK, size - i * CHUNK))
+
+        if part.exists():  # a bit is only trusted if the .part file really reaches that far
+            have = part.stat().st_size
+            for i in range(n):
+                if has(i) and have < i * CHUNK + expected(i):
+                    bits[i >> 3] &= ~(1 << (i & 7)) & 0xFF
+
         todo = [i for i in range(n) if not has(i)]
-        done_bytes = sum(min(CHUNK, size - i * CHUNK) for i in range(n) if has(i))
+        done_bytes = sum(expected(i) for i in range(n) if has(i))
+        ensure_space(part, sum(expected(i) for i in todo), f"“{t['name']}”")
         self._progress(tid, done_bytes)
         cc = streamer.cache_for(src)
-        fh = open(part, "r+b" if part.exists() else "wb")
+        fd = os.open(part, os.O_RDWR | os.O_CREAT, 0o644)
         lock = asyncio.Lock()
         queue: asyncio.Queue[int] = asyncio.Queue()
         for i in todo:
             queue.put_nowait(i)
         dirty = 0
+        loop = asyncio.get_running_loop()
+
+        def save_map() -> None:
+            # Data first, then the map that describes it (atomically), so a crash never leaves
+            # chunks marked done that are not on disk.
+            os.fsync(fd)
+            tmp = mpath.with_name(mpath.name + ".tmp")
+            tmp.write_bytes(bytes(bits))
+            os.replace(tmp, mpath)
 
         async def worker() -> None:
             nonlocal done_bytes, dirty
@@ -512,35 +578,49 @@ class Transfers:
                     i = queue.get_nowait()
                 except asyncio.QueueEmpty:
                     return
+                data = None
                 if cc.has(i):
-                    data = cc.read(i)
-                else:
-                    data = await streamer._fetch(src, i, None)
+                    try:
+                        data = await loop.run_in_executor(None, cc.read, i)
+                    except OSError:
+                        data = None
+                if data is None:
+                    data = await streamer._fetch(src, i, None, bulk=True)
+                if len(data) != expected(i):
+                    raise TransferError(f"Part {i + 1} of {n} came back with the wrong size. Press resume to retry.")
+                await loop.run_in_executor(None, os.pwrite, fd, data, i * CHUNK)
                 async with lock:
-                    fh.seek(i * CHUNK)
-                    fh.write(data)
                     bits[i >> 3] |= 1 << (i & 7)
                     done_bytes += len(data)
                     dirty += 1
                     if dirty >= 8:
-                        fh.flush()
-                        mpath.write_bytes(bytes(bits))
                         dirty = 0
+                        await loop.run_in_executor(None, save_map)
                     self._progress(tid, done_bytes)
 
         try:
             workers = max(1, int(settings.get("download_workers") or 4))
             await asyncio.gather(*(worker() for _ in range(min(workers, max(1, len(todo))))))
         finally:
-            fh.flush()
-            fh.close()
-            mpath.write_bytes(bytes(bits))
+            try:
+                await loop.run_in_executor(None, save_map)
+            finally:
+                os.close(fd)
         if not all(has(i) for i in range(n)):
             raise TransferError("Some parts are missing. Press resume to fetch them.")
-        with open(part, "r+b") as f2:
-            f2.truncate(size)
+        os.truncate(part, size)
+        if part.stat().st_size != size:
+            raise TransferError("The downloaded file has the wrong size. Press resume to fetch it again.")
         os.replace(part, path)
         mpath.unlink(missing_ok=True)
+
+    async def _find_sent(self, peer, name: str, size: int):
+        """The message an earlier attempt already sent (same file name and size), among the latest ones."""
+        async for m in self.client.iter_messages(peer, limit=50):
+            f = getattr(m, "file", None)
+            if f is not None and (f.name or "") == name and (f.size or 0) == size:
+                return m
+        return None
 
     async def _upload(self, t: dict) -> None:
         self.acc.require_online()
@@ -571,25 +651,49 @@ class Transfers:
                     await asyncio.sleep(2 * (attempt + 1))
             raise TransferError(f"Telegram didn't accept part {i + 1} of {parts}.")
 
+        # A pool of workers takes parts from a queue, so one slow part never holds the others up.
+        # Progress (and resume) is the contiguous prefix of finished parts.
         workers = max(1, int(settings.get("upload_workers") or 4))
-        with open(src, "rb") as fh:
-            fh.seek(start * CHUNK)
-            i = start
-            while i < parts:
-                batch = []
-                for j in range(i, min(i + workers, parts)):
-                    batch.append((j, fh.read(CHUNK)))
-                await asyncio.gather(*(send_part(j, data) for j, data in batch))
-                i += len(batch)
-                done = min(i * CHUNK, size)
+        loop = asyncio.get_running_loop()
+        st0 = src.stat()
+        queue: asyncio.Queue[int] = asyncio.Queue()
+        for i in range(start, parts):
+            queue.put_nowait(i)
+        finished: set[int] = set()
+        mark = [start]   # first part not yet known to be sent
+        fd = os.open(src, os.O_RDONLY)
+
+        async def worker() -> None:
+            while True:
+                try:
+                    i = queue.get_nowait()
+                except asyncio.QueueEmpty:
+                    return
+                data = await loop.run_in_executor(None, os.pread, fd, CHUNK, i * CHUNK)
+                await send_part(i, data)
+                finished.add(i)
+                while mark[0] in finished:
+                    finished.discard(mark[0])
+                    mark[0] += 1
+                done = min(mark[0] * CHUNK, size)
                 self._progress(tid, done)
-                self.db.update_transfer(tid, done=done)
+
+        try:
+            await asyncio.gather(*(worker() for _ in range(min(workers, max(1, parts - start)))))
+        finally:
+            os.close(fd)
+            self.db.update_transfer(tid, done=min(mark[0] * CHUNK, size))
+        st1 = src.stat()
+        if (st1.st_size, st1.st_mtime_ns) != (st0.st_size, st0.st_mtime_ns):
+            # Parts from before and after the change would make a broken file on Telegram.
+            self.db.update_transfer(tid, done=0, size=st1.st_size, upload_file_id=helpers.generate_random_long())
+            raise TransferError("The file changed while it was uploading. Press resume to upload the new version.")
 
         name = t["name"]
         if big:
             input_file = types.InputFileBig(id=file_id, parts=parts, name=name)
         else:
-            md5 = hashlib.md5(src.read_bytes()).hexdigest()
+            md5 = await loop.run_in_executor(None, _md5, src)
             input_file = types.InputFile(id=file_id, parts=parts, name=name, md5_checksum=md5)
         mime = mimetypes.guess_type(name)[0] or "application/octet-stream"
         as_media = bool(settings.get("upload_as_media"))
@@ -614,10 +718,23 @@ class Transfers:
         peer = await self.acc.peer(target) if target else await drive.ensure_channel()
         cid = target or drive.channel_id
 
+        # The id of the message is stored before sending: if the answer is lost and the upload is retried,
+        # Telegram recognises the same id and the file is not posted twice.
+        send_id = t.get("send_id") or helpers.generate_random_long()
+        if not t.get("send_id"):
+            self.db.update_transfer(tid, send_id=send_id)
+            t["send_id"] = send_id
+
         async def send(photo: bool):
-            return await self.client(functions.messages.SendMediaRequest(
-                peer=peer, media=build_media(photo), message=t.get("caption") or "",
-                random_id=helpers.generate_random_long()))
+            try:
+                return await self.client(functions.messages.SendMediaRequest(
+                    peer=peer, media=build_media(photo), message=t.get("caption") or "", random_id=send_id))
+            except errors.RandomIdDuplicateError:
+                found = await self._find_sent(peer, name, size)
+                if found is None:
+                    raise TransferError("Telegram says this file was already sent, but it can't be found. "
+                                        "Check the chat before uploading it again.")
+                return types.Updates(updates=[types.UpdateNewMessage(found, 0, 0)], users=[], chats=[], date=0, seq=0)
 
         try:
             try:
@@ -649,6 +766,14 @@ class Transfers:
             self.db.touch_recent(cid, new_msg.id, "upload")
         if not t.get("source_path"):
             src.unlink(missing_ok=True)
+
+
+def _md5(path: Path) -> str:
+    h = hashlib.md5()
+    with open(path, "rb") as fh:
+        for block in iter(lambda: fh.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
 
 
 def _copy(src: Path, dst: Path, size: Optional[int] = None) -> None:

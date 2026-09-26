@@ -35,7 +35,7 @@ from .query import QueryError
 from .settings import SettingsError, settings
 from .streaming import StreamError, parse_range
 from .thumbs import ThumbsBusy
-from .transfers import TransferError
+from .transfers import TransferError, ensure_space
 
 log = logging.getLogger("tgdrive.api")
 WEB = config.ROOT / "web"
@@ -46,12 +46,41 @@ RUNTIME: dict[str, Any] = {"media_port": None, "port": config.PORT, "desktop": F
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from . import diagnostics
-    asyncio.get_running_loop().set_exception_handler(diagnostics.asyncio_handler)
+    from . import diagnostics, tasks
+    loop = asyncio.get_running_loop()
+    loop.set_exception_handler(diagnostics.asyncio_handler)
     maintenance.init_debug_logging()
+    diagnostics.add_state_provider("accounts", _crash_state)
+    diagnostics.add_state_provider("background tasks", tasks.running)
+    watchdog = diagnostics.LoopWatchdog(loop)
+    if _apply_autostart not in settings.listeners:
+        settings.on_change(_apply_autostart)
     await manager.startup()
     yield
+    watchdog.stop.set()
     await manager.shutdown()
+
+
+def _crash_state() -> dict:
+    """What each account was doing, for crash reports."""
+    out = {}
+    for uid, a in list(manager.accounts.items()):
+        try:
+            out[uid] = {"status": a.status, "error": a.error, "index": a.indexer.phase, "current": a.indexer.current_chat,
+                        "transfers": a.transfers.summary(), "drive_error": a.drive.error,
+                        "unsaved_folders": a.drive._dirty, "stream_inflight": len(a.streamer.inflight)}
+        except Exception as exc:
+            out[uid] = repr(exc)
+    return out
+
+
+def _apply_autostart(changed: set) -> None:
+    if "autostart" in changed:
+        from . import integration
+        try:
+            integration.set_autostart(bool(settings.get("autostart")))
+        except OSError as exc:
+            logging.getLogger("tgdrive.api").warning("autostart: %s", exc)
 
 
 app = FastAPI(title="TG Drive", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
@@ -93,6 +122,10 @@ async def rpc_error(_: Request, exc: errors.RPCError):
 async def unexpected_error(request: Request, exc: Exception):
     """A bug: keep a crash report and give the page a readable message instead of a bare 500."""
     from . import diagnostics
+    if "Too little data for declared Content-Length" in repr(exc):
+        # A stream that ended early because Telegram stopped feeding it (logged where it happened).
+        log.warning("%s %s ended before all its bytes were sent", request.method, request.url.path)
+        return JSONResponse({"error": "The stream stopped."}, status_code=502)
     rid = diagnostics.record_exception("server", exc, {"request": f"{request.method} {request.url.path}"})
     log.exception("unhandled error in %s %s", request.method, request.url.path)
     return JSONResponse({"error": f"Something went wrong in TG Drive ({exc.__class__.__name__}). "
@@ -167,14 +200,23 @@ async def guard(request: Request, call_next):
     if request.method not in ("GET", "HEAD", "OPTIONS") and path.startswith("/api/") and \
             request.headers.get("x-tgdrive") != "1":
         return JSONResponse({"error": "Missing X-TGDrive header."}, status_code=403)
-    if path.startswith("/api/") and path not in ("/api/status", "/api/lock/unlock", "/api/events") and \
+    if path.startswith("/api/") and path not in ("/api/status", "/api/lock/unlock", "/api/events", "/api/stream-events") and \
             maintenance.app_lock.locked():
         return JSONResponse({"error": "TG Drive is locked.", "locked": True}, status_code=423)
-    if path.startswith("/api/"):
-        maintenance.app_lock.touch()
+    if path.startswith("/api/") and not _BACKGROUND.match(path) and request.headers.get("x-tgdrive-bg") != "1":
+        maintenance.app_lock.touch()   # only what the person does counts as activity (not polling)
     t0 = time.perf_counter()
     try:
         response = await call_next(request)
+    except RuntimeError as exc:
+        # The page gave up on this request (a newer search replaced it, the window closed): nothing went
+        # wrong on this side, so no crash report.
+        if str(exc) == "No response returned.":   # starlette: the client disconnected before an answer
+            if maintenance.debug_enabled():
+                http_log.debug("HTTP %s %s: the client went away after %.1f ms", request.method, path,
+                               (time.perf_counter() - t0) * 1000)
+            return Response(status_code=499)
+        raise
     except Exception:
         if maintenance.debug_enabled():
             http_log.exception("HTTP %s %s failed after %.1f ms", request.method, path, (time.perf_counter() - t0) * 1000)
@@ -184,17 +226,17 @@ async def guard(request: Request, call_next):
     if config.ACCESS_TOKEN and not media_only and request.query_params.get("t") == config.ACCESS_TOKEN:
         response.set_cookie("tgd", config.ACCESS_TOKEN, httponly=True, samesite="strict")
     origin = request.headers.get("origin")
-    if origin and request.method in ("GET", "HEAD") and ("/thumb/" in path or "/inline/" in path or "/stream/" in path):
+    if origin and request.method in ("GET", "HEAD") and ("/thumb/" in path or "/docthumb/" in path or "/inline/" in path or "/stream/" in path):
         o_host = origin.split("://", 1)[-1].rsplit(":", 1)[0].lower()
         if o_host in LOOPBACK or config.HOST not in ("127.0.0.1", "localhost", "::1"):
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Expose-Headers"] = "Retry-After, Content-Range, Content-Length"
+            response.headers["Access-Control-Expose-Headers"] = "Retry-After, Content-Range, Content-Length, X-Doc-Thumb"
             response.headers["Vary"] = "Origin"
     if path.startswith("/static/") and response.status_code < 400:
         if versioned:
             response.headers["Cache-Control"] = "private, max-age=31536000, immutable"
-        elif path.startswith(("/static/vendor/", "/static/fonts/", "/static/geo/")):
+        elif path.startswith(("/static/vendor/", "/static/fonts/")):
             response.headers.setdefault("Cache-Control", "private, max-age=86400")
         else:
             response.headers["Cache-Control"] = "no-cache"   # always check for a newer copy
@@ -204,6 +246,8 @@ async def guard(request: Request, call_next):
 
 
 http_log = logging.getLogger("tgdrive.http")
+# Requests the app makes by itself: they must not keep the app lock from locking.
+_BACKGROUND = re.compile(r"^/api/(a/\d+/)?(status|events|stream-events|clientlog|debuglog|crash|lock/state)$")
 _POLLS = re.compile(r"^/api/(a/\d+/)?(status|events)$")
 _SECRET_Q = re.compile(r"([?&](?:t|token)=)[^&]+")
 
@@ -343,6 +387,47 @@ async def get_events(after: int = 0):
     return {"events": events.since(after), "last": events.seq}
 
 
+@app.get("/api/stream-events")
+async def stream_events(request: Request, aid: int = 0, after: int = 0):
+    """Server-sent events: one long-lived connection instead of the window polling. Sends
+    `events` (notifications, crashes, new files …) as they happen and `status` (the account's status
+    panel data) whenever it changes, checked every second. `ping` keeps idle connections alive."""
+    async def gen():
+        last_seq, last_status, last_ping = after, None, time.monotonic()
+        tick = 0
+        yield "retry: 3000\n\n"
+        while True:
+            if await request.is_disconnected():
+                return
+            if events.seq != last_seq:
+                new = events.since(last_seq)
+                last_seq = events.seq
+                if new:
+                    yield f"event: events\ndata: {json.dumps({'events': new, 'last': last_seq}, default=str)}\n\n"
+            if tick % 4 == 0:   # status: once a second
+                if maintenance.app_lock.locked():
+                    payload = json.dumps({"locked": True})
+                else:
+                    a = manager.accounts.get(aid)
+                    payload = json.dumps(account_status_payload(a), default=str) if a else json.dumps({"none": True})
+                if payload != last_status:
+                    last_status = payload
+                    yield f"event: status\ndata: {payload}\n\n"
+            if time.monotonic() - last_ping > 15:
+                last_ping = time.monotonic()
+                yield ": ping\n\n"
+            tick += 1
+            await asyncio.sleep(0.25)
+    return StreamingResponse(gen(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
+
+
+@app.post("/api/activity")
+async def report_activity():
+    """The window reports that someone is using it (typing, clicking) so auto-lock waits."""
+    return {"ok": True}
+
+
 @app.post("/api/lock/unlock")
 async def lock_unlock(body: dict = Body(...)):
     ok = await asyncio.get_running_loop().run_in_executor(None, maintenance.app_lock.unlock,
@@ -444,14 +529,24 @@ async def remove_account(aid: int, keep_data: bool = False):
 
 
 # ------------------------------------------------------------- per account
+def account_status_payload(a: Account) -> dict:
+    tsum = a.transfers.summary()
+    return {"account": a.info(), "index": a.indexer.status(), "drive": a.drive.info(),
+            "transfers": tsum, "transfers_active": tsum["active"],
+            "search": a.db.search_upgrade_status(), "semantic": a.semantic.status(),
+            "dupes": a.dupes.status(), "sync": a.sync.summary(),
+            "thumbs_backoff": max(0, int(a.thumbs.backoff_until - time.time()))}
+
+
 @app.get("/api/a/{aid}/status")
 async def account_status(aid: int):
-    a = acc(aid)
-    return {"account": a.info(), "index": a.indexer.status(), "drive": a.drive.info(),
-            "transfers": a.transfers.summary(), "transfers_active": a.transfers.summary()["active"],
-            "search": a.db.search_upgrade_status(), "semantic": a.semantic.status(),
-            "dupes": a.dupes.status(),
-            "thumbs_backoff": max(0, int(a.thumbs.backoff_until - time.time()))}
+    return account_status_payload(acc(aid))
+
+
+@app.get("/api/transfers/active")
+async def transfers_active():
+    """Running and queued transfers over all accounts (the desktop app asks before quitting)."""
+    return {"active": sum(a.transfers.summary()["active"] for a in manager.accounts.values())}
 
 
 @app.get("/api/a/{aid}/chats")
@@ -721,6 +816,40 @@ async def thumb(aid: int, cid: int, mid: int, v: str = "s"):
     return FileResponse(path, media_type=media_type, headers={"Cache-Control": "private, max-age=604800"})
 
 
+@app.get("/api/a/{aid}/docthumb/{cid}/{mid}")
+async def doc_thumb(aid: int, cid: int, mid: int):
+    """First page of a PDF as a picture, if the window has rendered it before. Otherwise 204 (no
+    content, so the browser doesn't log an error for every new PDF) with X-Doc-Thumb "missing" (render
+    it) or "none" (it couldn't be rendered; don't try again)."""
+    path, failed = acc(aid).thumbs.doc_state(cid, mid)
+    if not path:
+        return Response(status_code=204, headers={"X-Doc-Thumb": "none" if failed else "missing",
+                                                  "Access-Control-Expose-Headers": "X-Doc-Thumb",
+                                                  "Cache-Control": "no-store"})
+    head = path.read_bytes()[:4]
+    media = "image/webp" if head == b"RIFF" else "image/png" if head.startswith(b"\x89PN") else "image/jpeg"
+    return FileResponse(path, media_type=media, headers={"Cache-Control": "private, max-age=604800"})
+
+
+@app.put("/api/a/{aid}/docthumb/{cid}/{mid}")
+async def doc_thumb_save(aid: int, cid: int, mid: int, request: Request):
+    a = acc(aid)
+    if not a.db.get_file(cid, mid):
+        return JSONResponse({"error": "That file isn't in the index."}, status_code=404)
+    data = await request.body()
+    try:
+        a.thumbs.save_doc(cid, mid, data)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return {"ok": True}
+
+
+@app.post("/api/a/{aid}/docthumb/{cid}/{mid}/failed")
+async def doc_thumb_failed(aid: int, cid: int, mid: int):
+    acc(aid).thumbs.doc_failed(cid, mid)
+    return {"ok": True}
+
+
 @app.get("/api/a/{aid}/inline/{cid}/{mid}")
 async def inline_preview(aid: int, cid: int, mid: int):
     row = acc(aid).db.one("SELECT stripped FROM files WHERE chat_id=? AND msg_id=?", (cid, mid))
@@ -773,9 +902,30 @@ async def stream(aid: int, cid: int, mid: int, name: str, request: Request, dl: 
     if request.method == "HEAD" or size == 0:
         return Response(status_code=status_code, headers=headers)
     prefetch = int(settings.get("stream_prefetch") or 4)
+    # The first piece is fetched before answering: if Telegram can't give it, the player gets a clear
+    # error instead of a response that stops at once.
+    from .streaming import CHUNK
+    first = await a.streamer.chunk(src, start // CHUNK)
     a.db.touch_recent(cid, mid, "play")
-    gen = a.streamer.iter_range(src, start, end, prefetch=prefetch)
-    return StreamingResponse(gen, status_code=status_code, headers=headers, media_type=mime)
+
+    async def body():
+        lo = start - (start // CHUNK) * CHUNK
+        hi = min(len(first), end - (start // CHUNK) * CHUNK + 1)
+        yield first[lo:hi]
+        nxt = (start // CHUNK + 1) * CHUNK
+        if nxt > end:
+            return
+        try:
+            async for piece in a.streamer.iter_range(src, nxt, end, prefetch=prefetch):
+                yield piece
+        except (StreamError, AccountError, ConnectionError, OSError) as exc:
+            # Telegram stopped answering mid-way: the player sees the connection end and asks again.
+            # That's the network, not a bug, so it's logged and not kept as a crash report.
+            log.warning("stream %s:%s cut short at a later part: %s", cid, mid, exc)
+            raise
+
+    return StreamingResponse(body(), status_code=status_code, headers=headers, media_type=mime)
+
 
 
 def _stream_link(aid: int, cid: int, mid: int, name: str) -> str:
@@ -1013,17 +1163,22 @@ async def upload(aid: int, request: Request, name: str, folder_id: Optional[str]
     a.require_online()
     tmp = a.transfers.new_upload_path()
     try:
+        length = int(request.headers.get("content-length") or 0)
+    except ValueError:
+        length = 0
+    ensure_space(tmp, length, f"“{name}”")
+    try:
         with open(tmp, "wb") as fh:
             async for chunk in request.stream():
                 fh.write(chunk)
-    except Exception:
+        fid = folder_id or None
+        parts = [p for p in rel.split("/")[:-1] if p.strip()]
+        if parts:
+            fid = await a.drive.ensure_path(fid, parts)
+        return {"id": a.transfers.add_upload(tmp, name, fid, caption=caption, target_chat=chat_id)}
+    except BaseException:   # also a closed connection or a cancelled request: never leave the copy behind
         Path(tmp).unlink(missing_ok=True)
         raise
-    fid = folder_id or None
-    parts = [p for p in rel.split("/")[:-1] if p.strip()]
-    if parts:
-        fid = await a.drive.ensure_path(fid, parts)
-    return {"id": a.transfers.add_upload(tmp, name, fid, caption=caption, target_chat=chat_id)}
 
 
 @app.post("/api/a/{aid}/upload/paths")
@@ -1130,9 +1285,8 @@ async def index(request: Request):
     mp = RUNTIME.get("media_port")
     host = (request.url.hostname or "127.0.0.1").strip("[]")
     media = f" http://{'[' + host + ']' if ':' in host else host}:{mp}" if mp else ""
-    tiles = " https://tile.openstreetmap.org" if settings.get("map_online_tiles") else ""
     csp = (f"default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; "
-           f"font-src 'self' data:; img-src 'self' data: blob:{media}{tiles}; media-src 'self' blob:{media}; "
+           f"font-src 'self' data:; img-src 'self' data: blob:{media}; media-src 'self' blob:{media}; "
            f"connect-src 'self'{media}; frame-src 'self'{media}; object-src 'none'; base-uri 'none'; "
            f"form-action 'self'; frame-ancestors 'self'")
     html = (WEB / "index.html").read_text(encoding="utf-8")

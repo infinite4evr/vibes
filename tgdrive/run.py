@@ -1,8 +1,12 @@
 """Start the TG Drive server:  python run.py   then open http://127.0.0.1:8765
 
-The desktop app (python -m desktop) starts the same server inside its window.
+The desktop app (python -m desktop) starts the same server as a separate process
+(`run.py --child`), so the window stays responsive whatever the server is doing and a
+server crash doesn't take the window down (the app restarts it).
 """
+import json
 import logging
+import os
 import socket
 import sys
 import threading
@@ -42,7 +46,8 @@ def make_server(host: str = config.HOST, port: int = config.PORT, media_port: Op
     media = bind(host, media_port if media_port is not None else (main.getsockname()[1] + 1), fallback=True)
     api.RUNTIME.update(port=main.getsockname()[1], media_port=media.getsockname()[1], desktop=desktop)
     cfg = uvicorn.Config(api.app, log_level="warning", lifespan="on", timeout_keep_alive=30,
-                         access_log=False, proxy_headers=False)
+                         access_log=False, proxy_headers=False,
+                         timeout_graceful_shutdown=5)   # live update streams must not hold up quitting
     return uvicorn.Server(cfg), [main, media]
 
 
@@ -60,9 +65,59 @@ def serve_in_thread(on_ready: Optional[Callable[[int, int], None]] = None, **kw)
     return server, t, port, media
 
 
+def child_main(argv: list[str]) -> None:
+    """The desktop app's service process. Reads its secrets from the environment (never the command line,
+    which other users can see), prints one JSON line with the ports once it listens, then serves until
+    it gets SIGTERM (or the app that started it goes away)."""
+    import argparse
+    import threading
+
+    from tgdrive import diagnostics, maintenance
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--child", action="store_true")
+    ap.add_argument("--port", type=int, default=config.PORT)
+    ap.add_argument("--media-port", type=int, default=None)
+    ap.add_argument("--parent-pid", type=int, default=0)
+    a = ap.parse_args(argv)
+    maintenance.setup_logging()
+    diagnostics.install_hooks()
+    diagnostics.enable_faulthandler("service")
+    log = logging.getLogger("tgdrive.service")
+    token = os.environ.get("TGDRIVE_TOKEN", "")
+    server, socks = make_server(port=a.port, media_port=a.media_port, token=token, desktop=True)
+    port, media = socks[0].getsockname()[1], socks[1].getsockname()[1]
+    log.info("service %s starting on ports %s/%s (pid %s)", config.VERSION, port, media, os.getpid())
+
+    def announce():
+        import time as _t
+        while not server.started and not server.should_exit:
+            _t.sleep(0.05)
+        if server.started:
+            sys.stdout.write(json.dumps({"ready": True, "port": port, "media": media, "pid": os.getpid()}) + "\n")
+            sys.stdout.flush()
+
+    def watch_parent():
+        # If the window process dies without stopping us (killed, crashed), don't linger as an orphan.
+        import time as _t
+        while a.parent_pid and not server.should_exit:
+            _t.sleep(2)
+            if os.getppid() != a.parent_pid:
+                log.warning("the app that started the service is gone; stopping")
+                server.should_exit = True
+
+    threading.Thread(target=announce, name="tgdrive-announce", daemon=True).start()
+    threading.Thread(target=watch_parent, name="tgdrive-parent-watch", daemon=True).start()
+    server.run(sockets=socks)
+    log.info("service stopped")
+
+
 def main() -> None:
-    from tgdrive import maintenance
+    if "--child" in sys.argv[1:]:
+        return child_main(sys.argv[1:])
+    from tgdrive import diagnostics, maintenance
     log_path = maintenance.setup_logging()
+    diagnostics.install_hooks()
+    diagnostics.enable_faulthandler("server")
     err = logging.StreamHandler(sys.stderr)
     err.setLevel(logging.INFO)
     logging.getLogger().addHandler(err)

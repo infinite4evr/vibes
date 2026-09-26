@@ -1,5 +1,5 @@
-"""HTTP routes for: subjects, smart/auto folders, photo timeline and places, chat context,
-PDF marks and reading progress, folder sync, drive-as-a-disk (WebDAV), crash reports,
+"""HTTP routes for: subjects, smart/auto folders, photo timeline, chat context,
+folder sync, drive-as-a-disk (WebDAV), crash reports,
 diagnostics, settings export/import and desktop integration.
 
 Kept apart from api.py (core browsing, files, folders, streaming, transfers) so each
@@ -192,37 +192,6 @@ async def timeline(aid: int, request: Request):
     return {"months": [r for r in rows if r["ym"]], "total": sum(r["n"] for r in rows)}
 
 
-# ------------------------------------------------------------------- places
-@router.get("/api/a/{aid}/places")
-async def places(aid: int, request: Request):
-    a = acc(aid)
-    p = dict(request.query_params)
-    f = query.from_params(p)
-    where, params = query.build_where(f, descendants=a.drive._descendants)
-    rows = await a.db.read.run(lambda r: r.q(
-        f"SELECT f.*, g.lat, g.lon, g.taken, c.kind AS chat_kind, c.username AS chat_username FROM geo g "
-        f"JOIN files f ON f.id=g.file_id LEFT JOIN chats c ON c.id=f.chat_id WHERE g.lat IS NOT NULL AND {where} "
-        f"ORDER BY COALESCE(g.taken, f.date) DESC LIMIT 20000", params), timeout=30)
-    out = []
-    for r in rows:
-        f = core().file_out(r)
-        f.update(lat=r["lat"], lon=r["lon"], taken=r["taken"])
-        out.append(f)
-    return {"points": out, "status": a.places.status()}
-
-
-@router.get("/api/a/{aid}/places/status")
-async def places_status(aid: int):
-    return acc(aid).places.status()
-
-
-@router.post("/api/a/{aid}/places/scan")
-async def places_scan(aid: int, body: dict = Body(...)):
-    settings.update({"places_scan": bool(body.get("on"))})
-    acc(aid).places.poke()
-    return acc(aid).places.status()
-
-
 # ------------------------------------------------------------- chat context
 def _media_label(m) -> Optional[str]:
     media = getattr(m, "media", None)
@@ -273,54 +242,6 @@ async def chat_context(aid: int, cid: int, mid: int, before: int = 15, after: in
     return {"chat": {"id": cid, "title": chat.get("title"), "kind": chat.get("kind"), "username": chat.get("username")},
             "messages": out, "has_older": len(older) == before and before > 0,
             "has_newer": len(newer) == after and after > 0}
-
-
-# ------------------------------------------------------ PDF marks and reading
-@router.get("/api/a/{aid}/marks/{cid}/{mid}")
-async def marks_get(aid: int, cid: int, mid: int):
-    a = acc(aid)
-    r = a.db.one("SELECT page, pages, at FROM reading WHERE chat_id=? AND msg_id=?", (cid, mid))
-    return {"marks": a.drive.marks_for(cid, mid), "reading": r}
-
-
-@router.post("/api/a/{aid}/marks/{cid}/{mid}")
-async def marks_save(aid: int, cid: int, mid: int, body: dict = Body(...)):
-    return await acc(aid).drive.save_mark(cid, mid, body)
-
-
-@router.delete("/api/a/{aid}/marks/{mark_id}")
-async def marks_delete(aid: int, mark_id: str):
-    await acc(aid).drive.delete_mark(mark_id)
-    return {"ok": True}
-
-
-@router.get("/api/a/{aid}/marks")
-async def marks_recent(aid: int, limit: int = 200):
-    a = acc(aid)
-    rows = a.db.q("SELECT m.id, m.chat_id, m.msg_id, m.kind, m.page, m.color, m.note, m.data, m.mtime, "
-                  "COALESCE(f.alias, f.name) AS name FROM marks m LEFT JOIN files f ON f.chat_id=m.chat_id "
-                  "AND f.msg_id=m.msg_id ORDER BY m.mtime DESC LIMIT ?", (min(limit, 2000),))
-    for r in rows:
-        try:
-            r["data"] = json.loads(r["data"]) if r["data"] else None
-        except ValueError:
-            pass
-    return {"marks": rows}
-
-
-@router.put("/api/a/{aid}/reading/{cid}/{mid}")
-async def reading_put(aid: int, cid: int, mid: int, body: dict = Body(...)):
-    a = acc(aid)
-    try:
-        page = max(1, int(body.get("page") or 1))
-        pages = int(body["pages"]) if body.get("pages") else None
-    except (TypeError, ValueError):
-        return JSONResponse({"error": "page must be a number."}, status_code=400)
-    a.db.x("INSERT INTO reading(chat_id, msg_id, page, pages, at) VALUES(?,?,?,?,?) ON CONFLICT(chat_id, msg_id) "
-           "DO UPDATE SET page=excluded.page, pages=COALESCE(excluded.pages, pages), at=excluded.at",
-           (cid, mid, page, pages, int(time.time())))
-    a.db.touch_recent(cid, mid, "read")
-    return {"ok": True}
 
 
 # -------------------------------------------------------------------- sync

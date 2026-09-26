@@ -1,14 +1,14 @@
-# TG Drive 2.1
+# TG Drive 2.3
 
 Every file in your Telegram (every channel, group, private chat, bot and Saved Messages) in one place that works like Google Drive: folders, search that understands what you mean, streaming, downloads and uploads. It signs in as your own account and runs on your computer. Nothing goes anywhere except Telegram.
 
 ## Install on Linux
 
-**AppImage (recommended).** Download `TG_Drive-2.2.0-x86_64.AppImage`, then:
+**AppImage (recommended).** Download `TG_Drive-2.3.0-x86_64.AppImage`, then:
 
 ```bash
-chmod +x TG_Drive-2.2.0-x86_64.AppImage
-./TG_Drive-2.2.0-x86_64.AppImage
+chmod +x TG_Drive-2.3.0-x86_64.AppImage
+./TG_Drive-2.3.0-x86_64.AppImage
 ```
 
 It runs on any 64-bit Linux from about 2019 onwards (glibc 2.28+: Ubuntu 20.04+, Debian 10+, Fedora 29+, Mint 20+, RHEL/Rocky/Alma 8+, openSUSE 15.1+, Arch, Manjaro, Pop!_OS …). The first start adds TG Drive to your applications menu. To remove that entry: `./TG_Drive-*.AppImage --uninstall-desktop-entry`.
@@ -53,6 +53,20 @@ Each result shows how it matched (exact, variant, similar, related). Filters by 
 
 **Manage.** Storage view (by type, chat, kind of chat, year), duplicate finder (exact and similar), index manager (per-chat progress, pause, rescan, verify, exclude), activity log, several accounts, proxy (SOCKS5/4, HTTP, MTProto), app lock with a passcode and auto-lock, CSV export, database maintenance (optimise, vacuum, integrity check, rebuild search), logs.
 
+**New in 2.3.**
+
+- *Sidebar your way.* Drag the sidebar's right edge to make it wider or narrower (double-click it for the default), or set the width in Settings → Appearance. Hide it with the sidebar button at the top left, **Ctrl B**, or the « that appears on its edge; a thin tab on the window's left edge brings it back.
+- *A calmer search bar.* One rounded field, lined up with the files below it, with the shortcut shown inside it until you start typing; it fits phones too.
+- *One View menu.* Grid or list, card size, grouping and albums for files; tiles, cards or list and the order for folders; and the sidebar. All in the View button above the files.
+- *PDF pages on the cards.* Most PDFs on Telegram have no preview, so TG Drive draws the first page of each PDF card you see (fetching only what that page needs) and keeps the picture.
+- *Cards show where a file is from.* The chat (and folder) has its own line; the copies badge appears when you point at a card.
+- *Settings search.* Type in the box above the settings list to find any option.
+- *Faster and steadier.* The desktop window and TG Drive's service run as two processes, so the window never waits on the service's work, and if the service ever stops the window starts it again. The window gets status and notifications pushed to it instead of asking every few seconds. Playing and previewing get their own connections to Telegram, so a big download can't make a video stutter. Uploads send parts from a queue, so one slow part never holds the others up.
+- *Safer with your data.* Pieces of files from Telegram are checked for size before they are used or kept; the stream cache and downloads can't be corrupted by parts written at the same time or by a crash; folder changes made while an earlier change was still saving are saved too, even after a restart; uploads can't post the same file twice when a connection drops, and stop if the file changes while uploading; downloads and uploads check the free space first; a lost connection shows as offline and everything missed meanwhile is fetched when it comes back.
+- *Folder sync takes more care.* Files still being written wait for the next round; removing many files (more than 25, or more than 30% of the folder) always asks first, and so does a folder that has suddenly become empty (an unplugged drive); files with the same name keep their names.
+- *Better crash reports.* Every report now says what the app was doing (accounts, transfers, background tasks, threads, memory) and ends with the last log lines. A stuck service, a crash inside native code and a background task that fails are all recorded too. `kill -USR1 <pid>` writes the stacks of all threads to `crashes/faulthandler-*.log`.
+- *Removed:* the Places map and PDF highlights, bookmarks and reading position. PDFs open in a simple preview (zoom, fit to width, jump to a page, select and copy text).
+
 **New in 2.2.**
 
 - *Preview on click.* Clicking a file opens its details with a live preview straight away: the full picture, a playable video or song, the first page of a PDF (with its page count), the start of a text file. Arrowing through files only starts streams for the one you stop on.
@@ -70,8 +84,7 @@ Each result shows how it matched (exact, variant, similar, related). Filters by 
 - *Looks.* Redesigned folders (tiles, cards with cover pictures, or a list; emoji icons and colours), custom accent colour, high-contrast theme and text size (Settings → Appearance).
 - *Smart folders and subjects.* A smart folder shows everything that matches a rule; an auto-filing folder moves matching unfiled files into itself as they arrive. Files are tagged by subject automatically (Polity, Economy, History… plus your own subjects) and `subject:polity` works in search.
 - *Big lists.* Grid and list are virtualised, so scrolling stays smooth at 100k+ results. Choose, reorder and resize list columns. Albums show as stacks.
-- *Photos.* A timeline with a date scrubber, a map of geotagged photos (Places), and a slideshow.
-- *PDFs.* A reader with highlights, bookmarks and notes that sync between computers, and it remembers where you stopped.
+- *Photos.* A timeline with a date scrubber and a slideshow.
 - *Context.* "Show in chat" opens the messages around a file: who sent it, what was said, replies.
 - *Two panes.* Split view (drag between panes) or open another window.
 - *Paste to upload.* Ctrl V with files or a screenshot on the clipboard uploads them to the folder you're in.
@@ -80,7 +93,7 @@ Each result shows how it matched (exact, variant, similar, related). Filters by 
 - *Bug reports.* Crashes are recorded on this computer; Settings → About can make a diagnostics zip with names, numbers, keys and addresses removed. Nothing is sent anywhere.
 - *Settings export and import* (Settings → About), without passwords or keys unless you ask.
 
-**Keyboard.** `/` or `Ctrl K` search · arrows move · `Enter` open · `Space` quick look · `S` star · `T` tags · `M` move · `D` download · `F2` rename · `L` copy link · `Delete` · `Ctrl Z` undo · `V` grid/list · `G` then `D`/`A`/`S`/`R` to jump · `Ctrl ,` settings · `?` all shortcuts.
+**Keyboard.** `/` or `Ctrl K` search · arrows move · `Enter` open · `Space` quick look · `S` star · `T` tags · `M` move · `D` download · `F2` rename · `L` copy link · `Delete` · `Ctrl Z` undo · `V` grid/list · `G` then `D`/`A`/`S`/`R` to jump · `Ctrl B` show or hide the sidebar · `Ctrl ,` settings · `?` all shortcuts.
 
 ## Where things are
 
@@ -90,7 +103,7 @@ Each result shows how it matched (exact, variant, similar, related). Filters by 
 | Downloads | `~/Downloads/TG Drive` (Settings → Downloads) |
 | Logs | Settings → About & diagnostics, or `~/.local/share/tgdrive/logs/tgdrive.log` (and `tgdrive-debug.log` while debug logging is on) |
 
-Command line: `tgdrive --send FILE…` (upload files or folders; what the right-click menu uses), `--open search|upload|new-window`, `tgdrive --minimized` (start in the tray), `--browser` (use your web browser instead of the window), `--port N`, `--no-gpu` (graphics driver problems), `--data DIR`, `--version`.
+Command line: `tgdrive --send FILE…` (upload files or folders; what the right-click menu uses), `--open search|upload|new-window`, `tgdrive --minimized` (start in the tray), `TGDRIVE_IN_PROCESS=1` (run the service inside the window's process, as before 2.3), `--browser` (use your web browser instead of the window), `--port N`, `--no-gpu` (graphics driver problems), `--data DIR`, `--version`.
 
 ## Privacy and security
 
@@ -112,7 +125,7 @@ Needs `uv` (or `PYTHON_DIST` pointing at a python-build-standalone build), `curl
 
 ```bash
 python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt pytest httpx
-python -m pytest tests          # 18 tests, including a 60,000-file scale test
+python -m pytest tests          # 54 tests, including a 60,000-file scale test
 python -m desktop               # the desktop app from source
 python run.py                   # server only; open http://127.0.0.1:8765
 python -m tests.demo_server     # the UI on a fake account (http://127.0.0.1:8766)

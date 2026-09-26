@@ -129,7 +129,7 @@ def empty_filters() -> dict:
         "has_caption": None, "has_thumb": None, "starred": None, "has_note": None, "has_tags": None,
         "album": None, "recent": None, "match": None, "dialog_filter": None, "grouped_id": None,
         "watched": None, "in_progress": None,
-        "media_id": None, "ids": None, "subjects": [], "not_subjects": [], "has_geo": None,
+        "media_id": None, "ids": None, "subjects": [], "not_subjects": [],
         "copies": None,   # "hide": one card per file (see dupes.py) · "show": every copy
     }
 
@@ -252,10 +252,8 @@ def parse(text: str, f: Optional[dict] = None) -> dict:
                 f["has_note"] = not neg
             elif v in ("tag", "tags", "label"):
                 f["has_tags"] = not neg
-            elif v in ("location", "gps", "geo", "place"):
-                f["has_geo"] = not neg
             else:
-                raise QueryError(f"Unknown flag 'has:{value}'. Use caption, thumb, note, tags or location.")
+                raise QueryError(f"Unknown flag 'has:{value}'. Use caption, thumb, note or tags.")
         else:
             # Not an operator (e.g. a URL fragment or "C:"): treat as plain text.
             (f["neg_terms"] if neg else f["terms"]).append(m.group(0).lstrip("-"))
@@ -411,8 +409,6 @@ def build_where(f: dict, skip_kinds: bool = False, descendants=None, dedupe: boo
         elif v:
             where.append("f.id NOT IN (SELECT file_id FROM file_subjects WHERE subject LIKE ? ESCAPE '\\')")
             params.append(subj_like(v))
-    if f["has_geo"] is not None:
-        where.append(("" if f["has_geo"] else "NOT ") + "f.id IN (SELECT file_id FROM geo WHERE lat IS NOT NULL)")
     if f["grouped_id"] is not None:
         where.append("f.grouped_id = ?")
         params.append(f["grouped_id"])
@@ -450,7 +446,9 @@ def only_scope_filters(f: dict) -> Optional[tuple[Optional[list[int]], set]]:
     for k, v in f.items():
         if k in simple:
             continue
-        if v in (None, False, [], set(), "") and k != "match":
+        # Unset filters are None or empty. False is a real filter (filed=0 = only unfiled files, is:mine
+        # negated …) except for folder_tree, a plain on/off switch that means nothing without folder_id.
+        if v is None or (isinstance(v, (list, set, str)) and not v) or (k == "folder_tree" and v is False):
             continue
         if k in ("match", "copies"):
             continue
@@ -513,7 +511,7 @@ def from_params(p: dict[str, Any]) -> dict:
     if p.get("match"):
         f["match"] = "exact" if p["match"] == "exact" else "smart"
     for key in ("filed", "forwarded", "mine", "has_caption", "has_thumb", "starred", "has_note", "has_tags",
-                "album", "recent", "watched", "in_progress", "has_geo"):
+                "album", "recent", "watched", "in_progress"):
         v = p.get(key)
         if v in ("1", "true", True):
             f[key] = True

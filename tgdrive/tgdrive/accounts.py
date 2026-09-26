@@ -21,11 +21,11 @@ from telethon.sessions import SQLiteSession, StringSession
 from telethon.tl import functions, types
 
 from . import config
+from .tasks import spawn
 from .db import Database
 from .autofile import AutoFiler
 from .drive import Drive
 from .indexer import Indexer
-from .places import PlaceScanner
 from .search import SearchEngine
 from .semantic import SemanticIndex
 from .dupes import DupeIndex
@@ -196,7 +196,7 @@ class MessageFetcher:
         fut = asyncio.get_running_loop().create_future()
         self.pending.setdefault(chat_id, {}).setdefault(msg_id, []).append(fut)
         if chat_id not in self.flushers:
-            self.flushers[chat_id] = asyncio.create_task(self._flush(chat_id))
+            self.flushers[chat_id] = spawn(self._flush(chat_id), f"fetch messages {chat_id}")
         return await fut
 
     async def _flush(self, chat_id: int) -> None:
@@ -247,11 +247,11 @@ class Account:
         self.dupes = DupeIndex(self)
         self.subjects = SubjectIndex(self)
         self.subjects.enabled = bool(settings.get("subjects_enabled", True))
-        self.places = PlaceScanner(self)
         self.autofile = AutoFiler(self)
         from .sync import SyncEngine
         self.sync = SyncEngine(self)
         self._runner: Optional[asyncio.Task] = None
+        self._watch: Optional[asyncio.Task] = None
         self._search_builder: Optional[asyncio.Task] = None
         self._dialogs_loaded = False
 
@@ -259,15 +259,14 @@ class Account:
     def launch(self) -> None:
         self.db.prewarm()
         self.semantic.prewarm()
-        self._runner = asyncio.create_task(self._run())
+        self._runner = spawn(self._run(), f"account {self.uid} connect")
         if not self.db.search_ready and (self._search_builder is None or self._search_builder.done()):
-            self._search_builder = asyncio.create_task(self._build_search())
+            self._search_builder = spawn(self._build_search(), f"account {self.uid} search build")
         else:
             self.search.warm_up()
         self.semantic.start()
         self.subjects.start()
         self.dupes.start()
-        self.places.start()
         self.autofile.start()
         self.sync.start()
 
@@ -313,6 +312,8 @@ class Account:
                 self.indexer.install_handlers()
                 self.indexer.start()
                 self.transfers.restore()
+                if self._watch is None or self._watch.done():
+                    self._watch = spawn(self._watchdog(), f"account {self.uid} connection watch")
                 return
             except asyncio.CancelledError:
                 raise
@@ -326,12 +327,45 @@ class Account:
                 await asyncio.sleep(delay)
                 delay = min(delay * 2, 300)
 
+    async def _watchdog(self) -> None:
+        """Keep `status` true to the connection. Telethon reconnects by itself; while it does, the account
+        shows as offline (so requests fail fast with a clear message instead of hanging), and when the
+        connection is back, updates missed meanwhile are fetched and the indexer looks for new files."""
+        down_since = 0.0
+        while True:
+            await asyncio.sleep(3)
+            if self.status == "logged_out":
+                return
+            connected = self.client.is_connected()
+            if not connected and self.status == "online":
+                down_since = time.time()
+                self.status, self.error = "offline", "Lost the connection to Telegram. Reconnecting…"
+                log.warning("account %s: connection to Telegram lost; reconnecting", self.uid)
+                events.push("connection", account=self.uid, online=False)
+            elif connected and self.status == "offline" and down_since:
+                gap = time.time() - down_since
+                down_since = 0.0
+                self.status, self.error = "online", None
+                log.info("account %s: connection back after %.0f s", self.uid, gap)
+                events.push("connection", account=self.uid, online=True)
+                try:
+                    await asyncio.wait_for(self.client.catch_up(), 120)   # updates missed while offline
+                except Exception as exc:
+                    log.info("account %s: catching up after reconnect failed: %r", self.uid, exc)
+                self.indexer.poke()
+                self.drive.resume_pending()
+                from .transfers import OFFLINE_ERROR
+                for r in self.db.q("SELECT id FROM transfers WHERE status='error' AND error=?", (OFFLINE_ERROR,)):
+                    self.transfers.resume(r["id"])
+
     async def stop(self) -> None:
+        if self._watch:
+            self._watch.cancel()
         if self._runner:
             self._runner.cancel()
         if self._search_builder:
             self._search_builder.cancel()
-        for part in (self.sync, self.autofile, self.places):
+        for part in (self.sync, self.autofile):
             await part.stop()
         await self.indexer.stop()
         await self.transfers.stop()
@@ -351,6 +385,10 @@ class Account:
     async def reconnect(self) -> None:
         """Recreate the Telegram connection (after proxy or API settings change)."""
         log.info("account %s: reconnecting", self.uid)
+        for task in (self._runner, self._watch):   # the old connection's loops must not keep running
+            if task and not task.done():
+                task.cancel()
+        self._watch = None
         await self.indexer.stop()
         await self.transfers.stop()
         try:
@@ -360,7 +398,7 @@ class Account:
         self.client = make_client(str(self.dir / "session"))
         self.indexer._handlers = False
         self.status = "starting"
-        self._runner = asyncio.create_task(self._run())
+        self._runner = spawn(self._run(), f"account {self.uid} connect")
 
     @property
     def premium(self) -> bool:
@@ -390,8 +428,6 @@ class Account:
         events.push("new_file", account=self.uid, chat_id=rec["chat_id"])
         self.subjects.poke()
         self.autofile.poke()
-        if rec.get("kind") == "document":
-            self.places.poke()
 
     def open_path(self, path: str, reveal: bool = False) -> None:
         open_path(path, reveal)
@@ -447,7 +483,7 @@ class AccountManager:
             except RuntimeError:
                 return
             for acc in list(self.accounts.values()):
-                loop.create_task(acc.reconnect())
+                spawn(acc.reconnect(), f"account {acc.uid} reconnect", loop)
         if "search_semantic" in changed:
             for acc in self.accounts.values():
                 acc.semantic.enabled = bool(settings.get("search_semantic"))
@@ -459,9 +495,6 @@ class AccountManager:
         if changed & {"subjects_custom", "subjects_builtin"}:
             for acc in self.accounts.values():
                 acc.subjects.rebuild()
-        if "places_scan" in changed:
-            for acc in self.accounts.values():
-                acc.places.poke()
         if "index_paused" in changed:
             for acc in self.accounts.values():
                 acc.indexer.pause() if settings.get("index_paused") else acc.indexer.resume()
@@ -511,7 +544,7 @@ class AccountManager:
             if time.time() - lg.created > 900:
                 if lg.qr_task:
                     lg.qr_task.cancel()
-                asyncio.create_task(lg.client.disconnect())
+                spawn(lg.client.disconnect(), "disconnect abandoned sign-in")
                 self.logins.pop(lid, None)
         lg = self.logins.get(login_id)
         if not lg:
@@ -573,7 +606,7 @@ class AccountManager:
         await lg.client.connect()
         lg.qr = await lg.client.qr_login()
         self.logins[lg.id] = lg
-        lg.qr_task = asyncio.create_task(self._qr_wait(lg))
+        lg.qr_task = spawn(self._qr_wait(lg), "QR sign-in")
         return {"login_id": lg.id, **self._qr_payload(lg)}
 
     def _qr_payload(self, lg: Login) -> dict:

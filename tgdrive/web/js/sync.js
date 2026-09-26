@@ -18,7 +18,7 @@ function planHtml(p) {
     row(p.trash, 'trash', 'removed in TG Drive → moved to .tgdrive-trash here'),
     row(p.mkdir_local + p.mkdir_remote, 'folderPlus', 'folders to create'),
     row(p.same, 'check', 'already the same'),
-    row(p.busy, 'transfers', 'transfers still running'),
+    row(p.busy, 'transfers', 'waiting: still transferring, or still being written on this computer'),
   ].join('');
   return list ? `<ul class="plan">${list}</ul>` : '<p class="help">Nothing to do: both sides are the same.</p>';
 }
@@ -29,7 +29,7 @@ export async function renderSyncPage() {
     <div class="page-right"><button class="btn primary" data-sync-add>${icon('plus')}Sync a folder</button></div></div><div id="syncList"><div class="page-loading">Loading…</div></div>`;
   await refresh();
   clearTimeout(timer);
-  timer = setTimeout(tick, 5000);
+  timer = setTimeout(tick, 30000);
 }
 
 async function refresh() {
@@ -134,12 +134,12 @@ document.addEventListener('click', async (e) => {
   refresh();
 });
 let timer = 0;
+// The page follows the pairs' state as the server pushes it (see app.js, 'sync-changed'); a slow timer is
+// only a safety net.
 function tick() {
   clearTimeout(timer);
   if (S.view.type !== 'sync' || !$('#syncList')) return;
   if (!document.querySelector('.sp-preview:not(:empty)')) refresh();
-  timer = setTimeout(tick, 5000);
+  timer = setTimeout(tick, 30000);
 }
-bus.on('header', () => {});
-window.addEventListener('hashchange', () => { if (location.hash.startsWith('#sync')) setTimeout(tick, 5000); });
-setTimeout(tick, 5000);
+bus.on('sync-changed', () => { if (S.view.type === 'sync' && $('#syncList') && !document.querySelector('.sp-preview:not(:empty)')) refresh(); });

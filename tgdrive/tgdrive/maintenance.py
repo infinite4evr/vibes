@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
 from . import config
+from .tasks import spawn
 from .db import Reader
 from .settings import settings
 
@@ -48,9 +49,12 @@ def setup_logging(level: int = logging.INFO) -> Path:
     root = logging.getLogger()
     if not any(isinstance(h, RotatingFileHandler) and Path(h.baseFilename) == path for h in root.handlers):
         fh = RotatingFileHandler(path, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8")
-        fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+        fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s [%(threadName)s]: %(message)s"))
         fh.setLevel(level)
         root.addHandler(fh)
+    from .diagnostics import ring
+    if ring not in root.handlers:
+        root.addHandler(ring)   # the last lines go into crash reports
     root.setLevel(level)
     logging.getLogger("telethon").setLevel(logging.WARNING)
     init_debug_logging()
@@ -288,8 +292,7 @@ async def run_task(acc: "Account", task: str) -> dict:
             return {}
         await db.read.run(job, timeout=600)
         acc.launch_search_rebuild = True
-        import asyncio
-        acc._search_builder = asyncio.create_task(acc._build_search())
+        acc._search_builder = spawn(acc._build_search(), "rebuild search index")
     elif task == "rebuild_semantic":
         acc.semantic.rebuild()
     elif task == "clear_thumbs":

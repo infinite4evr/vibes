@@ -118,8 +118,8 @@ export function mountPreview(host, f, { onOpen } = {}) {
     }
     done();
   } else if (kind === 'pdf') {
-    el.innerHTML = `<button class="pv-open" data-pv-open aria-label="Read ${esc(f.name)}"><canvas class="pv-canvas"></canvas>${spinner}
-      <span class="pv-hint">${icon('book')}Read</span><span class="pv-badge">PDF</span></button><p class="pv-note" hidden></p>`;
+    el.innerHTML = `<button class="pv-open" data-pv-open aria-label="Open ${esc(f.name)}"><canvas class="pv-canvas"></canvas>${spinner}
+      <span class="pv-hint">${icon('book')}Open</span><span class="pv-badge">PDF</span></button><p class="pv-note" hidden></p>`;
     cur.timer = setTimeout(async () => {
       if (ctl.signal.aborted) return;
       try {
@@ -135,7 +135,7 @@ export function mountPreview(host, f, { onOpen } = {}) {
         if (ctl.signal.aborted) return;
         el.querySelector('.pv-open').insertAdjacentHTML('afterbegin', docIconHtml(f));
         el.querySelector('.pv-note').hidden = false;
-        failed("Couldn't render a preview of this PDF. Click to open it in the reader.");
+        failed("Couldn't render a preview of this PDF. Click to open it.");
       }
     }, 180);
   } else if (kind === 'text') {

@@ -22,11 +22,13 @@ import asyncio
 import json
 import logging
 import os
+import re
 import shutil
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
+from .tasks import spawn
 from .transfers import TransferError, safe_filename
 
 if TYPE_CHECKING:
@@ -36,12 +38,23 @@ log = logging.getLogger("tgdrive.sync")
 
 TRASH = ".tgdrive-trash"
 MAX_REMOVALS = 25          # more than this in one run needs approval …
-MAX_REMOVAL_SHARE = 0.3    # … or more than 30% of the pair's files
+MAX_REMOVAL_SHARE = 0.3    # … and so does more than 30% of the pair's files (when at least MIN_SHARE_REMOVALS)
+MIN_SHARE_REMOVALS = 5
+QUIET_SECONDS = 10         # a local file changed more recently than this may still be being written: wait
 IGNORE_SUFFIXES = (".part", ".part.map", "~", ".swp", ".tmp", ".crdownload")
 
 
 class SyncError(Exception):
     pass
+
+
+def _same_name(have: str, name: str) -> bool:
+    """`have` is `name` or one of its numbered forms ("a (2).pdf" for "a.pdf")."""
+    if have == name:
+        return True
+    stem, dot, ext = name.rpartition(".")
+    pat = rf"{re.escape(stem)} \(\d+\)\.{re.escape(ext)}" if dot else rf"{re.escape(name)} \(\d+\)"
+    return re.fullmatch(pat, have) is not None
 
 
 def _ignored(name: str) -> bool:
@@ -63,7 +76,7 @@ class SyncEngine:
     # -------------------------------------------------------------- control
     def start(self) -> None:
         if not self.task or self.task.done():
-            self.task = asyncio.create_task(self._loop())
+            self.task = spawn(self._loop(), "folder sync")
 
     async def stop(self) -> None:
         if self.task:
@@ -72,6 +85,12 @@ class SyncEngine:
                 await self.task
             except (asyncio.CancelledError, Exception):
                 pass
+
+    def poke_later(self, seconds: float) -> None:
+        try:
+            asyncio.get_running_loop().call_later(seconds, self.poke)
+        except RuntimeError:
+            pass
 
     def poke(self) -> None:
         self._wake.set()
@@ -96,6 +115,13 @@ class SyncEngine:
                 pass
 
     # ---------------------------------------------------------------- pairs
+    def summary(self) -> list:
+        """Small fingerprint of every pair's state; the window refreshes the sync page when it changes."""
+        rows = self.db.q("SELECT p.id, p.state, p.error, p.last_run, p.approved, (SELECT COUNT(*) FROM sync_files f "
+                         "WHERE f.pair_id=p.id AND f.pending IS NOT NULL) AS pending FROM sync_pairs p ORDER BY p.id")
+        return [[r["id"], self.live.get(r["id"], {}).get("state") or r["state"], r["error"], r["last_run"],
+                 r["approved"], r["pending"]] for r in rows]
+
     def pairs(self) -> list[dict]:
         out = []
         for p in self.db.q("SELECT * FROM sync_pairs ORDER BY id"):
@@ -172,8 +198,12 @@ class SyncEngine:
                 files[rel_dir + n] = (st.st_size, st.st_mtime)
         return files, dirs
 
-    def _scan_remote(self, folder_id: str) -> tuple[dict[str, dict], dict[str, str]]:
-        """rel path -> file row; rel dir ('a/b/') -> folder id."""
+    def _scan_remote(self, folder_id: str, pid: Optional[int] = None) -> tuple[dict[str, dict], dict[str, str]]:
+        """rel path -> file row; rel dir ('a/b/') -> folder id.
+
+        Files with the same name in one folder get "name (2)", "name (3)" … A file keeps the name it was
+        synced under before, so removing one of them never renames the others (which would make them
+        download again and their old names go to the trash)."""
         kids: dict[Optional[str], list[dict]] = {}
         for f in self.db.q("SELECT id, parent_id, name FROM folders"):
             kids.setdefault(f["parent_id"], []).append(f)
@@ -192,7 +222,21 @@ class SyncEngine:
                          f"FROM placements p JOIN files f ON f.chat_id=p.chat_id AND f.msg_id=p.msg_id "
                          f"WHERE p.folder_id IN ({marks}) ORDER BY f.chat_id, f.msg_id", list(by_folder))
         files: dict[str, dict] = {}
-        for r in rows:
+        known: dict[tuple[int, int], str] = {}
+        if pid is not None:
+            for b in self.db.q("SELECT rel, chat_id, msg_id FROM sync_files WHERE pair_id=? AND chat_id IS NOT NULL",
+                               (pid,)):
+                known[(b["chat_id"], b["msg_id"])] = b["rel"]
+        rest = []
+        for r in rows:   # first the files that already have a name here
+            base = by_folder[r["folder_id"]]
+            prev = known.get((r["chat_id"], r["msg_id"]))
+            if prev and prev.startswith(base) and "/" not in prev[len(base):] and prev not in files and \
+                    _same_name(prev[len(base):], safe_filename(r["name"] or "file")):
+                files[prev] = r
+            else:
+                rest.append(r)
+        for r in rest:
             base = by_folder[r["folder_id"]]
             name = safe_filename(r["name"] or "file")
             rel, n = base + name, 1
@@ -244,7 +288,7 @@ class SyncEngine:
             raise SyncError("The TG Drive folder of this pair was deleted. Remove the pair or choose another folder.")
         loop = asyncio.get_running_loop()
         local, ldirs = await loop.run_in_executor(None, self._scan_local, root)
-        remote, rdirs = self._scan_remote(folder_id)
+        remote, rdirs = self._scan_remote(folder_id, pid)
         base = {r["rel"]: r for r in self.db.q("SELECT * FROM sync_files WHERE pair_id=?", (pid,))}
 
         plan: dict[str, list] = {"upload": [], "download": [], "conflict": [], "unfile": [], "trash": [],
@@ -263,8 +307,16 @@ class SyncEngine:
                     finished = True
         if finished:
             base = {r["rel"]: r for r in self.db.q("SELECT * FROM sync_files WHERE pair_id=?", (pid,))}
-            remote, rdirs = self._scan_remote(folder_id)
+            remote, rdirs = self._scan_remote(folder_id, pid)
             local, ldirs = await loop.run_in_executor(None, self._scan_local, root)
+        # Files still being written (changed in the last few seconds) wait for the next run.
+        # (A time in the future says nothing about that: such files are not held back.)
+        now_t = time.time()
+        for rel, (sz, mt) in local.items():
+            if now_t - QUIET_SECONDS < mt <= now_t + 1 and rel not in plan["busy"]:
+                plan["busy"].append(rel)
+        if plan["busy"]:
+            self.poke_later(QUIET_SECONDS + 1)
         busy = set(plan["busy"])
         # 2) compare the three sides
         for rel in sorted(set(local) | set(remote) | {k for k in base if not k.endswith("/")}):
@@ -305,7 +357,13 @@ class SyncEngine:
             return summary
         removals = len(plan["trash"]) + len(plan["unfile"])
         known = max(1, len([k for k in base if not k.endswith("/")]))
-        if not force and removals > MAX_REMOVALS and removals > known * MAX_REMOVAL_SHARE:
+        if not local and known > 1 and removals:
+            self.db.x("UPDATE sync_pairs SET approved=0 WHERE id=?", (pid,))
+            self._state(pid, "needs approval", f"{root} is empty. If a drive isn't plugged in, plug it in; "
+                                               f"if you emptied it on purpose, approve to continue.", summary)
+            return summary
+        if not force and (removals > MAX_REMOVALS or (removals >= MIN_SHARE_REMOVALS and
+                                                      removals > known * MAX_REMOVAL_SHARE)):
             self.db.x("UPDATE sync_pairs SET approved=0 WHERE id=?", (pid,))
             self._state(pid, "needs approval", f"This run would remove {removals} files. Check the folder, then "
                                                f"approve to continue.", summary)
@@ -316,7 +374,7 @@ class SyncEngine:
         for d in plan["mkdir_remote"]:
             await self.acc.drive.ensure_path(folder_id, [p for p in d.split("/") if p])
         if plan["mkdir_remote"]:
-            remote, rdirs = self._scan_remote(folder_id)
+            remote, rdirs = self._scan_remote(folder_id, pid)
         for rel in plan["same"]:
             self._record(pid, rel, local[rel], remote[rel])
         for rel in plan["conflict"]:

@@ -1,5 +1,5 @@
 // Boot, routing, polling, global shortcuts.
-import { $, $$, S, A, api, esc, icon, initials, bus, pref, initBridge, bridge, callBridge, plural, fmtSize, key, qs } from './core.js';
+import { $, $$, S, A, api, esc, icon, initials, bus, pref, initBridge, bridge, callBridge, plural, fmtSize, key, qs, copiesParam } from './core.js';
 import { toast, fail, menu, closeMenu, menuOpen, confirmDialog, shortcutsDialog, folderPath } from './ui.js';
 import {
   reload, renderHeader, renderFolderArea, setSelected, selectedFiles, selectedItems, toggleView, setDensity, listParams,
@@ -12,9 +12,10 @@ import { renderChips, focusSearch, toggleAdv } from './search.js';
 import { renderPage } from './pages.js';
 import { showOnboarding, showLock } from './login.js';
 import { newFolder } from './folders.js';
+import { applySidebar, initSidebar, toggleSidebar } from './layout.js';
 import { applyDebug, setDebug, debugOn, viewLog } from './debuglog.js';
 
-const PAGES = new Set(['storage', 'duplicates', 'index', 'activity', 'settings', 'photos', 'map', 'sync', 'marks']);
+const PAGES = new Set(['storage', 'duplicates', 'index', 'activity', 'settings', 'photos', 'sync']);
 const EMBED = new URLSearchParams(location.search).has('embed');
 document.documentElement.classList.toggle('embed', EMBED);
 // Other windows and the split-view pane: tell each other when folders or files changed.
@@ -29,7 +30,7 @@ function broadcast(evt) { if (!fromOtherWindow) channel?.postMessage({ evt, aid:
 
 /* ------------------------------------------------------------------- boot */
 async function boot() {
-  $('#menuBtn').innerHTML = icon('menu');
+  $('#menuBtn').innerHTML = icon('sidebar');
   $('#advBtn').innerHTML = icon('sliders');
   $('#searchClear').innerHTML = icon('close');
   $('#transfersBtn').insertAdjacentHTML('afterbegin', icon('transfers'));
@@ -37,6 +38,7 @@ async function boot() {
   $('#moreBtn').innerHTML = icon('more');
   $('#newBtn').innerHTML = `${icon('plus')}<span>New</span>`;
   $('#chatSortBtn').innerHTML = icon('sliders');
+  initSidebar();
   S.desktop = await initBridge();
   if (S.desktop && !EMBED) import('./wintitle.js').then((m) => m.initWindowChrome()).catch(() => {});
   S.localHost = ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname);
@@ -86,6 +88,7 @@ export function applyTheme() {
     root.style.setProperty('--accent-ink-l', luminance(s.accent) > 0.45 ? '#10151d' : '#ffffff');
   } else { root.style.removeProperty('--accent-base'); root.style.removeProperty('--accent-ink-l'); }
   root.style.setProperty('--fs', String(Math.max(0.8, Math.min(1.5, Number(s.font_scale) || 1))));
+  applySidebar();
   import('./columns.js').then((m) => m.applyTemplate());
   if (S.desktop) callBridge('setTheme', t || 'system');
 }
@@ -110,8 +113,9 @@ async function switchAccount(aid) {
   loadSubjects();
   if (!location.hash || location.hash === '#') history.replaceState(null, '', '#drive');
   route();
-  poll();
-  pollEvents();
+  await poll();
+  await pollEvents();
+  startLive();
   loadTransfers();
   window.tgdrive.ready = true;
   if (!EMBED) checkCrashes();
@@ -238,9 +242,7 @@ function route() {
     pv.className = 'page-view';
     if (!sameKind) { void pv.offsetWidth; pv.classList.add('page-enter'); }
     if (v.type === 'photos') import('./photos.js').then((m) => m.renderPhotos(v.arg));
-    else if (v.type === 'map') import('./map.js').then((m) => m.renderMap());
     else if (v.type === 'sync') import('./sync.js').then((m) => m.renderSyncPage());
-    else if (v.type === 'marks') import('./pdfview.js').then((m) => m.renderMarksPage());
     else renderPage(v.type, v.arg);
     return;
   }
@@ -339,7 +341,35 @@ $('#refreshBtn').addEventListener('click', async (e) => {
     setTimeout(() => b.classList.remove('spinning'), Math.max(0, 600 - (Date.now() - t0)));
   }
 });
-$('#viewBtn').addEventListener('click', toggleView);
+$('#viewBtn').addEventListener('click', (e) => viewMenu(e.currentTarget));
+// All the ways to show things, in one place: files (grid or list, size, grouping), folders (style, order)
+// and the sidebar. V still switches grid and list directly.
+function viewMenu(anchor) {
+  const inDrive = S.view.type === 'drive';
+  const fstyle = S.settings.folder_style || 'tiles';
+  const fsort = pref('folderSort') || 'name';
+  const setFolders = (changes) => {
+    if (changes.folder_style) { S.settings.folder_style = changes.folder_style; api('/api/settings', { method: 'PATCH', body: changes }).catch(() => {}); }
+    if (changes.sort) pref('folderSort', changes.sort);
+    renderFolderArea();
+  };
+  menu(anchor, [
+    { header: 'Files' },
+    { label: 'Grid', icon: 'grid', checked: !listModeNow(), onClick: () => { if (listModeNow()) toggleView(); } },
+    { label: 'List', icon: 'list', checked: listModeNow(), kbd: 'V', onClick: () => { if (!listModeNow()) toggleView(); } },
+    ...(!listModeNow() ? [['s', 'Small cards'], ['m', 'Medium cards'], ['l', 'Large cards']].map(([k, l]) => ({ label: l, checked: (S.settings.grid_size || 'm') === k, onClick: () => setDensity(k) })) : []),
+    { label: 'Group by date', checked: !!S.settings.group_by_date, onClick: () => { S.settings.group_by_date = !S.settings.group_by_date; api('/api/settings', { method: 'PATCH', body: { group_by_date: S.settings.group_by_date } }).catch(() => {}); rerenderItems(); } },
+    { label: 'Albums as stacks', checked: S.settings.stack_albums !== false, onClick: () => { S.settings.stack_albums = S.settings.stack_albums === false; api('/api/settings', { method: 'PATCH', body: { stack_albums: S.settings.stack_albums } }).catch(() => {}); rerenderItems(); } },
+    listModeNow() ? { label: 'List columns…', icon: 'columns', onClick: () => import('./columns.js').then((m) => m.columnsDialog()) } : null,
+    ...(inDrive ? ['-', { header: 'Folders' },
+      ...[['tiles', 'Tiles', 'tiles'], ['cards', 'Cards with covers', 'cards'], ['list', 'List', 'list']].map(([k, l, ic]) => ({ label: l, icon: ic, checked: fstyle === k, onClick: () => setFolders({ folder_style: k }) })),
+      { header: 'Sort folders' },
+      ...[['name', 'Name'], ['newest', 'Recently changed'], ['files', 'Most files'], ['size', 'Largest']].map(([k, l]) => ({ label: l, checked: fsort === k, onClick: () => setFolders({ sort: k }) }))] : []),
+    '-',
+    { label: S.settings.sidebar_hidden ? 'Show the sidebar' : 'Hide the sidebar', icon: 'sidebar', kbd: 'Ctrl B', onClick: () => toggleSidebar() },
+  ].filter(Boolean), { alignRight: true });
+}
+const listModeNow = () => (S.settings.view || 'grid') === 'list';
 $('#copiesBtn').addEventListener('click', () => setHideDuplicates(S.settings.hide_duplicates === false));
 async function setHideDuplicates(hide) {
   S.settings.hide_duplicates = hide;
@@ -366,12 +396,6 @@ $('#moreBtn').addEventListener('click', (e) => {
     { label: 'Open in split view', icon: 'split', onClick: () => import('./split.js').then((m) => m.openSplit(location.hash)) },
     S.desktop ? { label: 'Open in new window', icon: 'window', kbd: 'Ctrl Shift N', onClick: () => callBridge('newWindow', location.hash) } : { label: 'Open in new tab', icon: 'window', onClick: () => window.open(location.href, '_blank', 'noopener') },
     '-',
-    { header: 'Card size' },
-    ...[['s', 'Small'], ['m', 'Medium'], ['l', 'Large']].map(([k, l]) => ({ label: l, checked: (S.settings.grid_size || 'm') === k, onClick: () => setDensity(k) })),
-    { label: 'Group by date', checked: !!S.settings.group_by_date, onClick: () => { S.settings.group_by_date = !S.settings.group_by_date; api('/api/settings', { method: 'PATCH', body: { group_by_date: S.settings.group_by_date } }).catch(() => {}); rerenderItems(); } },
-    { label: 'Albums as stacks', checked: S.settings.stack_albums !== false, onClick: () => { S.settings.stack_albums = S.settings.stack_albums === false; api('/api/settings', { method: 'PATCH', body: { stack_albums: S.settings.stack_albums } }).catch(() => {}); rerenderItems(); } },
-    { label: 'List columns…', icon: 'columns', onClick: () => import('./columns.js').then((m) => m.columnsDialog()) },
-    '-',
     { label: 'Select all loaded', icon: 'check', kbd: 'Ctrl A', onClick: () => setSelected(S.items.map(key)) },
     { label: 'Download everything here', icon: 'download', onClick: () => downloadAll(false) },
     { label: 'Download everything as .zip', icon: 'download', onClick: () => downloadAll(true) },
@@ -391,7 +415,6 @@ async function downloadAll(zip) {
 $('#transfersBtn').addEventListener('click', () => {
   if (S.drawer === 'transfers') { S.drawer = S.selected.size ? 'details' : null; renderDrawer(); } else openTransfers();
 });
-$('#menuBtn').addEventListener('click', () => $('#sidebar').classList.toggle('open'));
 
 /* -------------------------------------------------------------- keyboard */
 let gPending = 0;
@@ -419,17 +442,19 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '?') { e.preventDefault(); shortcutsDialog(); return; }
   if (gPending && Date.now() - gPending < 1200) {
     gPending = 0;
-    const dest = { d: '#drive', a: '#all', s: '#starred', r: '#recent', c: '#continue', i: '#index', t: '#storage', p: '#photos', m: '#map' }[e.key.toLowerCase()];
+    const dest = { d: '#drive', a: '#all', s: '#starred', r: '#recent', c: '#continue', i: '#index', t: '#storage', p: '#photos' }[e.key.toLowerCase()];
     if (dest) { e.preventDefault(); go(dest); }
     return;
   }
   if (e.key.toLowerCase() === 'g') { gPending = Date.now(); return; }
-  if (e.key.toLowerCase() === 'v' && !$('#listView').hidden) { toggleView(); return; }
-  if (e.key.toLowerCase() === 'f' && !$('#listView').hidden) { import('./search.js').then((m) => m.toggleFilters()); return; }
+  if (e.key.toLowerCase() === 'v' && !$('#listView').hidden) { e.preventDefault(); toggleView(); return; }
+  if (e.key.toLowerCase() === 'f' && !$('#listView').hidden) { e.preventDefault(); import('./search.js').then((m) => m.toggleFilters()); return; }
   const files = selectedFiles();
   if (!files.length) return;
   const items = selectedItems();
   const k = e.key;
+  // A letter that opens a dialog must not also be typed into the dialog's field.
+  if (/^[stmdlc]$/i.test(k)) e.preventDefault();
   if (k === 'Delete') { e.preventDefault(); doDelete(items); }
   else if (k === 'F2') { e.preventDefault(); if (files.length > 1 || !startRenameInPanel()) renameOne(files[0]); }
   else if (k.toLowerCase() === 's') toggleStar(files);
@@ -440,57 +465,101 @@ document.addEventListener('keydown', (e) => {
   else if (k.toLowerCase() === 'c' && files.length === 1) import('./context.js').then((m) => m.showContext(files[0]));
 });
 
-/* ---------------------------------------------------------------- polling */
-let pollTimer = null;
+/* ------------------------------------------------------- live updates */
+// One server-sent-events connection brings status changes and events (notifications, crashes, new
+// files) as they happen, instead of asking every few seconds. If the stream can't be used, the page
+// falls back to polling.
+function applyAccountStatus(st) {
+  const before = S.status;
+  S.status = { ...st, download_dir: S.downloadDir, data_dir: S.status?.data_dir };
+  const idx = S.accounts.findIndex((a) => a.id === S.aid);
+  if (idx >= 0 && S.accounts[idx].status !== st.account.status) { S.accounts[idx] = st.account; renderAccountButton(); }
+  renderIndexStatus();
+  if (before?.dupes?.extra !== st.dupes?.extra) renderNav();
+  // Duplicates found for the first time since starting: a list showing one card per file was made
+  // without them, so show it again (once, not on every later pass while indexing).
+  if (before && before.dupes?.state !== 'ready' && st.dupes?.state === 'ready' && before.dupes?.extra !== st.dupes?.extra &&
+      copiesParam() === 'hide' && !$('#listView').hidden) reload(true);
+  S.tsummary = st.transfers;
+  updateBadge();
+  if (S.drawer === 'transfers' || (before && before.transfers_active !== st.transfers_active)) loadTransfers();
+  const indexing = !['idle', 'paused'].includes(st.index.phase);
+  if (indexing && Date.now() - (S.chatsTimer || 0) > 20000) { S.chatsTimer = Date.now(); loadChats().catch(() => {}); }
+  if (before && !['idle', 'paused'].includes(before.index.phase) && !indexing) loadChats().catch(() => {});
+  if (before && before.drive.channel_id !== st.drive.channel_id) loadFolders().catch(() => {});
+  if (before && before.search?.state !== 'ready' && st.search?.state === 'ready') { toast('Search upgrade finished: smart matching is on.'); if (!$('#listView').hidden) reload(true); }
+  if (before && JSON.stringify(before.sync) !== JSON.stringify(st.sync)) bus.emit('sync-changed');
+  document.title = st.index.phase === 'indexing' ? `TG Drive · indexing ${st.index.chats_done}/${st.index.chats_total}` : 'TG Drive';
+}
+
+function applyEvents(r) {
+  const first = S.lastEvent === 0;
+  S.lastEvent = r.last;
+  if (first) return;
+  for (const ev of r.events) {
+    if (ev.kind === 'crash' && !EMBED) checkCrashes();
+    if (ev.kind === 'connection' && ev.account === S.aid) toast(ev.online ? 'Connected to Telegram again.' : 'Lost the connection to Telegram. Reconnecting…', ev.online ? {} : { err: true });
+    if (ev.kind === 'notify' && ev.account === S.aid) {
+      if (!S.desktop) {
+        toast(`${ev.title}: ${ev.body}`, ev.path && S.localHost ? { action: 'Open', onAction: () => api('/api/open', { method: 'POST', body: { path: ev.path } }).catch(fail) } : {});
+        if (document.hidden && 'Notification' in window && Notification.permission === 'granted') new Notification(ev.title, { body: ev.body });
+      } else toast(`${ev.title}: ${ev.body}`);
+      if (ev.title.startsWith('Download') || ev.title.startsWith('Zip')) loadTransfers();
+    }
+  }
+}
+
+// One-off refresh (also what bus 'poll' asks for, e.g. after pausing indexing).
 async function poll() {
-  clearTimeout(pollTimer);
   const aid = S.aid;
   try {
     const st = await api(A('/status'));
-    if (aid !== S.aid) return;
-    const before = S.status;
-    S.status = { ...st, download_dir: S.downloadDir, data_dir: S.status?.data_dir };
-    const idx = S.accounts.findIndex((a) => a.id === aid);
-    if (idx >= 0 && S.accounts[idx].status !== st.account.status) { S.accounts[idx] = st.account; renderAccountButton(); }
-    renderIndexStatus();
-    if (before?.dupes?.extra !== st.dupes?.extra) renderNav();
-    S.tsummary = st.transfers;
-    updateBadge();
-    if (S.drawer === 'transfers' || (before && before.transfers_active !== st.transfers_active)) loadTransfers();
-    const indexing = !['idle', 'paused'].includes(st.index.phase);
-    if (indexing && Date.now() - (S.chatsTimer || 0) > 20000) { S.chatsTimer = Date.now(); loadChats().catch(() => {}); }
-    if (before && !['idle', 'paused'].includes(before.index.phase) && !indexing) loadChats().catch(() => {});
-    if (before && before.drive.channel_id !== st.drive.channel_id) loadFolders().catch(() => {});
-    if (before && before.search?.state !== 'ready' && st.search?.state === 'ready') { toast('Search upgrade finished: smart matching is on.'); if (!$('#listView').hidden) reload(true); }
-    document.title = st.index.phase === 'indexing' ? `TG Drive · indexing ${st.index.chats_done}/${st.index.chats_total}` : 'TG Drive';
-  } catch (e) { /* server restarting; try again */ }
-  pollTimer = setTimeout(poll, document.hidden ? 10000 : 2500);
+    if (aid === S.aid) applyAccountStatus(st);
+  } catch { /* server restarting; the live stream or the next poll catches up */ }
 }
 bus.on('poll', () => poll());
 
-let evTimer = null;
 async function pollEvents() {
-  clearTimeout(evTimer);
-  try {
-    const r = await api(`/api/events?after=${S.lastEvent}`);
-    const first = S.lastEvent === 0;
-    S.lastEvent = r.last;
-    if (!first) {
-      for (const ev of r.events) {
-        if (ev.kind === 'crash' && !EMBED) checkCrashes();
-        if (ev.kind === 'notify' && ev.account === S.aid) {
-          if (!S.desktop) {
-            toast(`${ev.title}: ${ev.body}`, ev.path && S.localHost ? { action: 'Open', onAction: () => api('/api/open', { method: 'POST', body: { path: ev.path } }).catch(fail) } : {});
-            if (document.hidden && 'Notification' in window && Notification.permission === 'granted') new Notification(ev.title, { body: ev.body });
-          } else toast(`${ev.title}: ${ev.body}`);
-          if (ev.title.startsWith('Download') || ev.title.startsWith('Zip')) loadTransfers();
-        }
-      }
-    }
-  } catch { /* ignore */ }
-  evTimer = setTimeout(pollEvents, document.hidden ? 8000 : 3000);
+  try { applyEvents(await api(`/api/events?after=${S.lastEvent}`)); } catch { /* ignore */ }
 }
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { poll(); pollEvents(); } });
+
+const live = { es: null, aid: null, failures: 0, fallback: false, timers: [] };
+function startLive() {
+  stopLive();
+  live.aid = S.aid;
+  if (live.fallback || typeof EventSource === 'undefined') return startPolling();
+  let opened = false;
+  const es = new EventSource(`/api/stream-events?aid=${S.aid}&after=${S.lastEvent}`, { withCredentials: true });
+  live.es = es;
+  es.addEventListener('open', () => { opened = true; live.failures = 0; });
+  es.addEventListener('status', (e) => {
+    let st;
+    try { st = JSON.parse(e.data); } catch { return; }
+    if (st.locked) { bus.emit('locked'); return; }
+    if (!st.none && live.aid === S.aid) applyAccountStatus(st);
+  });
+  es.addEventListener('events', (e) => { try { applyEvents(JSON.parse(e.data)); } catch { /* ignore */ } });
+  es.addEventListener('error', () => {
+    // The browser reconnects by itself (the server says after 3 s). A stream that never opens means it
+    // isn't available here (an old server, a proxy): poll instead.
+    if (!opened && ++live.failures >= 3) { live.fallback = true; startLive(); }
+  });
+}
+function stopLive() {
+  live.es?.close();
+  live.es = null;
+  live.timers.forEach(clearTimeout);
+  live.timers = [];
+}
+function startPolling() {
+  const loop = (fn, fast, slow) => {
+    const run = async () => { await fn(); live.timers.push(setTimeout(run, document.hidden ? slow : fast)); };
+    run();
+  };
+  loop(poll, 2500, 10000);
+  loop(pollEvents, 3000, 8000);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !live.es) { poll(); pollEvents(); } });
 
 bus.on('header', () => { document.title = S.view.type === 'search' && S.view.q ? `${S.view.q} · TG Drive` : 'TG Drive'; });
 /* ------------------------------------------------------ crash reporting */

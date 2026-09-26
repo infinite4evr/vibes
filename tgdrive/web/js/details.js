@@ -178,7 +178,14 @@ async function renderDetails() {
   };
   const stopRename = () => { rf.hidden = true; $('#dTitleRow').hidden = false; ri.value = det.name; };
   info.querySelectorAll('[data-rename]').forEach((b) => b.addEventListener('click', startRename));
-  rf.addEventListener('submit', async (e) => { e.preventDefault(); rf.dataset.saving = '1'; try { await renameFile(det, ri.value); } finally { delete rf.dataset.saving; } });
+  rf.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    rf.dataset.saving = '1';
+    try { await renameFile(det, ri.value); } finally { delete rf.dataset.saving; }
+    // Done: leave the field, so Ctrl Z (undo) and the other shortcuts work again straight away.
+    ri.blur();
+    if (rf.isConnected) { rf.hidden = true; const row = $('#dTitleRow'); if (row) row.hidden = false; }
+  });
   ri.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); stopRename(); } });
   ri.addEventListener('blur', () => {
     if (rf.dataset.saving) return;
@@ -246,14 +253,16 @@ function linkify(text) {
 
 async function renameFile(det, name) {
   name = name.trim();
-  if (name === det.name) return;
+  if (name === det.name) return true;
   try {
     await api(A(`/files/${det.chat_id}/${det.msg_id}/rename`), { method: 'POST', body: { name } });
     const f = S.byKey.get(key(det));
     if (f) { f.name = name || det.original_name; f.renamed = !!name; refreshCard(f); }
     toast(name ? 'Renamed' : 'Name reset', { action: 'Undo', onAction: undoLast });
+    det.name = name || det.original_name || det.name;   // leaving the field afterwards mustn't rename again
     renderDetails();
-  } catch (e) { fail(e); }
+    return true;
+  } catch (e) { fail(e); return false; }
 }
 
 $('#drawer').addEventListener('click', (e) => {

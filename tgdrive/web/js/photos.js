@@ -26,7 +26,6 @@ export async function renderPhotos() {
         <button class="fchip toggle" data-phstar>${icon('star')}Starred</button>
         <span class="spacer"></span>
         <button class="btn sm" data-phshow>${icon('slides')}Slideshow</button>
-        <button class="btn sm ghost" data-go="#map">${icon('map')}Places</button>
         <div class="seg small">${Object.keys(SIZES).map((k) => `<button data-phsize="${k}" class="${P.size === k ? 'on' : ''}" title="${{ s: 'Small', m: 'Medium', l: 'Large' }[k]}">${icon(k === 's' ? 'photos' : k === 'm' ? 'grid' : 'image')}</button>`).join('')}</div>
       </div></div>
     <div class="ph-body"><div class="ph-scroll" id="phScroll"><div class="ph-canvas" id="phCanvas"></div></div>

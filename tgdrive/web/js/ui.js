@@ -309,7 +309,7 @@ export function shortcutsDialog() {
     ['Enter', 'Open / preview'], ['Space', 'Quick look'], ['Shift click', 'Select a range'], ['Ctrl A', 'Select all'],
     ['S', 'Star or unstar'], ['T', 'Tags'], ['M', 'Move to folder'], ['D', 'Download'], ['F2', 'Rename'],
     ['L', 'Copy link'], ['Delete', 'Delete from Telegram'], ['Ctrl Z', 'Undo folder change'], ['V', 'Grid or list view'],
-    ['G then D / A / S / R / C', 'Go to Drive, All files, Starred, Recent, Continue watching'], ['Ctrl ,', 'Settings'], ['?', 'This list'],
+    ['G then D / A / S / R / C', 'Go to Drive, All files, Starred, Recent, Continue watching'], ['Ctrl B', 'Show or hide the sidebar'], ['Ctrl ,', 'Settings'], ['?', 'This list'],
   ];
   return dialog({ title: 'Keyboard shortcuts', body: `<dl class="kbd-list">${rows.map(([k, v]) => `<dt>${k.split(' ').map((x) => (x === 'or' || x === 'then' ? ` ${x} ` : `<kbd>${esc(x)}</kbd>`)).join('')}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`, actions: [{ label: 'Close', cls: 'primary' }] });
 }

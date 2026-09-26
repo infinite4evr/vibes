@@ -85,12 +85,9 @@ export async function renderFolderArea() {
   const hidden = pref('foldersHidden') === '1';
   const st = style();
   if (st === 'cards' && !S.folderCovers) loadCovers();
-  const seg = (k, ic, label) => `<button class="${st === k ? 'on' : ''}" data-fstyle="${k}" title="${label}" aria-label="${label}">${icon(ic)}</button>`;
   area.innerHTML = `${desc}<div class="folder-bar">
       <button class="section-h collapse ${hidden ? '' : 'open'}" data-folders-toggle aria-expanded="${!hidden}">${icon('chevron')}Folders<small>${fmtNum(kids.length)}</small></button>
       <span class="spacer"></span>
-      ${hidden ? '' : `<select class="mini-select" data-fsort aria-label="Sort folders">${[['name', 'Name'], ['newest', 'Recently changed'], ['files', 'Most files'], ['size', 'Largest']].map(([k, l]) => `<option value="${k}" ${sortBy() === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
-      <div class="seg small">${seg('tiles', 'tiles', 'Tiles')}${seg('cards', 'cards', 'Cards with covers')}${seg('list', 'list', 'List')}</div>`}
     </div>
     ${hidden ? '' : `<div class="folder-${st}">${st === 'list' ? `<div class="frow fhead"><span></span><span>Name</span><span>Description</span><span class="fr-n">Files</span><span class="fr-size">Size</span><span class="fr-date">Changed</span><span></span></div>` : ''}${kids.map(st === 'cards' ? cardHtml : st === 'list' ? rowHtml : tileHtml).join('')}</div>`}
     <div class="section-h files-h" id="filesH">Files</div>`;

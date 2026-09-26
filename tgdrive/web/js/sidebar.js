@@ -47,8 +47,7 @@ export function renderNav() {
     ${item('#starred', 'star', 'Starred', S.starredCount, active('starred'))}
     ${item('#recent', 'clock', 'Recent', 0, active('recent'))}
     ${S.continueCount ? item('#continue', 'play', 'Continue watching', S.continueCount, active('continue')) : ''}
-    ${item('#photos', 'image', 'Photos', 0, active('photos'))}
-    ${item('#map', 'map', 'Places', 0, active('map'))}`;
+    ${item('#photos', 'image', 'Photos', 0, active('photos'))}`;
   renderTree();
   const saved = S.saved.length ? `${sectionH('saved', 'Saved searches', true)}${!isOpen('saved', true) ? '' : S.saved.map((s) => `<div class="chat-row"><button class="nav-item ${active('saved', () => S.view.savedId === s.id) ? 'active' : ''}" data-go="#saved/${esc(s.id)}" title="${esc(s.q || '')}">
       ${icon('search')}<span class="label">${esc(s.name)}</span></button><button class="icon-btn more" data-saved-menu="${esc(s.id)}" aria-label="Saved search actions">${icon('more')}</button></div>`).join('')}` : '';
@@ -56,16 +55,19 @@ export function renderNav() {
   const tg = S.dialogFilters.length ? `${sectionH('tg', 'Telegram folders')}${S.openGroups.has('tg') ? S.dialogFilters.map((d) => `<button class="nav-item ${active('tg', () => S.view.filterId === d.id) ? 'active' : ''}" data-go="#tg/${d.id}">
       <span class="emo">${esc(d.emoticon || '📁')}</span><span class="label" title="${esc(d.title)}">${esc(d.title)}</span>${cnt(d.chat_ids.length, ' chats')}</button>`).join('') : ''}` : '';
   const subj = (S.subjects || []).filter((x) => x.n > 0 && !x.id.startsWith('_')).sort((a, b) => b.n - a.n);
-  const subjects = subj.length ? `${sectionH('subjects', 'Subjects')}${S.openGroups.has('subjects') ? subj.map((x) => `<button class="nav-item ${active('subject', () => S.view.subject === x.id) ? 'active' : ''}" data-go="#subject/${esc(x.id)}">
-      <span class="emo">${x.emoji ? esc(x.emoji) : icon('book')}</span><span class="label">${esc(x.name)}</span>${cnt(x.n)}</button>`).join('') : ''}` : '';
-  $('#navMid').innerHTML = saved + subjects + tg + tags;
+  const SUBJ_SHOWN = 6;
+  const allSubj = S.openGroups.has('subjects-all');
+  const subjMore = subj.length > SUBJ_SHOWN && S.openGroups.has('subjects')
+    ? `<button class="nav-item more-row" data-subjects-all>${icon(allSubj ? 'chevLeft' : 'chevronDown')}<span class="label">${allSubj ? 'Fewer subjects' : `All ${subj.length} subjects`}</span></button>` : '';
+  const subjects = subj.length ? `${sectionH('subjects', 'Subjects')}${S.openGroups.has('subjects') ? (allSubj ? subj : subj.slice(0, SUBJ_SHOWN)).map((x) => `<button class="nav-item ${active('subject', () => S.view.subject === x.id) ? 'active' : ''}" data-go="#subject/${esc(x.id)}">
+      <span class="emo">${x.emoji ? esc(x.emoji) : icon('book')}</span><span class="label">${esc(x.name)}</span>${cnt(x.n)}</button>`).join('') + subjMore : ''}` : '';
+  $('#navMid').innerHTML = saved + tg + subjects + tags;
   const toolsOpen = isOpen('tools', true);
   $('#navTools').innerHTML = `${sectionH('tools', 'Tools', true)}${!toolsOpen ? '' : `
     ${item('#storage', 'chart', 'Storage', 0, active('storage'))}
     ${item('#duplicates', 'dupes', 'Duplicates', 0, active('duplicates'))}
     ${item('#index', 'database', 'Index manager', 0, active('index'))}
     ${item('#sync', 'sync', 'Folder sync', 0, active('sync'))}
-    ${item('#marks', 'highlight', 'PDF highlights', 0, active('marks'))}
     ${item('#activity', 'activity', 'Activity', 0, active('activity'))}
     ${item('#settings', 'settings', 'Settings', 0, active('settings'))}`}`;
   const srcOpen = isOpen('sources', true);
@@ -231,6 +233,12 @@ document.addEventListener('click', (e) => {
     S.openGroups.has(id) ? S.openGroups.delete(id) : S.openGroups.add(id);
     pref('openGroups', JSON.stringify([...S.openGroups]));
     renderChats();
+    return;
+  }
+  if (e.target.closest('[data-subjects-all]')) {
+    S.openGroups.has('subjects-all') ? S.openGroups.delete('subjects-all') : S.openGroups.add('subjects-all');
+    pref('openGroups', JSON.stringify([...S.openGroups]));
+    renderNav();
     return;
   }
   const tg = e.target.closest('[data-toggle]');

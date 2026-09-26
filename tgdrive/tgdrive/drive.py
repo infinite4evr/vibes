@@ -29,6 +29,7 @@ from typing import TYPE_CHECKING, Optional
 from telethon import errors, utils
 from telethon.tl import functions, types
 
+from .tasks import spawn
 from . import config
 from .extract import MANIFEST_NAME
 
@@ -166,11 +167,10 @@ def merge_manifests(local: dict, remote: dict) -> dict:
     folders = merge("folder", lambda e: str(e["id"]), local.get("folders"), remote.get("folders"))
     items = merge("item", item_key, local.get("items"), remote.get("items"))
     saved = merge("saved", lambda e: str(e["id"]), local.get("saved"), remote.get("saved"))
-    marks = merge("mark", lambda e: str(e["id"]), local.get("marks"), remote.get("marks"))
     cutoff = ms() - TOMBSTONE_DAYS * 86400 * 1000
     return {
         "app": "tgdrive", "version": 2, "updated": int(time.time()),
-        "folders": folders, "items": items, "saved": saved, "marks": marks,
+        "folders": folders, "items": items, "saved": saved,
         "tombstones": [{"kind": k, "id": i, "at": at} for (k, i), at in tombs.items() if at > cutoff],
     }
 
@@ -218,7 +218,6 @@ class Drive:
             "folders": [_folder_out(f) for f in self.db.q(f"SELECT {','.join(self.db.FOLDER_COLS)} FROM folders")],
             "items": self.db.all_placements(),
             "saved": self.db.q("SELECT id, name, q, params, icon, created, mtime FROM saved_searches"),
-            "marks": [_mark_out(m) for m in self.db.q(f"SELECT {','.join(self.db.MARK_COLS)} FROM marks")],
             "tombstones": self.db.q("SELECT kind, id, at FROM tombstones"),
         }
 
@@ -250,20 +249,10 @@ class Drive:
                 continue
         items = [i for i in items if i["folder_id"] or i["alias"] or i["starred"] or i["tags"] or i["note"]]
         saved = [s for s in manifest.get("saved", []) or [] if s.get("id") and s.get("name")]
-        marks = None
-        if "marks" in manifest:
-            marks = []
-            for m in manifest.get("marks") or []:
-                try:
-                    if m.get("id") and int(m["chat_id"]) and int(m["msg_id"]):
-                        marks.append(m)
-                except (KeyError, TypeError, ValueError):
-                    continue
         for f in folders:
             if f.get("emoji") and len(str(f["emoji"])) > 16:
                 f["emoji"] = None
-        self.db.replace_drive_state(folders, items, saved=saved, tombstones=manifest.get("tombstones") or [],
-                                    marks=marks)
+        self.db.replace_drive_state(folders, items, saved=saved, tombstones=manifest.get("tombstones") or [])
 
     def _backup(self, data: bytes, reason: str) -> None:
         try:
@@ -293,16 +282,14 @@ class Drive:
         keep_f = {f["id"] for f in manifest.get("folders", [])}
         keep_i = {item_key(i) for i in manifest.get("items", [])}
         keep_s = {s["id"] for s in manifest.get("saved", []) or []}
-        keep_m = {m["id"] for m in manifest.get("marks", []) or []}
         tombs = [t for t in manifest.get("tombstones", []) or []]
-        tombs += [{"kind": "mark", "id": m["id"], "at": now} for m in cur.get("marks", []) if m["id"] not in keep_m]
         tombs += [{"kind": "folder", "id": f["id"], "at": now} for f in cur["folders"] if f["id"] not in keep_f]
         tombs += [{"kind": "item", "id": item_key(i), "at": now} for i in cur["items"] if item_key(i) not in keep_i]
         tombs += [{"kind": "saved", "id": s["id"], "at": now} for s in cur["saved"] if s["id"] not in keep_s]
-        for coll in ("folders", "items", "saved", "marks"):
+        for coll in ("folders", "items", "saved"):
             for e in manifest.get(coll, []) or []:
                 e["mtime"] = now
-        self.apply({**manifest, "app": "tgdrive", "tombstones": tombs, "marks": manifest.get("marks") or []})
+        self.apply({**manifest, "app": "tgdrive", "tombstones": tombs})
 
     async def load(self) -> None:
         async with self._load_lock:
@@ -407,20 +394,42 @@ class Drive:
         if dupes is not None:
             dupes.poke()   # stars and folders decide which copy is shown
         self._dirty = True
-        if not self._flush_task or self._flush_task.done():
-            try:
-                self._flush_task = asyncio.get_running_loop().create_task(self._delayed_flush())
-            except RuntimeError:
-                pass
+        if self.db.get_meta("drive_dirty") != "1":
+            self.db.set_meta("drive_dirty", 1)   # survives a restart: unsaved changes are saved next time
+        self._ensure_flusher()
+
+    def _ensure_flusher(self) -> None:
+        """One flusher task runs while there is anything unsaved. A change made while a save is
+        uploading is picked up by the same task (it loops until nothing is left)."""
+        if self._flush_task and not self._flush_task.done():
+            return
+        try:
+            self._flush_task = spawn(self._delayed_flush(), "save folders")
+        except RuntimeError:
+            pass
 
     async def _delayed_flush(self) -> None:
-        await asyncio.sleep(FLUSH_DELAY)
-        await self.flush_now()
+        delay = FLUSH_DELAY
+        while True:
+            await asyncio.sleep(delay)
+            if self.acc.status != "online":
+                return   # resume_pending() starts us again when the account is back online
+            ok = await self.flush_now()
+            if not self._dirty:
+                return
+            delay = FLUSH_DELAY if ok else min(max(30.0, delay * 2), 600.0)
 
-    async def flush_now(self) -> None:
+    def resume_pending(self) -> None:
+        """Called when the account comes online: save changes left unsaved (offline, or a restart)."""
+        if self._dirty or self.db.get_meta("drive_dirty") == "1":
+            self._dirty = True
+            self._ensure_flusher()
+
+    async def flush_now(self) -> bool:
+        """Save the manifest to Telegram. Returns False if saving failed (it stays dirty)."""
         async with self._flush_lock:
             if not self._dirty or self.acc.status != "online":
-                return
+                return True
             self._dirty = False
             try:
                 peer = await self.ensure_channel()
@@ -432,7 +441,6 @@ class Drive:
                             remote = await self.client.download_media(msg, file=bytes)
                             self._merge_remote(remote, "Changed on another device")
                             self._remote_marker = self._marker(msg)
-                            self._dirty = False
                     except errors.RPCError:
                         pass
                 data = encode_manifest(self.snapshot())
@@ -440,13 +448,19 @@ class Drive:
                 await self._write_manifest(peer, data)
                 self._last_hash = hashlib.sha1(data).hexdigest()
                 self.db.set_meta("drive_seeded", 1)
+                if not self._dirty:
+                    self.db.set_meta("drive_dirty", 0)
                 self.error = None
                 self.last_saved = int(time.time())
+                return True
+            except asyncio.CancelledError:
+                self._dirty = True
+                raise
             except Exception as exc:
                 log.exception("saving manifest failed")
                 self.error = f"Couldn't save folders to Telegram ({exc}). Retrying."
                 self._dirty = True
-                asyncio.get_running_loop().call_later(30, self._schedule)
+                return False
 
     async def _write_manifest(self, peer, data: bytes) -> None:
         def as_file():
@@ -506,7 +520,7 @@ class Drive:
             self._force_local(manifest)
         else:
             now = ms()
-            for coll in ("folders", "items", "saved", "marks"):
+            for coll in ("folders", "items", "saved"):
                 for e in manifest.get(coll, []) or []:
                     e.setdefault("mtime", now)
             self.apply(merge_manifests(self.snapshot(), manifest))
@@ -521,7 +535,6 @@ class Drive:
         if not self._undo:
             raise DriveError("Nothing to undo.")
         label, snap = self._undo.pop()
-        snap = {**snap, "marks": self.snapshot()["marks"]}  # highlights aren't part of folder undo
         self._force_local(snap)
         self._schedule()
         self.db.log_activity("undo", label)
@@ -774,42 +787,6 @@ class Drive:
                 r["params"] = {}
         return rows
 
-    # ------------------------------------------------------- PDF marks
-    MARK_KINDS = {"bookmark", "highlight", "note"}
-
-    def marks_for(self, chat_id: int, msg_id: int) -> list[dict]:
-        return [_mark_out(m) for m in self.db.q(
-            f"SELECT {','.join(self.db.MARK_COLS)} FROM marks WHERE chat_id=? AND msg_id=? ORDER BY page, created",
-            (chat_id, msg_id))]
-
-    async def save_mark(self, chat_id: int, msg_id: int, mark: dict) -> dict:
-        kind = mark.get("kind") or "highlight"
-        if kind not in self.MARK_KINDS:
-            raise DriveError("Unknown mark type.")
-        try:
-            page = max(1, int(mark.get("page") or 1))
-        except (TypeError, ValueError):
-            raise DriveError("page must be a number.")
-        data = mark.get("data")
-        raw = json.dumps(data, ensure_ascii=False) if data is not None else None
-        if raw and len(raw) > 20000:
-            raise DriveError("That highlight is too long.")
-        mid = str(mark.get("id") or secrets.token_hex(6))[:32]
-        note = (str(mark.get("note") or "")[:4000]) or None
-        color = (str(mark.get("color") or "")[:20]) or None
-        cur = self.db.one("SELECT created FROM marks WHERE id=?", (mid,))
-        self.db.x(f"INSERT OR REPLACE INTO marks({','.join(self.db.MARK_COLS)}) VALUES({','.join('?' * 10)})",
-                  (mid, chat_id, msg_id, kind, page, raw, color, note, (cur or {}).get("created") or int(time.time()),
-                   ms()))
-        self.db.x("DELETE FROM tombstones WHERE kind='mark' AND id=?", (mid,))
-        self._schedule()
-        return _mark_out(self.db.one(f"SELECT {','.join(self.db.MARK_COLS)} FROM marks WHERE id=?", (mid,)))
-
-    async def delete_mark(self, mark_id: str) -> None:
-        self.db.x("DELETE FROM marks WHERE id=?", (mark_id,))
-        self.db.x("INSERT OR REPLACE INTO tombstones(kind, id, at) VALUES('mark', ?, ?)", (mark_id, ms()))
-        self._schedule()
-
     # ------------------------------------------------------------ copy / send
     async def copy_to_drive(self, chat_id: int, msg_id: int, folder_id: Optional[str]) -> dict:
         """Re-send a file into the Drive channel (no re-upload) so you own a copy."""
@@ -871,7 +848,7 @@ class Drive:
 def _norm(m: dict) -> str:
     def key(coll, e):
         return json.dumps(e, sort_keys=True, default=str)
-    return json.dumps({c: sorted(key(c, e) for e in m.get(c, []) or []) for c in ("folders", "items", "saved", "marks")})
+    return json.dumps({c: sorted(key(c, e) for e in m.get(c, []) or []) for c in ("folders", "items", "saved")})
 
 
 def _folder_out(f: dict) -> dict:
@@ -884,11 +861,3 @@ def _folder_out(f: dict) -> dict:
     return out
 
 
-def _mark_out(m: dict) -> dict:
-    out = {k: v for k, v in m.items() if v is not None}
-    if isinstance(out.get("data"), str):
-        try:
-            out["data"] = json.loads(out["data"])
-        except ValueError:
-            pass
-    return out

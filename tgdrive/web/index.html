@@ -23,6 +23,7 @@
         <input id="q" type="search" spellcheck="false" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest"
                placeholder="Search everything…" title="Search files, captions and chats — e.g. test series, pyq, संविधान" aria-label="Search files">
         <button type="button" class="icon-btn s-clear" id="searchClear" aria-label="Clear search" hidden></button>
+        <kbd class="s-kbd" aria-hidden="true">Ctrl K</kbd>
         <span class="filters-on" id="filtersOn" hidden>Filters on</span>
         <button type="button" class="icon-btn" id="advBtn" aria-expanded="false" aria-controls="adv" title="All search filters"></button>
         <div class="suggest" id="suggest" role="listbox" hidden></div>
@@ -41,10 +42,10 @@
       <div class="side-scroll">
         <nav id="navTop" aria-label="Drive"></nav>
         <div id="navMid"></div>
+        <nav id="navTools" aria-label="Tools"></nav>
         <div class="side-h sources-h collapsible" data-toggle="sources-closed" data-inverse><span>Sources</span><span class="sh-r"><button class="icon-btn tiny" id="chatSortBtn" aria-label="Sort sources" title="Sort sources"></button><span class="sh-chev"></span></span></div>
         <div id="sourcesBody"><input class="chat-filter" id="chatFilter" type="search" placeholder="Filter chats" aria-label="Filter chats">
         <div id="chatList"></div></div>
-        <nav id="navTools" aria-label="Tools"></nav>
       </div>
       <div class="idx" id="indexStatus" aria-live="polite"></div>
     </aside>

@@ -1,19 +1,16 @@
-"""Tests for the 2.1 features: folder sync, drive access (WebDAV), folder rules, subjects, PDF marks,
-photo places, diagnostics, settings export/import and desktop integration."""
+"""Tests for the 2.1 features: folder sync, drive access (WebDAV), folder rules, subjects,
+diagnostics, settings export/import and desktop integration."""
 import asyncio
-import io
 import json
 import os
-import struct
 import time
 import zipfile
-from pathlib import Path
 
 import pytest
 
 from tests.fake import CH, make_account
 from tests.test_core import index_all, run, search
-from tgdrive.drive import merge_manifests
+
 
 H = {"X-TGDrive": "1"}
 
@@ -46,7 +43,10 @@ def folder_files(acc, fid):
 
 
 # -------------------------------------------------------------------- sync
-def test_sync_two_way(tmp_path, fresh_settings):
+def test_sync_two_way(tmp_path, fresh_settings, monkeypatch):
+    from tgdrive import sync as sync_mod
+    monkeypatch.setattr(sync_mod, "QUIET_SECONDS", 0)   # files here are "old enough" at once
+
     async def go():
         acc, client = make_account(tmp_path)
         await index_all(acc)
@@ -160,10 +160,20 @@ def _dav_client(acc):
     return c, f"/dav/{dav.dav_secret()}"
 
 
-def test_webdav(tmp_path, fresh_settings):
+@pytest.fixture
+def portal():
+    """One event loop for all requests of a test (like the real server), so work the app starts in the
+    background (uploads) keeps running between requests."""
+    from anyio.from_thread import start_blocking_portal
+    with start_blocking_portal() as p:
+        yield p
+
+
+def test_webdav(tmp_path, fresh_settings, portal):
     acc, client = make_account(tmp_path)
     run(index_all(acc))
     c, base = _dav_client(acc)
+    c.portal = portal
     assert c.request("PROPFIND", "/dav/wrong-secret/", headers={"Depth": "1"}).status_code == 404
     r = c.request("PROPFIND", base + "/", headers={"Depth": "1"})
     assert r.status_code == 207
@@ -192,7 +202,7 @@ def test_webdav(tmp_path, fresh_settings):
         if "hello.txt" in r.text and acc.db.one("SELECT 1 FROM files WHERE name='hello.txt'"):
             break
         time.sleep(0.05)
-    assert acc.db.one("SELECT 1 FROM files WHERE name='hello.txt'"), r.text
+    assert acc.db.one("SELECT 1 FROM files WHERE name='hello.txt'"), acc.db.q("SELECT status, error FROM transfers")
     from tgdrive import dav
     dav.invalidate_all()
     g = c.get(base + "/My%20Drive/Docs/hello.txt", headers={"Range": "bytes=0-4"})
@@ -284,90 +294,6 @@ def test_subjects_classify_and_query(tmp_path):
     run(go())
 
 
-# ------------------------------------------------------------------ marks
-def test_pdf_marks_and_manifest_merge(tmp_path):
-    async def go():
-        acc, _ = make_account(tmp_path)
-        await index_all(acc)
-        await acc.drive.load()
-        cid, mid = -CH - 101, 1
-        m = await acc.drive.save_mark(cid, mid, {"kind": "highlight", "page": 3, "color": "yellow",
-                                                 "data": {"rects": [[0.1, 0.2, 0.3, 0.02]], "text": "Article 21"}})
-        b = await acc.drive.save_mark(cid, mid, {"kind": "bookmark", "page": 7, "note": "Chapter 2"})
-        marks = acc.drive.marks_for(cid, mid)
-        assert [x["page"] for x in marks] == [3, 7]
-        from tgdrive.drive import DriveError
-        with pytest.raises(DriveError):
-            await acc.drive.save_mark(cid, mid, {"kind": "scribble"})
-        snap = acc.drive.snapshot()
-        assert {x["id"] for x in snap["marks"]} == {m["id"], b["id"]}
-
-        # Deleting on one computer wins over an older copy on another.
-        await acc.drive.delete_mark(b["id"])
-        mine = acc.drive.snapshot()
-        merged = merge_manifests(mine, snap)
-        assert [x["id"] for x in merged["marks"]] == [m["id"]]
-        # A newer edit elsewhere wins.
-        other = json.loads(json.dumps(mine))
-        other["marks"][0]["note"] = "edited elsewhere"
-        other["marks"][0]["mtime"] += 1000
-        merged = merge_manifests(mine, other)
-        assert merged["marks"][0]["note"] == "edited elsewhere"
-        acc.drive.apply(merged)
-        assert acc.drive.marks_for(cid, mid)[0]["note"] == "edited elsewhere"
-        acc.db.close()
-
-    run(go())
-
-
-# ----------------------------------------------------------------- places
-def _jpeg_with_gps(lat, lon):
-    """A minimal big-endian EXIF block with GPS lat/lon and DateTimeOriginal."""
-    def rat(v):
-        d = int(v)
-        m = int((v - d) * 60)
-        s = round(((v - d) * 60 - m) * 60 * 100)
-        return struct.pack(">IIIIII", d, 1, m, 1, s, 100)
-    entries_ifd0 = 2
-    ifd0_off = 8
-    ifd0_size = 2 + entries_ifd0 * 12 + 4
-    exif_off = ifd0_off + ifd0_size
-    exif_size = 2 + 1 * 12 + 4
-    date_off = exif_off + exif_size
-    date = b"2024:03:05 10:20:30\x00"
-    gps_off = date_off + len(date)
-    gps_entries = 4
-    gps_size = 2 + gps_entries * 12 + 4
-    lat_off = gps_off + gps_size
-    lon_off = lat_off + 24
-    t = b"MM\x00*" + struct.pack(">I", ifd0_off)
-    t += struct.pack(">H", entries_ifd0)
-    t += struct.pack(">HHII", 0x8769, 4, 1, exif_off)
-    t += struct.pack(">HHII", 0x8825, 4, 1, gps_off)
-    t += struct.pack(">I", 0)
-    t += struct.pack(">H", 1) + struct.pack(">HHII", 0x9003, 2, len(date), date_off) + struct.pack(">I", 0)
-    t += date
-    t += struct.pack(">H", gps_entries)
-    t += struct.pack(">HHI", 1, 2, 2) + (b"N" if lat >= 0 else b"S") + b"\x00\x00\x00"
-    t += struct.pack(">HHII", 2, 5, 3, lat_off)
-    t += struct.pack(">HHI", 3, 2, 2) + (b"E" if lon >= 0 else b"W") + b"\x00\x00\x00"
-    t += struct.pack(">HHII", 4, 5, 3, lon_off)
-    t += struct.pack(">I", 0)
-    t += rat(abs(lat)) + rat(abs(lon))
-    app1 = b"Exif\x00\x00" + t
-    return b"\xff\xd8\xff\xe1" + struct.pack(">H", len(app1) + 2) + app1 + b"\xff\xd9"
-
-
-def test_exif_gps():
-    from tgdrive.places import parse_exif
-    r = parse_exif(_jpeg_with_gps(28.6139, 77.209))
-    assert abs(r["lat"] - 28.6139) < 0.001 and abs(r["lon"] - 77.209) < 0.001
-    r = parse_exif(_jpeg_with_gps(-33.8688, -151.2093))
-    assert r["lat"] < 0 and r["lon"] < 0
-    assert parse_exif(b"\xff\xd8no exif here") == {}
-    assert parse_exif(b"Exif\x00\x00MM\x00*\xff\xff\xff\xff") == {}  # broken offsets don't crash
-
-
 # -------------------------------------------------- diagnostics & settings
 def test_diagnostics_and_settings_io(tmp_path, fresh_settings):
     from tgdrive import diagnostics
@@ -442,10 +368,9 @@ def test_crash_and_settings_api(tmp_path, fresh_settings):
     ids = [m["id"] for m in msgs]
     assert ids == sorted(ids) and 5 in ids and len(ids) <= 5
     assert next(m for m in msgs if m["id"] == 5)["target"]
-    # Marks through the API.
-    mk = c.post(f"/api/a/{acc.uid}/marks/{-CH - 101}/1", json={"kind": "bookmark", "page": 2}, headers=H).json()
-    assert c.get(f"/api/a/{acc.uid}/marks/{-CH - 101}/1").json()["marks"][0]["id"] == mk["id"]
-    assert c.delete(f"/api/a/{acc.uid}/marks/{mk['id']}", headers=H).json()["ok"]
+    # Removed features stay removed: no places or PDF marks routes.
+    assert c.get(f"/api/a/{acc.uid}/places", headers=H).status_code == 404
+    assert c.get(f"/api/a/{acc.uid}/marks/{-CH - 101}/1", headers=H).status_code == 404
     acc.db.close()
 
 

@@ -31,6 +31,9 @@ DEFAULTS: dict[str, Any] = {
     "list_columns": ["name", "chat", "date", "size", "kind"],
     "list_widths": {},
     "slideshow_seconds": 4,
+    "sidebar_width": 272,         # px; drag the sidebar's edge or Settings → Appearance
+    "sidebar_hidden": False,      # Ctrl+B, the ☰ button, or the « on the sidebar's edge
+    "pdf_card_previews": True,    # first page of PDFs as their card picture (rendered once, kept on disk)
     # Search
     "search_mode": "smart",       # smart | exact
     "search_semantic": True,
@@ -38,12 +41,10 @@ DEFAULTS: dict[str, Any] = {
     "search_synonyms": "",
     "search_live": True,
     "search_scope_default": "everywhere",  # everywhere | here
-    # Subjects (auto-tagging) and places
+    # Subjects (auto-tagging)
     "subjects_enabled": True,
     "subjects_builtin": True,
     "subjects_custom": "",
-    "places_scan": False,         # read EXIF locations of image files (first 128 KB of each)
-    "map_online_tiles": False,    # detailed OpenStreetMap tiles in the Map view (goes online)
     # Drive as a disk (WebDAV) and folder sync
     "dav_enabled": False,
     "dav_secret": "",
@@ -114,6 +115,7 @@ CHOICES = {
 LIST_COLUMNS = {"name", "chat", "folder", "date", "size", "kind", "ext", "duration", "dims", "tags", "sender",
                 "subject", "caption"}
 RANGES = {
+    "sidebar_width": (180, 560),
     "parallel_transfers": (1, 10), "upload_workers": (1, 8), "download_workers": (1, 8),
     "stream_cache_mb": (0, 200_000), "stream_prefetch": (0, 16), "index_wait": (0.0, 10.0),
     "resync_minutes": (5, 1440), "verify_per_hour": (0, 200_000), "proxy_port": (1, 65535),
@@ -154,6 +156,17 @@ class Settings:
             tmp.write_text(json.dumps(self.data, indent=2, ensure_ascii=False), encoding="utf-8")
             os.chmod(tmp, 0o600)
             tmp.replace(self.path)
+
+    def refresh(self) -> None:
+        """Re-read the file if another process (the desktop app's service) changed it."""
+        try:
+            mtime = self.path.stat().st_mtime_ns
+        except OSError:
+            return
+        if mtime != getattr(self, "_mtime", None):
+            self._mtime = mtime
+            with self.lock:
+                self.load()
 
     def get(self, key: str, default: Any = None) -> Any:
         return self.data.get(key, DEFAULTS.get(key, default))
