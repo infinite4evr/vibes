@@ -172,6 +172,8 @@ fun FilesPermissionCard(modifier: Modifier = Modifier, reason: String = "to find
             if (Perms.needsSettingsForFiles) context.startSafely(Perms.allFilesIntent(context), Perms.allFilesFallbackIntent())
             else launcher.launch(Perms.legacyStorage)
         }) { Text("Allow access") }
+        Spacer(Modifier.height(4.dp))
+        RestrictedSettingsHint()
     }
 }
 
@@ -192,6 +194,26 @@ fun UsagePermissionCard(reason: String, modifier: Modifier = Modifier) {
         )
         Spacer(Modifier.height(8.dp))
         TextButton(onClick = { context.startSafely(Perms.usageIntent(context)) }) { Text("Open settings") }
+        RestrictedSettingsHint()
+    }
+}
+
+/**
+ * Android 13+ blocks usage access (and similar) for apps installed from an APK file until the
+ * user unlocks "restricted settings" in the app's info page. Explain how, with a shortcut there.
+ */
+@Composable
+fun RestrictedSettingsHint(modifier: Modifier = Modifier) {
+    if (android.os.Build.VERSION.SDK_INT < 33) return
+    val context = LocalContext.current
+    androidx.compose.foundation.layout.Column(modifier) {
+        Text(
+            "Says \"Restricted setting\"? Android blocks this for apps installed from a file. Tap OK there, then " +
+                "open App info, tap ⋮ in the top corner, choose \"Allow restricted settings\" and try again.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        TextButton(onClick = { context.startSafely(Perms.appDetailsIntent(context.packageName)) }) { Text("Open App info") }
     }
 }
 

@@ -78,6 +78,7 @@ import app.lumaclean.ui.components.ConfirmDialog
 import app.lumaclean.ui.components.EmptyState
 import app.lumaclean.ui.components.IconBadge
 import app.lumaclean.ui.components.ItemRow
+import app.lumaclean.ui.components.RestrictedSettingsHint
 import app.lumaclean.ui.components.LocalContainer
 import app.lumaclean.ui.components.LocalNavigator
 import app.lumaclean.ui.components.LumaCard
@@ -356,6 +357,7 @@ fun PermissionRows() {
             if (Build.VERSION.SDK_INT >= 33) notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             else context.startSafely(Perms.notificationSettingsIntent(context))
         }
+        if (!perms.allFiles || !perms.usage) RestrictedSettingsHint(Modifier.padding(horizontal = 8.dp))
     }
 }
 
