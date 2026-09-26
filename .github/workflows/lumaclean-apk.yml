@@ -29,10 +29,10 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      # the action's default package list includes "tools", which no longer exists
       - uses: android-actions/setup-android@v3
-
-      - name: Install Android SDK Platform 37
-        run: sdkmanager "platforms;android-37" "platform-tools"
+        with:
+          packages: "platforms;android-37 platform-tools"
 
       - uses: gradle/actions/setup-gradle@v4
         with:
