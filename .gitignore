@@ -4,7 +4,9 @@
 #
 #  Layout:
 #    commands/     personal CLI tools (bash, Python, Node)
-#    linux-setup/  machine setup scripts + "pc" command center (Python/GTK)
+#    lumaclean/    Android app (Kotlin, Gradle)
+#    pc-command-center/  "pc" command center (Python/GTK)
+#    ubuntu-setup/ machine setup scripts (bash)
 #    tgdrive/      Telegram-backed drive (Python server, desktop app, web UI)
 #
 #  How this file is organised:
@@ -16,10 +18,10 @@
 #       over any broad rule above them.
 #
 #  Patterns deliberately left OUT, because they would hide real source here:
-#    lib/     linux-setup/lib/ is shell source (the stock Python template ignores lib/)
+#    lib/     ubuntu-setup/lib/ is shell source (the stock Python template ignores lib/)
 #    vendor/  tgdrive/web/vendor/pdfjs is a bundled, tracked dependency
 #    bin/     generic enough to catch real scripts
-#    data     a bare "data" catches linux-setup/pc/data and pcctl/gui/data
+#    data     a bare "data" catches pc-command-center/data and pcctl/gui/data
 #    *.dat    upower test fixtures use it
 #    secrets.*  would hide src/pcctl/core/secrets.py
 #    package-lock.json / lockfiles  are committed on purpose (reproducible installs)
@@ -126,7 +128,7 @@ $RECYCLE.BIN/
 # ----------------------------------------------------------------------------
 
 # VS Code: ignore local state, keep shareable config if one is ever added.
-# (linux-setup/dotfiles/vscode-settings.json is not inside .vscode/, so it's unaffected.)
+# (ubuntu-setup/dotfiles/vscode-settings.json is not inside .vscode/, so it's unaffected.)
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -572,7 +574,7 @@ kubeconfig
 
 
 # ----------------------------------------------------------------------------
-# 14. LINUX PACKAGING   (tgdrive AppImage, linux-setup)
+# 14. LINUX PACKAGING   (tgdrive AppImage, ubuntu-setup)
 # ----------------------------------------------------------------------------
 *.AppImage
 *.AppImage.zsync
@@ -692,8 +694,8 @@ commands/stack-highlights/dev/original-upload/*.zip
 **/source-pdfs/*
 !**/source-pdfs/README.md
 
-# ---- linux-setup/ ----------------------------------------------------------
-# pc/data/ (polkit policy + pc-admin helper) and pcctl/gui/data/ (app icon)
+# ---- pc-command-center/ and ubuntu-setup/ ------------------------------------
+# pc-command-center/data/ (polkit policy + pc-admin helper) and pcctl/gui/data/ (app icon)
 # are source and are tracked. Nothing extra to ignore beyond the generic
 # Python rules above.
 
@@ -717,7 +719,7 @@ tgdrive/packaging/build/
 
 # Test fixtures are deliberately realistic samples (fake passwd/shadow,
 # clamscan.log, shell histories, upower .dat, ...). Keep all of them.
-!linux-setup/pc/tests/fixtures/**
+!pc-command-center/tests/fixtures/**
 !**/tests/fixtures/**
 !**/tests/golden/**
 
