@@ -24,6 +24,7 @@ import com.example.lumaclean.ui.screens.*
 
 enum class RootPage { HOME, CLEAN, APPS, SETTINGS }
 
+@OptIn(ExperimentalMaterial3Api::class) // CenterAlignedTopAppBar
 @Composable
 fun LumaCleanApp(vm: MainViewModel = viewModel()) {
     val context = LocalContext.current
