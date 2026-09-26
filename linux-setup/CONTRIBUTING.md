@@ -5,12 +5,14 @@
 From `pc/`:
 
 ```bash
+python -m pip install -e '.[dev]'     # once: pytest, pytest-cov, ruff
 python -m pytest -q
 python -m compileall -q src tests
-bash -n ../setup.sh ../lib/*.sh
+ruff check src tests                  # configured in pyproject.toml; 52 findings today, add no new ones
+bash -n ../setup.sh ../lib/*.sh data/pc-admin
 ```
 
-Install developer extras with `python -m pip install -e '.[dev]'` when desired.
+These are the same checks as `.github/workflows/ci.yml` (plus ruff). That workflow does not run yet: GitHub only runs workflows from the root of the `vibes` repository, so run the checks locally before pushing.
 
 ## Safety rules
 

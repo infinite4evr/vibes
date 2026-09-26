@@ -5,7 +5,7 @@
 **Handover date:** 26 September 2026  
 **Primary product:** PC Command Center (GTK 4 + libadwaita desktop application)  
 **Also included:** Textual terminal UI, `pc` CLI, Ubuntu setup/cleanup shell scripts  
-**Current automated verification:** **216 passed, 2 skipped** (`pytest -q -rs`)  
+**Current automated verification:** 216 passed, 2 skipped at the 2.2.4 release. Re-run on 26 September 2026 inside the `vibes` monorepo (Python 3.11, pytest 9.1): **214 passed, 2 failed, 2 skipped**; see section 14.  
 **Important:** This file supersedes the older `docs/HANDOVER.md`. Start here before modifying the project.
 
 ---
@@ -146,13 +146,13 @@ Version `2.2.0` now has:
 - additional execution-safety regression tests,
 - release/security/contribution documentation.
 
-Automated validation at handover time:
+Automated validation at the 2.2.2 handover (see section 14 for the current state):
 
 ```text
 211 passed, 2 skipped
 ```
 
-The two skipped tests are the local GTK smoke tests when a display + GTK/libadwaita Python runtime are unavailable. CI includes an Ubuntu/Xvfb GTK smoke job for that reason.
+The two skipped tests are the local GTK smoke tests when a display + GTK/libadwaita Python runtime are unavailable. An Ubuntu/Xvfb GTK smoke job exists in `.github/workflows/ci.yml` for that reason, but it does not currently run (see section 5.14).
 
 ---
 
@@ -979,6 +979,8 @@ CI performs:
 - pytest,
 - shell syntax validation.
 
+**Where CI actually runs:** this project now lives in the `linux-setup/` folder of the `vibes` monorepo. GitHub only runs workflows from the repository root's `.github/workflows/`, so `linux-setup/.github/workflows/ci.yml` is **not executed**. None of the jobs described here run on push until they are moved into the root workflow (with `working-directory: linux-setup/pc` and paths adjusted).
+
 A separate GTK smoke job installs:
 
 ```text
@@ -1366,11 +1368,18 @@ cd pc
 python3 -m pytest -q -rs
 ```
 
-Result:
+Result at the 2.2.2 handover: `211 passed, 2 skipped`; at the 2.2.4 release: `216 passed, 2 skipped`.
+
+Re-run on 26 September 2026 in the `vibes` monorepo (Python 3.11, pytest 9.1, `pip install -e '.[dev]'`):
 
 ```text
-211 passed, 2 skipped
+214 passed, 2 failed, 2 skipped
 ```
+
+The two failures:
+
+- `test_tweaks_dev.py::test_uv_python_list` is out of date. The v2.2 change "safer uv install fallback without a pipe-to-shell path" made `devsetup.uv_install_steps()` return `python3 -m pip install --user uv` when pipx is missing, but the test still expects `pipx` or `bash`. It passes only on machines with pipx installed.
+- `test_execution_safety.py::test_debug_files_are_private` exposes a real bug in `core/debug.py`. `configure(True)` only adds its file handler when `not _logger.handlers`, and pytest attaches its own capture handlers to the `pcctl` logger, so no debug-log file is written. The same happens in the app whenever any other handler is attached first. `configure(False)` also never detaches the file handler, so a later `LOG_FILE` is ignored. Fix: keep a reference to the module's own handler instead of checking whether the logger has any handlers.
 
 Skip reason:
 
@@ -2005,7 +2014,7 @@ tests/test_gui_smoke.py
 Reason: needs a display and Python with GTK 4 + libadwaita
 ```
 
-The repository CI contains a GTK/Xvfb smoke job to exercise GUI startup/rendering in an Ubuntu runner.
+`linux-setup/.github/workflows/ci.yml` contains a GTK/Xvfb smoke job to exercise GUI startup/rendering in an Ubuntu runner. It only runs once moved to the repository root (section 5.14).
 
 ---
 
@@ -2070,7 +2079,7 @@ If you only have five minutes before continuing work:
 # 29. Final status
 
 **Version:** `2.2.4`  
-**Automated tests:** `216 passed, 2 skipped`  
+**Automated tests:** `216 passed, 2 skipped` at release; `214 passed, 2 failed, 2 skipped` on re-run (section 14)  
 **Primary UI:** GTK 4/libadwaita  
 **Debug logging:** implemented, opt-in, rotating, redacted  
 **Support bundle:** implemented  
@@ -2084,7 +2093,7 @@ If you only have five minutes before continuing work:
 **Restore/archive hardening:** implemented  
 **Cleanup symlink guard:** implemented  
 **Atomic/private state:** implemented in security-sensitive paths  
-**GTK smoke CI:** implemented  
+**GTK smoke CI:** written, but not running: the workflow must move to the repository root (section 5.14)  
 **Structured privileged D-Bus/helper service:** not yet implemented  
 **Universal Action registry/transaction Undo engine:** not yet implemented  
 **Native `.deb`:** not yet implemented  

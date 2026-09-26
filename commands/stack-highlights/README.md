@@ -29,7 +29,7 @@ Run `stack-highlights --help` for every option.
 | `Makefile` | runs the tests |
 | `requirements.txt` | the pinned PyMuPDF version |
 | `stack-highlights.toml.example` | example config, presets and profiles |
-| `dev/` | the full development archive (not tracked by git; see below) |
+| `dev/` | the full development archive (tracked, except the test PDF; see below) |
 
 Keep `stack-highlights` and `stackhl/` together. `env.sh` puts this folder on
 your PATH, so nothing needs linking or copying.

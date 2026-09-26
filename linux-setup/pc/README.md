@@ -5,7 +5,7 @@ A control center for your whole Ubuntu computer, in two forms that share one eng
 - **PC Command Center**, a native desktop app (GTK 4 + libadwaita). It has a clean, neutral look with GNOME's accent colour, or Catppuccin if you prefer (Preferences → Colours). Light and dark follow GNOME's switch. Open it from the dock or app grid, or run `pc-gui`.
 - **pc**, the same thing in the terminal. Type `pc`.
 
-Version 2.2 builds on the original feature audit and adds safety hardening, diagnostics, background-task control and desktop-shell polish while retaining the broad feature set that filled about 110 gaps found in a feature audit against Stacer, BleachBit, Czkawka, Mission Center, Resources, Cockpit, Warehouse, Flatseal, Timeshift, GRUB Customizer, Windows Task Manager, Microsoft PC Manager, CleanMyMac and others. The full list is in `../docs/FEATURE-AUDIT.md`.
+Version 2.2 (currently 2.2.4; see `../CHANGELOG.md`) builds on the original feature audit and adds safety hardening, diagnostics, background-task control and desktop-shell polish while retaining the broad feature set that filled about 110 gaps found in a feature audit against Stacer, BleachBit, Czkawka, Mission Center, Resources, Cockpit, Warehouse, Flatseal, Timeshift, GRUB Customizer, Windows Task Manager, Microsoft PC Manager, CleanMyMac and others. The full list is in `../docs/FEATURE-AUDIT.md`.
 
 ## The desktop app
 
@@ -39,7 +39,7 @@ Every action shows the exact commands first. Anything that needs admin rights as
 - Right-click any table row to copy it, export the table to CSV, or run actions. Right-click the dock icon for Clean up, Updates, Processes, Storage, Fix a problem and Why is my PC slow?
 - The first run opens a welcome screen that turns on the weekly checkup, alerts and the Ctrl+Shift+Esc shortcut in one place.
 
-Shortcuts: **Ctrl+K** go to / do anything · **Ctrl+1…9** pages · **F5** refresh · **Ctrl+F** search · **Ctrl+,** preferences · **Ctrl+H** activity · **Ctrl+Q** quit.
+Shortcuts: **Ctrl+K** (or **Ctrl+P**) go to / do anything · **Ctrl+1…9** pages · **F5** or **Ctrl+R** refresh · **Ctrl+F** search · **Ctrl+,** preferences · **Ctrl+H** activity · **Ctrl+Shift+T** background tasks · **Ctrl+Shift+S** show/hide sidebar · **Ctrl+?** all shortcuts · **Ctrl+Q** quit.
 
 ## Terminal commands
 
@@ -78,4 +78,4 @@ Settings: `~/.config/pc/config.json` (`theme`, `icons`: auto/nerd/plain, `projec
 
 It also offers the weekly checkup and background alerts. `bash ../setup.sh app` updates just the desktop app. The app can also update itself from this folder: Maintenance → Setup → This app.
 
-Run from source: `PYTHONPATH=src /usr/bin/python3 -m pcctl.gui`. Tests: `python3 -m pytest` (the project config adds `src` automatically). The GUI smoke test opens every page in light and dark; it needs a display and runs only when one is available.
+Run from source: `PYTHONPATH=src /usr/bin/python3 -m pcctl.gui`. Tests: `python3 -m pip install -e '.[dev]' && python3 -m pytest` (the project config adds `src` automatically). The CI workflow for them is in `../.github/workflows/ci.yml`, but GitHub only runs workflows from the repository root, so it does not run in the `vibes` repository until it is moved there. The GUI smoke test opens every page in light and dark; it needs a display and runs only when one is available.

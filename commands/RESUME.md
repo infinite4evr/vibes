@@ -14,7 +14,7 @@
 
 ## The todo.txt list: built
 
-Every item in `../todo.txt` has an option (see `stack-highlights --help`, `md-to-pdf --help`,
+Every item in `../todo.txt` (kept locally, not in git) has an option (see `stack-highlights --help`, `md-to-pdf --help`,
 `recall-sheet --help`): `--plain-titles`, `--context clause|comma|paragraph`,
 `--word-window N --word-side both|left|right`, `-p bl|br|tl|tr|bc|tc|none`, `--compact` /
 `--par-skip`, `--space-every N:M`, `--italic-colors` / `--color-map`; the `\1 \2` fix and the

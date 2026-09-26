@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# pdf-merge: merge all PDFs in a directory into one PDF, in natural filename order
+# merge-pdf: merge all PDFs in a directory into one PDF, in natural filename order
 #
-# Usage: pdf-merge [directory] [-o|--output OUTPUT.pdf]
+# Usage: merge-pdf [directory] [-o|--output OUTPUT.pdf]
 #   directory      Directory containing PDFs to merge (default: current directory)
 #   -o, --output   Output file path (default: <directory>/merged.pdf)
 #
@@ -10,7 +10,7 @@
 set -euo pipefail
 
 usage() {
-    echo "Usage: pdf-merge [directory] [-o|--output OUTPUT.pdf]"
+    echo "Usage: merge-pdf [directory] [-o|--output OUTPUT.pdf]"
 }
 
 die() {

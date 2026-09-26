@@ -1,21 +1,21 @@
-# TG Drive 2.3.1
+# TG Drive 2.3.2
 
 Every file in your Telegram (every channel, group, private chat, bot and Saved Messages) in one place that works like Google Drive: folders, search that understands what you mean, streaming, downloads and uploads. It signs in as your own account and runs on your computer. Nothing goes anywhere except Telegram.
 
 ## Install on Linux
 
-**AppImage (recommended).** Download `TG_Drive-2.3.1-x86_64.AppImage`, then:
+**AppImage (recommended).** Download `TG_Drive-2.3.2-x86_64.AppImage`, then:
 
 ```bash
-chmod +x TG_Drive-2.3.1-x86_64.AppImage
-./TG_Drive-2.3.1-x86_64.AppImage
+chmod +x TG_Drive-2.3.2-x86_64.AppImage
+./TG_Drive-2.3.2-x86_64.AppImage
 ```
 
 It runs on any 64-bit Linux from about 2019 onwards (glibc 2.28+: Ubuntu 20.04+, Debian 10+, Fedora 29+, Mint 20+, RHEL/Rocky/Alma 8+, openSUSE 15.1+, Arch, Manjaro, Pop!_OS …). The first start adds TG Drive to your applications menu. To remove that entry: `./TG_Drive-*.AppImage --uninstall-desktop-entry`.
 
 If it doesn't start, install FUSE (`sudo apt install fuse3`, `sudo dnf install fuse3`, `sudo pacman -S fuse3`) or run it with `--appimage-extract-and-run`.
 
-**Straight from this folder.** `bash start.sh` sets everything up on first run and opens TG Drive. `bash start.sh --install` adds it to your applications menu with its icon, creates a `tgdrive` command and adds **Send to TG Drive** to the right-click menu of Nautilus/Files, Nemo, Caja, Dolphin and Thunar; `bash start.sh --uninstall` removes all of that. `--browser` opens it in your web browser, `--demo` tries it on made-up data.
+**Straight from this folder.** `bash start.sh` sets everything up on first run and opens TG Drive. `bash start.sh --install` adds it to your applications menu with its icon, creates a `tgdrive` command and adds **Send to TG Drive** to the right-click menu of Nautilus/Files, Nemo, Caja, Dolphin and Thunar; `bash start.sh --uninstall` removes all of that. `--browser` opens it in your web browser, `--demo` tries it on made-up data, `--reinstall` rebuilds its Python environment from scratch.
 
 **From source** (ARM computers, older systems, or if you prefer): `packaging/install_from_source.sh` creates a private Python environment, installs the dependencies and adds TG Drive to the menu. `--no-gui` skips the desktop window and opens TG Drive in your browser instead.
 
