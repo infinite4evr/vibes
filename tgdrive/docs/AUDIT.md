@@ -1,8 +1,8 @@
 # TG Drive: feature audit and roadmap
 
-Version 2.0.0 · September 2026
+Written for 2.0.0; statuses and roadmap updated for 2.3.2 · September 2026
 
-This audit covers TG Drive 0.1 (the web app delivered first) against what a Drive-style manager for **your** Telegram needs: 437,688 indexed files (4.8 TB) across 383k channel files. The biggest chat has 49,749 files; 146k are documents (mostly PDFs without previews) and 15k are videos (mostly long lectures). Each gap is marked **Built** (in 2.0) or **Next** (not built yet, listed in the roadmap at the end).
+This audit covers TG Drive 0.1 (the web app delivered first) against what a Drive-style manager for **your** Telegram needs: 437,688 indexed files (4.8 TB) across 383k channel files. The biggest chat has 49,749 files; 146k are documents (mostly PDFs without previews) and 15k are videos (mostly long lectures). Each gap is marked **Built** (in 2.0 unless another version is given), **Removed** (built, then taken out) or **Next** (not built yet, listed in the roadmap at the end). Section 1 records the 0.1 → 2.0 search fixes as they were measured then.
 
 ## 1. "Search doesn't respond": root causes and fixes
 
@@ -50,7 +50,15 @@ Now, with a warm cache: an empty query answers in about 4 ms, `polity` in 190 ms
 | Storage analytics, duplicate finder, index manager, activity log, settings (12 sections) | **Built** |
 | Mobile/narrow layout | **Built** (responsive) |
 | Screen-reader labels, focus handling, reduced motion | **Built** (baseline; a full WCAG audit is **Next**) |
-| Interface translations (Hindi etc.) | **Next** |
+| Virtualised grid and list (smooth at 100k+ results), choosable/reorderable/resizable list columns, albums shown as stacks | **Built** (2.1) |
+| Photo timeline with a date scrubber, slideshow | **Built** (2.1) |
+| Split view (two panes) and extra windows; "Show in chat" context view | **Built** (2.1) |
+| Custom accent colour, high-contrast theme, text size; folder tiles/cards/list with cover pictures, emoji icons and colours | **Built** (2.1) |
+| Map of geotagged photos (Places) | **Removed** (built in 2.1, taken out in 2.3) |
+| Preview on click, progress bar/spinners/skeletons, motion (off with reduced motion), Inter typeface, own title bar | **Built** (2.2) |
+| Hide duplicates: one card per file with a copies count | **Built** (2.2) |
+| Resizable and hideable sidebar, one View menu, settings search, first PDF page drawn on PDF cards | **Built** (2.3) |
+| Interface translations (Hindi etc.), command palette | **Next** |
 
 ### Organisation
 | Gap | Status |
@@ -59,7 +67,8 @@ Now, with a warm cache: an empty query answers in about 4 ms, `polity` in 190 ms
 | Stars, tags, notes; bulk rename with patterns; rename (alias) without touching Telegram | **Built** |
 | Undo (Ctrl+Z), manifest backups and restore, merge between computers (newest wins, tombstones) | **Built** |
 | Save a copy to Drive, send or forward to any chat | **Built** |
-| A file in several folders, smart (rule-based) folders, trash with restore | **Next** |
+| Smart (rule-based) folders and auto-filing folders; automatic subject tags (`subject:polity`) | **Built** (2.1) |
+| A file in several folders, trash with restore | **Next** |
 
 ### Streaming and preview
 | Gap | Status |
@@ -69,7 +78,8 @@ Now, with a warm cache: an empty query answers in about 4 ms, `polity` in 190 ms
 | Resume where you left off (viewer, background player, native player), progress bars, watched ticks | **Built** |
 | Background audio player with a queue; auto-play next | **Built** |
 | Open in VLC/mpv; folder or search as an .m3u playlist | **Built** |
-| PDF viewer, text viewer, image zoom, neighbour prefetch | **Built** |
+| PDF viewer (zoom, fit to width, go to page, copy text), text viewer, image zoom, neighbour prefetch | **Built** |
+| PDF highlights, bookmarks and reading position | **Removed** (built in 2.1, taken out in 2.3) |
 | Subtitles, audio-track choice, on-the-fly transcoding, Office/EPUB/archive previews | **Next** |
 
 ### Transfers
@@ -81,7 +91,10 @@ Now, with a warm cache: an empty query answers in about 4 ms, `polity` in 190 ms
 | Upload into any chat with a caption; as a document or as media (falls back to a file if Telegram refuses it as a photo) | **Built** |
 | Stream cache reused by downloads; local copies detected | **Built** |
 | Notifications when transfers finish | **Built** |
-| Bandwidth limit, scheduling, auto-download rules, two-way folder sync, >4 GB splitting, client-side encryption | **Next** |
+| Two-way sync of a local folder with a Drive folder (preview first, asks before large removals, nothing deleted outright) | **Built** (2.1) |
+| Paste (Ctrl+V) files or a screenshot to upload | **Built** (2.1) |
+| Uploads from a part queue, free-space checks, size checks on every piece from Telegram, crash-safe cache writes | **Built** (2.3) |
+| Bandwidth limit, scheduling, auto-download rules, >4 GB splitting, client-side encryption, checksum verification of downloads | **Next** |
 
 ### Indexing and Telegram
 | Gap | Status |
@@ -105,13 +118,16 @@ Now, with a warm cache: an empty query answers in about 4 ms, `polity` in 190 ms
 ### Desktop app
 | Gap | Status |
 | --- | --- |
-| Native window (Qt WebEngine), single instance, tray (pause indexing, open downloads), close to tray, start minimised, autostart | **Built** |
+| Native window (Qt WebEngine), single instance, tray (pause indexing, open downloads), close to tray, start minimised, autostart | **Built** (tray, close-to-tray and autostart are opt-in since 2.3.2: closing the window quits) |
+| Window and service in two processes; the window restarts the service if it stops; quitting takes about a second | **Built** (2.3, 2.3.2) |
+| TG Drive mounted in the file manager (WebDAV on 127.0.0.1 with a secret address) | **Built** (2.1) |
+| "Send to TG Drive" in Nautilus, Nemo, Caja, Dolphin and Thunar; `tgdrive` command | **Built** (2.1) |
 | Applications-menu entry and icons, installed automatically by the AppImage | **Built** |
 | Native file/folder pickers, desktop notifications, links opened in the browser or Telegram | **Built** |
 | Native media player window | **Built** |
 | Browser mode fallback (`--browser`), software rendering switch (`--no-gpu`) | **Built** |
 | AppImage for x86_64 (glibc 2.28+), source installer for everything else | **Built** |
-| Auto-update, Flatpak/.deb/.rpm/AUR, ARM64, Windows/macOS | **Next** |
+| Auto-update, Flatpak/.deb/.rpm/AUR, ARM64, Windows/macOS, MPRIS media controls, GNOME/KRunner search provider | **Next** |
 
 ### Security and privacy
 | Gap | Status |
@@ -129,15 +145,17 @@ Now, with a warm cache: an empty query answers in about 4 ms, `polity` in 190 ms
 ### Reliability and maintenance
 | Gap | Status |
 | --- | --- |
-| Versioned schema migrations (v1 → v3) that keep all data; search index rebuilt in the background while the app stays usable | **Built** |
+| Versioned schema migrations (now v1 → v6) that keep all data; search index rebuilt in the background while the app stays usable | **Built** |
 | Optimise, vacuum, integrity check, rebuild search/meaning index, clear caches, CSV export | **Built** |
 | Rotating log file with an in-app viewer | **Built** |
-| 18 automated tests, including a 60k-file scale test and an old-index upgrade test; the whole suite also passes on the bundled runtime | **Built** |
-| Crash reporter, diagnostics bundle, settings export/import | **Next** |
+| 65 automated tests, including a 60k-file scale test and an old-index upgrade test; the whole suite also passes on the bundled runtime | **Built** (18 in 2.0) |
+| Crash reporter, diagnostics bundle with personal details removed, settings export/import | **Built** (2.1; crash reports extended in 2.3) |
+| Gentle / Full speed / Paused background work, CPU-use measurement per part of the service | **Built** (2.3.1) |
+| Continuous integration for the test suite | **Next** |
 
 ## 3. Roadmap: everything that could still be added
 
-Grouped by area and roughly ordered by value within each group.
+Grouped by area and roughly ordered by value within each group. Items struck through have been built since 2.0 (or built and later removed); the numbering is kept so older references still match.
 
 **Search and discovery**
 1. Full-text search inside PDFs, DOCX, PPTX, EPUB and TXT (opt-in per chat and size cap, text extracted while streaming)
@@ -157,17 +175,17 @@ Grouped by area and roughly ordered by value within each group.
 15. Synonym suggestions mined from your file names
 
 **Browsing and interface**
-16. Virtualised grid (recycled cards) for smooth scrolling through 100k+ results
-17. Photo timeline with a date scrubber
+16. ~~Virtualised grid (recycled cards) for smooth scrolling through 100k+ results~~ (built in 2.1)
+17. ~~Photo timeline with a date scrubber~~ (built in 2.1)
 18. ~~Map of geotagged photos~~ (built in 2.1, removed in 2.3)
-19. Slideshow mode
-20. Customisable list columns (choose, resize, reorder)
-21. Dual-pane view and multiple windows or tabs
-22. Chat context view: the files around a message, with replies and threads
-23. Albums shown as stacks in the grid
-24. Folder cover images and emoji icons
+19. ~~Slideshow mode~~ (built in 2.1)
+20. ~~Customisable list columns (choose, resize, reorder)~~ (built in 2.1)
+21. ~~Dual-pane view and multiple windows or tabs~~ (built in 2.1)
+22. ~~Chat context view: the files around a message, with replies and threads~~ (built in 2.1)
+23. ~~Albums shown as stacks in the grid~~ (built in 2.1)
+24. ~~Folder cover images and emoji icons~~ (built in 2.1)
 25. Hindi and other interface languages; right-to-left support
-26. Custom accent colour, high-contrast theme, font-size setting
+26. ~~Custom accent colour, high-contrast theme, font-size setting~~ (built in 2.1)
 27. Onboarding tour and in-app help
 28. Full WCAG 2.2 AA accessibility audit
 29. Command palette (Ctrl+Shift+P)
@@ -175,7 +193,7 @@ Grouped by area and roughly ordered by value within each group.
 
 **Organisation**
 31. A file in several folders (shortcuts)
-32. Smart folders: rules that file automatically (e.g. PDFs from Vision IAS with "polity" go to Polity)
+32. ~~Smart folders: rules that file automatically (e.g. PDFs from Vision IAS with "polity" go to Polity)~~ (built in 2.1)
 33. Auto-tagging by rules or AI (subject, paper, year)
 34. Trash: deletions go to a private channel first, restorable for 30 days
 35. Version groups: newer uploads of the same document are grouped
@@ -203,7 +221,7 @@ Grouped by area and roughly ordered by value within each group.
 **Transfers and sync**
 54. Bandwidth limit and scheduled transfers (off-peak)
 55. Auto-download rules (new files from a chat go to a folder on disk)
-56. Two-way sync of a local folder with a Drive folder (Dropbox-style)
+56. ~~Two-way sync of a local folder with a Drive folder (Dropbox-style)~~ (built in 2.1)
 57. Backup mode: one-way backup of a folder, deduplicated
 58. Transparent splitting and joining of files over 2 GB / 4 GB
 59. Client-side encryption of uploads, decrypted transparently when streaming
@@ -211,8 +229,8 @@ Grouped by area and roughly ordered by value within each group.
 61. Reorder the queue and set priorities
 62. Rules for name conflicts (rename, skip, overwrite)
 63. Export a whole chat's files to disk
-64. "Send to TG Drive" in file managers (Nautilus, Dolphin, Nemo) and a browser extension
-65. Paste from the clipboard (Ctrl+V) to upload
+64. ~~"Send to TG Drive" in file managers (Nautilus, Dolphin, Nemo)~~ (built in 2.1) and a browser extension
+65. ~~Paste from the clipboard (Ctrl+V) to upload~~ (built in 2.1)
 
 **Indexing and Telegram**
 66. Takeout sessions for faster first indexing of very large accounts
@@ -226,7 +244,7 @@ Grouped by area and roughly ordered by value within each group.
 74. Session manager: list and end other Telegram sessions
 
 **Desktop integration**
-75. Mount TG Drive as a drive (FUSE or WebDAV), so any app can open files
+75. ~~Mount TG Drive as a drive (FUSE or WebDAV), so any app can open files~~ (built in 2.1, WebDAV)
 76. GNOME Shell search provider and KRunner plugin
 77. Global quick-search hotkey
 78. MPRIS media controls (keyboard media keys, lock screen)
@@ -250,9 +268,9 @@ Grouped by area and roughly ordered by value within each group.
 
 **Reliability and operations**
 94. Automatic index backups with one-click restore
-95. Local crash reporter and a diagnostics bundle for bug reports
+95. ~~Local crash reporter and a diagnostics bundle for bug reports~~ (built in 2.1)
 96. Health panel: flood-wait timers per data centre, queue depths, cache hit rate
-97. Settings export and import
+97. ~~Settings export and import~~ (built in 2.1)
 98. Low-memory mode for older PCs
 99. Continuous-integration pipeline, coverage report, fuzzing of the query parser, 1M-file load test
 100. Import from other Telegram-drive tools (e.g. Teldrive)
@@ -260,7 +278,7 @@ Grouped by area and roughly ordered by value within each group.
 **AI study features (all offline)**
 101. Summaries of PDFs and lectures
 102. Ask questions across your study material, with answers citing the files
-103. Automatic subject classification (Polity, Economy, History …)
+103. ~~Automatic subject classification (Polity, Economy, History …)~~ (built in 2.1)
 104. Flashcards and quizzes from notes
 105. Perceptual duplicates (the same PDF or video uploaded by different channels)
 106. Translate captions and file names

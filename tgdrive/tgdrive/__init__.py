@@ -7,4 +7,4 @@ for _var in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS", "NUME
              "VECLIB_MAXIMUM_THREADS", "RAYON_NUM_THREADS", "TOKENIZERS_PARALLELISM"):
     _os.environ.setdefault(_var, "false" if _var == "TOKENIZERS_PARALLELISM" else "1")
 
-__version__ = "2.3.1"
+__version__ = "2.3.2"

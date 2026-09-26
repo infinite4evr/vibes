@@ -90,8 +90,11 @@ Invalid values are ignored with a warning and the safe default is used. Run `npm
 | `maxMessageAgeHours` | `58` | Never tries messages older than this (WhatsApp's own limit is about 60h) |
 | `scanDepth` | `3000` | Upper limit on how many messages it scrolls back through. It normally stops sooner, as soon as it has covered `maxMessageAgeHours`, because anything older can't be deleted for everyone anyway. The log says how far back each check reached. |
 | `periodicSweepMin` | `[8, 16]` | Self-healing re-check interval |
+| `presenceRefreshMin` | `[20, 40]` | How often it sets your presence back to *offline* |
+| `recycleAfterHours` | `[20, 28]` | Planned browser refresh interval (only when running under pm2) |
 | `maxAttemptsPerMessage` | `3` | Retries before giving up on one message |
 | `circuitBreakerFailures` / `circuitBreakerPauseMin` | `4` / `30` | Pause after repeated failures |
+| `incompatiblePauseMin` | `60` | Pause when a WhatsApp Web change makes the safety check unavailable |
 
 ## How it keeps running
 
