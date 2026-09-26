@@ -1,12 +1,14 @@
 # vibes
 
-Personal tools, in three independent projects:
+Personal tools, in independent projects:
 
 | Path | What |
 |---|---|
 | [`commands/`](commands/README.md) | command-line tools, mostly for turning highlighted PDFs into study notes and active-recall sheets, plus YouTube-subscription and WhatsApp helpers |
 | [`commands/stack-highlights/`](commands/stack-highlights/README.md) | the main study tool: PDF highlights to structured notes, with its tests |
-| [`linux-setup/`](linux-setup/README.md) | Ubuntu cleanup and dev-environment setup, plus **PC Command Center** (GTK app) and **pc** (terminal app) for managing the whole computer (v2.2.4) |
+| [`lumaclean/`](lumaclean/README.md) | **LumaClean**: Android phone manager (cleaning, storage, apps, battery), built and released as an APK by CI |
+| [`pc-command-center/`](pc-command-center/README.md) | **PC Command Center** (GTK app) and **pc** (terminal app) for managing a whole Ubuntu computer (v2.2.4) |
+| [`ubuntu-setup/`](ubuntu-setup/README.md) | Ubuntu cleanup and Catppuccin dev-environment setup; also installs PC Command Center |
 | [`tgdrive/`](tgdrive/README.md) | **TG Drive**: every file in your Telegram, browsed, searched, streamed and organised like Google Drive (desktop app, AppImage) |
 
 `commands/RESUME.md` says where the study tools stand and how to run every test.
@@ -28,8 +30,10 @@ make -C stack-highlights quick                          # sanity check, a few se
 The PDF steps (`md-to-pdf`, `recall-sheet`, `notes`, `notes-recall`) also need
 `pandoc` and a TeX Live with XeLaTeX and `lmodern`.
 
-**Linux setup and PC Command Center:** `bash linux-setup/setup.sh`, then pick
+**Ubuntu setup and PC Command Center:** `bash ubuntu-setup/setup.sh`, then pick
 **4** the first time (details in its README).
+
+**LumaClean:** download the APK from the latest `lumaclean-v…` release.
 
 **TG Drive:** `bash tgdrive/start.sh` (or `--install` to add it to the
 applications menu).
@@ -39,10 +43,12 @@ applications menu).
 | Project | Command |
 |---|---|
 | study tools | `make -C commands/stack-highlights quick` (and `pdf-safety`); `npm test` in `commands/wa-auto-delete` |
-| linux-setup | `cd linux-setup/pc && pip install -e '.[dev]' && pytest` |
+| pc-command-center | `cd pc-command-center && pip install -e '.[dev]' && pytest` |
+| lumaclean | built by CI only (`gradle :app:assembleRelease` with Android SDK 37) |
 | tgdrive | `cd tgdrive && pip install -r requirements.txt pytest httpx && python -m pytest tests` |
 
-CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) currently runs the
-study-tool checks only. `linux-setup/.github/workflows/ci.yml` is not picked up
-by GitHub, because workflows only run from the repository root, and tgdrive
-has no CI job yet.
+CI: [`ci.yml`](.github/workflows/ci.yml) runs the study-tool checks,
+[`pc-command-center.yml`](.github/workflows/pc-command-center.yml) the PC Command
+Center tests, shell syntax and a GTK smoke test, and
+[`lumaclean-apk.yml`](.github/workflows/lumaclean-apk.yml) builds and releases the
+LumaClean APK. tgdrive has no CI job yet.
