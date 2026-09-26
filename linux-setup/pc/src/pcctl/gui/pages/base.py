@@ -90,7 +90,10 @@ class Page(Gtk.Box):
         return row
 
     def bg(self, fn: Callable[[], Any], done: Callable[[Any], None] | None = None) -> None:
-        bg(fn, done, error=lambda e: self.toast(f"Error: {e}"))
+        name = getattr(fn, "__name__", "work").replace("_", " ")
+        if name == "<lambda>":
+            name = "background refresh"
+        bg(fn, done, error=lambda e: self.toast(f"Error: {e}"), title=f"{self.TITLE}: {name}")
 
     def toast(self, text: str, timeout: int = 3) -> None:
         self.win.toast(text, timeout)

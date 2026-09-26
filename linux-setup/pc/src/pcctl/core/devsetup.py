@@ -733,4 +733,6 @@ def uv_python_pin(minor: str) -> list[Step]:
 def uv_install_steps() -> list[Step]:
     if has("pipx"):
         return [Step("Install uv with pipx", ["pipx", "install", "uv"])]
-    return [Step("Download and run uv's official installer", ["bash", "-c", "curl -LsSf https://astral.sh/uv/install.sh | sh"])]
+    # Avoid `curl | sh`: use Python's package installer so the downloaded artifact is
+    # handled by a package manager and no network response is executed as a shell script.
+    return [Step("Install uv with Python", ["python3", "-m", "pip", "install", "--user", "uv"])]

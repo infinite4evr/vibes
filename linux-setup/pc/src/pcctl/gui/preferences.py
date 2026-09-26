@@ -6,13 +6,14 @@ from typing import Callable
 
 from gi.repository import Adw, Gtk
 
-from ..core import junk, maint, watch
+from ..core import debug, junk, maint, watch
 from . import prefs, theme
-from .util import button, esc
+from .util import bg, button, esc, launch
 
 APPEARANCE = [("system", "Follow the system"), ("light", "Light"), ("dark", "Dark")]
 LOOKS = [("modern", "Modern"), ("catppuccin", "Catppuccin")]
 REFRESH = [("fast", "Fast (every second)"), ("normal", "Normal"), ("slow", "Battery saver (slower graphs)")]
+MOTION = [("full", "Full — smooth transitions"), ("reduced", "Reduced — shorter transitions"), ("off", "Off — no interface motion")]
 
 
 def _combo(title: str, subtitle: str, options: list[tuple[str, str]], current: str, on_pick: Callable[[str], None]) -> Adw.ComboRow:
@@ -52,6 +53,7 @@ class PreferencesDialog(Adw.PreferencesDialog):
         self.add(self._general())
         self.add(self._alerts())
         self.add(self._cleanup())
+        self.add(self._diagnostics())
 
     # ---------------------------------------------------------------- general
     def _general(self) -> Adw.PreferencesPage:
@@ -82,6 +84,12 @@ class PreferencesDialog(Adw.PreferencesDialog):
             prefs.set("refresh", v)
             self.win.restart_timers()
         beh.add(_combo("Live graphs", "How often the live numbers update. Slower saves battery.", REFRESH, prefs.get("refresh"), refresh))
+
+        def motion(v: str) -> None:
+            prefs.set("motion", v)
+            self.win.apply_motion()
+        beh.add(_combo("Interface motion", "Smooth page and sidebar transitions. Use Reduced or Off if you prefer less motion.",
+                       MOTION, prefs.get("motion"), motion))
         beh.add(_switch("Pause when hidden", "Stop live updates while the window is minimised or in the background.", prefs.get("pause_hidden"),
                         lambda v: prefs.set("pause_hidden", v)))
         beh.add(_switch("Show commands before simple actions", "Admin and risky actions always ask first. Turn this off to skip the "
@@ -90,6 +98,62 @@ class PreferencesDialog(Adw.PreferencesDialog):
         beh.add(_spin("Extra warning above (GB)", "Ask twice before deleting more than this at once.", prefs.get("big_delete_gb"), 1, 500, 1,
                       lambda v: prefs.set("big_delete_gb", int(v))))
         page.add(beh)
+        return page
+
+    # ---------------------------------------------------------------- diagnostics
+    def _diagnostics(self) -> Adw.PreferencesPage:
+        page = Adw.PreferencesPage(title="Diagnostics", icon_name="applications-engineering-symbolic")
+        grp = Adw.PreferencesGroup(
+            title="Debug logging",
+            description="Optional detailed logs for troubleshooting. Commands, task state and errors are recorded locally; known passwords, tokens and secret arguments are redacted. Logs rotate automatically.",
+        )
+
+        def toggle(v: bool) -> None:
+            prefs.set("debug_logging", v)
+            debug.configure(v)
+            self.win.toast("Debug logging is on" if v else "Debug logging is off")
+        grp.add(_switch("Record detailed debug logs", "Turn this on when reproducing a problem, then export the support bundle below.",
+                        bool(prefs.get("debug_logging")), toggle))
+
+        folder = Adw.ActionRow(title="Debug log folder", subtitle=str(debug.LOG_DIR).replace(str(debug.HOME), "~"))
+        open_btn = button("Open", icon="folder-open-symbolic", css="flat", on_click=lambda: launch(["xdg-open", str(debug.ensure_log_dir())]))
+        open_btn.set_valign(Gtk.Align.CENTER)
+        folder.add_suffix(open_btn)
+        grp.add(folder)
+
+        export = Adw.ActionRow(title="Create support bundle",
+                               subtitle="Creates a private ZIP in Downloads with redacted PC Command Center logs and basic runtime metadata.")
+        export_btn = button("Export", icon="document-save-symbolic", css="suggested-action")
+        export_btn.set_valign(Gtk.Align.CENTER)
+
+        def do_export(*_a) -> None:
+            export_btn.set_sensitive(False)
+
+            def done(path) -> None:
+                export_btn.set_sensitive(True)
+                self.win.toast(f"Support bundle saved: {path.name}", 5)
+                launch(["xdg-open", str(path.parent)])
+
+            def failed(exc: Exception) -> None:
+                export_btn.set_sensitive(True)
+                self.win.toast(f"Could not create support bundle: {exc}", 5)
+            bg(debug.export_bundle, done, failed, title="Create support bundle")
+
+        export_btn.connect("clicked", do_export)
+        export.add_suffix(export_btn)
+        grp.add(export)
+
+        clear_row = Adw.ActionRow(title="Clear debug logs", subtitle="Deletes PC Command Center's rotating debug log files. Activity history is kept separately.")
+        clear_btn = button("Clear", icon="edit-clear-all-symbolic", css="flat", on_click=lambda: (debug.clear(), self.win.toast("Debug logs cleared")))
+        clear_btn.set_valign(Gtk.Align.CENTER)
+        clear_row.add_suffix(clear_btn)
+        grp.add(clear_row)
+        page.add(grp)
+
+        privacy = Adw.PreferencesGroup(title="What gets recorded")
+        privacy.add(Adw.ActionRow(title="Included", subtitle="Page/action changes, background task lifecycle, command names, exit codes, durations and redacted live output."))
+        privacy.add(Adw.ActionRow(title="Not intentionally included", subtitle="Raw Wi‑Fi passwords, tokens, API keys, secret-marked arguments or secret-marked environment variables."))
+        page.add(privacy)
         return page
 
     # ---------------------------------------------------------------- alerts

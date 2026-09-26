@@ -14,6 +14,7 @@ from pathlib import Path
 from . import maint, packages, services, system
 from .fmt import human
 from .run import HOME, Step, has, out, py_step, sh
+from .state import atomic_write_text
 
 STATE = HOME / ".local/state/pc/alerts.json"
 UNIT_DIR = HOME / ".config/systemd/user"
@@ -43,8 +44,7 @@ def _state() -> dict:
 
 def _save_state(d: dict) -> None:
     try:
-        STATE.parent.mkdir(parents=True, exist_ok=True)
-        STATE.write_text(json.dumps(d))
+        atomic_write_text(STATE, json.dumps(d) + "\n", mode=0o600)
     except OSError:
         pass
 
@@ -161,8 +161,7 @@ def record_health(score: int) -> None:
     else:
         hist.append(point)
     try:
-        f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_text(json.dumps(hist[-400:]))
+        atomic_write_text(f, json.dumps(hist[-400:]) + "\n", mode=0o600)
     except OSError:
         pass
 
@@ -181,13 +180,13 @@ def timer_enabled() -> bool:
 def enable_steps() -> list[Step]:
     def write_units() -> str:
         UNIT_DIR.mkdir(parents=True, exist_ok=True)
-        (UNIT_DIR / "pc-watch.service").write_text(
+        atomic_write_text(UNIT_DIR / "pc-watch.service",
             "[Unit]\nDescription=PC Command Center background alerts\n\n"
             f"[Service]\nType=oneshot\nExecStart={maint.pc_command()} watch\nNice=19\nIOSchedulingClass=idle\n"
-            "# keep the little 'click to open' helpers alive after the check itself finishes\nKillMode=process\n")
-        (UNIT_DIR / TIMER).write_text(
+            "# keep the little 'click to open' helpers alive after the check itself finishes\nKillMode=process\n", mode=0o600)
+        atomic_write_text(UNIT_DIR / TIMER,
             "[Unit]\nDescription=PC Command Center alerts every 30 minutes\n\n"
-            "[Timer]\nOnBootSec=10min\nOnUnitActiveSec=30min\nRandomizedDelaySec=2min\n\n[Install]\nWantedBy=timers.target\n")
+            "[Timer]\nOnBootSec=10min\nOnUnitActiveSec=30min\nRandomizedDelaySec=2min\n\n[Install]\nWantedBy=timers.target\n", mode=0o600)
         save_settings(enabled=True)
         return "wrote ~/.config/systemd/user/pc-watch.{service,timer}"
     return [py_step("Create the alert schedule", write_units, "write ~/.config/systemd/user/pc-watch.{service,timer}"),

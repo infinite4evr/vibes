@@ -7,9 +7,12 @@ import os
 import shlex
 import shutil
 import subprocess
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Awaitable, Callable, Iterable, Sequence
+
+from . import debug
 
 HOME = Path.home()
 C_ENV = {**os.environ, "LANG": "C", "LC_ALL": "C"}
@@ -100,6 +103,9 @@ def sh(
         args = list(cmd)
     if root and os.geteuid() != 0:
         args = ["sudo", "-n", *args]
+    started = time.monotonic()
+    if debug.enabled():
+        debug.log("probe start root=%s cwd=%s cmd=%s", root, cwd or "", debug.display_argv(args))
     try:
         p = subprocess.run(
             args,
@@ -111,12 +117,29 @@ def sh(
             input=input,
             errors="replace",
         )
+        if debug.enabled():
+            debug.log("probe finish rc=%s duration=%.3fs stdout=%sB stderr=%sB cmd=%s", p.returncode,
+                      time.monotonic() - started, len(p.stdout or ""), len(p.stderr or ""), debug.display_argv(args))
+            # Detailed mode is meant to make parser/probe bugs reproducible. Preserve a
+            # bounded, redacted sample for ordinary probes, but suppress output entirely
+            # when the command line itself requests a password/token/PSK/credential.
+            raw_args = [str(x) for x in args]
+            if debug.redact_argv(raw_args) != raw_args:
+                debug.log("probe output suppressed because the command accesses sensitive data")
+            else:
+                if p.stdout:
+                    debug.log("probe stdout:\n%s", debug.redact_text(p.stdout[:16000]))
+                if p.stderr:
+                    debug.log("probe stderr:\n%s", debug.redact_text(p.stderr[:16000]))
         return Result(p.returncode, p.stdout, p.stderr)
     except FileNotFoundError:
+        debug.log("probe missing duration=%.3fs cmd=%s", time.monotonic() - started, debug.display_argv(args))
         return Result(127, "", f"{args[0]}: not installed")
     except subprocess.TimeoutExpired:
+        debug.log("probe timeout duration=%.3fs cmd=%s", time.monotonic() - started, debug.display_argv(args))
         return Result(124, "", "timed out")
     except OSError as e:  # permission problems etc.
+        debug.log("probe os-error duration=%.3fs error=%s cmd=%s", time.monotonic() - started, e, debug.display_argv(args))
         return Result(126, "", str(e))
 
 
@@ -152,6 +175,9 @@ class Step:
     cwd: str | None = None
     ok_codes: tuple[int, ...] = (0,)
     optional: bool = False  # failure doesn't mark the whole action failed
+    sensitive_args: tuple[int, ...] = ()
+    sensitive_env: tuple[str, ...] = ()
+    cancellable: bool = True
 
     def argv(self) -> list[str]:
         args = list(self.cmd)
@@ -161,14 +187,35 @@ class Step:
             args = ["sudo", "-n", *args]
         return args
 
+    def sensitive_values(self) -> tuple[str, ...]:
+        values: list[str] = []
+        for i in self.sensitive_args:
+            if 0 <= i < len(self.cmd):
+                values.append(str(self.cmd[i]))
+        for key in self.sensitive_env:
+            if key in self.env:
+                values.append(str(self.env[key]))
+        return tuple(v for v in values if v)
+
+    def safe_cmd(self) -> list[str]:
+        args = [str(v) for v in self.cmd]
+        for i in self.sensitive_args:
+            if 0 <= i < len(args):
+                args[i] = "<redacted>"
+        return args
+
     def display(self) -> str:
         if self.cmd and self.cmd[0] == "__python__":
             return self.cmd[1]
-        args = list(self.cmd)
+        args = self.safe_cmd()
         if self.env:
-            args = [*[f"{k}={v}" for k, v in self.env.items()], *args]
+            args = [*[f"{k}={'<redacted>' if k in self.sensitive_env else v}" for k, v in self.env.items()], *args]
         text = shlex.join(args)
+        text = debug.redact_text(text, self.sensitive_values())
         return ("sudo " + text) if self.root else text
+
+    def redact(self, text: object) -> str:
+        return debug.redact_text(text, self.sensitive_values())
 
 
 def py_step(title: str, func: Callable[[], str | None], shown: str) -> Step:
@@ -203,6 +250,7 @@ async def stream(step: Step, on_line: LineCallback) -> int:
                 await r
             return 1
     try:
+        debug.event("step.start", title=step.title, command=step.display(), root=step.root)
         proc = await asyncio.create_subprocess_exec(
             *step.argv(),
             stdout=asyncio.subprocess.PIPE,
@@ -229,14 +277,16 @@ async def stream(step: Step, on_line: LineCallback) -> int:
         for part in parts:
             line = part.decode(errors="replace").rstrip()
             if line:
-                r = on_line(line)
+                r = on_line(step.redact(line))
                 if asyncio.iscoroutine(r):
                     await r
     if buf.strip():
-        r = on_line(buf.decode(errors="replace").rstrip())
+        r = on_line(step.redact(buf.decode(errors="replace").rstrip()))
         if asyncio.iscoroutine(r):
             await r
-    return await proc.wait()
+    code = await proc.wait()
+    debug.event("step.finish", title=step.title, code=code)
+    return code
 
 
 def run_steps_blocking(steps: Sequence[Step], echo: Callable[[str], None] = print) -> bool:

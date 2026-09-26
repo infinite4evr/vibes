@@ -14,6 +14,7 @@ from pathlib import Path
 from . import junk, packages, services, system
 from .fmt import human
 from .run import HOME, Step, has, out, py_step, sh, which
+from .state import append_private, atomic_write_text
 
 CONFIG_DIR = HOME / ".config/pc"
 CONFIG_FILE = CONFIG_DIR / "config.json"
@@ -35,10 +36,9 @@ def config() -> dict:
 
 
 def save_config(**changes) -> None:
-    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     data = config()
     data.update(changes)
-    CONFIG_FILE.write_text(json.dumps(data, indent=2))
+    atomic_write_text(CONFIG_FILE, json.dumps(data, indent=2) + "\n", mode=0o600)
 
 
 def setup_dir() -> Path | None:
@@ -79,12 +79,12 @@ def timer_status() -> dict:
 def enable_timer_steps() -> list[Step]:
     def write_units() -> str:
         UNIT_DIR.mkdir(parents=True, exist_ok=True)
-        (UNIT_DIR / "pc-maintain.service").write_text(
+        atomic_write_text(UNIT_DIR / "pc-maintain.service",
             "[Unit]\nDescription=pc weekly checkup (safe cleanup + health report)\n\n"
-            f"[Service]\nType=oneshot\nExecStart={pc_command()} maintain --auto\nNice=15\nIOSchedulingClass=idle\n")
-        (UNIT_DIR / TIMER).write_text(
+            f"[Service]\nType=oneshot\nExecStart={pc_command()} maintain --auto\nNice=15\nIOSchedulingClass=idle\n", mode=0o600)
+        atomic_write_text(UNIT_DIR / TIMER,
             "[Unit]\nDescription=Run pc weekly checkup\n\n"
-            "[Timer]\nOnCalendar=Sun 11:00\nPersistent=true\nRandomizedDelaySec=30min\n\n[Install]\nWantedBy=timers.target\n")
+            "[Timer]\nOnCalendar=Sun 11:00\nPersistent=true\nRandomizedDelaySec=30min\n\n[Install]\nWantedBy=timers.target\n", mode=0o600)
         return f"wrote {UNIT_DIR}/pc-maintain.service and {TIMER}"
     return [py_step("Create weekly checkup schedule", write_units, "write ~/.config/systemd/user/pc-maintain.{service,timer}"),
             Step("Reload schedules", ["systemctl", "--user", "daemon-reload"]),
@@ -132,8 +132,7 @@ def maintain_auto() -> str:
         notes.append("restart needed to finish updates")
     summary = f"Freed {human(freed)}." + (" " + "; ".join(notes) + "." if notes else " Everything looks healthy.")
     lines.append(summary)
-    with open(STATE_DIR / "maintain.log", "a") as f:
-        f.write("\n".join(lines) + "\n")
+    append_private(STATE_DIR / "maintain.log", "\n".join(lines) + "\n", mode=0o600)
     notify("Weekly checkup", summary + ("\nRun `pc` to take care of it." if notes else ""), "normal")
     return summary
 
@@ -157,9 +156,9 @@ def backup_settings_steps() -> list[Step]:
         BACKUP_DIR.mkdir(parents=True, exist_ok=True)
         dconf = STATE_DIR / "gnome-settings.dconf"
         STATE_DIR.mkdir(parents=True, exist_ok=True)
-        dconf.write_text(out(["dconf", "dump", "/"]) + "\n")
+        atomic_write_text(dconf, out(["dconf", "dump", "/"]) + "\n", mode=0o600)
         if has("code"):
-            (STATE_DIR / "vscode-extensions.txt").write_text(out(["code", "--list-extensions"], timeout=30) + "\n")
+            atomic_write_text(STATE_DIR / "vscode-extensions.txt", out(["code", "--list-extensions"], timeout=30) + "\n", mode=0o600)
         count = 0
         with tarfile.open(target, "w:gz") as tar:
             for rel in DOTFILES + [str(dconf.relative_to(HOME)), str((STATE_DIR / "vscode-extensions.txt").relative_to(HOME))]:
@@ -167,6 +166,10 @@ def backup_settings_steps() -> list[Step]:
                 if p.exists():
                     tar.add(p, arcname=rel)
                     count += 1
+        try:
+            os.chmod(target, 0o600)
+        except OSError:
+            pass
         return f"saved {count} items to {target} ({human(target.stat().st_size)})"
     return [py_step("Back up your settings", run, f"tar czf ~/Backups/{target.name} (dotfiles, editor settings, GNOME settings, VS Code extension list)")]
 
@@ -179,17 +182,111 @@ def settings_backups() -> list[dict]:
 
 
 def restore_settings_steps(path: str) -> list[Step]:
+    def safe_members(tar: tarfile.TarFile) -> list[tarfile.TarInfo]:
+        members = tar.getmembers()
+        if len(members) > 50_000:
+            raise ValueError("Backup has an unreasonable number of files")
+        total = 0
+        good: list[tarfile.TarInfo] = []
+        for m in members:
+            parts = Path(m.name).parts
+            if not m.name or m.name.startswith("/") or ".." in parts:
+                raise ValueError(f"Unsafe path in backup: {m.name!r}")
+            # Settings backups never need links, devices, sockets or FIFOs. Rejecting
+            # them also makes extraction safe on Python 3.10/3.11 where tar filters
+            # were not consistently available.
+            if not (m.isdir() or m.isfile()):
+                raise ValueError(f"Unsupported file type in backup: {m.name!r}")
+            if m.isfile():
+                total += max(0, m.size)
+                if total > 2 * 1024 ** 3:
+                    raise ValueError("Backup expands beyond the 2 GiB safety limit")
+            good.append(m)
+        return good
+
+    def pre_restore_backup(members: list[tarfile.TarInfo]) -> Path | None:
+        existing: list[tuple[Path, str]] = []
+        seen: set[str] = set()
+        for m in members:
+            # Back up top-level archive entries once; tar.add recurses where needed.
+            top = m.name.split("/", 1)[0] if not m.name.startswith(".") else "/".join(m.name.split("/")[:2])
+            if top in seen:
+                continue
+            seen.add(top)
+            p = HOME / top
+            if p.exists() and p != BACKUP_DIR:
+                existing.append((p, top))
+        if not existing:
+            return None
+        BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+        target = BACKUP_DIR / f"pc-before-restore-{time.strftime('%Y%m%d-%H%M%S')}.tar.gz"
+        with tarfile.open(target, "w:gz") as old:
+            for p, arc in existing:
+                old.add(p, arcname=arc)
+        try:
+            os.chmod(target, 0o600)
+        except OSError:
+            pass
+        return target
+
+    def extract_regular(tar: tarfile.TarFile, members: list[tarfile.TarInfo]) -> None:
+        # Manual extraction: no link traversal and no special files, independent of
+        # the Python version's tarfile filter support. Also reject *pre-existing*
+        # symlinked parent directories under HOME; otherwise a safe-looking archive
+        # path such as .config/app could be redirected outside HOME by a local symlink.
+        home_real = HOME.resolve()
+
+        def safe_dir(parts: tuple[str, ...]) -> Path:
+            cur = HOME
+            for part in parts:
+                nxt = cur / part
+                if nxt.is_symlink():
+                    raise ValueError(f"Restore path crosses a symlink: {nxt}")
+                if nxt.exists() and not nxt.is_dir():
+                    raise ValueError(f"Restore path is not a directory: {nxt}")
+                nxt.mkdir(exist_ok=True)
+                try:
+                    nxt.resolve().relative_to(home_real)
+                except ValueError as exc:
+                    raise ValueError(f"Restore path escapes your home folder: {nxt}") from exc
+                cur = nxt
+            return cur
+
+        for m in members:
+            parts = Path(m.name).parts
+            if m.isdir():
+                safe_dir(parts)
+                continue
+            parent = safe_dir(parts[:-1])
+            dest = parent / parts[-1]
+            src = tar.extractfile(m)
+            if src is None:
+                raise ValueError(f"Could not read {m.name!r} from backup")
+            tmp = dest.with_name(f".{dest.name}.pc-restore-{os.getpid()}")
+            try:
+                with open(tmp, "wb") as out_f:
+                    shutil.copyfileobj(src, out_f, length=1024 * 1024)
+                    out_f.flush()
+                    os.fsync(out_f.fileno())
+                # Never restore setuid/setgid/sticky bits from an archive.
+                os.chmod(tmp, m.mode & 0o777)
+                os.replace(tmp, dest)
+            finally:
+                try:
+                    tmp.unlink()
+                except OSError:
+                    pass
+
     def run() -> str:
         with tarfile.open(path) as tar:
-            members = [m for m in tar.getmembers() if not m.name.startswith(("/", "..")) and ".." not in m.name.split("/")]
-            try:
-                tar.extractall(HOME, members=members, filter="data")
-            except TypeError:  # Python < 3.12
-                tar.extractall(HOME, members=members)
+            members = safe_members(tar)
+            rollback = pre_restore_backup(members)
+            extract_regular(tar, members)
         dconf = STATE_DIR / "gnome-settings.dconf"
         if dconf.exists() and has("dconf"):
             sh(["dconf", "load", "/"], input=dconf.read_text())
-        return f"restored {len(members)} files from {os.path.basename(path)}"
+        extra = f"; previous files saved to {rollback}" if rollback else ""
+        return f"restored {len(members)} files from {os.path.basename(path)}{extra}"
     return [py_step("Restore settings", run, f"tar xzf {path} -C ~  &&  dconf load / < gnome-settings.dconf")]
 
 

@@ -489,6 +489,18 @@ def cmd_completions(a) -> int:
     return 0
 
 
+
+def cmd_support(_a) -> int:
+    """Create the same redacted troubleshooting bundle offered by the GUI."""
+    from .core import debug
+    try:
+        path = debug.export_bundle()
+    except Exception as exc:  # noqa: BLE001
+        print(f"Could not create support bundle: {exc}", file=sys.stderr)
+        return 1
+    print(path)
+    return 0
+
 def cmd_gui(a) -> int:
     """Open the desktop app. It runs on Ubuntu's own Python (for GTK), so hand over to the pc-gui launcher."""
     import os
@@ -505,8 +517,10 @@ def cmd_gui(a) -> int:
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="pc", description="Your computer's control center. Run without arguments for the full-screen app.")
     p.add_argument("--version", action="version", version=f"pc {__version__}")
+    p.add_argument("--debug", action="store_true", help="record detailed redacted troubleshooting logs for this run")
     sub = p.add_subparsers(dest="cmd")
     sub.add_parser("status", help="one-screen summary").set_defaults(fn=cmd_status)
+    sub.add_parser("support", help="create a redacted troubleshooting ZIP in Downloads").set_defaults(fn=cmd_support)
     sub.add_parser("doctor", help="health check with fixes").set_defaults(fn=cmd_doctor)
     c = sub.add_parser("clean", help="remove junk safely")
     c.add_argument("--dry-run", action="store_true", help="only show what would be cleaned")
@@ -579,6 +593,10 @@ def main(argv: list[str] | None = None) -> int:
     for name in ("processes", "storage", "cleanup", "updates", "apps", "startup", "network", "dev", "power", "security"):
         sub.add_parser(name, help=f"open pc on the {name} section").set_defaults(fn=None, start=name)
     a = p.parse_args(argv)
+    if a.debug:
+        from .core import debug
+        debug.configure(True)
+        debug.event("cli.start", argv=" ".join(argv or sys.argv[1:]))
     if not a.cmd or getattr(a, "fn", None) is None:
         from .ui.app import run
         run(getattr(a, "start", "overview"))

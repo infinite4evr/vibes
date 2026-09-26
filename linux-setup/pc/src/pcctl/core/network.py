@@ -338,9 +338,11 @@ def hotspot_steps(on: bool, ssid: str = "", password: str = "") -> list:
         args = ["nmcli", "dev", "wifi", "hotspot"]
         if ssid:
             args += ["ssid", ssid]
+        sensitive: tuple[int, ...] = ()
         if password:
             args += ["password", password]
-        return [Step("Start a Wi-Fi hotspot", args)]
+            sensitive = (len(args) - 1,)
+        return [Step("Start a Wi-Fi hotspot", args, sensitive_args=sensitive)]
     return [Step("Stop the hotspot", ["nmcli", "con", "down", "Hotspot"], ok_codes=(0, 10))]
 
 

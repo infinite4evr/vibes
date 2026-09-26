@@ -1,6 +1,11 @@
 # shellcheck shell=bash
 # Shared helpers used by every part of linux-setup.
 
+# Setup state can contain command output, backup paths and configuration details.
+# Keep newly-created state private by default. Individual public files are installed
+# with explicit modes where needed.
+umask 077
+
 C_RESET=$'\e[0m'; C_BOLD=$'\e[1m'; C_DIM=$'\e[2m'
 C_MAUVE=$'\e[38;2;203;166;247m'; C_GREEN=$'\e[38;2;166;227;161m'
 C_RED=$'\e[38;2;243;139;168m'; C_YELLOW=$'\e[38;2;249;226;175m'
@@ -10,7 +15,8 @@ STATE_DIR="$HOME/.local/state/linux-setup"
 RUN_ID="$(date +%Y%m%d-%H%M%S)"
 BACKUP_DIR="$STATE_DIR/backup-$RUN_ID"
 LOG_FILE="$STATE_DIR/log-$RUN_ID.txt"
-mkdir -p "$STATE_DIR"
+mkdir -p -m 700 "$STATE_DIR"
+chmod 700 "$STATE_DIR" 2>/dev/null || true
 
 title() { printf '\n%s%s━━ %s ━━%s\n' "$C_BOLD" "$C_MAUVE" "$*" "$C_RESET"; }
 info()  { printf '  %s•%s %s\n' "$C_BLUE" "$C_RESET" "$*"; }

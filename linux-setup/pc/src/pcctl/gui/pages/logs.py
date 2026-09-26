@@ -9,7 +9,7 @@ import threading
 
 from gi.repository import Adw, GLib, Gtk
 
-from ...core import logs, services
+from ...core import logs, services, tasks
 from ...core.fmt import ago, human
 from ...core.run import C_ENV, Step, out
 from ..util import button, clear, esc, hbox, label, pill, status_icon, vbox
@@ -88,6 +88,7 @@ class LogsPage(Page):
         self.all_box.append(self.table)
         self.all_box.append(label("Double-click a message to read all of it. Newest first.", "dim"))
         self._follow: subprocess.Popen | None = None
+        self._follow_task_id: str | None = None
         self._pending: list[logs.LogLine] = []
         self._lock = threading.Lock()
         self._flush_id: int | None = None
@@ -231,6 +232,8 @@ class LogsPage(Page):
             self.live_switch.set_active(False)
             return
         self._follow = proc
+        self._follow_task_id = tasks.start("Live system log", kind="monitor", cancellable=True, cancel=self._stop_follow,
+                                           detail="Following journal messages", pid=proc.pid)
         self._live_n = 0
         self.live_status.set_text("Watching: new messages appear at the top as they happen.")
         threading.Thread(target=self._follow_reader, args=(proc,), daemon=True).start()
@@ -277,6 +280,7 @@ class LogsPage(Page):
 
     def _stop_follow(self) -> None:
         proc, self._follow = self._follow, None
+        task_id, self._follow_task_id = self._follow_task_id, None
         if self._flush_id is not None:
             GLib.source_remove(self._flush_id)
             self._flush_id = None
@@ -285,6 +289,8 @@ class LogsPage(Page):
                 proc.terminate()
             except OSError:
                 pass
+        if task_id:
+            tasks.finish(task_id, True, cancelled=True, detail="Live log stopped")
 
     # ---------------------------------------------------------------- kernel (K1)
     def load_kernel(self) -> None:

@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from ..core.state import atomic_write_text
+
 FILE = Path.home() / ".config/pc/gui.json"
 
 DEFAULTS: dict[str, Any] = {
@@ -17,6 +19,10 @@ DEFAULTS: dict[str, Any] = {
     "big_delete_gb": 10,         # extra warning above this size
     "welcomed": False,
     "look": "modern",            # modern (neutral, follows GNOME's accent) | catppuccin
+    "debug_logging": False,       # opt-in rotating diagnostic log (secrets are redacted)
+    "motion": "full",             # full | reduced | off
+    "sidebar_visible": True,
+    "sidebar_width": 252,
 }
 
 _cache: dict[str, Any] | None = None
@@ -52,8 +58,7 @@ def update(**kw: Any) -> None:
 
 def save() -> None:
     try:
-        FILE.parent.mkdir(parents=True, exist_ok=True)
-        FILE.write_text(json.dumps(_load(), indent=2))
+        atomic_write_text(FILE, json.dumps(_load(), indent=2) + "\n", mode=0o600)
     except OSError:
         pass
 

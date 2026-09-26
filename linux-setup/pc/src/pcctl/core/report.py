@@ -18,6 +18,7 @@ import psutil
 from .. import __version__
 from .fmt import duration, human
 from .run import HOME, has
+from .state import atomic_write_text
 
 LEVEL_MARK = {"ok": "✓", "info": "·", "warn": "!", "bad": "✗"}
 
@@ -289,7 +290,7 @@ def default_path(redacted: bool = False) -> Path:
 def save(path: str | Path | None = None, redacted: bool = False, quick: bool = False, data: dict | None = None) -> Path:
     p = Path(path).expanduser() if path else default_path(redacted)
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(build_html(data, redacted=redacted, quick=quick), encoding="utf-8")
+    atomic_write_text(p, build_html(data, redacted=redacted, quick=quick), mode=0o600, private_parent=False)
     return p
 
 

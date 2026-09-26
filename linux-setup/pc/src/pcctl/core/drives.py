@@ -140,9 +140,59 @@ def swap_info() -> list[dict]:
 
 
 def resize_swapfile_steps(gb: int, path: str = "/swap.img") -> list[Step]:
-    script = (f"set -e; swapoff {path} 2>/dev/null || true; rm -f {path}; fallocate -l {gb}G {path} || dd if=/dev/zero of={path} bs=1M count={gb * 1024}; "
-              f"chmod 600 {path}; mkswap {path}; swapon {path}; grep -q '^{path} ' /etc/fstab || echo '{path} none swap sw 0 0' >> /etc/fstab")
-    return [Step(f"Make the swap file {gb} GB", ["bash", "-c", script], root=True)]
+    if not 1 <= int(gb) <= 256:
+        raise ValueError("Swap size must be between 1 and 256 GB")
+    p = Path(path)
+    if not p.is_absolute() or p == Path("/") or "\n" in path or "\x00" in path:
+        raise ValueError("Swap file must be a safe absolute path")
+    # Build the replacement first, then switch over. If activation of the new swap
+    # fails, the previous file is put back and re-enabled. Parameters are positional
+    # shell arguments rather than interpolated strings, so unusual paths cannot inject
+    # shell syntax.
+    script = r'''
+set -euo pipefail
+path=$1
+gb=$2
+tmp="${path}.pc-new.$$"
+old="${path}.pc-old.$$"
+fstab_bak="/etc/fstab.pc-control-$(date +%Y%m%d-%H%M%S).bak"
+cleanup() { rm -f -- "$tmp"; }
+trap cleanup EXIT
+
+mkdir -p -- "$(dirname -- "$path")"
+if ! fallocate -l "${gb}G" "$tmp"; then
+  dd if=/dev/zero of="$tmp" bs=1M count="$((gb * 1024))" status=progress
+fi
+chmod 600 "$tmp"
+mkswap "$tmp"
+
+had_old=0
+if [ -e "$path" ]; then
+  # Do not delete the current swap if the kernel cannot safely turn it off.
+  swapoff "$path"
+  mv -- "$path" "$old"
+  had_old=1
+fi
+mv -- "$tmp" "$path"
+trap - EXIT
+
+if ! swapon "$path"; then
+  rm -f -- "$path"
+  if [ "$had_old" = 1 ] && [ -e "$old" ]; then
+    mv -- "$old" "$path"
+    swapon "$path" || true
+  fi
+  exit 1
+fi
+
+cp -a /etc/fstab "$fstab_bak"
+line="$path none swap sw 0 0"
+grep -qF -- "$line" /etc/fstab || printf '%s\n' "$line" >> /etc/fstab
+rm -f -- "$old"
+echo "Swap is active. fstab backup: $fstab_bak"
+'''
+    return [Step(f"Safely resize the swap file to {gb} GB", ["bash", "-c", script, "pc-swap", str(p), str(int(gb))],
+                 root=True, cancellable=False)]
 
 
 # ---------------------------------------------------------------- quick disk speed test

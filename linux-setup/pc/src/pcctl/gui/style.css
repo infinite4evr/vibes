@@ -243,3 +243,16 @@ levelbar block.empty { background-color: $track; }
 .kbd { font-family: "JetBrains Mono", monospace; font-size: 0.78em; color: $overlay2; background-color: $mantle; box-shadow: inset 0 0 0 1px $line;
   border-radius: 5px; padding: 0 5px; }
 toast { border-radius: 12px; }
+
+/* ---------- desktop shell polish ---------- */
+paned.horizontal > separator { min-width: 1px; background-color: $line; }
+paned.horizontal > separator:hover { min-width: 4px; background-color: alpha($accent_bg, 0.45); }
+.main-header button.flat, .side-header button.flat { border-radius: 10px; }
+.main-header button.flat:hover, .side-header button.flat:hover { background-color: alpha($text, 0.06); }
+.main-header .nav-badge { margin-left: -4px; margin-top: -3px; min-width: 12px; min-height: 12px; padding: 0 4px; font-size: 0.68em; }
+.card { outline-color: transparent; }
+button.card:active { background-color: alpha($accent_bg, 0.08); box-shadow: 0 0 0 1px alpha($accent_bg, 0.45); }
+boxedlist > row, list.boxed-list > row { min-height: 42px; }
+spinner { color: $mauve; }
+progressbar > trough { min-height: 6px; border-radius: 99px; background-color: $track; }
+progressbar > trough > progress { border-radius: 99px; background-color: $accent_bg; }

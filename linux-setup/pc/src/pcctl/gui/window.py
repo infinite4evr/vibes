@@ -9,7 +9,7 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango  # noqa: E402
 
 from .. import __version__  # noqa: E402
-from ..core import system  # noqa: E402
+from ..core import debug, system, tasks  # noqa: E402
 from . import prefs, theme  # noqa: E402
 from .util import bg, esc, hbox, label, vbox  # noqa: E402
 
@@ -33,6 +33,7 @@ PALETTE_ACTIONS = [
     ("tweaks:all", "Apply recommended tweaks", "Tweaks"), ("apps:get", "Install an app", "Apps"),
     ("dev:srv", "Running dev servers", "Developer"), ("power:bios", "Restart into BIOS / UEFI", "Power"),
     ("app:preferences", "Preferences", "App"), ("app:activity", "Activity history: everything this app did", "App"),
+    ("app:tasks", "Background tasks", "App"),
     ("app:light", "Switch to light style", "App"), ("app:dark", "Switch to dark style", "App"),
     ("app:system", "Follow the system's light/dark style", "App"), ("app:welcome", "Welcome & quick setup", "App"),
 ]
@@ -86,9 +87,17 @@ class MainWindow(Adw.ApplicationWindow):
         self.badges: dict[str, Gtk.Label] = {}
         self.current = ""
 
-        self.split = Adw.NavigationSplitView()
-        self.split.set_min_sidebar_width(230)
-        self.split.set_max_sidebar_width(270)
+        # A Gtk.Paned gives the desktop app a genuinely user-resizable sidebar.
+        # The sidebar itself is wrapped in a Revealer so it can be hidden with a
+        # smooth animation instead of permanently consuming horizontal space.
+        self.split = Gtk.Paned.new(Gtk.Orientation.HORIZONTAL)
+        self.split.set_wide_handle(False)
+        self.split.set_resize_start_child(False)
+        self.split.set_resize_end_child(True)
+        self.split.set_shrink_start_child(True)
+        self.split.set_shrink_end_child(False)
+        self._sidebar_width = int(prefs.get("sidebar_width", 252) or 252)
+        self._sidebar_visible = bool(prefs.get("sidebar_visible", True))
 
         # ---------- sidebar
         side_tv = Adw.ToolbarView()
@@ -101,6 +110,10 @@ class MainWindow(Adw.ApplicationWindow):
         title.set_valign(Gtk.Align.CENTER)
         side_hb.set_title_widget(title)
         side_hb.set_show_title(True)
+        hide_side = Gtk.Button(icon_name="sidebar-hide-symbolic", tooltip_text="Hide sidebar (Ctrl+Shift+S)")
+        hide_side.add_css_class("flat")
+        hide_side.connect("clicked", lambda *_: self.set_sidebar_visible(False))
+        side_hb.pack_start(hide_side)
         menu = Gio.Menu()
         style = Gio.Menu()
         style.append("Follow system style", "win.appearance::system")
@@ -109,6 +122,7 @@ class MainWindow(Adw.ApplicationWindow):
         menu.append_section(None, style)
         main = Gio.Menu()
         main.append("Go to or do…", "win.palette")
+        main.append("Background tasks", "win.tasks")
         main.append("Activity history", "win.activity")
         main.append("Preferences", "win.preferences")
         menu.append_section(None, main)
@@ -153,24 +167,42 @@ class MainWindow(Adw.ApplicationWindow):
         body = vbox(sw, self.status_card, spacing=0)
         body.add_css_class("side-body")
         side_tv.set_content(body)
-        self.split.set_sidebar(Adw.NavigationPage(title="PC Command Center", child=side_tv))
+        self.sidebar_revealer = Gtk.Revealer()
+        self.sidebar_revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_RIGHT)
+        self.sidebar_revealer.set_child(side_tv)
+        self.sidebar_revealer.set_size_request(210, -1)
+        self.sidebar_revealer.set_reveal_child(self._sidebar_visible)
+        self.sidebar_revealer.set_visible(self._sidebar_visible)
+        self.split.set_start_child(self.sidebar_revealer)
 
         # ---------- content
         self.content_tv = Adw.ToolbarView()
         self.content_hb = Adw.HeaderBar()
         self.content_hb.add_css_class("main-header")
+        self.sidebar_btn = Gtk.Button(icon_name="sidebar-hide-symbolic" if self._sidebar_visible else "sidebar-show-symbolic",
+                                      tooltip_text=("Hide sidebar (Ctrl+Shift+S)" if self._sidebar_visible else "Show sidebar (Ctrl+Shift+S)"))
+        self.sidebar_btn.add_css_class("flat")
+        self.sidebar_btn.connect("clicked", lambda *_: self.toggle_sidebar())
+        self.content_hb.pack_start(self.sidebar_btn)
         self.content_hb.set_title_widget(self._search_box())
+        self.task_badge = label("", "nav-badge", xalign=0.5)
+        self.task_badge.set_visible(False)
+        self.task_btn = Gtk.Button(tooltip_text="Background tasks")
+        self.task_btn.set_child(hbox(Gtk.Image.new_from_icon_name("system-run-symbolic"), self.task_badge, spacing=5))
+        self.task_btn.add_css_class("flat")
+        self.task_btn.connect("clicked", lambda *_: self.task_center())
+        self.content_hb.pack_end(self.task_btn)
         self.refresh_btn = Gtk.Button(icon_name="view-refresh-symbolic", tooltip_text="Refresh (F5)")
         self.refresh_btn.connect("clicked", lambda *_: self.refresh_current())
         self.content_hb.pack_end(self.refresh_btn)
         self._header_extra: list[Gtk.Widget] = []
         self.content_tv.add_top_bar(self.content_hb)
-        self.stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.CROSSFADE, transition_duration=120, hhomogeneous=False, vhomogeneous=False)
+        self.stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT, transition_duration=220,
+                               hhomogeneous=False, vhomogeneous=False)
         self.toasts = Adw.ToastOverlay()
         self.toasts.set_child(self.stack)
         self.content_tv.set_content(self.toasts)
-        self.content_page = Adw.NavigationPage(title="Dashboard", child=self.content_tv)
-        self.split.set_content(self.content_page)
+        self.split.set_end_child(self.content_tv)
 
         for pid, cls in classes.items():
             try:
@@ -183,11 +215,9 @@ class MainWindow(Adw.ApplicationWindow):
             self.pages[pid] = page
             self.stack.add_named(page, pid)
 
-        # narrow windows: collapse the sidebar
-        bp = Adw.Breakpoint.new(Adw.BreakpointCondition.parse("max-width: 820sp"))
-        bp.add_setter(self.split, "collapsed", True)
-        self.add_breakpoint(bp)
         self.set_content(self.split)
+        self.split.set_position(self._sidebar_width if self._sidebar_visible else 0)
+        self.apply_motion()
 
         self._actions()
         w, h = prefs.get("width"), prefs.get("height")
@@ -207,13 +237,64 @@ class MainWindow(Adw.ApplicationWindow):
         GLib.timeout_add_seconds(1, lambda: (self._update_status_card(), False)[1])
         GLib.timeout_add_seconds(20, lambda: (self._update_status_card(), True)[1])
         GLib.timeout_add_seconds(600, lambda: (self.refresh_badges(), True)[1])
+        GLib.timeout_add(700, self._update_task_badge)
 
     def _save_state(self, *_a) -> bool:
         if getattr(self, "search_pop", None) is not None and self.search_pop.get_parent() is not None:
             self.search_pop.unparent()
         w, h = self.get_default_size()
-        prefs.update(width=w, height=h, maximized=self.is_maximized(), page=self.current)
+        if self._sidebar_visible and self.split.get_position() > 120:
+            self._sidebar_width = self.split.get_position()
+        prefs.update(width=w, height=h, maximized=self.is_maximized(), page=self.current,
+                     sidebar_visible=self._sidebar_visible, sidebar_width=self._sidebar_width)
         return False
+
+    # ---------------------------------------------------------------- window chrome
+    def motion_ms(self) -> int:
+        return {"full": 220, "reduced": 110, "off": 0}.get(prefs.get("motion", "full"), 220)
+
+    def apply_motion(self) -> None:
+        ms = self.motion_ms()
+        self.stack.set_transition_duration(ms)
+        self.stack.set_transition_type(Gtk.StackTransitionType.NONE if not ms else Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+        self.sidebar_revealer.set_transition_duration(ms)
+        self.sidebar_revealer.set_transition_type(Gtk.RevealerTransitionType.NONE if not ms else Gtk.RevealerTransitionType.SLIDE_RIGHT)
+
+    def toggle_sidebar(self) -> None:
+        self.set_sidebar_visible(not self._sidebar_visible)
+
+    def set_sidebar_visible(self, visible: bool) -> None:
+        visible = bool(visible)
+        if visible == self._sidebar_visible:
+            return
+        if not visible and self.split.get_position() > 120:
+            self._sidebar_width = self.split.get_position()
+        self._sidebar_visible = visible
+        prefs.set("sidebar_visible", visible)
+        self.sidebar_btn.set_icon_name("sidebar-hide-symbolic" if visible else "sidebar-show-symbolic")
+        self.sidebar_btn.set_tooltip_text(("Hide" if visible else "Show") + " sidebar (Ctrl+Shift+S)")
+        ms = self.motion_ms()
+        if visible:
+            self.sidebar_revealer.set_visible(True)
+            self.split.set_position(max(210, min(430, self._sidebar_width)))
+            self.sidebar_revealer.set_reveal_child(True)
+        else:
+            self.sidebar_revealer.set_reveal_child(False)
+
+            def finish_hide() -> bool:
+                if not self._sidebar_visible:
+                    self.sidebar_revealer.set_visible(False)
+                    self.split.set_position(0)
+                return False
+            GLib.timeout_add(max(1, ms + 20), finish_hide)
+        debug.event("ui.sidebar", visible=visible, width=self._sidebar_width)
+
+    def _update_task_badge(self) -> bool:
+        n = tasks.active_count()
+        self.task_badge.set_text(str(n) if n < 100 else "99+")
+        self.task_badge.set_visible(n > 0)
+        self.task_btn.set_tooltip_text(f"Background tasks ({n} running)" if n else "Background tasks")
+        return True
 
     # ---------------------------------------------------------------- sidebar extras
     QUICK = [("cleanup:scan", "Scan for junk", "edit-clear-all-symbolic"), ("updates:all", "Update everything", "software-update-available-symbolic"),
@@ -425,18 +506,17 @@ class MainWindow(Adw.ApplicationWindow):
     # ---------------------------------------------------------------- navigation
     def _row_activated(self, _lb, row) -> None:
         self.goto(row._pid)
-        self.split.set_show_content(True)
 
     def goto(self, pid: str) -> None:
         if pid not in self.pages:
             return
+        debug.event("ui.navigate", from_page=self.current or "", to_page=pid)
         if self.current and self.current != pid:
             self.pages[self.current].deactivate()
         self.current = pid
         page = self.pages[pid]
         self.stack.set_visible_child_name(pid)
-        self.content_page.set_title(page.TITLE)
-        self.split.set_show_content(True)
+        self.set_title(f"{page.TITLE} · PC Command Center")
         for w in self._header_extra:
             self.content_hb.remove(w)
         self._header_extra = list(page.header_widgets)
@@ -499,6 +579,8 @@ class MainWindow(Adw.ApplicationWindow):
         add("palette", self.palette, ["<Control>k", "<Control>p"])
         add("preferences", self.preferences, ["<Control>comma"])
         add("activity", self.activity, ["<Control>h"])
+        add("tasks", self.task_center, ["<Control><Shift>t"])
+        add("sidebar", self.toggle_sidebar, ["<Control><Shift>s"])
         mode = prefs.get("appearance")
         app_action = Gio.SimpleAction.new_stateful("appearance", GLib.VariantType.new("s"), GLib.Variant("s", mode))
 
@@ -516,6 +598,10 @@ class MainWindow(Adw.ApplicationWindow):
     def activity(self) -> None:
         from .dialogs import ActivityDialog
         ActivityDialog().present(self)
+
+    def task_center(self) -> None:
+        from .taskcenter import TaskCenterDialog
+        TaskCenterDialog(self).present(self)
 
     def welcome(self) -> None:
         from .welcome import WelcomeDialog
@@ -537,6 +623,7 @@ class MainWindow(Adw.ApplicationWindow):
 
     def run_action(self, key: str) -> None:
         """Run a palette action by key (used by --action from GNOME search and the dock menu)."""
+        debug.event("ui.action", key=key)
         self._palette_pick(key)
 
     def _palette_pick(self, key: str | None) -> None:
@@ -555,6 +642,8 @@ class MainWindow(Adw.ApplicationWindow):
                 self.preferences()
             elif what == "activity":
                 self.activity()
+            elif what == "tasks":
+                self.task_center()
             else:
                 self.lookup_action("appearance").change_state(GLib.Variant("s", what))
             return
@@ -631,7 +720,8 @@ class MainWindow(Adw.ApplicationWindow):
         order = [pid for _, ids in SECTIONS for pid in ids if pid in self.pages]
         lines = ["Keyboard shortcuts", ""] + [f"  Ctrl+{i + 1}      {self.classes[p].TITLE}" for i, p in enumerate(order[:9])]
         lines += ["", "  Ctrl+K       Go to a page or run an action by typing", "  Ctrl+,       Preferences",
-                  "  Ctrl+H       Activity history", "  F5 / Ctrl+R  Refresh this page",
+                  "  Ctrl+H       Activity history", "  Ctrl+Shift+T Background tasks", "  Ctrl+Shift+S Show/hide sidebar",
+                  "  F5 / Ctrl+R  Refresh this page",
                   "  Ctrl+F       Search (on pages with a search box)", "  Ctrl+Q       Quit",
                   "  Double-click / Enter on a row opens its details"]
         show_text(self, "Keyboard shortcuts", "\n".join(lines))

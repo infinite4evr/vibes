@@ -6,6 +6,9 @@ import json
 import time
 from pathlib import Path
 
+from ..core import debug
+from ..core.state import append_private, atomic_write_text
+
 FILE = Path.home() / ".local/state/pc/activity.jsonl"
 ERRORS = Path.home() / ".local/state/pc/gui-errors.log"
 KEEP = 300
@@ -13,12 +16,12 @@ KEEP = 300
 
 def record(title: str, commands: list[str], ok: bool, note: str = "", output: list[str] | None = None, root: bool = False,
            duration: float = 0.0) -> None:
-    entry = {"ts": time.time(), "title": title, "commands": commands, "ok": ok, "note": note, "root": root,
-             "duration": round(duration, 1), "output": (output or [])[-400:]}
+    entry = {"ts": time.time(), "title": debug.redact_text(title),
+             "commands": [debug.redact_text(c) for c in commands], "ok": ok,
+             "note": debug.redact_text(note), "root": root, "duration": round(duration, 1),
+             "output": [debug.redact_text(x) for x in (output or [])[-400:]]}
     try:
-        FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(FILE, "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry) + "\n")
+        append_private(FILE, json.dumps(entry) + "\n", mode=0o600)
         _trim()
     except OSError:
         pass
@@ -30,7 +33,10 @@ def _trim() -> None:
     except OSError:
         return
     if len(lines) > KEEP + 50:
-        FILE.write_text("\n".join(lines[-KEEP:]) + "\n", encoding="utf-8")
+        try:
+            atomic_write_text(FILE, "\n".join(lines[-KEEP:]) + "\n", mode=0o600)
+        except OSError:
+            pass
 
 
 def entries(limit: int = KEEP) -> list[dict]:
@@ -56,8 +62,6 @@ def clear() -> None:
 
 def log_error(text: str) -> None:
     try:
-        ERRORS.parent.mkdir(parents=True, exist_ok=True)
-        with open(ERRORS, "a", encoding="utf-8") as f:
-            f.write(time.strftime("== %Y-%m-%d %H:%M:%S ==\n") + text.rstrip() + "\n")
+        append_private(ERRORS, time.strftime("== %Y-%m-%d %H:%M:%S ==\n") + debug.redact_text(text).rstrip() + "\n", mode=0o600)
     except OSError:
         pass

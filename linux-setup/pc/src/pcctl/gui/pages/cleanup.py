@@ -11,6 +11,7 @@ from gi.repository import Adw, Gtk
 from ...core import junk
 from ...core.fmt import ago, human
 from ...core.run import HOME, Step
+from ...core.state import atomic_write_text
 from ..util import button, clear, esc, hbox, idle, label, pill, vbox
 from ..widgets import HBars, card
 from .. import prefs, theme
@@ -48,8 +49,7 @@ def _save_history(freed: int, what: list[str], measured: int | None = None) -> N
     h = _history()[-49:]
     h.append({"ts": time.time(), "freed": freed, "what": what, "measured": measured})
     try:
-        HISTORY.parent.mkdir(parents=True, exist_ok=True)
-        HISTORY.write_text(json.dumps(h))
+        atomic_write_text(HISTORY, json.dumps(h) + "\n", mode=0o600)
     except OSError:
         pass
 

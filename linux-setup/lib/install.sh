@@ -3,15 +3,23 @@
 
 RAW_CAT="https://raw.githubusercontent.com/catppuccin"
 TMPD=""
-tmpdir() { [[ -n $TMPD ]] || TMPD=$(mktemp -d); echo "$TMPD"; }
+tmpdir() { [[ -n $TMPD ]] || { TMPD=$(mktemp -d); chmod 700 "$TMPD"; }; echo "$TMPD"; }
 
-fetch() { curl -fsSL --retry 3 --connect-timeout 15 "$1" -o "$2"; }
+fetch() {
+  local url=$1 out=$2
+  case $url in
+    https://*) ;;
+    *) err "Refusing a non-HTTPS download: $url"; return 2 ;;
+  esac
+  curl --proto '=https' --tlsv1.2 -fsSL --retry 3 --retry-all-errors --connect-timeout 15 --max-time 180 "$url" -o "$out"
+  chmod 600 "$out" 2>/dev/null || true
+}
 
 # Download an installer script first, then run it (so a failed download never "succeeds").
 run_installer() {
   local url=$1; shift
   local f; f="$(tmpdir)/installer-$RANDOM.sh"
-  fetch "$url" "$f" && [[ -s $f ]] && sh "$f" "$@"
+  fetch "$url" "$f" && [[ -s $f ]] && bash -n "$f" && /bin/bash "$f" "$@"
 }
 
 # Remember the original value of each GNOME setting we touch, so "undo" can restore it.
@@ -119,8 +127,13 @@ install_gh() {
 install_uv() {
   title "Python tooling (uv)"
   if have uv || [[ -x $HOME/.local/bin/uv ]]; then ok "uv already installed"; return 0; fi
-  export UV_NO_MODIFY_PATH=1
-  run_installer https://astral.sh/uv/install.sh >/dev/null && [[ -x $HOME/.local/bin/uv ]] || return 1
+  # Prefer a normal Python-package installation over executing a downloaded installer.
+  if have pipx; then
+    PIPX_HOME="${PIPX_HOME:-$HOME/.local/share/pipx}" PIPX_BIN_DIR="$HOME/.local/bin" pipx install uv >/dev/null || return 1
+  else
+    python3 -m pip install --user uv >/dev/null || return 1
+  fi
+  [[ -x $HOME/.local/bin/uv ]] || have uv || return 1
   ok "uv installed (fast replacement for pip, venv, poetry and pyenv)"
 }
 

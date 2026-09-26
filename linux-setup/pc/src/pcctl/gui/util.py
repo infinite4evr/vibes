@@ -13,6 +13,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, GLib, Gtk, Pango  # noqa: E402
 
+from ..core import debug, tasks  # noqa: E402
 from ..core.run import which  # noqa: E402
 
 
@@ -20,13 +21,23 @@ def esc(s: Any) -> str:
     return GLib.markup_escape_text(str(s))
 
 
-def bg(fn: Callable[[], Any], done: Callable[[Any], None] | None = None, error: Callable[[Exception], None] | None = None) -> None:
-    """Run fn in a thread; deliver its result to done() on the GTK main loop."""
+def bg(fn: Callable[[], Any], done: Callable[[Any], None] | None = None, error: Callable[[Exception], None] | None = None,
+       *, title: str | None = None) -> str:
+    """Run fn in a tracked worker thread and deliver its result on the GTK main loop.
+
+    Python threads are intentionally shown as non-cancellable in the Task Centre: force-
+    killing an arbitrary thread can corrupt shared state. Command actions use Runner and
+    are cancellable safely.
+    """
+    pretty = title or getattr(fn, "__name__", "Background work").replace("_", " ").strip().title()
+    task_id = tasks.start(pretty, kind="worker", cancellable=False, detail="Working in the background…")
 
     def work() -> None:
         try:
             res = fn()
         except Exception as e:  # noqa: BLE001
+            tasks.finish(task_id, False, detail=f"Failed: {e}")
+            debug.exception(f"background task {pretty}", e)
             if error is None:  # unexpected: keep a record. Expected failures are handled by the caller's error callback.
                 traceback.print_exc()
                 try:
@@ -38,10 +49,12 @@ def bg(fn: Callable[[], Any], done: Callable[[Any], None] | None = None, error: 
             if error:
                 GLib.idle_add(lambda: (error(err), False)[1])
             return
+        tasks.finish(task_id, True, detail="Completed")
         if done:
             GLib.idle_add(lambda: (done(res), False)[1])
 
-    threading.Thread(target=work, daemon=True).start()
+    threading.Thread(target=work, name=f"pc-worker-{task_id}", daemon=True).start()
+    return task_id
 
 
 def idle(fn: Callable, *args) -> None:

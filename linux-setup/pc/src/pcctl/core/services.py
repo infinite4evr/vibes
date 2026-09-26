@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .run import HOME, Step, has, out, py_step, read, sh
+from .state import atomic_write_text
 
 # Plain-language explanations for services people commonly wonder about.
 EXPLAIN = {
@@ -222,7 +223,7 @@ def set_startup_enabled(app: StartupApp, enabled: bool) -> str:
             if not enabled:
                 out_lines.append("Hidden=true")
             inserted = True
-    target.write_text("\n".join(out_lines) + "\n")
+    atomic_write_text(target, "\n".join(out_lines) + "\n", mode=0o600)
     return f"{'enabled' if enabled else 'disabled'} {app.name}"
 
 
@@ -591,7 +592,7 @@ def _write_units(spec: ScriptSpec, folder: Path) -> str:
     folder.mkdir(parents=True, exist_ok=True)
     files = unit_files(spec)
     for name, text in files.items():
-        (folder / name).write_text(text)
+        atomic_write_text(folder / name, text, mode=0o600)
     if spec.mode != "schedule":  # switching away from a schedule: drop the old timer
         try:
             (folder / f"{spec.unit}.timer").unlink()

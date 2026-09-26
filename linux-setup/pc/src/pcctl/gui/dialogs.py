@@ -102,15 +102,17 @@ class TaskDialog(Adw.Dialog):
         self.close_btn = button("Close", css="pill")
         self.close_btn.set_sensitive(False)
         self.close_btn.connect("clicked", lambda *_: self.close())
+        self.bg_btn = button("Hide", icon="go-down-symbolic", css="pill", tooltip="Keep this running and manage it from Background tasks")
+        self.bg_btn.connect("clicked", lambda *_: self.set_visible(False))
         self.stop_btn = button("Stop", css="pill")
         self.stop_btn.connect("clicked", lambda *_: self.runner.cancel())
-        body.append(hbox(self.result, spacer(), self.stop_btn, self.close_btn))
+        body.append(hbox(self.result, spacer(), self.bg_btn, self.stop_btn, self.close_btn))
         tv.set_content(body)
         self.set_child(tv)
         self.set_can_close(False)
         self.connect("closed", lambda *_: self.on_done_cb and self.on_done_cb(self.success))
         self._lines = 0
-        self.runner = Runner(steps, self._on_step, self._on_line, self._on_done)
+        self.runner = Runner(steps, self._on_step, self._on_line, self._on_done, title=title)
 
     def start(self, parent: Gtk.Widget) -> None:
         self.present(parent)
@@ -186,6 +188,7 @@ class TaskDialog(Adw.Dialog):
         self.result.add_css_class("ok-text" if ok else "bad-text")
         self.close_btn.set_sensitive(True)
         self.close_btn.add_css_class("suggested-action")
+        self.bg_btn.set_visible(False)
         self.stop_btn.set_visible(False)
         self.set_can_close(True)
         self.close_btn.grab_focus()

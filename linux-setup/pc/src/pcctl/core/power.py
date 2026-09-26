@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 
 from .run import HOME, Step, has, out, py_step, read, sh
+from .state import atomic_write_text, private_dir
 
 STATE_DIR = HOME / ".local/state/pc"
 
@@ -138,10 +139,7 @@ def _read_state(path: Path) -> dict:
 
 
 def _write_state(path: Path, data: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(".tmp")
-    tmp.write_text(json.dumps(data))
-    os.replace(tmp, path)
+    atomic_write_text(path, json.dumps(data) + "\n", mode=0o600)
 
 
 def keep_awake_status(now: float | None = None, state_file: Path | None = None) -> dict | None:
@@ -168,8 +166,9 @@ def start_keep_awake(seconds: int | None) -> dict:
         raise RuntimeError("systemd-inhibit isn't available on this system")
     stop_keep_awake()
     cmd = keep_awake_cmd(seconds)
-    STATE_DIR.mkdir(parents=True, exist_ok=True)
-    with open(AWAKE_LOG, "w") as log:
+    private_dir(STATE_DIR)
+    fd = os.open(AWAKE_LOG, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as log:
         p = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=log, start_new_session=True, close_fds=True)
     now = time.time()
     _write_state(AWAKE_FILE, {"pid": p.pid, "started": now, "until": now + seconds if seconds else 0, "cmd": cmd,

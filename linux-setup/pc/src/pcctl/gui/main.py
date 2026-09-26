@@ -58,6 +58,10 @@ class App(Adw.Application):
             Gtk.IconTheme.get_for_display(display).add_search_path(os.path.join(os.path.dirname(__file__), "data"))
         Gtk.Window.set_default_icon_name(APP_ID)
         from . import prefs, theme
+        from ..core import debug
+        debug_on = str(os.environ.get("PC_DEBUG", "")).lower() in ("1", "true", "yes", "on") or bool(prefs.get("debug_logging"))
+        debug.configure(debug_on)
+        debug.event("app.startup", app=APP_ID, debug=debug_on)
         theme.setup(os.environ.get("PC_STYLE") or prefs.get("appearance"), os.environ.get("PC_LOOK") or prefs.get("look"))
         _install_crash_guard()
         q = Gio.SimpleAction.new("quit", None)
@@ -134,11 +138,14 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="pc-gui", description="PC Command Center")
     ap.add_argument("--page", default=None, help="page to open (default: the one you had open last)")
     ap.add_argument("--action", default=None, help="run a palette action, e.g. maintenance:fix-sound or app:palette")
+    ap.add_argument("--debug", action="store_true", help="enable detailed, privacy-redacted diagnostic logging for this run")
     ap.add_argument("--screenshots", help=argparse.SUPPRESS)
     ap.add_argument("--pages", help=argparse.SUPPRESS)
     ap.add_argument("--wait", type=float, default=3.0, help=argparse.SUPPRESS)
     args = argv if argv is not None else sys.argv[1:]
     a = ap.parse_args(args)
+    if a.debug:
+        os.environ["PC_DEBUG"] = "1"
     if a.screenshots:
         return App(a.page, a.screenshots, a.pages.split(",") if a.pages else None, a.wait).run([sys.argv[0]])
     return App(a.page).run([sys.argv[0], *args])

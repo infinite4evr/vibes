@@ -13,6 +13,7 @@ import time
 from pathlib import Path
 
 from . import run as _run
+from .state import append_private, atomic_write_text
 from .run import Step, has, out, py_step
 
 DB_DIR = "/var/lib/clamav"
@@ -81,14 +82,12 @@ def scan_steps(folder: str) -> list[Step]:
     log = log_path()
 
     def start() -> str:
-        log.parent.mkdir(parents=True, exist_ok=True)
-        log.write_text(f"{START}{folder} at {int(time.time())}\n")
+        atomic_write_text(log, f"{START}{folder} at {int(time.time())}\n", mode=0o600)
         return f"Scanning {folder}. Loading the virus list takes about a minute first; big folders take longer."
 
     def finish() -> str:
         found = parse_scan(_run.read(log))
-        with open(log, "a") as f:
-            f.write(f"{END}{int(time.time())}\n")
+        append_private(log, f"{END}{int(time.time())}\n", mode=0o600)
         return f"Done. {len(found)} infected file{'s' if len(found) != 1 else ''} found." if found else "Done. Nothing infected found."
     return [py_step("Get ready", start, f"start a new scan report in ~/{LOG_NAME}"),
             Step(f"Scan {folder}", ["clamscan", "-r", "-i", "--no-summary", f"--log={log}", folder], ok_codes=(0, 1)),

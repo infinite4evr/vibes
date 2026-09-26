@@ -1,6 +1,6 @@
 [project]
 name = "pc-control"
-version = "2.1.0"
+version = "2.2.0"
 description = "PC Command Center - monitor, clean, update, secure and tune Ubuntu (desktop app + terminal app)"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -23,3 +23,22 @@ packages = ["src/pcctl"]
 "src/pcctl/ui/app.tcss" = "pcctl/ui/app.tcss"
 "src/pcctl/gui/style.css" = "pcctl/gui/style.css"
 "src/pcctl/gui/data/io.github.infinite4evr.PcCommandCenter.svg" = "pcctl/gui/data/io.github.infinite4evr.PcCommandCenter.svg"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "pytest-cov>=5",
+  "ruff>=0.7",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 140
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B"]
+ignore = ["E501"]

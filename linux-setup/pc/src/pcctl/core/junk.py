@@ -79,7 +79,24 @@ def size_of(*paths: str | Path) -> int:
         return sum(py_size(p) for p in existing)
 
 
-SAFE_ROOTS = (str(HOME) + "/", "/tmp/", "/var/tmp/")
+
+def _inside(path: str, root: str) -> bool:
+    root = root.rstrip("/") or "/"
+    return path == root or path.startswith(root.rstrip("/") + "/")
+
+
+def _lexical_safe_root(ap: str) -> str | None:
+    # HOME wins even in tests or unusual setups where it itself lives under /tmp.
+    for root in (str(HOME), "/var/tmp", "/tmp"):
+        if _inside(ap, root) and ap != root:
+            return root
+    return None
+
+
+def _same_safe_root(ap: str, rp: str) -> bool:
+    """A lexical path and its resolved path must remain in the same allowed root."""
+    root = _lexical_safe_root(ap)
+    return bool(root and _inside(rp, root) and rp != root)
 
 
 def _rm_paths(paths: list[str]) -> Callable[[], str]:
@@ -88,11 +105,21 @@ def _rm_paths(paths: list[str]) -> Callable[[], str]:
         done, skipped = [], []
         for p in paths:
             ap = os.path.abspath(p)
-            if not ap.startswith(SAFE_ROOTS) or ap.rstrip("/") in (str(HOME), "/tmp", "/var/tmp"):
+            if _lexical_safe_root(ap) is None:
                 skipped.append(p)
                 continue
             try:
-                if os.path.islink(ap) or os.path.isfile(ap):
+                # Unlinking a symlink itself is safe, but never follow a symlinked
+                # parent (e.g. ~/.cache/foo -> /important) and delete its target.
+                if os.path.islink(ap):
+                    os.unlink(ap)
+                    done.append(p)
+                    continue
+                rp = os.path.realpath(ap)
+                if not _same_safe_root(ap, rp):
+                    skipped.append(p)
+                    continue
+                if os.path.isfile(ap):
                     os.unlink(ap)
                 elif os.path.isdir(ap):
                     shutil.rmtree(ap, ignore_errors=True)
@@ -115,10 +142,13 @@ def _empty_dirs(paths: list[str]) -> Callable[[], str]:
     def run() -> str:
         n = 0
         for p in paths:
-            if not os.path.abspath(p).startswith(str(HOME) + "/") or not os.path.isdir(p):
+            ap = os.path.abspath(p)
+            rp = os.path.realpath(ap)
+            if (not ap.startswith(str(HOME) + "/") or os.path.islink(ap) or
+                    not rp.startswith(str(HOME) + "/") or not os.path.isdir(ap)):
                 continue
-            for child in os.listdir(p):
-                c = os.path.join(p, child)
+            for child in os.listdir(ap):
+                c = os.path.join(ap, child)
                 try:
                     if os.path.isdir(c) and not os.path.islink(c):
                         shutil.rmtree(c, ignore_errors=True)

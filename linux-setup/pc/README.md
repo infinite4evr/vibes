@@ -5,7 +5,7 @@ A control center for your whole Ubuntu computer, in two forms that share one eng
 - **PC Command Center**, a native desktop app (GTK 4 + libadwaita). It has a clean, neutral look with GNOME's accent colour, or Catppuccin if you prefer (Preferences → Colours). Light and dark follow GNOME's switch. Open it from the dock or app grid, or run `pc-gui`.
 - **pc**, the same thing in the terminal. Type `pc`.
 
-Version 2.1 fills in about 110 gaps found in a feature audit against Stacer, BleachBit, Czkawka, Mission Center, Resources, Cockpit, Warehouse, Flatseal, Timeshift, GRUB Customizer, Windows Task Manager, Microsoft PC Manager, CleanMyMac and others. The full list is in `../docs/FEATURE-AUDIT.md`.
+Version 2.2 builds on the original feature audit and adds safety hardening, diagnostics, background-task control and desktop-shell polish while retaining the broad feature set that filled about 110 gaps found in a feature audit against Stacer, BleachBit, Czkawka, Mission Center, Resources, Cockpit, Warehouse, Flatseal, Timeshift, GRUB Customizer, Windows Task Manager, Microsoft PC Manager, CleanMyMac and others. The full list is in `../docs/FEATURE-AUDIT.md`.
 
 ## The desktop app
 
@@ -28,11 +28,11 @@ Version 2.1 fills in about 110 gaps found in a feature audit against Stacer, Ble
 | Developer | Git projects (fetch all, what isn't pushed yet), dev servers (stop all), pm2, containers with **Docker disk usage and cleanup by type**, a **PATH doctor** (which `node`/`python` wins), language versions (install Python with uv), **Git identity and defaults**, **GitHub connection** (gh login, SSH test, create and upload a key), global packages (npm -g, pipx, uv tools, cargo) |
 | Maintenance | One-click tune-up, **troubleshooters** (internet, sound, Bluetooth, slow PC, broken installs, desktop glitches, clock, printer, screen sharing), weekly checkup with a **health history graph**, a **system report** (one HTML file; the shared copy hides names and addresses), settings backups, Timeshift snapshots (list and delete), app update and uninstall |
 
-Every action shows the exact commands first. Anything that needs admin rights asks once. With the app's polkit policy installed, the password popup names PC Command Center and remembers your password for a few minutes. A live log shows while it runs, and Activity history (**Ctrl+H**) keeps a record of everything the app did.
+Every action shows the exact commands first. Anything that needs admin rights asks once. With the app's polkit policy installed, the password popup names PC Command Center and remembers your password for a few minutes. A live log shows while it runs, and Activity history (**Ctrl+H**) keeps a redacted record of what the app did. **Background Tasks (Ctrl+Shift+T)** shows work still running, recent output and the app's own scheduled jobs; safe command tasks can be stopped there while critical package/boot/filesystem steps finish their current operation before stopping.
 
 **Around the app**
 
-- **Preferences** (Ctrl+,): light / dark / follow the system, Modern or Catppuccin colours, start page, graph speed, pause graphs when the window is hidden, skip confirmations for harmless actions, background alerts, never-clean list, and what the weekly auto-clean may clean.
+- **Preferences** (Ctrl+,): light / dark / follow the system, Modern or Catppuccin colours, start page, graph speed, **Full/Reduced/Off interface motion**, pause graphs when the window is hidden, skip confirmations for harmless actions, background alerts, never-clean list, what the weekly auto-clean may clean, and **Diagnostics → opt-in redacted debug logs + support bundle export**. The sidebar can be hidden (**Ctrl+Shift+S**) and resized by dragging its divider.
 - **Background alerts** work even with the app closed: disk almost full, security updates waiting, a service keeps crashing, restart pending, Trash huge, hot CPU, worn battery. Each notification opens the right page.
 - The **search bar at the top** (or **Ctrl+K**) finds any page, action or single setting as you type. With GNOME search turned on, typing "clean", "battery" or "fix sound" in the Activities overview works too.
 - **Quick actions** (top of the sidebar) has the everyday jobs one click away: scan for junk, update everything, why is it slow, tune-up, fix a problem, big files, speed test, system report. The card at the bottom of the sidebar shows disk space, memory and the health score.
@@ -51,6 +51,7 @@ pc doctor          health check, offers fixes
 pc slow            why is my PC slow right now? (offers fixes)
 pc fix [what]      troubleshooters: internet, sound, bluetooth, apt, desktop, clock, printer, sharing, slow
 pc secrets         leaked API keys / tokens / passwords (masked; --json)
+pc support         redacted troubleshooting ZIP
 pc report          save a system report (--share hides names, --quick, --text, --open, -o FILE)
 pc clean           safe cleanup (--dry-run, --deep, --all, -y)
 pc update          update apt, snap, flatpak (--firmware)
@@ -77,4 +78,4 @@ Settings: `~/.config/pc/config.json` (`theme`, `icons`: auto/nerd/plain, `projec
 
 It also offers the weekly checkup and background alerts. `bash ../setup.sh app` updates just the desktop app. The app can also update itself from this folder: Maintenance → Setup → This app.
 
-Run from source: `PYTHONPATH=src /usr/bin/python3 -m pcctl.gui`. Tests: `PYTHONPATH=src python3 -m pytest tests`. The GUI smoke test opens every page in light and dark; it needs a display and runs only when one is available.
+Run from source: `PYTHONPATH=src /usr/bin/python3 -m pcctl.gui`. Tests: `python3 -m pytest` (the project config adds `src` automatically). The GUI smoke test opens every page in light and dark; it needs a display and runs only when one is available.
