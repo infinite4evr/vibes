@@ -25,7 +25,7 @@ If it doesn't start, install FUSE (`sudo apt install fuse3`, `sudo dnf install f
 
 1. TG Drive asks for a Telegram app key: sign in at [my.telegram.org/apps](https://my.telegram.org/apps), create an app (any name, platform Desktop) and paste the **api_id** and **api_hash**. They stay on this computer.
 2. Sign in by scanning a QR code with Telegram on your phone (Settings → Devices → Link Desktop Device), or with your phone number and the code Telegram sends. Two-step passwords are supported.
-3. Indexing starts. Big accounts take a while the first time (Telegram limits how fast history can be read); files appear chat by chat and new files arrive live after that. Indexing continues in the tray when you close the window.
+3. Indexing starts. Big accounts take a while the first time (Telegram limits how fast history can be read); files appear chat by chat and new files arrive live after that. TG Drive runs only while its window is open: closing the window quits it, and indexing picks up where it left off next time (Settings → Desktop can keep it running in the tray instead).
 
 ## What it does
 
@@ -52,6 +52,13 @@ Each result shows how it matched (exact, variant, similar, related). Filters by 
 **Transfers.** Parallel downloads and uploads with pause, resume (also after restarting), retry, cancel and speed/ETA; download whole folders or selections (keeping the folder structure, or as a zip); upload files and folders by drag and drop or the file picker; upload into any chat with a caption; files up to Telegram's limit (2 GB, 4 GB with Premium). Desktop notifications when they finish.
 
 **Manage.** Storage view (by type, chat, kind of chat, year), duplicate finder (exact and similar), index manager (per-chat progress, pause, rescan, verify, exclude), activity log, several accounts, proxy (SOCKS5/4, HTTP, MTProto), app lock with a passcode and auto-lock, CSV export, database maintenance (optimise, vacuum, integrity check, rebuild search), logs.
+
+**New in 2.3.2: quits fast, and nothing stays behind.**
+
+- *Closing the window quits TG Drive*, and every part of it stops: the service, background indexing, the Telegram connection, and the drive mounted in your file manager. It no longer starts at login or hides in the tray unless you switch that on in Settings → Desktop (older settings were reset to this once).
+- *Quitting takes about a second* instead of 10–45 seconds. Everything is told to stop at once and stops together; the window disappears immediately while the last saving finishes; a long background job is interrupted instead of waited for. However stuck anything is, the service ends itself within 25 seconds, and it also stops if the window is killed or crashes.
+- *Browser mode* (`--browser`) stops about 20 seconds after you close its last TG Drive tab or window.
+- The log says how long quitting took and which step was slowest.
 
 **New in 2.3.1: quiet on the CPU.**
 
@@ -132,7 +139,7 @@ Needs `uv` (or `PYTHON_DIST` pointing at a python-build-standalone build), `curl
 
 ```bash
 python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt pytest httpx
-python -m pytest tests          # 57 tests, including a 60,000-file scale test
+python -m pytest tests          # 61 tests, including a 60,000-file scale test
 python -m desktop               # the desktop app from source
 python run.py                   # server only; open http://127.0.0.1:8765
 python -m tests.demo_server     # the UI on a fake account (http://127.0.0.1:8766)

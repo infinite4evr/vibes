@@ -24,6 +24,7 @@ from .app import APP_ID, ROOT, ensure_desktop_entry, notify_system
 
 log = logging.getLogger("tgdrive.desktop")
 SOCKET = f"tgdrive-{os.getuid()}" if hasattr(os, "getuid") else "tgdrive"
+STOP_WAIT = 30   # seconds the window waits for the service to finish saving (it ends itself after 25)
 
 
 def load_icon() -> QIcon:
@@ -695,8 +696,11 @@ class Shell:
 
     def toggle_window(self):
         if self.win.isVisible() and self.win.isActiveWindow():
-            self.win.hide()
-            self.set_frozen(True)
+            if self.close_to_tray():
+                self.win.hide()
+                self.set_frozen(True)
+            else:
+                self.win.showMinimized()   # TG Drive only runs hidden if you asked for that in Settings
         else:
             self.show()
 
@@ -876,34 +880,60 @@ class Shell:
         self.quitting = True
         self.save_geometry()
         for p in self.players:
-            p.close()
+            p.close()   # saves playback positions while the service still runs
+        self.players = []
         for w in list(getattr(self, "extra_windows", [])):
             w.close()
+        # Gone from the screen at once; the service finishes saving in the background of shutdown().
+        if self.win is not None:
+            self.win.hide()
+        if self.tray:
+            self.tray.hide()
+        self.app.processEvents()
         self.app.quit()
 
     def shutdown(self):
+        """Stop everything TG Drive started. The service gets up to STOP_WAIT seconds to save its work
+        (it ends itself after 25 s whatever happens); then it is killed. Nothing keeps running afterwards."""
+        t0 = time.monotonic()
+        self.quitting = True
+        for t in ("timer", "svc_timer"):
+            if getattr(self, t, None) is not None:
+                getattr(self, t).stop()
         for w in getattr(self, "players", []):
-            w.close()   # saves playback positions while the server still runs
-        if self.server:
-            self.server.should_exit = True
-            self.thread.join(40)
-        if self.proc is not None and self.proc.poll() is None:
-            self.proc.terminate()          # graceful: transfers are saved, folders flushed
-            try:
-                self.proc.wait(45)
-            except subprocess.TimeoutExpired:
-                log.warning("the service didn't stop in time; killing it")
-                self.proc.kill()
-        self.proc = None
+            w.close()
+        if self.win is not None:
+            self.win.hide()
         if self.tray:
             self.tray.hide()
-        # Web pages must go before their profile, or Chromium complains on exit.
+        # The page stops talking to the service before it's told to stop.
         view = getattr(self, "view", None)
         if view is not None:
             view.setPage(QWebEnginePage(view))
         if getattr(self, "page", None) is not None:
             self.page.deleteLater()
             self.page = None
+        self.app.processEvents()
+        if self.server:
+            self.server.should_exit = True
+            self.thread.join(STOP_WAIT)
+        proc = self.proc
+        if proc is not None and proc.poll() is None:
+            proc.terminate()          # graceful: transfers are saved, folders flushed
+            try:
+                proc.wait(STOP_WAIT)
+            except subprocess.TimeoutExpired:
+                log.warning("the service didn't stop in %s s; killing it", STOP_WAIT)
+                proc.kill()
+                try:
+                    proc.wait(5)
+                except subprocess.TimeoutExpired:
+                    pass
+        self.proc = None
+        if getattr(self, "listener", None) is not None:
+            self.listener.close()
+            QLocalServer.removeServer(SOCKET)
+        log.info("TG Drive closed in %.1f s", time.monotonic() - t0)
 
     def take_screenshot(self):
         path = self.args.screenshot
@@ -923,4 +953,9 @@ def run(app: QApplication, args, log_path) -> None:
     code = shell.start()
     # run pending deleteLater() calls (the page) before Python tears everything down
     app.sendPostedEvents(None, QEvent.Type.DeferredDelete.value)
+    if shell.server is not None:
+        # The service ran inside this process: its leftover worker threads must not keep the process
+        # alive after the window is gone (Python would wait for them at exit).
+        logging.shutdown()
+        os._exit(code or 0)
     sys.exit(code)

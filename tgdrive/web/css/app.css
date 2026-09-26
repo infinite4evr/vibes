@@ -664,7 +664,7 @@ button.sl-row:hover { background: var(--panel-2); }
 .td-name { display: flex; align-items: center; gap: 8px; }
 .td-acts { display: flex; gap: 4px; justify-content: flex-end; }
 .settings { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 26px; max-width: 1160px; }
-.set-nav { position: sticky; top: 0; align-self: start; display: grid; gap: 2px; }
+.set-nav { position: sticky; top: 0; align-self: start; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; min-width: 0; }
 .set-body h2 { margin: 2px 0 14px; font-size: calc(20px * var(--fs)); letter-spacing: -.01em; }
 .set-intro { color: var(--ink-2); margin: -4px 0 14px; max-width: 700px; }
 .set-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 320px); gap: 20px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line-2); }
@@ -1620,7 +1620,7 @@ html.embed .search { height: 36px; }
 .set-find { display: flex; align-items: center; gap: 8px; height: 36px; margin: 0 0 8px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--canvas); }
 .set-find:focus-within { background: var(--panel); border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
 .set-find svg { width: 16px; height: 16px; color: var(--ink-3); flex: none; }
-.set-find input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; padding: 0; height: 100%; }
+.set-find input { flex: 1; min-width: 0; width: 100%; border: 0; background: transparent; outline: none; padding: 0; height: 100%; }
 .set-hits { display: grid; gap: 6px; }
 .set-hit { display: grid; gap: 2px; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); cursor: pointer; }
 .set-hit:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: var(--hover); }

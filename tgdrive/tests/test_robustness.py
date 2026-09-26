@@ -688,3 +688,88 @@ def test_cpu_by_part_reports_the_busy_thread():
     release.set()
     parts = dict(r["parts"])
     assert parts.get("Meaning index (smart search)", 0) > 20, r
+
+
+# ------------------------------------------------------------------ quitting (2.3.2)
+def test_old_settings_now_quit_when_the_window_closes(tmp_path):
+    """Settings from before 2.3.2 kept TG Drive running in the tray and could start it at login;
+    now it only runs while its window is open (each can be switched on again)."""
+    import json
+
+    from tgdrive.settings import SETTINGS_REV, Settings
+    p = tmp_path / "old.json"
+    p.write_text(json.dumps({"close_to_tray": True, "autostart": True, "start_minimized": True, "theme": "dark"}))
+    s = Settings(p)
+    assert (s.get("close_to_tray"), s.get("autostart"), s.get("start_minimized")) == (False, False, False)
+    assert s.get("theme") == "dark"
+    assert json.loads(p.read_text())["settings_rev"] == SETTINGS_REV
+    s.update({"close_to_tray": True})          # a choice made afterwards sticks
+    assert Settings(p).get("close_to_tray") is True
+
+
+def test_live_updates_end_as_soon_as_quitting_starts():
+    """The window's live-update stream used to hold the server open for the whole graceful timeout."""
+    from tgdrive import api
+
+    class Req:
+        async def is_disconnected(self):
+            return False
+
+    async def go():
+        gen = api._events_loop(Req(), 0, 0, None, time.monotonic(), 0)
+        assert (await gen.__anext__()).startswith("retry")
+        api.RUNTIME["stopping"] = True
+        try:
+            rest = [c async for c in gen]
+        finally:
+            api.RUNTIME.pop("stopping", None)
+        return rest
+    t0 = time.monotonic()
+    asyncio.run(asyncio.wait_for(go(), 3))
+    assert time.monotonic() - t0 < 1.5
+
+
+def test_background_worker_stops_mid_query(tmp_path):
+    """Stopping interrupts the query a background worker is running instead of waiting for it."""
+    from tgdrive.dupes import DupeIndex
+
+    class Acc:
+        class db:
+            path = tmp_path / "x.db"
+    w = DupeIndex.__new__(DupeIndex)
+    w._stop, w._wake, w._thread = threading.Event(), threading.Event(), None
+    conn = sqlite3.connect(":memory:", check_same_thread=False)
+    w._conn = conn
+    err = []
+
+    def slow():
+        try:   # a query that would run for a very long time
+            conn.execute("WITH RECURSIVE c(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM c) SELECT COUNT(*) FROM c").fetchone()
+        except sqlite3.OperationalError as exc:
+            err.append(str(exc))
+    th = threading.Thread(target=slow)
+    th.start()
+    time.sleep(0.3)
+    t0 = time.monotonic()
+    w.request_stop()
+    th.join(3)
+    assert not th.is_alive() and err and "interrupt" in err[0] and time.monotonic() - t0 < 1
+
+
+def test_account_stop_is_quick_and_bounded(tmp_path):
+    """Quitting stops every part of an account together, with a time limit per step."""
+    acc, _client = make_account(tmp_path)
+
+    async def go():
+        acc.semantic.start()
+        acc.subjects.start()
+        acc.dupes.start()
+
+        async def never():
+            await asyncio.sleep(1000)
+        acc.drive.flush_now = never       # saving folders hangs (Telegram not answering)
+        t0 = time.monotonic()
+        await acc.stop()
+        return time.monotonic() - t0
+    took = run(go())
+    assert took < 14, took   # the hung save is given up after 10 s

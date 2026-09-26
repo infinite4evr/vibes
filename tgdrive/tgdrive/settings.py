@@ -88,7 +88,7 @@ DEFAULTS: dict[str, Any] = {
     "proxy_secret": "",
     # Desktop
     "notifications": True,
-    "close_to_tray": True,
+    "close_to_tray": False,       # closing the window quits TG Drive (everything stops)
     "start_minimized": False,
     "own_titlebar": True,         # the window draws its own title bar (one bar instead of two); applies at restart
     "autostart": False,
@@ -100,7 +100,10 @@ DEFAULTS: dict[str, Any] = {
     "confirm_delete": True,
     # How hard background work (meaning index, subjects, duplicates) may use the CPU: see pace.py
     "background_work": "gentle",  # gentle | full | paused
+    "settings_rev": 0,            # see Settings.migrate
 }
+
+SETTINGS_REV = 2
 
 CHOICES = {
     "theme": {"system", "light", "dark"},
@@ -147,10 +150,26 @@ class Settings:
                 for k, v in raw.items():
                     if k in DEFAULTS:
                         self.data[k] = v
+                self.migrate()
         except FileNotFoundError:
             pass
         except Exception as exc:
             log.warning("settings file unreadable (%s); using defaults", exc)
+
+    def migrate(self) -> None:
+        """Settings files from older versions.
+        rev 2 (2.3.2): TG Drive runs only while its window is open. Closing the window quits, and it no
+        longer starts at login or hidden in the tray (each can be switched on again in Settings → Desktop)."""
+        rev = int(self.data.get("settings_rev") or 0)
+        if rev >= SETTINGS_REV:
+            return
+        if rev < 2:
+            self.data.update(close_to_tray=False, start_minimized=False, autostart=False)
+        self.data["settings_rev"] = SETTINGS_REV
+        try:
+            self.save()
+        except OSError as exc:
+            log.warning("could not save migrated settings: %s", exc)
 
     def save(self) -> None:
         with self.lock:

@@ -47,8 +47,59 @@ def make_server(host: str = config.HOST, port: int = config.PORT, media_port: Op
     api.RUNTIME.update(port=main.getsockname()[1], media_port=media.getsockname()[1], desktop=desktop)
     cfg = uvicorn.Config(api.app, log_level="warning", lifespan="on", timeout_keep_alive=30,
                          access_log=False, proxy_headers=False,
-                         timeout_graceful_shutdown=5)   # live update streams must not hold up quitting
-    return uvicorn.Server(cfg), [main, media]
+                         timeout_graceful_shutdown=2)   # open streams must not hold up quitting
+    server = Server(cfg)
+    api.RUNTIME["server"] = server
+    return server, [main, media]
+
+
+class Server(uvicorn.Server):
+    """uvicorn's server, plus: the live-update streams end as soon as quitting starts (instead of
+    holding the connection open until the graceful-shutdown timeout)."""
+
+    def handle_exit(self, sig, frame) -> None:
+        from tgdrive import api
+        api.RUNTIME["stopping"] = True
+        super().handle_exit(sig, frame)
+
+
+# However stuck something is, the service process is gone this many seconds after it was told to stop.
+HARD_STOP_AFTER = 25.0
+
+
+def exit_guard(server, log, name: str = "service") -> None:
+    """Start a thread that ends the process if stopping takes longer than HARD_STOP_AFTER seconds
+    (a thread stuck in a long computation or a network call must never leave TG Drive running)."""
+    import time as _t
+
+    def guard():
+        while not server.should_exit:
+            _t.sleep(0.2)
+        started = _t.monotonic()
+        while _t.monotonic() - started < HARD_STOP_AFTER:
+            _t.sleep(0.5)
+        log.warning("%s: stopping took over %.0f s; ending the process now", name, HARD_STOP_AFTER)
+        try:
+            logging.shutdown()
+        finally:
+            os._exit(0)
+
+    threading.Thread(target=guard, name="tgdrive-exit-guard", daemon=True).start()
+
+
+def die_with_parent() -> None:
+    """Linux: ask the kernel to send us SIGTERM when the process that started us dies (even if it is
+    killed with SIGKILL), so the service can never outlive the window."""
+    if not sys.platform.startswith("linux"):
+        return
+    try:
+        import ctypes
+        import signal
+        libc = ctypes.CDLL(None, use_errno=True)
+        PR_SET_PDEATHSIG = 1
+        libc.prctl(PR_SET_PDEATHSIG, signal.SIGTERM, 0, 0, 0)
+    except Exception:
+        pass
 
 
 def serve_in_thread(on_ready: Optional[Callable[[int, int], None]] = None, **kw):
@@ -79,6 +130,9 @@ def child_main(argv: list[str]) -> None:
     ap.add_argument("--media-port", type=int, default=None)
     ap.add_argument("--parent-pid", type=int, default=0)
     a = ap.parse_args(argv)
+    die_with_parent()
+    if a.parent_pid and os.getppid() != a.parent_pid:
+        return   # the window already went away while we were starting
     maintenance.setup_logging()
     diagnostics.install_hooks()
     diagnostics.enable_faulthandler("service")
@@ -107,8 +161,13 @@ def child_main(argv: list[str]) -> None:
 
     threading.Thread(target=announce, name="tgdrive-announce", daemon=True).start()
     threading.Thread(target=watch_parent, name="tgdrive-parent-watch", daemon=True).start()
+    exit_guard(server, log)
     server.run(sockets=socks)
     log.info("service stopped")
+    # Don't wait at exit for helper threads (a batch that ignores cancelling, a pending network call):
+    # everything that matters was saved during the shutdown above.
+    logging.shutdown()
+    os._exit(0)
 
 
 def main() -> None:
@@ -130,7 +189,10 @@ def main() -> None:
     print(f"\n  TG Drive {config.VERSION} → http://{config.HOST}:{port}\n  Data: {config.DATA_DIR}\n  Log:  {log_path}\n")
     if not config.api_configured():
         print("  First run: open the address above and enter your Telegram API ID and hash.\n")
+    exit_guard(server, logging.getLogger("tgdrive.server"), "server")
     server.run(sockets=socks)
+    logging.shutdown()
+    os._exit(0)
 
 
 if __name__ == "__main__":

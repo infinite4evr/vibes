@@ -329,7 +329,7 @@ const SECTION_HTML = {
     const fms = ig.file_managers.filter((x) => x.present || x.installed);
     return `<h2>Desktop</h2>
     ${S.desktop ? `${row('Use TG Drive’s own title bar', 'One bar at the top instead of two: drag the top bar to move the window, double-click it to maximize. Turn off if your desktop handles it badly. Applies after restarting TG Drive.', sw('own_titlebar', s))}
-    ${row('Keep running in the tray when the window is closed', 'Indexing and transfers continue; quit from the tray icon.', sw('close_to_tray', s))}
+    ${row('Keep running in the tray when the window is closed', 'Off: closing the window quits TG Drive and stops everything it runs. On: indexing and transfers continue; quit from the tray icon.', sw('close_to_tray', s))}
     ${row('Start minimized', '', sw('start_minimized', s))}
     ${row('Start when I log in', '', sw('autostart', s))}` : ''}
     <div class="set-block"><strong>Applications menu</strong><p>${ig.menu ? 'TG Drive is in your applications menu, with its icon.' : 'Add TG Drive to your applications menu (with its icon) so you can start it like any other app.'}</p>

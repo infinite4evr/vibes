@@ -55,10 +55,16 @@ async def lifespan(app: FastAPI):
     watchdog = diagnostics.LoopWatchdog(loop)
     if _apply_autostart not in settings.listeners:
         settings.on_change(_apply_autostart)
+    if not settings.get("autostart"):
+        _apply_autostart({"autostart"})   # a login entry left from an older version: remove it
     await manager.startup()
     yield
+    RUNTIME["stopping"] = True
+    t0 = time.monotonic()
     watchdog.stop.set()
-    await manager.shutdown()
+    from .api_features import unmount_dav_quietly
+    await asyncio.gather(manager.shutdown(), unmount_dav_quietly(), return_exceptions=True)
+    log.info("shutdown finished in %.1f s", time.monotonic() - t0)
 
 
 def _crash_state() -> dict:
@@ -203,6 +209,8 @@ async def guard(request: Request, call_next):
     if path.startswith("/api/") and path not in ("/api/status", "/api/lock/unlock", "/api/events", "/api/stream-events") and \
             maintenance.app_lock.locked():
         return JSONResponse({"error": "TG Drive is locked.", "locked": True}, status_code=423)
+    if path.startswith("/api/"):
+        RUNTIME["client_seen"] = time.monotonic()   # a TG Drive page is open (browser mode stops without one)
     if path.startswith("/api/") and not _BACKGROUND.match(path) and request.headers.get("x-tgdrive-bg") != "1":
         maintenance.app_lock.touch()   # only what the person does counts as activity (not polling)
     t0 = time.perf_counter()
@@ -387,6 +395,12 @@ async def get_events(after: int = 0):
     return {"events": events.since(after), "last": events.seq}
 
 
+def _stopping() -> bool:
+    """TG Drive is quitting: long-lived responses end now so the server can stop without waiting."""
+    server = RUNTIME.get("server")
+    return bool(RUNTIME.get("stopping") or (server is not None and getattr(server, "should_exit", False)))
+
+
 @app.get("/api/stream-events")
 async def stream_events(request: Request, aid: int = 0, after: int = 0):
     """Server-sent events: one long-lived connection instead of the window polling. Sends
@@ -395,31 +409,42 @@ async def stream_events(request: Request, aid: int = 0, after: int = 0):
     async def gen():
         last_seq, last_status, last_ping = after, None, time.monotonic()
         tick = 0
-        yield "retry: 3000\n\n"
-        while True:
-            if await request.is_disconnected():
-                return
-            if events.seq != last_seq:
-                new = events.since(last_seq)
-                last_seq = events.seq
-                if new:
-                    yield f"event: events\ndata: {json.dumps({'events': new, 'last': last_seq}, default=str)}\n\n"
-            if tick % 4 == 0:   # status: once a second
-                if maintenance.app_lock.locked():
-                    payload = json.dumps({"locked": True})
-                else:
-                    a = manager.accounts.get(aid)
-                    payload = json.dumps(account_status_payload(a), default=str) if a else json.dumps({"none": True})
-                if payload != last_status:
-                    last_status = payload
-                    yield f"event: status\ndata: {payload}\n\n"
-            if time.monotonic() - last_ping > 15:
-                last_ping = time.monotonic()
-                yield ": ping\n\n"
-            tick += 1
-            await asyncio.sleep(0.25)
+        RUNTIME["clients"] = RUNTIME.get("clients", 0) + 1
+        RUNTIME["live_used"] = True
+        try:
+            async for chunk in _events_loop(request, aid, last_seq, last_status, last_ping, tick):
+                yield chunk
+        finally:
+            RUNTIME["clients"] = max(0, RUNTIME.get("clients", 1) - 1)
+            RUNTIME["client_seen"] = time.monotonic()
     return StreamingResponse(gen(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
+
+
+async def _events_loop(request: Request, aid: int, last_seq: int, last_status, last_ping: float, tick: int):
+    yield "retry: 3000\n\n"
+    while True:
+        if _stopping() or await request.is_disconnected():
+            return
+        if events.seq != last_seq:
+            new = events.since(last_seq)
+            last_seq = events.seq
+            if new:
+                yield f"event: events\ndata: {json.dumps({'events': new, 'last': last_seq}, default=str)}\n\n"
+        if tick % 4 == 0:   # status: once a second
+            if maintenance.app_lock.locked():
+                payload = json.dumps({"locked": True})
+            else:
+                a = manager.accounts.get(aid)
+                payload = json.dumps(account_status_payload(a), default=str) if a else json.dumps({"none": True})
+            if payload != last_status:
+                last_status = payload
+                yield f"event: status\ndata: {payload}\n\n"
+        if time.monotonic() - last_ping > 15:
+            last_ping = time.monotonic()
+            yield ": ping\n\n"
+        tick += 1
+        await asyncio.sleep(0.25)
 
 
 @app.post("/api/activity")

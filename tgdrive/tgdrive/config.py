@@ -13,7 +13,7 @@ from pathlib import Path
 
 APP_NAME = "TG Drive"
 APP_ID = "tgdrive"
-VERSION = "2.3.1"
+VERSION = "2.3.2"
 
 if getattr(sys, "frozen", False):  # PyInstaller bundle
     ROOT = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))

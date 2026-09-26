@@ -231,11 +231,24 @@ class SubjectIndex:
         self._thread = threading.Thread(target=self._loop, name="tgdrive-subjects", daemon=True)
         self._thread.start()
 
-    def stop(self) -> None:
+    def request_stop(self) -> None:
+        """Ask the worker to stop now; a database query it is running is interrupted."""
         self._stop.set()
         self._wake.set()
+        conn = getattr(self, "_conn", None)
+        if conn is not None:
+            try:
+                conn.interrupt()
+            except Exception:
+                pass
+
+    def join(self, timeout: float = 5) -> None:
         if self._thread:
-            self._thread.join(timeout=5)
+            self._thread.join(timeout=timeout)
+
+    def stop(self) -> None:
+        self.request_stop()
+        self.join(5)
 
     def poke(self, file_id: Optional[int] = None) -> None:
         if file_id is not None:
@@ -256,6 +269,7 @@ class SubjectIndex:
     def _loop(self) -> None:
         pace.lower_priority()
         conn = sqlite3.connect(str(self.db_path), timeout=30, isolation_level=None, check_same_thread=False)
+        self._conn = conn
         conn.execute("PRAGMA busy_timeout=30000")
         try:
             while not self._stop.is_set():
@@ -273,19 +287,22 @@ class SubjectIndex:
                     if worked:
                         pace.rest(time.thread_time() - t0, self._stop)
                 except sqlite3.OperationalError as exc:
+                    if self._stop.is_set():
+                        break
                     log.info("subjects step retry: %s", exc)
                     worked = False
-                    time.sleep(2)
+                    self._stop.wait(2)
                 except Exception as exc:  # keep the app running; report in status
                     log.exception("subject tagging failed")
                     self.state, self.error = "error", str(exc)
-                    time.sleep(60)
+                    self._stop.wait(60)
                     continue
                 if not worked:
                     self.state = "ready"
                     self._wake.wait(60)
                     self._wake.clear()
         finally:
+            self._conn = None
             conn.close()
 
     def _step(self, conn: sqlite3.Connection) -> bool:

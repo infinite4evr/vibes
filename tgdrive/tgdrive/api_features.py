@@ -345,6 +345,27 @@ async def dav_mount(body: dict = Body(default={})):
     return {"mounted": False, "url": url, "message": msg[:300] or "gio mount failed."}
 
 
+async def unmount_dav_quietly() -> None:
+    """Quitting: take TG Drive's drive out of the file manager (a GVfs mount of a server that is gone
+    only hangs file dialogs). Does nothing if it isn't mounted."""
+    from .accounts import clean_env
+    try:
+        info = _dav_info()
+    except Exception:
+        return
+    if not info["enabled"] or not info["gio"]:
+        return
+    try:
+        p = await asyncio.create_subprocess_exec("gio", "mount", "-u", info["url"], stdin=subprocess.DEVNULL,
+                                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=clean_env())
+    except OSError:
+        return
+    try:
+        await asyncio.wait_for(p.wait(), 5)
+    except asyncio.TimeoutError:
+        p.kill()
+
+
 @router.post("/api/dav/unmount")
 async def dav_unmount():
     from .accounts import clean_env

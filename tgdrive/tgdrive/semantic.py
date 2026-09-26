@@ -41,6 +41,10 @@ log = logging.getLogger("tgdrive.semantic")
 DIM = 256
 GROW = 65_536
 BATCH = 4000
+
+
+class _Stopped(Exception):
+    """TG Drive is quitting: leave the current job (it starts over next time)."""
 VERSION = 2
 PREFILTER = 6000       # candidates kept by the Hamming pre-filter before exact scoring
 MIN_SIM = 0.30         # absolute floor (centered cosine); 0.25 for small libraries, where junk is rare anyway
@@ -270,6 +274,8 @@ class SemanticIndex:
         n_docs = 0
         last = 0
         while True:
+            if self._stop.is_set():
+                raise _Stopped()
             rows = conn.execute("SELECT id, name, alias, caption FROM files WHERE id > ? ORDER BY id LIMIT 20000",
                                 (last,)).fetchall()
             if not rows:
@@ -352,11 +358,24 @@ class SemanticIndex:
         self._thread = threading.Thread(target=self._loop, name="tgdrive-semantic", daemon=True)
         self._thread.start()
 
-    def stop(self) -> None:
+    def request_stop(self) -> None:
+        """Ask the worker to stop now; a database query it is running is interrupted."""
         self._stop.set()
         self._wake.set()
+        conn = getattr(self, "_conn", None)
+        if conn is not None:
+            try:
+                conn.interrupt()
+            except Exception:
+                pass
+
+    def join(self, timeout: float = 5) -> None:
         if self._thread:
-            self._thread.join(timeout=5)
+            self._thread.join(timeout=timeout)
+
+    def stop(self) -> None:
+        self.request_stop()
+        self.join(5)
         try:
             self.flush()
         except Exception:
@@ -380,6 +399,7 @@ class SemanticIndex:
     def _loop(self) -> None:
         pace.lower_priority()
         conn = sqlite3.connect(str(self.db_path), timeout=30)
+        self._conn = conn
         conn.execute("PRAGMA query_only=1")
         try:
             while not self._stop.is_set():
@@ -400,14 +420,18 @@ class SemanticIndex:
                     worked = self._step(conn, model)
                     if worked:
                         pace.rest(time.thread_time() - t0, self._stop)
+                except _Stopped:
+                    break
                 except sqlite3.OperationalError as exc:
+                    if self._stop.is_set():
+                        break
                     log.info("semantic step retry: %s", exc)
                     worked = False
-                    time.sleep(2)
+                    self._stop.wait(2)
                 except Exception as exc:
                     log.exception("semantic indexing failed")
                     self.state, self.error = "error", str(exc)
-                    time.sleep(60)
+                    self._stop.wait(60)
                     continue
                 if not worked:
                     self.state = "ready"
@@ -415,6 +439,7 @@ class SemanticIndex:
                     self._wake.wait(45)
                     self._wake.clear()
         finally:
+            self._conn = None
             conn.close()
 
     def _step(self, conn: sqlite3.Connection, model: _Model) -> bool:

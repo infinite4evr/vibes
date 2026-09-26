@@ -110,15 +110,24 @@ def sandbox_usable() -> bool:
 
 
 # --------------------------------------------------------------- fallbacks
-def open_in_browser(url: str, data_dir: Path) -> None:
+def open_in_browser(url: str, data_dir: Path) -> "subprocess.Popen | None":
+    """Open TG Drive in an app window of a Chromium browser (its own profile, so the process is ours
+    and closing it can stop TG Drive), else in the default browser. Returns the browser process if known."""
     for b in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "brave-browser", "microsoft-edge",
               "vivaldi"):
         exe = shutil.which(b)
         if exe:
-            subprocess.Popen([exe, f"--app={url}", f"--user-data-dir={data_dir / 'browser-profile'}", f"--class={APP_ID}"],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
-            return
+            return subprocess.Popen([exe, f"--app={url}", f"--user-data-dir={data_dir / 'browser-profile'}",
+                                     f"--class={APP_ID}"],
+                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
     webbrowser.open(url)
+    return None
+
+
+# Browser mode: TG Drive stops this many seconds after its last browser window/tab was closed (longer when
+# the page polls instead of keeping a live connection: browsers slow down timers in background tabs).
+BROWSER_GRACE = 20
+BROWSER_GRACE_POLLING = 150
 
 
 def notify_system(title: str, body: str, icon: str) -> bool:
@@ -196,19 +205,40 @@ def run_browser_mode(args, config) -> None:
     import run
     token = secrets.token_urlsafe(24)
     server, t, port, media = run.serve_in_thread(port=args.port, token=token, desktop=False)
+    run.exit_guard(server, log, "browser-mode server")
     for _ in range(600):
         if server.started:
             break
         time.sleep(0.1)
     url = f"http://127.0.0.1:{port}/?t={token}"
-    print(f"TG Drive is running at http://127.0.0.1:{port} — close this window or press Ctrl+C to stop.")
-    open_in_browser(url, config.DATA_DIR)
+    print(f"TG Drive is running at http://127.0.0.1:{port} — it stops when you close its browser window "
+          f"(or press Ctrl+C).")
+    from tgdrive import api
+    browser = open_in_browser(url, config.DATA_DIR)
+    opened = time.monotonic()
     try:
         while t.is_alive():
             t.join(1)
+            if server.should_exit:
+                continue
+            # Our own browser window was closed (it ran for a while: not just handing over to one already open).
+            if browser is not None and browser.poll() is not None and time.monotonic() - opened > 10:
+                log.info("browser window closed; stopping TG Drive")
+                server.should_exit = True
+            # No TG Drive page open anywhere for a while (the page keeps a live-update connection open).
+            seen = api.RUNTIME.get("client_seen")
+            grace = BROWSER_GRACE if api.RUNTIME.get("live_used") else BROWSER_GRACE_POLLING
+            if not api.RUNTIME.get("clients") and seen and time.monotonic() - seen > grace:
+                log.info("no TG Drive page open for %s s; stopping", grace)
+                server.should_exit = True
+            if not seen and not api.RUNTIME.get("clients") and time.monotonic() - opened > 600:
+                log.info("no TG Drive page was opened; stopping")
+                server.should_exit = True
     except KeyboardInterrupt:
         server.should_exit = True
-        t.join(30)
+    t.join(35)
+    logging.shutdown()
+    os._exit(0)   # leftover worker threads must not keep TG Drive running
 
 
 if __name__ == "__main__":

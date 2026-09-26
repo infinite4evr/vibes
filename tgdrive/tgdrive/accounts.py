@@ -254,6 +254,7 @@ class Account:
         self._runner: Optional[asyncio.Task] = None
         self._watch: Optional[asyncio.Task] = None
         self._search_builder: Optional[asyncio.Task] = None
+        self._search_conn = None
         self._dialogs_loaded = False
 
     # --------------------------------------------------------------- lifecycle
@@ -278,6 +279,7 @@ class Account:
         conn = sqlite3.connect(str(self.db.path), timeout=30, isolation_level=None, check_same_thread=False)
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA busy_timeout=30000")
+        self._search_conn = conn
         try:
             while True:
                 t0 = time.perf_counter()
@@ -291,8 +293,10 @@ class Account:
         except asyncio.CancelledError:
             raise
         except Exception:
-            log.exception("search index upgrade failed")
+            if not self._search_builder or not self._search_builder.cancelled():
+                log.exception("search index upgrade failed")
         finally:
+            self._search_conn = None
             conn.close()
 
     async def _run(self) -> None:
@@ -362,28 +366,60 @@ class Account:
                     self.transfers.resume(r["id"])
 
     async def stop(self) -> None:
-        if self._watch:
-            self._watch.cancel()
-        if self._runner:
-            self._runner.cancel()
-        if self._search_builder:
-            self._search_builder.cancel()
-        for part in (self.sync, self.autofile):
-            await part.stop()
-        await self.indexer.stop()
-        await self.transfers.stop()
-        try:
-            await asyncio.wait_for(self.drive.flush_now(), 15)
-        except Exception:
-            pass
-        await asyncio.get_running_loop().run_in_executor(None, self.semantic.stop)
-        await asyncio.get_running_loop().run_in_executor(None, self.subjects.stop)
-        await asyncio.get_running_loop().run_in_executor(None, self.dupes.stop)
-        try:
+        """Quit (or remove the account): every part is told to stop at once, then waited for together,
+        each with a time limit, so quitting takes a few seconds at most. What each step took is logged."""
+        loop = asyncio.get_running_loop()
+        t_all = time.monotonic()
+        took: dict[str, float] = {}
+        # 1. Tell everything to stop right away.
+        for task in (self._watch, self._runner, self._search_builder):
+            if task and not task.done():
+                task.cancel()
+        conn = self._search_conn
+        if conn is not None:
+            try:
+                conn.interrupt()   # the batch running in a worker thread ends now, not when it's done
+            except Exception:
+                pass
+        workers = (self.semantic, self.subjects, self.dupes)
+        for w in workers:
+            w.request_stop()
+
+        def join_workers() -> None:
+            deadline = time.monotonic() + 8
+            for w in workers:
+                w.join(max(0.1, deadline - time.monotonic()))
+            try:
+                self.semantic.flush()
+            except Exception:
+                pass
+        joined = loop.run_in_executor(None, join_workers)
+
+        async def step(name: str, aw, limit: float) -> None:
+            t0 = time.monotonic()
+            try:
+                await asyncio.wait_for(aw, limit)
+            except asyncio.TimeoutError:
+                log.warning("account %s: stopping %s took longer than %.0f s; going on", self.uid, name, limit)
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                log.info("account %s: stopping %s: %r", self.uid, name, exc)
+            took[name] = time.monotonic() - t0
+
+        # 2. The parts on the event loop, together.
+        await asyncio.gather(step("folder sync", self.sync.stop(), 5), step("auto-filing", self.autofile.stop(), 5),
+                             step("indexer", self.indexer.stop(), 5), step("transfers", self.transfers.stop(), 5))
+        # 3. Save folder changes to Telegram (only if there are unsaved ones; if this runs out of time
+        #    they're saved at the next start), while the background workers finish.
+        await asyncio.gather(step("saving folders", self.drive.flush_now(), 10),
+                             step("background workers", asyncio.shield(joined), 10))
+        async def disconnect() -> None:
             await self.client.disconnect()
-        except Exception:
-            pass
-        self.db.close()
+        await step("telegram connection", disconnect(), 5)
+        await step("index database", loop.run_in_executor(None, self.db.close), 10)
+        slow = ", ".join(f"{k} {v:.1f}s" for k, v in sorted(took.items(), key=lambda kv: -kv[1]) if v >= 0.3)
+        log.info("account %s stopped in %.1f s%s", self.uid, time.monotonic() - t_all, f" ({slow})" if slow else "")
 
     async def reconnect(self) -> None:
         """Recreate the Telegram connection (after proxy or API settings change)."""
@@ -525,12 +561,16 @@ class AccountManager:
                 acc.launch()
 
     async def shutdown(self) -> None:
-        for acc in list(self.accounts.values()):
-            await acc.stop()
-        for login in list(self.logins.values()):
+        """Quitting: all accounts stop at the same time."""
+        async def end_login(login) -> None:
             if login.qr_task:
                 login.qr_task.cancel()
-            await login.client.disconnect()
+            try:
+                await asyncio.wait_for(login.client.disconnect(), 5)
+            except Exception:
+                pass
+        await asyncio.gather(*(acc.stop() for acc in list(self.accounts.values())),
+                             *(end_login(lg) for lg in list(self.logins.values())), return_exceptions=True)
 
     def get(self, uid: int) -> Account:
         acc = self.accounts.get(uid)

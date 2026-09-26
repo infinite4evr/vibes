@@ -128,11 +128,24 @@ class DupeIndex:
         self._thread = threading.Thread(target=self._loop, name="tgdrive-dupes", daemon=True)
         self._thread.start()
 
-    def stop(self) -> None:
+    def request_stop(self) -> None:
+        """Ask the worker to stop now; a database query it is running is interrupted."""
         self._stop.set()
         self._wake.set()
+        conn = getattr(self, "_conn", None)
+        if conn is not None:
+            try:
+                conn.interrupt()
+            except Exception:
+                pass
+
+    def join(self, timeout: float = 5) -> None:
         if self._thread:
-            self._thread.join(timeout=5)
+            self._thread.join(timeout=timeout)
+
+    def stop(self) -> None:
+        self.request_stop()
+        self.join(5)
 
     def poke(self) -> None:
         self._sig = None
@@ -145,6 +158,7 @@ class DupeIndex:
     def _loop(self) -> None:
         pace.lower_priority()
         conn = sqlite3.connect(str(self.db_path), timeout=30, isolation_level=None, check_same_thread=False)
+        self._conn = conn
         conn.execute("PRAGMA busy_timeout=30000")
         try:
             try:
@@ -163,8 +177,10 @@ class DupeIndex:
                         pace.rest(time.thread_time() - t0, self._stop)
                     self.state, self.error = "ready", None
                 except sqlite3.OperationalError as exc:
+                    if self._stop.is_set():
+                        break
                     log.info("duplicates: retrying (%s)", exc)
-                    time.sleep(3)
+                    self._stop.wait(3)
                     continue
                 except Exception as exc:  # keep the app running; report in status
                     log.exception("finding duplicates failed")
@@ -177,6 +193,7 @@ class DupeIndex:
                 self._wake.wait(max(CHECK_EVERY, busy * float(self.stats.get("seconds") or 0)))
                 self._wake.clear()
         finally:
+            self._conn = None
             conn.close()
 
     @staticmethod
