@@ -47,7 +47,7 @@ async function refresh() {
     const [cls, label] = STATE[p.state] || ['grey', p.state || 'Waiting'];
     const path = p.folder_path.map((x) => x.name).join(' / ') || 'My Drive';
     return `<section class="panel sync-pair" data-pid="${p.id}">
-      <div class="sp-top"><div class="sp-ends"><span class="sp-end">${icon('disk')}<code title="${esc(p.local_path)}">${esc(p.local_path)}</code></span><span class="sp-arrow">${icon('sync')}</span>
+      <div class="sp-top"><div class="sp-ends"><span class="sp-end">${icon('disk')}<code title="${esc(p.local_path)}">&lrm;${esc(p.local_path)}&lrm;</code></span><span class="sp-arrow">${icon('sync')}</span>
         <span class="sp-end">${icon('folder')}<button class="linkish" data-go="#drive/${esc(p.folder_id)}">${esc(path)}</button></span></div>
         <span class="pill ${cls}">${esc(label)}</span></div>
       <div class="sp-meta">${plural(p.files, 'file')} in sync${p.pending ? ` · ${plural(p.pending, 'transfer')} in progress` : ''}${p.last_run ? ` · checked ${relTime(p.last_run)}` : ''}${p.enabled ? '' : ' · paused'}</div>

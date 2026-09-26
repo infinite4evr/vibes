@@ -43,6 +43,18 @@ GROW = 65_536
 BATCH = 4000
 
 
+def _looks_like_noise(model, word: str) -> bool:
+    """A word the model only knows as crumbs: three or more pieces, none longer than two letters."""
+    if len(word) < 4 or not word.isalpha():
+        return False
+    try:
+        pieces = [model.tok.id_to_token(int(i)).lstrip("▁") for i in model.ids([word.lower()])[0]]
+    except Exception:
+        return False
+    pieces = [p for p in pieces if p]
+    return len(pieces) >= 3 and max(len(p) for p in pieces) <= 2
+
+
 class _Stopped(Exception):
     """TG Drive is quitting: leave the current job (it starts over next time)."""
 VERSION = 2
@@ -502,6 +514,12 @@ class SemanticIndex:
         if model is None or self.bits is None or not text.strip():
             return []
         t0 = time.perf_counter()
+        # Letters the model has no word for ("zzzqqq", "asdfgh") embed to noise that can still land near some
+        # file: leave such words out, and don't search by meaning at all if nothing else is left.
+        kept = [w for w in text.split() if not _looks_like_noise(model, w)]
+        if not kept:
+            return []
+        text = " ".join(kept)
         qv = self.query_vector(text, extra)
         if not qv.any():
             return []

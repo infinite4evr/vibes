@@ -37,6 +37,7 @@ from .thumbs import Thumbs
 from .transfers import Transfers
 
 log = logging.getLogger("tgdrive.accounts")
+LOGIN_CONNECT_TIMEOUT = 25   # seconds
 
 
 def accounts_dir() -> Path:
@@ -66,6 +67,14 @@ def make_client(session) -> TelegramClient:
         request_retries=6, connection_retries=None, retry_delay=2, auto_reconnect=True,
         **proxy_args(),
     )
+
+
+async def _disconnect_quietly(client) -> None:
+    """Telethon's disconnect() sometimes returns a plain future, not a coroutine: spawn() needs this wrapper."""
+    try:
+        await client.disconnect()
+    except Exception:
+        pass
 
 
 class AccountError(Exception):
@@ -587,7 +596,7 @@ class AccountManager:
             if time.time() - lg.created > 900:
                 if lg.qr_task:
                     lg.qr_task.cancel()
-                spawn(lg.client.disconnect(), "disconnect abandoned sign-in")
+                spawn(_disconnect_quietly(lg.client), "disconnect abandoned sign-in")
                 self.logins.pop(lid, None)
         lg = self.logins.get(login_id)
         if not lg:
@@ -602,7 +611,7 @@ class AccountManager:
         self._require_api()
         phone = phone.strip().replace(" ", "").replace("-", "")
         lg = Login(phone)
-        await lg.client.connect()
+        await self._connect_for_login(lg)
         try:
             sent = await lg.client.send_code_request(phone)
         except errors.PhoneNumberInvalidError:
@@ -642,11 +651,22 @@ class AccountManager:
             lg.qr_state = "done"
         return {"account": await self._finish(lg)}
 
+    async def _connect_for_login(self, lg: "Login") -> None:
+        """Connect a sign-in attempt, but give up with a clear message instead of retrying forever
+        (the client reconnects endlessly by design, which left the sign-in screen spinning when offline)."""
+        try:
+            await asyncio.wait_for(lg.client.connect(), LOGIN_CONNECT_TIMEOUT)
+        except (asyncio.TimeoutError, OSError, ConnectionError) as exc:
+            spawn(_disconnect_quietly(lg.client), "disconnect failed sign-in")
+            log.warning("sign-in: can't reach Telegram: %r", exc)
+            raise AccountError("Can't reach Telegram. Check your internet connection, or set up a proxy "
+                               "(Connection settings, below), then try again.")
+
     # QR login: scan with Telegram on your phone (Settings → Devices → Link Desktop Device).
     async def login_qr_start(self) -> dict:
         self._require_api()
         lg = Login()
-        await lg.client.connect()
+        await self._connect_for_login(lg)
         lg.qr = await lg.client.qr_login()
         self.logins[lg.id] = lg
         lg.qr_task = spawn(self._qr_wait(lg), "QR sign-in")

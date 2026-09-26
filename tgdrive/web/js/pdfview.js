@@ -126,12 +126,13 @@ function sizePages() {
 }
 
 function setScale(v) {
-  if (!R?.doc) return;
+  if (!R?.doc || !R.base) return;   // the window can resize while the first page is still being read
   const scroller = R.el.querySelector('.pdf-scroll');
   const keep = R.page;
   if (v === 'fit') {
     R.fit = true;
-    R.scale = clamp((scroller.clientWidth - 48) / R.base.w, 0.3, 4);
+    // Fit the width, but no wider than a comfortable reading column (a page at 230% on a wide screen is hard to read).
+    R.scale = clamp(Math.min(scroller.clientWidth - 48, 1000) / R.base.w, 0.3, 4);
   } else {
     R.fit = false;
     R.scale = clamp(v, 0.3, 5);

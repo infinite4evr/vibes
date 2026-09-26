@@ -155,7 +155,9 @@ async function settingsIndex() {
       const title = r.querySelector('strong')?.textContent?.trim();
       if (!title) continue;
       const help = r.querySelector('p')?.textContent?.trim() || '';
-      out.push({ section: k, sectionLabel: label, title, help, text: `${title} ${help} ${label}`.toLowerCase() });
+      // Choices count too: "dark" finds Theme, "socks" finds the proxy type.
+      const choices = [...r.querySelectorAll('option, .seg button, label')].map((o) => o.textContent.trim()).join(' ');
+      out.push({ section: k, sectionLabel: label, title, help, text: `${title} ${help} ${label} ${choices}`.toLowerCase() });
     }
   }
   setIndex = out;
@@ -346,7 +348,7 @@ const SECTION_HTML = {
     const backups = await api(A('/drive/backups')).catch(() => ({ backups: [] }));
     const legacy = await api('/api/legacy').catch(() => ({ candidates: [] }));
     return `<h2>Data & maintenance</h2>
-    ${row('Data folder', `${fmtSize(about.data?.bytes || 0)} in total.`, `<code class="path">${esc(about.data?.path || '')}</code>`)}
+    ${row('Data folder', `${fmtSize(about.data?.bytes || 0)} in total.`, `<code class="path" title="${esc(about.data?.path || '')}">&lrm;${esc(about.data?.path || '')}&lrm;</code>`)}
     <div class="set-block"><strong>Index</strong><p>Tidy up or check the index. Nothing here touches Telegram.</p>
       <div class="btn-row"><button class="btn" data-maint="optimize">Optimize</button><button class="btn" data-maint="integrity">Check integrity</button>
       <button class="btn" data-maint="vacuum">Compact (VACUUM)</button><button class="btn" data-maint="stats">Recount statistics</button>

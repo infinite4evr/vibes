@@ -165,7 +165,12 @@ export async function loadMore() {
     renderEmpty();
   } catch (e) {
     if (e.name === 'AbortError' || e.data?.superseded) return;
-    if (id === S.reqId) { showSkeleton(false); S.done = true; S.loading = false; fail(e); renderEmpty(e.message); }
+    if (id === S.reqId) {
+      showSkeleton(false); S.done = true; S.loading = false;
+      // A search the server can't read (400) is explained in place, not as a failure to retry.
+      if (e.status === 400 && S.view.type === 'search') renderEmpty(e.message, 'query');
+      else { fail(e); renderEmpty(e.message); }
+    }
   } finally {
     if (id === S.reqId) { S.loading = false; $('#loadingMore').hidden = true; $('#searchForm').classList.remove('busy'); }
   }
@@ -454,16 +459,18 @@ export function renderFolderArea() {
   import('./folders.js').then((m) => m.renderFolderArea());
 }
 
-export function renderEmpty(error) {
+export function renderEmpty(error, why) {
   const el = $('#empty');
-  if (S.items.length) { el.innerHTML = ''; $('#filesH')?.removeAttribute('hidden'); return; }
+  if (S.items.length) { el.innerHTML = ''; $('#filesH')?.removeAttribute('hidden'); $('#listHead').hidden = !listMode(); return; }
   if (!S.done) return;
+  $('#listHead').hidden = true;   // column headings over an empty list are just noise
   const v = S.view;
   const art = `<svg class="art" viewBox="0 0 30 24" aria-hidden="true" style="stroke:none"><path d="M1 4a3 3 0 0 1 3-3h7l3 3h12a3 3 0 0 1 3 3v13a3 3 0 0 1-3 3H4a3 3 0 0 1-3-3z" fill="var(--folder-soft)"/></svg>`;
   let html;
   const indexing = S.status && !['idle', 'paused'].includes(S.status.index.phase);
   const fo = v.type === 'drive' && v.folderId ? S.folderById.get(v.folderId) : null;
-  if (error) html = `<h2>Couldn't load files</h2><p>${esc(error)}</p><button class="btn" data-act="retry">${icon('refresh')}Try again</button>`;
+  if (error && why === 'query') html = `<h2>Check the search</h2><p>${esc(error)}</p>`;
+  else if (error) html = `<h2>Couldn't load files</h2><p>${esc(error)}</p><button class="btn" data-act="retry">${icon('refresh')}Try again</button>`;
   else if (v.type === 'drive' && !v.folderId && !childrenOf(null).length) {
     html = `<h2>Your Drive is empty</h2><p>Create folders and put any file from any chat into them, or upload files. TG Drive keeps them in a private channel called “${esc(S.driveTitle)}”.</p>
       <button class="btn primary" data-act="new-folder">${icon('folderPlus')}New folder</button> <button class="btn" data-act="upload">${icon('upload')}Upload files</button>`;
@@ -475,7 +482,7 @@ export function renderEmpty(error) {
       ? `<h2>Nothing filed here yet</h2><p>Files that match this folder's rule and aren't in another folder are moved here automatically.</p><button class="btn" data-folder-rules="${esc(fo.id)}">${icon('wand')}Rule and “File now”</button>`
       : '<h2>Nothing in here yet</h2><p>Drag files onto this folder, use “Move to folder” on any file, paste files with Ctrl+V, or drop files from your computer here to upload them.</p>';
   } else if (v.type === 'search' || v.type === 'saved') {
-    html = `<h2>No files match</h2><p>Try fewer words, check the filters, or switch search to smart matching in Settings → Search.</p>${Object.keys(S.adv).length ? `<button class="btn" data-act="clear-filters">${icon('close')}Clear filters</button>` : ''}`;
+    html = `<h2>No files match</h2><p>${(S.settings.search_mode || 'smart') === 'smart' && S.adv.match !== 'exact' ? 'Try fewer or different words, or check the filters.' : 'Try fewer words, check the filters, or switch search to smart matching in Settings → Search.'}</p>${Object.keys(S.adv).length ? `<button class="btn" data-act="clear-filters">${icon('close')}Clear filters</button>` : ''}`;
   } else if (v.type === 'starred') html = `<h2>No starred files</h2><p>Star files you use often (press S or use the ☆ in the details panel). Stars sync to your other devices.</p>`;
   else if (v.type === 'recent') html = '<h2>Nothing recent</h2><p>Files you open, play or download show up here.</p>';
   else if (v.type === 'continue') html = '<h2>Nothing to continue</h2><p>Videos and audio you stop part-way through show up here, and play from where you left off.</p>';

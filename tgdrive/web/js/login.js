@@ -1,6 +1,6 @@
 // First run (API setup, data import), sign-in (QR or phone), and the lock screen.
 import { $, S, api, esc, icon, MARK, bridge, callBridge, plural, bus } from './core.js';
-import { toast, fail } from './ui.js';
+import { toast, fail, dialog } from './ui.js';
 
 const root = () => $('#login');
 function frame(html, opts = {}) {
@@ -69,8 +69,9 @@ function signIn(adding, mode = 'qr') {
   let loginId = null;
   const tabs = `<div class="seg login-seg"><button class="${mode === 'qr' ? 'on' : ''}" data-mode="qr">QR code</button><button class="${mode === 'phone' ? 'on' : ''}" data-mode="phone">Phone number</button></div>`;
   const step = (html) => {
-    frame(`${tabs}${html}`, { back: adding });
+    frame(`${tabs}${html}<p class="login-net"><button class="linkish" data-login-proxy>${icon('external')}Connection settings (proxy)…</button></p>`, { back: adding });
     root().querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => signIn(adding, b.dataset.mode)));
+    $('[data-login-proxy]', root())?.addEventListener('click', () => proxyDialog().then((saved) => saved && signIn(adding, mode)));
   };
   const bind = (handler) => {
     const form = root().querySelector('form');
@@ -116,7 +117,14 @@ function signIn(adding, mode = 'qr') {
       loginId = r.login_id;
       $('#qr').innerHTML = r.svg;
       qrTimer = setTimeout(poll, 1500);
-    }).catch((e) => { $('.err', root()).textContent = e.message; });
+    }).catch((e) => {
+      // Can't reach Telegram (or another failure): say so where the code would be, with a way forward.
+      if ($('#qr')) {
+        $('#qr').innerHTML = `<button class="btn" data-qr-retry>${icon('refresh')}Try again</button>`;
+        $('[data-qr-retry]', root()).addEventListener('click', () => signIn(adding, 'qr'));
+      }
+      $('.err', root()).textContent = e.message;
+    });
     return;
   }
   const codeStep = (via) => {
@@ -155,3 +163,33 @@ export function showLock() {
   });
 }
 export { fail };
+
+// Where Telegram is blocked, signing in needs a proxy before there is any account (and so any Settings page).
+async function proxyDialog() {
+  let st = {};
+  try { st = await api('/api/settings'); } catch { /* defaults */ }
+  const v = (k, d = '') => esc(st[k] ?? d);
+  const types = [['socks5', 'SOCKS5'], ['socks4', 'SOCKS4'], ['http', 'HTTP'], ['mtproto', 'MTProto']];
+  return dialog({
+    title: 'Connection settings',
+    body: `<p class="help" style="margin:0 0 12px">Use a proxy if Telegram is blocked or slow on your network.</p>
+      <label class="checks"><label><input type="checkbox" name="proxy_enabled" ${st.proxy_enabled ? 'checked' : ''}> Use a proxy</label></label>
+      <div class="adv-grid" style="margin-top:12px">
+        <label class="field"><span>Type</span><select name="proxy_type">${types.map(([k, l]) => `<option value="${k}" ${st.proxy_type === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+        <label class="field"><span>Port</span><input type="number" name="proxy_port" value="${v('proxy_port', 1080)}"></label>
+        <label class="field" style="grid-column:1/-1"><span>Server</span><input type="text" name="proxy_host" placeholder="proxy.example.com" value="${v('proxy_host')}"></label>
+        <label class="field"><span>Username</span><input type="text" name="proxy_user" value="${v('proxy_user')}"></label>
+        <label class="field"><span>Password</span><input type="password" name="proxy_pass" placeholder="${st.proxy_pass_set ? 'Saved' : ''}"></label>
+        <label class="field" style="grid-column:1/-1"><span>Secret (MTProto only)</span><input type="text" name="proxy_secret" placeholder="Leave blank to keep the saved one"></label>
+      </div>`,
+    actions: [{ label: 'Cancel' }, { label: 'Save', cls: 'primary', submit: true, onClick: async (bd) => {
+      const q = (n) => bd.querySelector(`[name=${n}]`);
+      const body = { proxy_enabled: q('proxy_enabled').checked, proxy_type: q('proxy_type').value, proxy_host: q('proxy_host').value.trim(),
+        proxy_port: Number(q('proxy_port').value) || 1080, proxy_user: q('proxy_user').value.trim() };
+      if (q('proxy_secret').value.trim()) body.proxy_secret = q('proxy_secret').value.trim();   // secrets are never sent back: blank keeps the saved one
+      if (q('proxy_pass').value) body.proxy_pass = q('proxy_pass').value;
+      await api('/api/settings', { method: 'PATCH', body });
+      return true;
+    } }],
+  });
+}

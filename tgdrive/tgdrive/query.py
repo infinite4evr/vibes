@@ -12,6 +12,11 @@ Free text is handled by tgdrive.search (smart matching). Operators:
 """
 import json
 import re
+
+# type:pdf, type:mp3 … are read as extensions (people write file types that way too).
+FILE_TYPE_EXTS = set("""pdf doc docx odt rtf txt md epub mobi azw3 djvu xls xlsx ods csv ppt pptx odp zip rar 7z tar gz
+    tgz bz2 xz iso apk exe msi deb rpm appimage dmg jpg jpeg png webp heic bmp tif tiff svg psd mp3 m4a aac flac ogg opus
+    wav wma mp4 mkv avi mov webm m4v flv wmv ts srt vtt ass json xml html htm py js java c cpp torrent""".split())
 import time
 from datetime import datetime, timedelta
 from typing import Any, Optional
@@ -163,8 +168,13 @@ def parse(text: str, f: Optional[dict] = None) -> dict:
         if k in ("type", "kind"):
             for w in _split_list(value):
                 kind = KIND_WORDS.get(w.lower())
+                if not kind and w.lower().lstrip(".") in FILE_TYPE_EXTS:
+                    # type:pdf, type:mp3 … people write file types this way too: same as ext:pdf
+                    (f["not_exts"] if neg else f["exts"]).add(w.lower().lstrip("."))
+                    continue
                 if not kind:
-                    raise QueryError(f"Unknown type '{w}'. Use photo, video, document, audio, voice, round or gif.")
+                    raise QueryError(f"Unknown type '{w}'. Use photo, video, document, audio, voice, round or gif "
+                                     f"(or a file extension like pdf).")
                 (f["not_kinds"] if neg else f["kinds"]).add(kind)
         elif k in ("ext", "extension"):
             for e in _split_list(value):

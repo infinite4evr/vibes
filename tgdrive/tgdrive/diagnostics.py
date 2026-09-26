@@ -294,7 +294,10 @@ def list_crashes() -> dict:
         except OSError:
             continue
         lines = [ln for ln in head.splitlines() if ln.strip()]
-        last = next((ln for ln in reversed(lines) if not ln.startswith(" ")), "")
+        # The error is the last unindented line of the traceback, before the "--- state ---" / log sections
+        # that reports carry since 2.3 (otherwise the summary was a line of the state dump).
+        body = [ln for ln in head.split("\n--- ", 1)[0].splitlines() if ln.strip()]
+        last = next((ln for ln in reversed(body) if not ln.startswith(" ")), "")
         kind = next((ln[6:] for ln in lines if ln.startswith("kind: ")), "")
         out.append({"id": p.stem, "kind": kind, "at": int(p.stat().st_mtime), "summary": last[:300],
                     "new": p.stem not in seen})

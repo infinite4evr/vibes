@@ -68,7 +68,8 @@ function monthLabel(ym) {
 function layout() {
   const scroll = $('#phScroll');
   if (!scroll || !P.months.length) return;
-  const w = scroll.clientWidth - 8;
+  const cs = getComputedStyle(scroll);   // clientWidth includes the padding (room for the date rail)
+  const w = scroll.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
   const target = SIZES[P.size];
   const gap = 4;
   P.cols = Math.max(2, Math.floor((w + gap) / (target + gap)));

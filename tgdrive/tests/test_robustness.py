@@ -773,3 +773,57 @@ def test_account_stop_is_quick_and_bounded(tmp_path):
         return time.monotonic() - t0
     took = run(go())
     assert took < 14, took   # the hung save is given up after 10 s
+
+
+# ------------------------------------------------------------------ UI review fixes (2.3.2)
+def test_type_can_be_a_file_extension():
+    from tgdrive.query import QueryError, parse
+    f = parse("type:pdf,mp3 notes")
+    assert f["exts"] == {"pdf", "mp3"} and not f["kinds"] and f["terms"] == ["notes"]
+    assert parse("type:video")["kinds"] == {"video"}
+    with pytest.raises(QueryError):
+        parse("type:nope")
+
+
+def test_crash_summary_is_the_error_not_the_state_dump(tmp_path, monkeypatch):
+    from tgdrive import diagnostics
+    d = tmp_path / "crashes"
+    d.mkdir()
+    monkeypatch.setattr(diagnostics, "crash_dir", lambda: d)
+    (d / "20260101-000000-page-1.txt").write_text(
+        "TG Drive crash report\nkind: page\n\nUncaught TypeError: boom\n\nTypeError: boom\n    at f (x.js:1)\n\n"
+        "--- state ---\nuptime: 3 s\nbackground tasks: [\"auto-filing\"]\n\n--- last 2 log lines ---\nINFO a\nINFO b\n")
+    r = diagnostics.list_crashes()
+    assert r["reports"][0]["summary"] == "TypeError: boom"
+
+
+def test_meaning_search_ignores_keyboard_mash():
+    from tgdrive.semantic import _Model, _looks_like_noise
+    m = _Model.get()
+    if m is None:
+        pytest.skip("meaning model not installed")
+    assert _looks_like_noise(m, "zzzqqq") and _looks_like_noise(m, "asdfgh")
+    assert not _looks_like_noise(m, "constitution") and not _looks_like_noise(m, "monsoon")
+    assert not _looks_like_noise(m, "भारतीय") and not _looks_like_noise(m, "pyq")
+
+
+def test_sign_in_gives_up_when_telegram_is_unreachable(monkeypatch):
+    from tgdrive import accounts
+
+    class Stuck:
+        async def connect(self):
+            await asyncio.sleep(100)
+
+        async def disconnect(self):
+            return None
+
+    class Lg:
+        client = Stuck()
+    monkeypatch.setattr(accounts, "LOGIN_CONNECT_TIMEOUT", 0.3)
+
+    async def go():
+        with pytest.raises(accounts.AccountError, match="Can't reach Telegram"):
+            await accounts.AccountManager()._connect_for_login(Lg())
+    t0 = time.monotonic()
+    asyncio.run(go())
+    assert time.monotonic() - t0 < 3

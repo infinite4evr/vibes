@@ -136,8 +136,10 @@ input[type=text], input[type=search], input[type=tel], input[type=password], inp
 }
 textarea { height: auto; padding: 8px 10px; resize: vertical; line-height: 1.45; width: 100%; }
 input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
-label.field { display: grid; gap: 5px; color: var(--ink-2); font-size: calc(13px * var(--fs)); }
+label.field { display: grid; gap: 5px; align-content: start; color: var(--ink-2); font-size: calc(13px * var(--fs)); }
 label.field > span { font-weight: 500; display: flex; align-items: center; gap: 6px; }
+/* Inputs in forms: one size, whether or not they sit inside a label (a label shrinks its text to 13px). */
+label.field input, label.field select, label.field textarea, .adv input, .adv select { font-size: calc(14px * var(--fs)); color: var(--ink); }
 label.field > span small { font-weight: 400; color: var(--ink-3); }
 .help { font-size: calc(13px * var(--fs)); color: var(--ink-3); margin: 8px 0 0; }
 .help code { background: var(--canvas); padding: 0 4px; border-radius: 4px; color: var(--ink); }
@@ -413,6 +415,7 @@ body.resizing { cursor: col-resize; user-select: none; }
 .row > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: calc(13px * var(--fs)); color: var(--ink-2); }
 .row .c-name { display: flex; align-items: center; gap: 10px; color: var(--ink); font-weight: 500; }
 .row .c-name .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .c-name .nm wbr { display: none; }   /* one line in lists: no break points */
 .row .mbadge { margin: 0; flex: none; }
 .mini { width: 28px; height: 28px; border-radius: 6px; flex: none; display: grid; place-items: center; object-fit: cover; background: color-mix(in srgb, var(--kc, var(--k-document)) 14%, var(--panel)); color: var(--kc); }
 .mini svg { width: 16px; height: 16px; }
@@ -603,6 +606,11 @@ body.resizing { cursor: col-resize; user-select: none; }
 .login .err { color: var(--danger); min-height: 20px; margin: 0; }
 .login .fine { font-size: calc(12.5px * var(--fs)); color: var(--ink-3); margin: 14px 0 0; }
 .login .back { margin: 14px 0 0; }
+.login .login-net { margin: 14px 0 0; font-size: calc(13px * var(--fs)); }
+.login .login-net .linkish { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-3); }
+.login .login-net svg { width: 14px; height: 14px; }
+.login .qr .btn { margin: auto; }
+.login .qr .btn svg { width: 16px; height: 16px; }
 .steps { color: var(--ink-2); padding-left: 20px; margin: 0 0 18px; }
 .steps li { margin-bottom: 7px; }
 .login-seg { margin: 16px 0 0; }
@@ -624,7 +632,7 @@ body.resizing { cursor: col-resize; user-select: none; }
 .page-right { display: flex; gap: 8px; flex-wrap: wrap; }
 .page-loading { color: var(--ink-3); padding: 20px 0; }
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
-.kpi { padding: 14px 16px; border-radius: 14px; background: var(--panel-2); border: 1px solid var(--line-2); display: grid; gap: 2px; }
+.kpi { padding: 14px 16px; border-radius: 14px; background: var(--panel-2); border: 1px solid var(--line-2); display: grid; gap: 2px; align-content: start; }
 .kpi[data-go] { cursor: pointer; }
 .kpi[data-go]:hover { border-color: var(--accent); }
 .kpi span { color: var(--ink-3); font-size: calc(12.5px * var(--fs)); font-weight: 500; }
@@ -717,6 +725,10 @@ code.path { display: inline-block; max-width: 100%; overflow: hidden; text-overf
   .page-view { padding: 16px 14px 50px; }
   .qr-box { flex-direction: column; }
   .v-stage { padding: 0 10px 10px; }
+  /* Phone: the viewer's own tools (PDF page and zoom) get a row of their own so the close button stays on screen. */
+  .v-top { flex-wrap: wrap; row-gap: 6px; padding: 8px 8px 8px 14px; }
+  .v-tools:not([hidden]) { order: 3; flex: 1 0 100%; justify-content: center; }
+  .v-acts { flex: none; }
   .v-nav { display: none; }
 }
 /* Animations: Settings → Appearance. On by default; "system" follows the desktop's reduce-motion setting. */
@@ -755,6 +767,8 @@ code.path { display: inline-block; max-width: 100%; overflow: hidden; text-overf
 .section-h.collapse.open svg { transform: rotate(90deg); }
 .section-h small { font-weight: 500; margin-left: 4px; letter-spacing: 0; text-transform: none; color: var(--ink-3); }
 .files-h { margin-top: 6px; }
+/* Below the folders and the “Files” label the column headings sit in the flow, not pulled up over the label. */
+#folderArea:not(:empty) + .list-head { margin-top: 4px; }
 .mini-select { height: 30px; padding: 0 26px 0 10px; font-size: calc(12.5px * var(--fs)); border-radius: 8px; }
 .seg.small { padding: 2px; border-radius: 9px; }
 .seg.small button { padding: 3px 7px; display: grid; place-items: center; }
@@ -910,6 +924,8 @@ html.embed .crumbs { font-size: calc(17px * var(--fs)); }
 
 .crash-notice { display: flex; align-items: center; gap: 12px; margin: 10px 16px 0; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--warn) 13%, var(--panel)); border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--line)); }
 .crash-notice > svg { color: var(--warn); flex: none; }
+.crash-notice { flex-wrap: wrap; }
+.crash-notice .grow { flex: 1 1 220px; min-width: 0; }   /* the message keeps its room; buttons wrap below on a phone */
 .crash-notice strong { display: block; font-size: calc(13px * var(--fs)); }
 .crash-notice small { display: block; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -1417,6 +1433,7 @@ body.has-selbar .content { padding-bottom: 110px; }
 .card .c-acts .c-q.on svg { fill: currentColor; }
 .card .meta { gap: 0; }
 .card .meta > span { flex: none; }
+.card .meta > span:nth-child(2):not(.tags-mini):not(.subj-mini) { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }   /* narrow cards: the date gives way, the icons stay whole */
 .card .meta > span + span::before { content: "·"; margin: 0 6px; color: var(--ink-3); }
 .card .meta > .tags-mini::before, .card .meta > .subj-mini::before { content: ""; margin: 0 4px; }
 .card .meta .src { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-3); min-height: 0; }

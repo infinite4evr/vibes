@@ -123,6 +123,6 @@ class AutoFiler:
                 return 0
             for i in range(0, len(items), 500):
                 await self.acc.drive.place(items[i:i + 500], folder["id"], undo=False)
-            self.acc.db.log_activity("auto-file", f"Filed {len(items)} files into “{folder['name']}” by its rule")
+            self.acc.db.log_activity("auto-file", f"Filed {len(items)} file{'' if len(items) == 1 else 's'} into “{folder['name']}” by its rule")
         self.last_filed[folder["id"]] = len(items)
         return len(items)

@@ -261,11 +261,13 @@ export function highlight(text, words) {
   const s = String(text ?? '');
   const brk = (x) => esc(x).replace(/([_.\-])/g, '$1<wbr>');
   const parts = (words || []).filter((w) => w && w.length > 1).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  if (!parts.length) return brk(s);
+  // …but never between a name and its extension ("notes." / "docx" on its own line).
+  const keepExt = (h) => h.replace(/\.<wbr>((?:<\/?mark>)?[A-Za-z0-9]{1,5}(?:<\/?mark>)?)$/, '.$1');
+  if (!parts.length) return keepExt(brk(s));
   let re;
-  try { re = new RegExp(`(${parts.join('|')})`, 'giu'); } catch { return brk(s); }
-  return s.split(re).map((seg, i) => (i % 2 ? `<mark>${brk(seg)}</mark>` : brk(seg))).join('')
-    .replaceAll('</mark><mark>', '');
+  try { re = new RegExp(`(${parts.join('|')})`, 'giu'); } catch { return keepExt(brk(s)); }
+  return keepExt(s.split(re).map((seg, i) => (i % 2 ? `<mark>${brk(seg)}</mark>` : brk(seg))).join('')
+    .replaceAll('</mark><mark>', ''));
 }
 
 /* ------------------------------------------------------------------ state */

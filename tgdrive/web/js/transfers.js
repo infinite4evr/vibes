@@ -70,7 +70,7 @@ function transferRow(t) {
     acts = (S.desktop || S.localHost ? b('open', 'external', 'Open') + b('reveal', 'folder', 'Show in folder')
       : `<a class="icon-btn" href="${A(`/transfers/${t.id}/file`)}" download title="Save to this device">${icon('download')}</a>`) + b('remove', 'trash', 'Remove from list');
   } else if (t.status !== 'sending') acts = b('remove', 'trash', 'Remove from list');
-  const where = t.status === 'done' && t.path && !up ? `<div class="t-path" title="${esc(t.path)}">${esc(t.path)}</div>` : '';
+  const where = t.status === 'done' && t.path && !up ? `<div class="t-path" title="${esc(t.path)}">&lrm;${esc(t.path)}&lrm;</div>` : '';
   return `<div class="t-row ${t.status}"><div class="t-top">${icon(up ? 'upload' : 'download')}<span class="t-name" title="${esc(t.name)}">${esc(t.name)}</span><span class="t-acts">${acts}</span></div>
     ${['running', 'paused', 'sending', 'queued', 'error'].includes(t.status) ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ''}
     <div class="t-sub ${t.status === 'error' ? 'err' : ''}">${esc(words)}</div>${where}</div>`;
