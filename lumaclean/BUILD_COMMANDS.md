@@ -2,13 +2,12 @@
 
 ## Fast path
 
-### 1. Extract the ZIP
+### 1. Go to the project
 
-From the directory where you downloaded it:
+From the root of the `vibes` repository:
 
 ```bash
-unzip LumaClean-Final-Linux.zip
-cd LumaClean
+cd lumaclean
 ```
 
 ### 2. Make the scripts executable
@@ -155,3 +154,19 @@ LumaClean.apk
 
 ## AGP 9 / Kotlin note
 This package uses Android Gradle Plugin 9's built-in Kotlin support. Do not add `org.jetbrains.kotlin.android`, `android.builtInKotlin=false`, or `android.newDsl=false`; those compatibility settings are not needed in this fixed package.
+
+## CI builds and releases
+
+`.github/workflows/lumaclean-apk.yml` builds the debug APK on every push that
+touches `lumaclean/` (or when run by hand from the Actions tab) and publishes it
+as a GitHub Release tagged `lumaclean-v<versionName>-<run number>`. Builds from
+branches other than `main` are marked pre-release. The run number is used as
+`versionCode`, so each release installs as an update.
+
+To keep the same signing key across releases (so the phone updates in place
+instead of needing an uninstall), add your debug keystore as a repository
+secret named `LUMACLEAN_DEBUG_KEYSTORE_BASE64`:
+
+```bash
+base64 -w0 ~/.android/debug.keystore
+```

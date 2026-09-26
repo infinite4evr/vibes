@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">LumaClean</string>
+    <string name="shortcut_clean_short">Smart Clean</string>
+    <string name="shortcut_clean_long">Scan and clean junk</string>
+    <string name="shortcut_ram_short">Free up RAM</string>
+    <string name="shortcut_ram_long">Stop background apps</string>
+    <string name="shortcut_large_short">Large files</string>
+    <string name="shortcut_large_long">Find the biggest files</string>
 </resources>

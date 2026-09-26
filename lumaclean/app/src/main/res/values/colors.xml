@@ -1,0 +1,6 @@
+<resources>
+    <color name="window_background">#FFF8F9FC</color>
+    <color name="ic_launcher_background">#FF0B5CAD</color>
+    <color name="shortcut_background">#FFD6E4F8</color>
+    <color name="shortcut_foreground">#FF0B4A8A</color>
+</resources>

@@ -1,83 +1,49 @@
 # LumaClean
 
-> **Linux:** Start with [`BUILD_COMMANDS.md`](BUILD_COMMANDS.md). For the normal build you only need `chmod +x build-apk.sh` once, then `./build-apk.sh`.
+An Android phone manager: cleaning, storage, apps, battery and device health in one app. Material 3, adapts to phones, foldables and tablets, and works fully offline (the app has no internet permission).
 
+- **Get the APK:** every push that touches `lumaclean/` builds a release APK and publishes it on the repository's [Releases](../../releases) page. See [`BUILD_COMMANDS.md`](BUILD_COMMANDS.md) for local builds and signing.
+- **Package:** `app.lumaclean` · minimum Android 8.0 (API 26) · targets Android 16 (API 36), compiled against API 37.
 
-## One-command Linux APK build
+## Features
 
-1. Install Android Studio and use **Tools → SDK Manager** to install **Android SDK Platform 37**.
-2. In a terminal inside this project, run:
+| Area | What it does |
+|---|---|
+| **Home** | Health score (storage, junk, memory, battery, unused apps) with the reasons and a fix for each, live storage / RAM / battery tiles, quick actions, last cleanup and recycle bin |
+| **Smart Clean** | Finds this app's cache, thumbnail caches, temp and unfinished downloads, old logs, installer files (marked "already installed" when safe), leftovers of removed apps, empty folders and files, gallery trash and old downloads. Safe items are pre-selected, the rest are for review. One tap clears **every app's cache** through Android's own consent screen (Android 11+). Space freed is measured, not estimated. Long-press to add anything to the never-clean list |
+| **Storage** | Breakdown by type (images, videos, audio, documents, installers, archives) plus apps and system, a file manager (open, share, copy, move, rename, new folder, delete) that sorts folders by size, large files, duplicates, old downloads, chat media, search, SD card |
+| **Recycle bin** | Files deleted in LumaClean are moved (instantly, no copying) into a hidden bin and can be restored, with Undo right after deleting. Emptied automatically after 7–60 days |
+| **Duplicates** | Exact copies only: size, then first/last 64 KB, then full SHA-256. Keep oldest / newest / the one in the main folder; one copy is always kept |
+| **Photos** | Similar photos (bursts and near-copies, keeps the sharpest), screenshots, large videos, photo compression (three levels, keeps date/location/camera EXIF, fixes rotation, skips photos that wouldn't shrink ≥10%, copy or replace) |
+| **Chat media** | WhatsApp, WhatsApp Business, Telegram and Signal folders split into images, videos, voice notes, documents, statuses… |
+| **Apps** | Every app with size (app + data + cache), last used, installer (Play, Galaxy Store, file…); sort and filter; batch uninstall; unused apps (30–180 days); per-app details with storage, screen time, data use, all permissions (granted or not), SDK levels, and **save or share the APK** (split apps become `.apks`) |
+| **Screen time & data** | Today / 7 / 30 days, daily bar chart, per-app screen time (from foreground events, like Digital Wellbeing), Wi-Fi and mobile data per app |
+| **Memory** | Live RAM gauge and "Free up RAM" that ends cached background processes and reports what was actually freed |
+| **Battery** | Level, health, temperature, voltage, current, power, estimated capacity, charge cycles (Android 14+), time to full, and 24 h / 7 day level and temperature charts recorded in the background |
+| **Device & network** | Model, Android version and patch, chip, live per-core clock speeds, RAM, display, cameras, sensors (copy as a report); connection type, signal, band, link speed, IPs, DNS and data totals |
+| **Background** | Weekly checkup notification when there's a lot to clean, storage-almost-full and battery-too-hot alerts, recycle bin expiry |
+| **Everywhere** | Search for any tool, app or file; long-press multi-select with a bottom action bar; progress with Cancel for every scan; results kept when you switch screens; light/dark/system theme, Material You colours or four accents; home-screen shortcuts (Smart Clean, Free up RAM, Large files) |
 
-```bash
-chmod +x build-apk.sh
-./build-apk.sh
+## Code layout
+
+```
+app/src/main/java/app/lumaclean/
+  LumaApp.kt          Application + AppContainer (repositories, background tasks, delete/restore helpers)
+  MainActivity.kt     edge-to-edge activity, deep links from shortcuts and notifications
+  core/               Task (cancellable background job with progress), Operations, permissions, formatting
+  data/               FileIndex (one walk of storage shared by every file feature), JunkEngine,
+                      DuplicateEngine, RecycleBin, FileOps, AppsRepository, SystemRepository,
+                      MediaRepository, health score, settings and small JSON stores
+  work/               weekly checkup + 15-minute monitor workers, notifications
+  ui/                 theme, navigation, shared components, one file per screen group
 ```
 
-The first build downloads Gradle and Android dependencies automatically. When it finishes, the installable debug APK is copied to the project root as **`LumaClean.apk`**. Later builds reuse the downloaded Gradle files.
+## Permissions, and what Android doesn't allow
 
-If Android Studio is installed in a normal Linux location, the script automatically detects its JDK/SDK. You do not need to install Gradle separately.
-
-A modern Android cleaner + storage manager inspired by the useful parts of CCleaner/Avast Cleanup, Files by Google, Norton Cleaner, Samsung Device Care, and SD Maid — implemented around current Android privacy/security rules instead of pretending to have root privileges.
-
-## Implemented in this starter project
-
-- Animated Material 3 storage dashboard
-- Quick junk scan with conservative safe/review classification
-- Own-app cache cleanup
-- Deep shared-storage scan when the user explicitly grants **All files access**
-- Temporary file, thumbnail, old APK, old log, zero-byte and empty-folder review
-- Exact duplicate finder using file size pre-grouping + SHA-256
-- Duplicate cleanup that retains the newest copy
-- Large-file scan via MediaStore
-- Media storage breakdown for images, video, audio and screenshots
-- Similar-photo grouping using a lightweight perceptual dHash over recent images
-- Photo optimizer using the system photo picker; creates smaller JPEG copies and keeps originals
-- Installed-app manager
-- Per-app cache/data/app size through `StorageStatsManager` after Usage Access
-- Last-used dates via `UsageStatsManager`
-- Open each app's Android storage/settings screen for individual cache management
-- Guided per-app cache-cleaning fallback for devices where Android does not expose bulk automated clearing
-- 30+ day unused-app hints from UsageStats
-- Android's system `ACTION_CLEAR_APP_CACHE` consent flow for clearing app caches in bulk
-- Uninstall handoff for user apps
-- SD-card destination selection using Storage Access Framework
-- Recursive move/copy engine with folder merge, duplicate skip, conflict rename and copy verification
-- Dedicated WhatsApp shared-media migration
-- General shared-storage migration to SD card
-- Daily battery-friendly scan using WorkManager; it notifies instead of silently deleting personal files
-- Local-only operation; no analytics SDK or cloud upload code
-
-## Important Android limitations
-
-Normal third-party Android apps cannot silently delete every other app's private cache, access `/data/data/<package>`, move private WhatsApp databases/session data, or force-stop arbitrary apps. LumaClean therefore uses Android's supported system consent/settings flows.
-
-`MANAGE_EXTERNAL_STORAGE` and `QUERY_ALL_PACKAGES` are sensitive Google Play permissions. If this is published, the store listing and Play Console declarations must make file management/maintenance and app management genuine, prominent core functionality. If Play approval is not desired, remove those permissions and rely on MediaStore + Storage Access Framework.
-
-## Build
-
-Use Android Studio **Quail 4 (2026.1.4) or newer**, JDK 17, Android SDK 37, and sync Gradle.
-
-This source targets Android 16 (API 36), satisfying the Google Play target requirement effective August 31, 2026, while compiling with API 37 for current Compose libraries.
-
-For Linux, the included `build-apk.sh` bootstraps the required Gradle version automatically, so a separate Gradle installation is not required.
-
-## Researched optional extensions
-
-Current cleaner products also offer features such as duplicate/incomplete contact cleanup, cloud transfers/backups, location/condition-based battery profiles, noisy-notification insights, browser-data shortcuts, custom cleaning rules and root/Shizuku power features. They are intentionally not enabled by default here because several require additional sensitive permissions, external OAuth credentials, Accessibility review, or elevated privileges.
-
-## Suggested next production modules
-
-- Similar-photo grouping with perceptual hashes and user review
-- Blurry/dark photo scoring on thumbnails
-- Image/video compression with original backup option
-- Screenshot/meme review cards
-- Downloads aging rules
-- Storage treemap analyzer
-- Orphan-folder finder for uninstalled apps
-- Export/import cleanup rules
-- Optional Shizuku/root companion build for enthusiasts (not the Play-default build)
-- Automated UI/instrumentation tests and benchmark profile
+- **All files access** (`MANAGE_EXTERNAL_STORAGE`) powers cleaning, the file manager and media tools. **Usage access** powers app sizes, unused apps, screen time and data usage. Both are granted by the user in Settings; the app explains each one where it's needed.
+- Without root, no app can clear other apps' caches one by one, read `Android/data` on Android 11+, see other apps' CPU use or really "cool the CPU". LumaClean uses Android's own consent screens instead of pretending.
+- `MANAGE_EXTERNAL_STORAGE`, `QUERY_ALL_PACKAGES` and `PACKAGE_USAGE_STATS` need a declaration in the Play Console if this is ever published there; file and app management are the app's core purpose.
 
 ## Safety defaults
 
-User media and files marked “Review” are never preselected. Scheduled scans never delete personal files automatically. SD moves verify destination length before source deletion and hash-check conflicts up to 128 MB.
+Nothing is deleted without a confirmation that says what goes. Personal files are never pre-selected. Deleted files go to the recycle bin unless you choose "delete for good". Scheduled checkups only notify; they never delete anything.

@@ -1,0 +1,83 @@
+name: LumaClean APK
+
+on:
+  push:
+    paths:
+      - "lumaclean/**"
+      - ".github/workflows/lumaclean-apk.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: lumaclean-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build and release APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lumaclean
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # the action's default package list includes "tools", which no longer exists.
+      # The compile SDK is left to AGP, which downloads it once licenses are accepted.
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.6.0"
+
+      # Optional: a stable signing key, so each release installs over the last one.
+      # Without it the runner makes a fresh debug key and the phone must uninstall first.
+      - name: Restore debug keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.LUMACLEAN_DEBUG_KEYSTORE_BASE64 }}
+        if: env.KEYSTORE_B64 != ''
+        run: |
+          mkdir -p ~/.android
+          echo "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+
+      # release build: R8-shrunk and optimised, signed with the (restored) debug key
+      - name: Build release APK
+        run: gradle --no-daemon :app:assembleRelease -PversionCode=${{ github.run_number }}
+
+      - name: Name the APK
+        id: apk
+        run: |
+          version=$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' app/build.gradle.kts)
+          sha=$(git rev-parse --short HEAD)
+          name="LumaClean-${version}-${{ github.run_number }}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$name"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "tag=lumaclean-v${version}-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.apk.outputs.name }}
+          path: lumaclean/${{ steps.apk.outputs.name }}
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.apk.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: LumaClean ${{ steps.apk.outputs.tag }}
+          # builds from branches other than main are marked pre-release
+          prerelease: ${{ github.ref != 'refs/heads/main' }}
+          body: |
+            APK built from `${{ steps.apk.outputs.sha }}` on `${{ github.ref_name }}`.
+            Download the `.apk` below and open it on your phone (allow installs from unknown sources).
+          files: lumaclean/${{ steps.apk.outputs.name }}
