@@ -688,7 +688,11 @@ commands/stack-highlights/tests/.tmp/
 # dev/ work dirs, regression output and generated visual-test output
 commands/stack-highlights/dev/development-artifacts/work/
 commands/stack-highlights/dev/toolchain/regression-results/
-commands/stack-highlights/dev/visual-tests-500/outputs/
+# run logs are generated; the two judged outputs are reviewed material with recorded
+# checksums (dev/SHA256SUMS.txt, checked by dev/verify_package.py in CI), so they stay tracked
+commands/stack-highlights/dev/visual-tests-500/outputs/*
+!commands/stack-highlights/dev/visual-tests-500/outputs/default_books.json
+!commands/stack-highlights/dev/visual-tests-500/outputs/default_merged_page_ranges.json
 commands/stack-highlights/dev/original-upload/*.zip
 # 266 MB test PDF + 159 MB zip; only the README explaining them is tracked
 **/source-pdfs/*
