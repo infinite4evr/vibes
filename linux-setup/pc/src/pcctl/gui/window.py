@@ -13,10 +13,11 @@ from ..core import debug, system, tasks  # noqa: E402
 from . import prefs, theme  # noqa: E402
 from .util import bg, esc, hbox, label, scrolled, vbox  # noqa: E402
 
-SIDEBAR_MIN = 210
-SIDEBAR_DEFAULT = 250
-SIDEBAR_MAX = 330
-CONTENT_MIN_WHILE_SIDEBAR_VISIBLE = 560
+SIDEBAR_MIN = 205
+SIDEBAR_DEFAULT = 235
+SIDEBAR_MAX = 300
+CONTENT_MIN_WHILE_SIDEBAR_VISIBLE = 650
+COMPACT_HEADER_AT = 760
 
 
 SECTIONS = [
@@ -169,7 +170,9 @@ class MainWindow(Adw.ApplicationWindow):
         ident = system.identity()
         logo = Gtk.Image.new_from_icon_name("io.github.infinite4evr.PcCommandCenter")
         logo.set_pixel_size(28)
-        title = hbox(logo, vbox(label("PC Command Center", "brand-title"), label(ident["host"], "brand-sub"), spacing=0), spacing=10)
+        brand = label("PC Command Center", "brand-title", ellipsize=True)
+        brand_host = label(ident["host"], "brand-sub", ellipsize=True)
+        title = hbox(logo, vbox(brand, brand_host, spacing=0), spacing=10)
         title.set_valign(Gtk.Align.CENTER)
         side_hb.set_title_widget(title)
         side_hb.set_show_title(True)
@@ -224,7 +227,9 @@ class MainWindow(Adw.ApplicationWindow):
                 badge = label("", "nav-badge", xalign=0.5)
                 badge.set_visible(False)
                 row = Gtk.ListBoxRow()
-                row.set_child(hbox(img, label(cls.TITLE, "nav-title", hexpand=True), badge, spacing=12))
+                nav_title = label(cls.TITLE, "nav-title", hexpand=True, ellipsize=True)
+                nav_title.set_tooltip_text(cls.TITLE)
+                row.set_child(hbox(img, nav_title, badge, spacing=12))
                 row.set_tooltip_text(getattr(cls, "SUBTITLE", "") or None)
                 row._pid = pid
                 lb.append(row)
@@ -255,7 +260,13 @@ class MainWindow(Adw.ApplicationWindow):
         self.sidebar_btn.add_css_class("flat")
         self.sidebar_btn.connect("clicked", lambda *_: self.toggle_sidebar())
         self.content_hb.pack_start(self.sidebar_btn)
-        self.content_hb.set_title_widget(self._search_box())
+        self.search_shell = self._search_box()
+        self.content_hb.set_title_widget(self.search_shell)
+        self.search_compact_btn = Gtk.Button(icon_name="system-search-symbolic", tooltip_text="Search pages and actions (Ctrl+K)")
+        self.search_compact_btn.add_css_class("flat")
+        self.search_compact_btn.set_visible(False)
+        self.search_compact_btn.connect("clicked", lambda *_: self.palette())
+        self.content_hb.pack_start(self.search_compact_btn)
         self.task_badge = label("", "nav-badge", xalign=0.5)
         self.task_badge.set_visible(False)
         self.task_btn = Gtk.Button(tooltip_text="Background tasks")
@@ -277,6 +288,7 @@ class MainWindow(Adw.ApplicationWindow):
         self._sidebar_clamping = False
         self.split.connect("notify::position", self._sidebar_resized)
         self.connect("notify::width", self._sidebar_resized)
+        self.connect("notify::width", self._adapt_shell)
 
         for _section, ids in SECTIONS:
             for pid in ids:
@@ -299,6 +311,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.set_content(self.split)
         self.split.set_position(self._sidebar_width if self._sidebar_visible else 0)
         self.apply_motion()
+        GLib.idle_add(lambda: (self._adapt_shell(), False)[1])
 
         self._actions()
         w, h = prefs.get("width"), prefs.get("height")
@@ -355,14 +368,38 @@ class MainWindow(Adw.ApplicationWindow):
         if width <= 0:
             max_width = SIDEBAR_MAX
         else:
+            # Never allow navigation to consume more than ~28% of the real
+            # window width, and preserve a useful content viewport. This makes
+            # the splitter behave sensibly on 1366x768 / fractional-scale
+            # laptops instead of using a desktop-sized fixed allowance.
+            proportional = int(width * 0.28)
             content_limited = width - CONTENT_MIN_WHILE_SIDEBAR_VISIBLE
-            max_width = max(SIDEBAR_MIN, min(SIDEBAR_MAX, content_limited))
+            max_width = max(SIDEBAR_MIN, min(SIDEBAR_MAX, proportional, content_limited))
         clamped = max(SIDEBAR_MIN, min(max_width, pos))
         if clamped != pos:
             self._sidebar_clamping = True
             self.split.set_position(clamped)
             self._sidebar_clamping = False
         self._sidebar_width = clamped
+
+    def _adapt_shell(self, *_a) -> None:
+        """Keep global header controls usable when the content pane is narrow.
+
+        Adw.HeaderBar may otherwise squeeze its title widget until the search
+        entry effectively disappears. At compact content widths we replace the
+        wide search field with an explicit search button; Ctrl+K remains
+        available in both modes.
+        """
+        width = self.get_width()
+        if width <= 0:
+            return
+        side = self.split.get_position() if self._sidebar_visible else 0
+        content_width = max(0, width - side)
+        compact = content_width < COMPACT_HEADER_AT
+        if getattr(self, "search_shell", None) is not None:
+            self.search_shell.set_visible(not compact)
+        if getattr(self, "search_compact_btn", None) is not None:
+            self.search_compact_btn.set_visible(compact)
 
     def toggle_sidebar(self) -> None:
         self.set_sidebar_visible(not self._sidebar_visible)
@@ -391,6 +428,7 @@ class MainWindow(Adw.ApplicationWindow):
                     self.split.set_position(0)
                 return False
             GLib.timeout_add(max(1, ms + 20), finish_hide)
+        self._adapt_shell()
         debug.event("ui.sidebar", visible=visible, width=self._sidebar_width)
 
     def _update_task_badge(self) -> bool:

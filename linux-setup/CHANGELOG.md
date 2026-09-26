@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.2.4 — compact-window shell/layout hotfix
+
+- Fixed the remaining compact/fractional-scale shell problem visible on 1366x768-class laptops: the sidebar could still consume too much usable width and page/header controls could be crowded out.
+- Sidebar default/max reduced to 235/300 px and dynamically capped to ~28% of the real window while reserving at least 650 px for content when possible.
+- Navigation and brand labels now ellipsize instead of increasing the sidebar's minimum width.
+- Added a compact top-header mode: when the content pane is narrow, the wide search entry becomes an explicit search button instead of disappearing inside `Adw.HeaderBar`; Ctrl+K remains available.
+- Page title/action headers now wrap instead of forcing one rigid horizontal line.
+- Page margins tighten at compact widths and scrolled pages no longer propagate an oversized natural width into the shell.
+- Added three non-GTK regression contracts for content-aware sidebar sizing, compact search reachability, and wrapping page headers.
+- Validation: 216 tests passed, 2 GTK screenshot tests skipped on this packaging host because PyGObject/libadwaita are unavailable.
+
 ## 2.2.3 — installer/version reliability hotfix
 
 - Installer now prints the source version before installing the GTK app.

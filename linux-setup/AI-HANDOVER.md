@@ -1,11 +1,11 @@
 # PC Command Center / linux-setup — Complete AI Handover
 
 **Authoritative handover for the current repository**  
-**Release:** `2.2.3`  
+**Release:** `2.2.4`  
 **Handover date:** 26 September 2026  
 **Primary product:** PC Command Center (GTK 4 + libadwaita desktop application)  
 **Also included:** Textual terminal UI, `pc` CLI, Ubuntu setup/cleanup shell scripts  
-**Current automated verification:** **211 passed, 2 skipped** (`pytest -q -rs`)  
+**Current automated verification:** **216 passed, 2 skipped** (`pytest -q -rs`)  
 **Important:** This file supersedes the older `docs/HANDOVER.md`. Start here before modifying the project.
 
 ---
@@ -31,6 +31,12 @@ If another AI takes over, do **not** assume that “everything in the audit is i
 - source code and tests — final authority if documentation differs.
 
 ---
+
+## 0.0.3 2.2.4 compact-window shell/layout hotfix (2026-09-26)
+
+A second real-machine screenshot showed that restored navigation was not the end of the UI problem: at compact logical widths/fractional scaling, the resizable sidebar still consumed too much content space, page title/action rows could enforce excess width, and the wide header search could be crowded out. 2.2.4 makes the shell content-aware: sidebar width is capped both absolutely and proportionally, page headers wrap, page margins tighten, navigation text ellipsizes, and a compact search button replaces the wide search field when the content pane is narrow. See `docs/COMPACT-LAYOUT-HOTFIX-2.2.4.md`.
+
+Packaging-host validation: **216 passed, 2 skipped** (GTK screenshot tests require a GTK/libadwaita runtime not present here).
 
 ## 0.2 2.2.2 sidebar/page-loading hotfix (2026-09-26)
 
@@ -2063,8 +2069,8 @@ If you only have five minutes before continuing work:
 
 # 29. Final status
 
-**Version:** `2.2.2`  
-**Automated tests:** `211 passed, 2 skipped`  
+**Version:** `2.2.4`  
+**Automated tests:** `216 passed, 2 skipped`  
 **Primary UI:** GTK 4/libadwaita  
 **Debug logging:** implemented, opt-in, rotating, redacted  
 **Support bundle:** implemented  

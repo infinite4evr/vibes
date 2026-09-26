@@ -172,6 +172,10 @@ def spacer() -> Gtk.Box:
 
 def scrolled(child: Gtk.Widget, clamp: int | None = 1180) -> Gtk.ScrolledWindow:
     sw = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+    # Never let a page's natural width enlarge the shell. The page must adapt
+    # to the viewport; horizontal clipping is worse than wrapping.
+    if hasattr(sw, "set_propagate_natural_width"):
+        sw.set_propagate_natural_width(False)
     sw.set_vexpand(True)
     if clamp:
         c = Adw.Clamp(maximum_size=clamp, tightening_threshold=clamp - 200)

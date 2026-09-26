@@ -37,12 +37,28 @@ class Page(Gtk.Box):
         self.body.set_margin_bottom(28)
         self.body.set_margin_start(24)
         self.body.set_margin_end(24)
+        self.connect("notify::width", self._adapt_page_spacing)
         if self.SCROLL:
             self.append(scrolled(self.body, self.CLAMP))
         else:
             self.body.set_vexpand(True)
             self.append(self.body)
         self.build()
+
+    def _adapt_page_spacing(self, *_a) -> None:
+        """Reduce chrome, not content, when a page has a compact allocation."""
+        w = self.get_width()
+        if w <= 0:
+            return
+        if w < 620:
+            side, top = 12, 14
+        elif w < 820:
+            side, top = 18, 18
+        else:
+            side, top = 24, 20
+        self.body.set_margin_start(side)
+        self.body.set_margin_end(side)
+        self.body.set_margin_top(top)
 
     # -- lifecycle
     def build(self) -> None:
@@ -86,9 +102,12 @@ class Page(Gtk.Box):
         t = vbox(title, sub, spacing=2)
         t.set_hexpand(True)
         if actions:
-            acts = flow(*actions, spacing=8, min_per_line=1, max_per_line=len(actions), css="page-actions", halign=Gtk.Align.END)
+            acts = flow(*actions, spacing=8, min_per_line=1, max_per_line=len(actions), css="page-actions", halign=Gtk.Align.START)
             acts.set_valign(Gtk.Align.CENTER)
-            row = hbox(t, acts, spacing=12)
+            # The old rigid HBox forced the title + action buttons to keep one
+            # line, which made page content wider than the viewport on compact
+            # / fractionally-scaled laptops. Let the two regions wrap instead.
+            row = flow(t, acts, spacing=12, min_per_line=1, max_per_line=2, css="page-header-flow", halign=Gtk.Align.FILL)
         else:
             row = hbox(t)
         self.body.append(row)

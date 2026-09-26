@@ -76,3 +76,24 @@ def test_page_construction_failure_is_not_hidden_from_sidebar() -> None:
     source = (GUI / "window.py").read_text(encoding="utf-8")
     assert "self.rows[pid].set_visible(False)" not in source
     assert "_UnavailablePage(self, pid, cls, exc, trace)" in source
+
+
+def test_sidebar_width_is_content_aware_not_desktop_fixed() -> None:
+    source = (GUI / "window.py").read_text(encoding="utf-8")
+    assert "proportional = int(width * 0.28)" in source
+    assert "CONTENT_MIN_WHILE_SIDEBAR_VISIBLE = 650" in source
+    assert "SIDEBAR_MAX = 300" in source
+
+
+def test_compact_header_keeps_search_reachable() -> None:
+    source = (GUI / "window.py").read_text(encoding="utf-8")
+    assert "search_compact_btn" in source
+    assert "content_width < COMPACT_HEADER_AT" in source
+    assert 'self.search_compact_btn.connect("clicked", lambda *_: self.palette())' in source
+
+
+def test_page_header_actions_can_wrap_on_compact_windows() -> None:
+    source = (PAGES / "base.py").read_text(encoding="utf-8")
+    assert 'css="page-header-flow"' in source
+    assert "row = hbox(t, acts, spacing=12)" not in source
+    assert "notify::width" in source and "_adapt_page_spacing" in source
