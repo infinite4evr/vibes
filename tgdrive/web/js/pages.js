@@ -207,7 +207,8 @@ const SECTION_HTML = {
     ${row('Hide duplicates', `One card per file: copies forwarded into other chats, and files uploaded again with the same name and size, fold into the best copy (one in your folders, starred, downloaded, in your own channel, or else the oldest). A chat still shows its own files. Type <code>copies:show</code> in a search to see them all once.${S.status?.dupes?.extra ? ` Right now ${fmtNum(S.status.dupes.extra)} extra copies (${fmtSize(S.status.dupes.extra_bytes || 0)}) are folded away.` : ''}`, sw('hide_duplicates', s))}
     ${row('Albums as stacks', 'Files sent together (an album) show as one stacked card in the grid. Open it to see them all.', sw('stack_albums', s))}
     ${row('Ask before deleting from Telegram', '', sw('confirm_delete', s))}
-    ${row('Notifications', 'When downloads and uploads finish or fail.', sw('notifications', s))}`,
+    ${row('Notifications', 'When downloads and uploads finish or fail.', sw('notifications', s))}
+    ${row('Background work', 'The meaning index, subject tagging and the duplicate finder work on their own after files arrive. <b>Gentle</b> runs them at low priority and lets them use at most about a quarter of one core, so the computer stays quiet. <b>Full speed</b> finishes a first big index sooner. <b>Paused</b> stops them (search keeps working with what is already built). See what uses the CPU in About &amp; diagnostics.', sel('background_work', s, [['gentle', 'Gentle (recommended)'], ['full', 'Full speed'], ['paused', 'Paused']]))}`,
   appearance: (s) => `<h2>Appearance</h2>
     ${row('Theme', '', sel('theme', s, [['system', 'Match the system'], ['light', 'Light'], ['dark', 'Dark']]))}
     <div class="set-row"><div class="set-l"><strong>Accent colour</strong><p>Buttons, selection and highlights.</p></div><div class="set-c"><div class="accent-pick">
@@ -365,6 +366,8 @@ const SECTION_HTML = {
     const logBytes = (about.log_files || []).reduce((a, x) => a + x.bytes, 0);
     return `<h2>About & diagnostics</h2>
     <p class="set-intro">Version ${esc(about.version || S.version)} · meaning-based search ${about.semantic_available ? 'available' : 'not installed'} · log file <code>${esc(about.log || '')}</code></p>
+    <div class="set-block"><strong>CPU use</strong><p>What TG Drive's service is using the processor for right now (100% is one whole core), measured over a few seconds. The window itself is not included.</p>
+      <div class="btn-row"><button class="btn" data-cpu-measure>${icon('activity')}Measure now</button></div><div id="cpuOut"></div></div>
     <div class="btn-row"><button class="btn" data-shortcuts>${icon('keyboard')}Keyboard shortcuts</button><button class="btn" data-copy-logs>${icon('copy')}Copy log</button></div>
     <div class="set-block debug-block ${s.debug_logging ? 'is-on' : ''}"><strong>${icon('bug')}Detailed debug logging</strong>
       <p>Records everything in detail while it's on: every request and how long it took, what you clicked and where you went, transfers, streaming, indexing, search, errors and crashes with full tracebacks. It goes to <code>${esc(about.debug_log || 'tgdrive-debug.log')}</code> on this computer only. Turn it on to catch a problem, reproduce it, then send the log (or a diagnostics file) and turn it off again. A large banner shows while it's on.</p>
@@ -459,6 +462,21 @@ page().addEventListener('click', async (e) => {
   const t = e.target.closest('button, a');
   if (!t) return;
   const d = t.dataset;
+  if (d.cpuMeasure !== undefined) {
+    const out = $('#cpuOut');
+    out.innerHTML = '<div class="page-loading"><span class="spin"></span> Measuring for 5 seconds…</div>';
+    try {
+      await api('/api/cpu');
+      await new Promise((r) => setTimeout(r, 5000));
+      const c = await api('/api/cpu');
+      if (!c.available) { out.innerHTML = '<p class="subtle">Not available on this system.</p>'; return; }
+      const jobs = Object.values(c.jobs || {})[0] || {};
+      out.innerHTML = `<p><b>${c.total}%</b> of one core in total (this computer has ${c.cores} cores). Background work: <b>${esc(c.background_work)}</b>.</p>
+        <div class="simple-list">${(c.parts || []).map(([k, v]) => `<div class="sl-row static"><span class="grow">${esc(k)}</span><b>${v}%</b></div>`).join('') || '<p class="subtle">Nothing is using the CPU.</p>'}</div>
+        <p class="help">${Object.entries(jobs).map(([k, v]) => `${esc(k)}: ${esc(String(v))}`).join(' · ')}</p>`;
+    } catch (err) { fail(err); out.innerHTML = ''; }
+    return;
+  }
   if (d.refreshPage !== undefined) return bus.emit('route');
   if (d.dup) { dupMode = d.dup; return duplicates(); }
   if (d.dupSelect !== undefined) {

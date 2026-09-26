@@ -543,6 +543,21 @@ async def account_status(aid: int):
     return account_status_payload(acc(aid))
 
 
+@app.get("/api/cpu")
+async def cpu_use():
+    """How much CPU each part of TG Drive's service used since the last time this was asked, and
+    what the background jobs are doing. 100 means one whole core."""
+    from . import diagnostics, pace
+    out = diagnostics.cpu_by_part()
+    out["background_work"] = pace.mode()
+    out["jobs"] = {}
+    for uid, a in manager.accounts.items():
+        out["jobs"][uid] = {"meaning index": a.semantic.status().get("state"), "subjects": a.subjects.status().get("state"),
+                            "duplicates": a.dupes.status().get("state"), "indexing": a.indexer.phase,
+                            "search index": a.db.search_upgrade_status().get("state")}
+    return out
+
+
 @app.get("/api/transfers/active")
 async def transfers_active():
     """Running and queued transfers over all accounts (the desktop app asks before quitting)."""

@@ -98,6 +98,8 @@ DEFAULTS: dict[str, Any] = {
     "lock_salt": "",
     "lock_after_minutes": 0,
     "confirm_delete": True,
+    # How hard background work (meaning index, subjects, duplicates) may use the CPU: see pace.py
+    "background_work": "gentle",  # gentle | full | paused
 }
 
 CHOICES = {
@@ -110,6 +112,7 @@ CHOICES = {
     "proxy_type": {"socks5", "socks4", "http", "mtproto"},
     "contrast": {"normal", "high"},
     "motion": {"on", "system", "off"},
+    "background_work": {"gentle", "full", "paused"},
     "folder_style": {"tiles", "cards", "list"},
 }
 LIST_COLUMNS = {"name", "chat", "folder", "date", "size", "kind", "ext", "duration", "dims", "tags", "sender",

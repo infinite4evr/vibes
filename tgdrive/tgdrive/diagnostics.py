@@ -204,6 +204,48 @@ class LoopWatchdog:
                              {"blocked_for": f"{late:.1f} s"})
 
 
+# ------------------------------------------------------------- CPU use by part
+_cpu_prev: dict = {"at": 0.0, "threads": {}}
+
+_PARTS = [("tgdrive-semantic", "Meaning index (smart search)"), ("tgdrive-subjects", "Subject tagging"),
+          ("tgdrive-dupes", "Duplicate finder"), ("tgdrive-reader", "Searches and lists"),
+          ("tgdrive-writer", "Saving to the index"), ("asyncio", "Helpers (files, streaming, search index)"),
+          ("MainThread", "Telegram, indexing and the app's requests"), ("tgdrive-loop-watchdog", "Watchdog"),
+          ("ThreadPoolExecutor", "Helpers (files, streaming, search index)")]
+
+
+def cpu_by_part() -> dict:
+    """CPU used by each part of the service since the last call (Linux; per thread from /proc)."""
+    tick = os.sysconf("SC_CLK_TCK") if hasattr(os, "sysconf") else 100
+    names = {th.native_id: th.name for th in threading.enumerate()}
+    now = time.monotonic()
+    cur: dict[int, tuple[str, float]] = {}
+    try:
+        tids = os.listdir("/proc/self/task")
+    except OSError:
+        return {"available": False}
+    for tid in tids:
+        try:
+            f = open(f"/proc/self/task/{tid}/stat").read().rsplit(")", 1)[1].split()
+        except OSError:
+            continue
+        cur[int(tid)] = (names.get(int(tid), "other"), (int(f[11]) + int(f[12])) / tick)
+    span = now - _cpu_prev["at"] if _cpu_prev["at"] else 0.0
+    parts: dict[str, float] = {}
+    total = 0.0
+    for tid, (name, secs) in cur.items():
+        used = secs - _cpu_prev["threads"].get(tid, secs if not span else 0.0)
+        label = next((lab for pre, lab in _PARTS if name.startswith(pre)), "Other")
+        parts[label] = parts.get(label, 0.0) + max(0.0, used)
+        total += max(0.0, used)
+    _cpu_prev.update(at=now, threads={tid: secs for tid, (_, secs) in cur.items()})
+    if not span:
+        return {"available": True, "warming_up": True}
+    pct = lambda v: round(100 * v / span, 1)   # noqa: E731  (100 = one whole core)
+    return {"available": True, "seconds": round(span, 1), "total": pct(total), "cores": os.cpu_count(),
+            "parts": sorted(([k, pct(v)] for k, v in parts.items() if v > 0), key=lambda x: -x[1])}
+
+
 def record_exception(kind: str, exc: BaseException, context: Optional[dict] = None) -> Optional[str]:
     return record_crash(kind, "".join(traceback.format_exception(type(exc), exc, exc.__traceback__)), context)
 

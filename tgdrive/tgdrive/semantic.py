@@ -33,6 +33,7 @@ from typing import Optional, Sequence
 
 import numpy as np
 
+from . import pace
 from . import textproc
 
 log = logging.getLogger("tgdrive.semantic")
@@ -48,6 +49,7 @@ NAME_WEIGHT = 2.0      # name vs caption
 EXTRA_WEIGHT = 0.6     # alternate phrasings of the query vs the query itself
 CENTER_FULL_AT = 3000  # files; centering is phased in up to this size
 REBUILD_GROWTH = 1.33  # rebuild statistics when the library grew by a third
+RESTAT_MIN_GAP = 15 * 60  # … but at most every 15 minutes
 STATS_SAMPLE = 40_000  # files embedded to estimate the library's average vector
 
 # Damped from the start (the library's own statistics take over as it grows).
@@ -303,6 +305,10 @@ class SemanticIndex:
         np.savez(tmp, weights=self.weights, center=self.center, n=np.int64(n_docs))
         tmp.replace(self.stats_path)
         self.meta["stats_n"] = int(n_docs)
+        # How many files the library had: what "grew by a third" is measured against. (Not n_docs: files
+        # without any words, like most photos, never count there, so a library of mostly photos looked as
+        # if it had always grown too much, and the statistics were computed again, forever.)
+        self.meta["stats_total"] = int(conn.execute("SELECT COUNT(*) FROM files").fetchone()[0] or 0)
         self.meta["stats_at"] = int(time.time())
         log.info("meaning index statistics: %d files, %d distinct tokens, %.1f s", n_docs, int((df > 0).sum()),
                  time.time() - t0)
@@ -324,10 +330,15 @@ class SemanticIndex:
         return out
 
     def _needs_restat(self, conn: sqlite3.Connection) -> bool:
-        have = int(self.meta.get("stats_n") or 0)
-        if not have or self.weights is None:
+        if not int(self.meta.get("stats_n") or 0) or self.weights is None:
             return True
         now = conn.execute("SELECT COUNT(*) FROM files").fetchone()[0] or 0
+        have = int(self.meta.get("stats_total") or 0)
+        if not have:   # statistics from before 2.3.1: count from now on instead of starting over
+            self.meta["stats_total"] = now
+            return False
+        if time.time() - int(self.meta.get("stats_at") or 0) < RESTAT_MIN_GAP:
+            return False   # never more often than this, however fast files arrive
         return now > have * REBUILD_GROWTH and now - have >= 50
 
     # --------------------------------------------------------------- building
@@ -367,10 +378,14 @@ class SemanticIndex:
         self.poke()
 
     def _loop(self) -> None:
+        pace.lower_priority()
         conn = sqlite3.connect(str(self.db_path), timeout=30)
         conn.execute("PRAGMA query_only=1")
         try:
             while not self._stop.is_set():
+                pace.wait_while_paused(self._stop, lambda: setattr(self, "state", "paused"))
+                if self._stop.is_set():
+                    break
                 if not self.enabled:
                     self.state = "off"
                     self._wake.wait(30)
@@ -381,7 +396,10 @@ class SemanticIndex:
                     self.state, self.error = "unavailable", _Model.error
                     return
                 try:
+                    t0 = time.thread_time()
                     worked = self._step(conn, model)
+                    if worked:
+                        pace.rest(time.thread_time() - t0, self._stop)
                 except sqlite3.OperationalError as exc:
                     log.info("semantic step retry: %s", exc)
                     worked = False

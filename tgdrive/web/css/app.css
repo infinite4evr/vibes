@@ -1650,3 +1650,13 @@ kbd { font: inherit; font-size: .9em; padding: 0 5px; border: 1px solid var(--li
   .top-actions .account-btn .who { display: none; }
   .tool-right select { max-width: 128px; }
 }
+
+/* ------------------------------------------------------ 2.3.1: easy on the CPU */
+/* Animations that never end make the window redraw 60 times a second for as long as they show (hours,
+   while a big account indexes), which on many Linux desktops is done by the CPU. They play a few times
+   and then rest; the state is still shown by colour. */
+.idx-dot.busy { animation-iteration-count: 3; }
+.debug-banner { animation: rise-sm .3s var(--ease); }
+.debug-banner .db-ic { animation-iteration-count: 3; }
+/* Nothing moves in a window you can't see. */
+html.page-hidden *, html.page-hidden *::before, html.page-hidden *::after { animation-play-state: paused !important; }

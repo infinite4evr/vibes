@@ -517,7 +517,14 @@ class Database:
         if state == "ready":
             return {"state": "ready"}
         total = int(self.get_meta("search_total") or 0)
-        left = self.one("SELECT COUNT(*) AS n FROM files WHERE fts_v=0")["n"]
+        # Counting the rows still to do reads the whole table: at most every 5 s (every open window asks
+        # every second while the upgrade runs).
+        cached = getattr(self, "_upgrade_left", None)
+        if cached and time.monotonic() - cached[0] < 5:
+            left = cached[1]
+        else:
+            left = self.one("SELECT COUNT(*) AS n FROM files WHERE fts_v=0")["n"]
+            self._upgrade_left = (time.monotonic(), left)
         return {"state": state, "total": total, "done": max(0, total - left)}
 
     def build_search_batch(self, conn: Optional[sqlite3.Connection] = None, batch: int = 2000) -> int:

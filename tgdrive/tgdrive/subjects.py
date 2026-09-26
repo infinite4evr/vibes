@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
+from . import pace
 from . import textproc
 
 if TYPE_CHECKING:
@@ -253,17 +254,24 @@ class SubjectIndex:
 
     # ------------------------------------------------------------- worker
     def _loop(self) -> None:
+        pace.lower_priority()
         conn = sqlite3.connect(str(self.db_path), timeout=30, isolation_level=None, check_same_thread=False)
         conn.execute("PRAGMA busy_timeout=30000")
         try:
             while not self._stop.is_set():
+                pace.wait_while_paused(self._stop, lambda: setattr(self, "state", "paused"))
+                if self._stop.is_set():
+                    break
                 if not self.enabled:
                     self.state = "off"
                     self._wake.wait(30)
                     self._wake.clear()
                     continue
                 try:
+                    t0 = time.thread_time()
                     worked = self._step(conn)
+                    if worked:
+                        pace.rest(time.thread_time() - t0, self._stop)
                 except sqlite3.OperationalError as exc:
                     log.info("subjects step retry: %s", exc)
                     worked = False

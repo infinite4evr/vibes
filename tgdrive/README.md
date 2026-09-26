@@ -1,14 +1,14 @@
-# TG Drive 2.3
+# TG Drive 2.3.1
 
 Every file in your Telegram (every channel, group, private chat, bot and Saved Messages) in one place that works like Google Drive: folders, search that understands what you mean, streaming, downloads and uploads. It signs in as your own account and runs on your computer. Nothing goes anywhere except Telegram.
 
 ## Install on Linux
 
-**AppImage (recommended).** Download `TG_Drive-2.3.0-x86_64.AppImage`, then:
+**AppImage (recommended).** Download `TG_Drive-2.3.1-x86_64.AppImage`, then:
 
 ```bash
-chmod +x TG_Drive-2.3.0-x86_64.AppImage
-./TG_Drive-2.3.0-x86_64.AppImage
+chmod +x TG_Drive-2.3.1-x86_64.AppImage
+./TG_Drive-2.3.1-x86_64.AppImage
 ```
 
 It runs on any 64-bit Linux from about 2019 onwards (glibc 2.28+: Ubuntu 20.04+, Debian 10+, Fedora 29+, Mint 20+, RHEL/Rocky/Alma 8+, openSUSE 15.1+, Arch, Manjaro, Pop!_OS …). The first start adds TG Drive to your applications menu. To remove that entry: `./TG_Drive-*.AppImage --uninstall-desktop-entry`.
@@ -52,6 +52,13 @@ Each result shows how it matched (exact, variant, similar, related). Filters by 
 **Transfers.** Parallel downloads and uploads with pause, resume (also after restarting), retry, cancel and speed/ETA; download whole folders or selections (keeping the folder structure, or as a zip); upload files and folders by drag and drop or the file picker; upload into any chat with a caption; files up to Telegram's limit (2 GB, 4 GB with Premium). Desktop notifications when they finish.
 
 **Manage.** Storage view (by type, chat, kind of chat, year), duplicate finder (exact and similar), index manager (per-chat progress, pause, rescan, verify, exclude), activity log, several accounts, proxy (SOCKS5/4, HTTP, MTProto), app lock with a passcode and auto-lock, CSV export, database maintenance (optimise, vacuum, integrity check, rebuild search), logs.
+
+**New in 2.3.1: quiet on the CPU.**
+
+- *Fixed a CPU drain.* In a library where most files have no name or caption (photos), the meaning index started its statistics over and over, keeping a core busy for as long as TG Drive ran. It now finishes and goes quiet.
+- *Background work* (Settings → General): **Gentle** (the default) runs the meaning index, subject tagging and the duplicate finder at low priority, resting three times as long as they work, so each uses at most about a quarter of a core; **Full speed** finishes a first big index sooner; **Paused** stops them.
+- numpy's maths no longer starts a thread per core; endless animations (the indexing dot, the debug banner) stop after a few beats, nothing animates in a hidden window, and a window closed to the tray is frozen until you open it again.
+- *See it yourself:* Settings → About & diagnostics → CPU use → Measure now shows what each part of the service is using.
 
 **New in 2.3.**
 
@@ -125,7 +132,7 @@ Needs `uv` (or `PYTHON_DIST` pointing at a python-build-standalone build), `curl
 
 ```bash
 python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt pytest httpx
-python -m pytest tests          # 54 tests, including a 60,000-file scale test
+python -m pytest tests          # 57 tests, including a 60,000-file scale test
 python -m desktop               # the desktop app from source
 python run.py                   # server only; open http://127.0.0.1:8765
 python -m tests.demo_server     # the UI on a fake account (http://127.0.0.1:8766)

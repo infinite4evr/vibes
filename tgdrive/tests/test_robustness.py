@@ -271,6 +271,7 @@ def test_writer_thread_and_background_writers_never_hit_locked_errors(tmp_path):
                         conn.execute("INSERT OR REPLACE INTO meta(key, value) VALUES('bg', ?)", (str(time.time()),))
                         time.sleep(0.01)
                         conn.execute("COMMIT")
+                    time.sleep(0.005)   # real background writers work between their transactions
             except Exception as exc:   # pragma: no cover - reported below
                 errors.append(exc)
             finally:
@@ -611,3 +612,79 @@ def test_a_superseded_query_answers_instead_of_vanishing(tmp_path):
         acc.db.close()
 
     run(go())
+
+
+# ------------------------------------------------------------------ CPU use
+def test_meaning_index_finishes_when_most_files_have_no_words(tmp_path, fresh_settings):
+    """Photos without a name or caption have no words. The statistics used to be compared with the
+    number of files *with* words, so a library of mostly photos recomputed them forever (a core at 100%)."""
+    import sqlite3
+
+    from tgdrive.semantic import SemanticIndex, _Model
+    if _Model.get() is None:
+        pytest.skip("meaning model not installed")
+    fresh_settings.data["background_work"] = "full"
+    db = tmp_path / "index.db"
+    from tgdrive.db import Database
+    d = Database(db)
+    recs = []
+    for i in range(1, 1201):
+        named = i % 5 == 0   # four in five files have no words at all
+        recs.append({"chat_id": -100, "msg_id": i, "kind": "photo" if not named else "document",
+                     "name": f"Polity notes part {i}.pdf" if named else None, "caption": None, "date": 1_700_000_000,
+                     "size": 1000})
+    d.upsert_files(recs)
+    d.close()
+    s = SemanticIndex(tmp_path / "semantic", db)
+    s.enabled = True
+    calls = []
+    real = s._compute_stats
+    s._compute_stats = lambda conn, model: (calls.append(1), real(conn, model))
+    s.start()
+    for _ in range(200):
+        time.sleep(0.05)
+        if s.state == "ready":
+            break
+    s.stop()
+    assert s.state == "ready", s.state
+    assert len(calls) == 1, f"statistics computed {len(calls)} times"
+    assert int(s.meta["stats_total"]) == 1200 and int(s.meta["stats_n"]) == 240
+    with sqlite3.connect(db) as c:
+        assert c.execute("SELECT COUNT(*) FROM files").fetchone()[0] == 1200
+
+
+def test_background_work_modes(fresh_settings):
+    from tgdrive import pace
+    fresh_settings.data["background_work"] = "gentle"
+    assert pace.rest_for(0.2) == pytest.approx(0.6) and pace.rest_for(100) == pace.MAX_REST
+    fresh_settings.data["background_work"] = "full"
+    assert pace.rest_for(5) == 0
+    fresh_settings.data["background_work"] = "paused"
+    stop = threading.Event()
+    t0 = time.time()
+    th = threading.Thread(target=pace.wait_while_paused, args=(stop,))
+    th.start()
+    time.sleep(0.3)
+    assert th.is_alive()              # held while paused
+    stop.set()
+    th.join(2)
+    assert not th.is_alive() and time.time() - t0 < 3
+
+
+def test_cpu_by_part_reports_the_busy_thread():
+    from tgdrive import diagnostics
+    diagnostics.cpu_by_part()
+    done, release = threading.Event(), threading.Event()
+
+    def spin():
+        end = time.time() + 0.6
+        while time.time() < end:
+            pass
+        done.set()
+        release.wait(5)   # stay alive until measured (a thread that ended has no CPU entry)
+    threading.Thread(target=spin, name="tgdrive-semantic").start()
+    done.wait(3)
+    r = diagnostics.cpu_by_part()
+    release.set()
+    parts = dict(r["parts"])
+    assert parts.get("Meaning index (smart search)", 0) > 20, r

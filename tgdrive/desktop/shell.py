@@ -240,6 +240,7 @@ class MainWindow(QMainWindow):
         if self.shell.close_to_tray():
             e.ignore()
             self.hide()
+            self.shell.set_frozen(True)
             self.shell.tray_hint()
             return
         if not self.shell.confirm_quit():
@@ -303,6 +304,8 @@ class Shell:
         start_hidden = (self.args.minimized or settings.get("start_minimized")) and self.tray is not None
         if not start_hidden:
             self.show()
+        else:   # started in the tray: once the page has loaded, let it sleep until it's shown
+            QTimer.singleShot(15000, lambda: None if self.win.isVisible() else self.set_frozen(True))
         if getattr(self.args, "send", None):
             self.deliver("receivePaths", self.args.send)
         if getattr(self.args, "open", None) and self.args.open != "new-window":
@@ -693,8 +696,21 @@ class Shell:
     def toggle_window(self):
         if self.win.isVisible() and self.win.isActiveWindow():
             self.win.hide()
+            self.set_frozen(True)
         else:
             self.show()
+
+    def set_frozen(self, frozen: bool):
+        """A window in the tray runs no scripts and draws nothing (the service keeps working); it wakes
+        up exactly where it was when shown again."""
+        page = getattr(self, "page", None)
+        states = getattr(QWebEnginePage, "LifecycleState", None)
+        if page is None or states is None:
+            return
+        try:
+            page.setLifecycleState(states.Frozen if frozen else states.Active)
+        except Exception as exc:
+            log.debug("lifecycle change failed: %s", exc)
 
     def tray_hint(self):
         if self.tray and not self.qs.value("tray_hint_shown", False, type=bool):
@@ -708,6 +724,7 @@ class Shell:
 
     # --------------------------------------------------------------- misc
     def show(self):
+        self.set_frozen(False)
         self.win.show()
         if self.win.isMinimized():
             self.win.showNormal()

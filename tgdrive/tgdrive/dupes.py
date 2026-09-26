@@ -24,6 +24,8 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
+from . import pace
+
 if TYPE_CHECKING:
     from .accounts import Account
 
@@ -141,6 +143,7 @@ class DupeIndex:
 
     # ------------------------------------------------------------- worker
     def _loop(self) -> None:
+        pace.lower_priority()
         conn = sqlite3.connect(str(self.db_path), timeout=30, isolation_level=None, check_same_thread=False)
         conn.execute("PRAGMA busy_timeout=30000")
         try:
@@ -150,11 +153,14 @@ class DupeIndex:
             except (sqlite3.Error, ValueError):
                 self.stats = {}
             while not self._stop.is_set():
+                pace.wait_while_paused(self._stop)
                 try:
                     sig = self._signature(conn)
                     if sig != self._sig:
+                        t0 = time.thread_time()
                         self.rebuild(conn)
                         self._sig = sig
+                        pace.rest(time.thread_time() - t0, self._stop)
                     self.state, self.error = "ready", None
                 except sqlite3.OperationalError as exc:
                     log.info("duplicates: retrying (%s)", exc)
@@ -167,7 +173,8 @@ class DupeIndex:
                     self._wake.clear()
                     continue
                 # Big libraries take a few seconds per pass: check less often while files keep arriving.
-                self._wake.wait(max(CHECK_EVERY, 10 * float(self.stats.get("seconds") or 0)))
+                busy = 10 if pace.mode() == "full" else 30   # while files keep arriving, don't redo it constantly
+                self._wake.wait(max(CHECK_EVERY, busy * float(self.stats.get("seconds") or 0)))
                 self._wake.clear()
         finally:
             conn.close()

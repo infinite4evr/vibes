@@ -559,7 +559,10 @@ function startPolling() {
   loop(poll, 2500, 10000);
   loop(pollEvents, 3000, 8000);
 }
-document.addEventListener('visibilitychange', () => { if (!document.hidden && !live.es) { poll(); pollEvents(); } });
+document.addEventListener('visibilitychange', () => {
+  document.documentElement.classList.toggle('page-hidden', document.hidden);
+  if (!document.hidden && !live.es) { poll(); pollEvents(); }
+});
 
 bus.on('header', () => { document.title = S.view.type === 'search' && S.view.q ? `${S.view.q} · TG Drive` : 'TG Drive'; });
 /* ------------------------------------------------------ crash reporting */

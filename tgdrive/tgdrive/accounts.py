@@ -21,6 +21,7 @@ from telethon.sessions import SQLiteSession, StringSession
 from telethon.tl import functions, types
 
 from . import config
+from . import pace
 from .tasks import spawn
 from .db import Database
 from .autofile import AutoFiler
@@ -279,10 +280,12 @@ class Account:
         conn.execute("PRAGMA busy_timeout=30000")
         try:
             while True:
+                t0 = time.perf_counter()
                 n = await loop.run_in_executor(None, self.db.build_search_batch, conn, 2000)
                 if not n:
                     break
                 await asyncio.sleep(0.05)
+                await pace.arest(time.perf_counter() - t0)
             events.push("search_ready", account=self.uid)
             self.search.vocab.built = 0
         except asyncio.CancelledError:
