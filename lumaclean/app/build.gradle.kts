@@ -11,7 +11,8 @@ android {
         applicationId = "com.example.lumaclean"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
+        // CI passes -PversionCode=<run number> so each release installs as an update
+        versionCode = (project.findProperty("versionCode") as String?)?.toInt() ?: 1
         versionName = "0.1.0"
     }
 
