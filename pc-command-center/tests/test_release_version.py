@@ -1,17 +1,25 @@
 from pathlib import Path
 import re
-import tomllib
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python 3.10, still supported (Ubuntu 22.04)
+    tomllib = None
 
 PROJECT = Path(__file__).resolve().parents[1]
 SETUP = PROJECT.parent / "ubuntu-setup"
 
 
 def test_package_and_module_versions_match():
-    pyproject = tomllib.loads((PROJECT / "pyproject.toml").read_text(encoding="utf-8"))
+    text = (PROJECT / "pyproject.toml").read_text(encoding="utf-8")
+    if tomllib:
+        version = tomllib.loads(text)["project"]["version"]
+    else:
+        version = re.search(r'^version\s*=\s*"([^"]+)"', text, re.M).group(1)
     init_text = (PROJECT / "src" / "pcctl" / "__init__.py").read_text(encoding="utf-8")
     m = re.search(r'__version__\s*=\s*["\']([^"\']+)', init_text)
     assert m
-    assert pyproject["project"]["version"] == m.group(1)
+    assert version == m.group(1)
 
 
 def test_installer_verifies_gui_version():
