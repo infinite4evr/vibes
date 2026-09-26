@@ -1,1 +1,0 @@
-Map data: Natural Earth (public domain), via the world-atlas package (ISC License, Mike Bostock).

@@ -1,9 +1,0 @@
-data/
-.env
-.venv/
-__pycache__/
-*.pyc
-.pytest_cache/
-build/
-dist/
-*.AppImage
