@@ -9,7 +9,7 @@ import psutil
 
 from . import junk, packages, security, services, system
 from .fmt import human
-from .run import Step, out
+from .run import Step, sh
 from .security import Check
 
 
@@ -82,8 +82,11 @@ def battery_check() -> Check | None:
 
 
 def time_check() -> Check:
-    synced = out(["timedatectl", "show", "-p", "NTPSynchronized", "--value"])
-    if synced == "no":
+    probe = sh(["timedatectl", "show", "-p", "NTPSynchronized", "--value"], timeout=5)
+    if not probe.ok or probe.out.strip() not in ("yes", "no"):
+        detail = "Clock synchronization status is unavailable." if probe.code == 127 else "Could not determine clock synchronization status."
+        return Check("time", "Clock status unknown", "info", detail)
+    if probe.out.strip() == "no":
         return Check("time", "Clock not synced", "warn", "Your clock may drift; websites and logins can fail.", "Turn on time sync",
                      [Step("Sync clock automatically", ["timedatectl", "set-ntp", "true"], root=True)])
     return Check("time", "Clock", "ok", "Synced.")

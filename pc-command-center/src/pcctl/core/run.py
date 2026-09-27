@@ -178,6 +178,10 @@ class Step:
     sensitive_args: tuple[int, ...] = ()
     sensitive_env: tuple[str, ...] = ()
     cancellable: bool = True
+    # Audit metadata. None keeps compatibility with legacy command classification.
+    mutates: bool | None = None
+    config_key: str = ""
+    timeout: float | None = None
 
     def argv(self) -> list[str]:
         args = list(self.cmd)
@@ -271,6 +275,12 @@ async def stream(step: Step, on_line: LineCallback) -> int:
         if not chunk:
             break
         buf += chunk
+        # Bound even newline-free output so a broken/noisy command cannot grow RAM forever.
+        while len(buf) > 65536 and b"\n" not in buf[:65536] and b"\r" not in buf[:65536]:
+            part, buf = buf[:65536], buf[65536:]
+            r = on_line(step.redact(part.decode(errors="replace")))
+            if asyncio.iscoroutine(r):
+                await r
         # apt uses \r for progress; treat it as a line break
         parts = buf.replace(b"\r", b"\n").split(b"\n")
         buf = parts.pop()
@@ -311,7 +321,16 @@ def run_steps_blocking(steps: Sequence[Step], echo: Callable[[str], None] = prin
             except FileNotFoundError:
                 echo(f"{s.cmd[0]}: not installed")
                 code = 127
-        if code not in s.ok_codes and not s.optional:
+        if code in s.ok_codes:
+            try:
+                from .config_audit import record_steps
+                record_steps(s.title, [s], interface="cli")
+            except Exception:
+                pass
+        elif not s.optional:
             ok = False
             echo(f"\033[38;2;243;139;168m✗ failed (exit {code})\033[0m")
+            # Required steps are dependencies for what follows. Match the desktop
+            # runner: do not continue into a partially valid action.
+            break
     return ok

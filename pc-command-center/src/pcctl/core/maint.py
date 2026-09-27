@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 import shutil
 import sys
 import tarfile
@@ -61,7 +62,7 @@ def pc_command() -> str:
     exe = which("pc")
     if exe:
         return exe
-    return f"{sys.executable} -m pcctl.cli"
+    return shlex.join([sys.executable, "-m", "pcctl.cli"])
 
 
 def timer_status() -> dict:
@@ -82,7 +83,7 @@ def enable_timer_steps() -> list[Step]:
         UNIT_DIR.mkdir(parents=True, exist_ok=True)
         atomic_write_text(UNIT_DIR / "pc-maintain.service",
             "[Unit]\nDescription=pc weekly checkup (safe cleanup + health report)\n\n"
-            f"[Service]\nType=oneshot\nExecStart={pc_command()} maintain --auto\nNice=15\nIOSchedulingClass=idle\n", mode=0o600)
+            f"[Service]\nType=oneshot\nExecStart={services.exec_line(pc_command() + ' maintain --auto')}\nNice=15\nIOSchedulingClass=idle\n", mode=0o600)
         atomic_write_text(UNIT_DIR / TIMER,
             "[Unit]\nDescription=Run pc weekly checkup\n\n"
             "[Timer]\nOnCalendar=Sun 11:00\nPersistent=true\nRandomizedDelaySec=30min\n\n[Install]\nWantedBy=timers.target\n", mode=0o600)
@@ -111,7 +112,14 @@ def maintain_auto() -> str:
     for step in junk.safe_user_steps(found):
         func = getattr(step, "_func", None)
         try:
-            msg = func() if func else sh(step.argv(), timeout=300).out
+            if func:
+                msg = func()
+            else:
+                result = sh(step.argv(), timeout=300)
+                if not result.ok:
+                    detail = result.err.strip() or result.out.strip() or f"command exited with {result.code}"
+                    raise RuntimeError(detail)
+                msg = result.out
             lines.append(f"{step.title}: ok")
             if msg:
                 lines.append(str(msg)[:500])

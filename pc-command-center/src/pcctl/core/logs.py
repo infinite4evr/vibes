@@ -55,9 +55,15 @@ def parse_journal_json(text: str) -> list[LogLine]:
             d = json.loads(line)
         except json.JSONDecodeError:
             continue
-        ts = int(d.get("__REALTIME_TIMESTAMP", "0") or 0) / 1_000_000
+        try:
+            ts = int(d.get("__REALTIME_TIMESTAMP", "0") or 0) / 1_000_000
+            priority = int(d.get("PRIORITY", 6) or 6)
+        except (TypeError, ValueError, OverflowError):
+            # A single malformed journal record should not hide every valid
+            # record around it.
+            continue
         src = d.get("SYSLOG_IDENTIFIER") or d.get("_COMM") or ("kernel" if d.get("_TRANSPORT") == "kernel" else "?")
-        res.append(LogLine(ts, src, d.get("_SYSTEMD_UNIT", "") or d.get("_SYSTEMD_USER_UNIT", ""), int(d.get("PRIORITY", 6) or 6),
+        res.append(LogLine(ts, src, d.get("_SYSTEMD_UNIT", "") or d.get("_SYSTEMD_USER_UNIT", ""), priority,
                            _msg(d.get("MESSAGE")).strip(), str(d.get("_PID", ""))))
     return res
 

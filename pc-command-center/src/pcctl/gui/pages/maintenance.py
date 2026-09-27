@@ -9,7 +9,7 @@ from pathlib import Path
 from gi.repository import Adw, Gdk, Gtk
 
 from ... import __version__
-from ...core import junk, maint, packages, report, troubleshoot, watch
+from ...core import advisor, junk, maint, packages, report, troubleshoot, watch
 from ...core.fmt import ago, human
 from ...core.run import HOME, Step, has, py_step
 from ..dialogs import ChecksDialog, ask_text
@@ -111,7 +111,8 @@ class MaintenancePage(Page):
         self.report_box = vbox(spacing=18)
         self.backup_box = vbox(spacing=18)
         self.setup_box = vbox(spacing=18)
-        sw, self.stack = tabs(("fix", "Fix problems", "applications-engineering-symbolic", self.fix_box),
+        self.advisor_box = vbox(spacing=18)
+        sw, self.stack = tabs(("advisor", "Advisor", "lightbulb-symbolic", self.advisor_box), ("fix", "Fix problems", "applications-engineering-symbolic", self.fix_box),
                               ("checkup", "Checkups", "emblem-default-symbolic", self.check_box),
                               ("report", "Report", "x-office-document-symbolic", self.report_box),
                               ("backup", "Backups", "drive-harddisk-symbolic", self.backup_box),
@@ -132,7 +133,10 @@ class MaintenancePage(Page):
         if name in getattr(self, "loaded", set()):
             return
         self.loaded.add(name)
-        if name == "checkup":
+        if name == "advisor":
+            clear(self.advisor_box)
+            self.advisor_box.append(self._advisor_group())
+        elif name == "checkup":
             clear(self.check_box)
             self.check_box.append(self._history_group())
             self.check_box.append(self._schedule_group())
@@ -163,6 +167,24 @@ class MaintenancePage(Page):
             self.stack.set_visible_child_name("backup")
             if maint.snapshot_tools()["timeshift"]:
                 self.list_snapshots()
+
+    def _advisor_group(self):
+        box = vbox(spacing=10)
+        box.append(label("Evidence-based recommendations only. Nothing is changed automatically, and PC Command Center avoids placebo ‘optimizer’ tweaks.", "dim", wrap=True))
+        try:
+            items = advisor.recommendations()
+        except Exception as e:  # noqa: BLE001
+            return group("Optimization advisor", "Could not complete all checks.", action_row("Advisor unavailable", str(e)))
+        rows = []
+        for a in items:
+            suffix = None
+            if a.goto:
+                suffix = button("Review", css="flat", on_click=lambda _b=None, page=a.goto: self.win.goto(page))
+            elif a.steps:
+                suffix = button("Apply…", css="flat", on_click=lambda _b=None, x=a: self.run(x.title, x.steps, x.detail, ok_label="Apply", reload=False))
+            rows.append(action_row(a.title, f"{a.detail}  Benefit: {a.benefit}  Risk: {a.risk}.", suffix))
+        box.append(group("Optimization advisor", "Suggestions are based on current measurements and explain the expected benefit and risk.", *rows))
+        return box
 
     # ---------------------------------------------------------------- troubleshooters
     def _build_fix(self) -> None:
@@ -406,6 +428,12 @@ class MaintenancePage(Page):
         if st["update"]:
             ver.add_suffix(button("Update", css="suggested-action", on_click=self.update_app))
         rows.append(ver)
+        if selfupdate.rollback_available():
+            rows.append(action_row("Previous app version available", "Kept after the last update so you can recover if the new version misbehaves.",
+                                   button("Roll back…", css="flat", on_click=lambda: self.run(
+                                       "Roll back PC Command Center", selfupdate.rollback_steps(),
+                                       "Restores the application code from immediately before the last update. Restart afterwards.",
+                                       danger=True, ok_label="Roll back", reload=False))))
         if not (selfupdate.HELPER.exists() and selfupdate.POLICY.exists()):
             rows.append(action_row("Nicer password prompt", "The password pop-up says “PC Command Center” and remembers your password for "
                                    "a few minutes, so several fixes in a row ask only once.",

@@ -88,7 +88,15 @@ def build_root_batch(steps: list[Step], start: int = 0, end: int | None = None, 
         s = steps[k]
         opt = "1" if s.optional else "0"
         allowed = ",".join(str(c) for c in s.ok_codes)
-        lines.append(f"__run {k} {opt} {shlex.quote(allowed)} {shlex.join(raw_argv(s))}")
+        argv = raw_argv(s)
+        if s.cwd:
+            # Preserve each Step.cwd in privileged batches. Pass argv positionally
+            # instead of interpolating it into shell source.
+            wrapped = ["/bin/bash", "-c", f"cd -- {shlex.quote(s.cwd)} && exec \"$@\"", "pc-step", *argv]
+            command = shlex.join(wrapped)
+        else:
+            command = shlex.join(argv)
+        lines.append(f"__run {k} {opt} {shlex.quote(allowed)} {command}")
         if cancel_path:
             # A critical root command must be allowed to finish, but a cancellation
             # request must stop the batch before the next root command begins.
@@ -205,6 +213,12 @@ class Runner:
             title = self.steps[index].title if index < len(self.steps) else self.title
             tasks.update(self._task_id, detail=(f"{title}" if state == "running" else f"{title} · {state}"))
         debug.event("runner.step", title=self.title, index=index, state=state, code=code if code is not None else "")
+        if state == "ok" and 0 <= index < len(self.steps):
+            try:
+                from ..core.config_audit import record_steps
+                record_steps(self.title, [self.steps[index]], interface="desktop")
+            except Exception:
+                pass
         self.on_step(index, state, code)
 
     def _emit(self, line: object) -> None:
@@ -233,6 +247,10 @@ class Runner:
             if not chunk:
                 break
             buf += chunk
+            # Keep memory bounded even if a child emits one enormous line.
+            while len(buf) > 65536 and b"\n" not in buf[:65536] and b"\r" not in buf[:65536]:
+                part, buf = buf[:65536], buf[65536:]
+                self._handle_line(part.decode(errors="replace"))
             parts = buf.replace(b"\r", b"\n").split(b"\n")
             buf = parts.pop()
             for p in parts:

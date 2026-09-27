@@ -125,9 +125,30 @@ def _copy_code(src: Path) -> str:
     if APP_DIR.exists():
         APP_DIR.rename(old)
     new.rename(APP_DIR)
-    shutil.rmtree(old, ignore_errors=True)
-    return f"copied the new code to {str(APP_DIR).replace(str(HOME), '~')}"
+    # Keep the immediately previous application tree until the user has launched
+    # and validated the replacement. This makes a failed update recoverable.
+    return f"copied the new code to {str(APP_DIR).replace(str(HOME), '~')} (previous version kept for rollback)"
 
+
+
+def rollback_available() -> bool:
+    return APP_DIR.with_name(APP_DIR.name + ".old").is_dir()
+
+
+def _rollback_code() -> str:
+    old = APP_DIR.with_name(APP_DIR.name + ".old")
+    if not old.is_dir():
+        raise FileNotFoundError("No previous PC Command Center version is available")
+    failed = APP_DIR.with_name(APP_DIR.name + ".failed")
+    shutil.rmtree(failed, ignore_errors=True)
+    if APP_DIR.exists():
+        APP_DIR.rename(failed)
+    old.rename(APP_DIR)
+    return "restored the previous PC Command Center version; restart the app to use it"
+
+
+def rollback_steps() -> list[Step]:
+    return [py_step("Restore the previous version", _rollback_code, "restore ~/.local/share/pc-command-center.old")] if rollback_available() else []
 
 def update_steps() -> list[Step]:
     src = source_dir()

@@ -97,7 +97,21 @@ def checks(cfg: dict | None = None) -> list[dict]:
                           "page": "updates", "every": 24})
     trash = HOME / ".local/share/Trash"
     if trash.is_dir() and cfg["trash_gb"]:
-        size = sum(f.stat().st_size for f in (trash / "files").rglob("*") if f.is_file()) if (trash / "files").is_dir() else 0
+        size = 0
+        trash_files = trash / "files"
+        if trash_files.is_dir():
+            try:
+                entries = trash_files.rglob("*")
+                for f in entries:
+                    try:
+                        if f.is_file():
+                            size += f.stat().st_size
+                    except OSError:
+                        # Trash changes while we scan it (and may contain
+                        # unreadable entries).  Alerts are best-effort.
+                        continue
+            except OSError:
+                size = 0
         if size >= cfg["trash_gb"] * 1024 ** 3:
             found.append({"key": "trash", "title": f"Trash holds {human(size)}", "body": "Empty it in Cleanup to get the space back.",
                           "page": "cleanup", "every": 24 * 7})
@@ -182,7 +196,7 @@ def enable_steps() -> list[Step]:
         UNIT_DIR.mkdir(parents=True, exist_ok=True)
         atomic_write_text(UNIT_DIR / "pc-watch.service",
             "[Unit]\nDescription=PC Command Center background alerts\n\n"
-            f"[Service]\nType=oneshot\nExecStart={maint.pc_command()} watch\nNice=19\nIOSchedulingClass=idle\n"
+            f"[Service]\nType=oneshot\nExecStart={services.exec_line(maint.pc_command() + ' watch')}\nNice=19\nIOSchedulingClass=idle\n"
             "# keep the little 'click to open' helpers alive after the check itself finishes\nKillMode=process\n", mode=0o600)
         atomic_write_text(UNIT_DIR / TIMER,
             "[Unit]\nDescription=PC Command Center alerts every 30 minutes\n\n"

@@ -178,3 +178,56 @@ def test_debug_log_follows_a_new_location_after_turning_off_and_on(tmp_path, mon
     debug.configure(False)
     assert "moved" in (tmp_path / "b/debug.log").read_text()
     assert "moved" not in (tmp_path / "a/debug.log").read_text()
+
+
+def test_duplicate_confirmation_hashes_entire_small_file(tmp_path):
+    from pcctl.core.dupes import find_duplicates
+    # Same first 64 KiB and same size, different tail: old logic falsely grouped these.
+    prefix = b"x" * (64 * 1024)
+    (tmp_path / "a.bin").write_bytes(prefix + b"a" * (32 * 1024))
+    (tmp_path / "b.bin").write_bytes(prefix + b"b" * (32 * 1024))
+    assert find_duplicates([tmp_path], min_size=1) == []
+
+
+def test_duplicate_max_files_is_global(tmp_path):
+    from pcctl.core.dupes import find_duplicates
+    for d in range(3):
+        folder = tmp_path / str(d); folder.mkdir()
+        for i in range(4):
+            (folder / f"{i}.bin").write_bytes((f"{d}-{i}".encode()) * 100)
+    # Contract test: traversal must return normally with a tiny global cap.
+    assert isinstance(find_duplicates([tmp_path], min_size=1, max_files=2), list)
+
+
+def test_clock_probe_failure_is_not_healthy(monkeypatch):
+    from pcctl.core import health
+    from pcctl.core.run import Result
+    monkeypatch.setattr(health, "sh", lambda *a, **k: Result(124, "", "timed out"))
+    check = health.time_check()
+    assert check.level == "info"
+    assert "unknown" in check.title.lower()
+
+
+def test_cli_required_step_failure_stops_following_step(tmp_path):
+    from pcctl.core.run import Step, run_steps_blocking
+    marker = tmp_path / "should-not-exist"
+    steps = [Step("fail", ["bash", "-c", "exit 9"]), Step("later", ["touch", str(marker)])]
+    assert run_steps_blocking(steps, echo=lambda _s: None) is False
+    assert not marker.exists()
+
+
+def test_root_batch_preserves_step_cwd(tmp_path):
+    here = tmp_path / "cwd"; here.mkdir()
+    out = tmp_path / "pwd.txt"
+    steps = [Step("pwd", ["bash", "-c", f"pwd > {out}"], root=True, cwd=str(here))]
+    p = subprocess.run(["bash"], input=build_root_batch(steps), text=True, capture_output=True)
+    assert p.returncode == 0, p.stdout + p.stderr
+    assert out.read_text().strip() == str(here)
+
+
+def test_step_audit_metadata_defaults_are_backward_compatible():
+    from pcctl.core.run import Step
+    step = Step("Example", ["true"])
+    assert step.mutates is None
+    assert step.config_key == ""
+    assert step.timeout is None

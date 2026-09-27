@@ -379,3 +379,22 @@ def lan_devices(scan: bool = True) -> list[dict]:
         res.append({"ip": i["ipv4"][0], "mac": i["mac"], "name": socket.gethostname() + " (this PC)", "router": False, "state": "self"})
     res.sort(key=lambda d: tuple(int(x) for x in d["ip"].split(".")))
     return [d for d in res if d["ip"] not in mine or d["state"] == "self"]
+
+
+def diagnose_connectivity() -> list[tuple[str, bool, str]]:
+    """Run a layered, read-only network diagnosis suitable for CLI and GUI."""
+    from .run import sh
+    res: list[tuple[str, bool, str]] = []
+    gw = default_gateway()
+    if gw:
+        p = ping(gw)
+        res.append(("Router answers", bool(p["ok"]), f"{gw}: {p['avg_ms']:.0f} ms, {p['loss']:.0f}% lost" if p["avg_ms"] else f"{gw} does not answer"))
+    else:
+        res.append(("Router answers", False, "No default gateway found"))
+    p = ping("1.1.1.1")
+    res.append(("Internet reachable", bool(p["ok"]), f"1.1.1.1: {p['avg_ms']:.0f} ms, {p['loss']:.0f}% lost" if p["avg_ms"] else "Cannot reach the internet"))
+    dns = dns_check()
+    res.append(("Names resolve (DNS)", dns, "ubuntu.com resolved" if dns else "DNS lookup failed"))
+    https = sh(["curl", "-fsSI", "--max-time", "8", "https://www.google.com"], timeout=10)
+    res.append(("Websites load (HTTPS)", https.ok, "HTTPS responded" if https.ok else "HTTPS request failed"))
+    return res

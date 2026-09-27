@@ -54,6 +54,10 @@ def find_duplicates(roots: list[Path], min_size: int = 1024 * 1024, progress: Ca
                 count += 1
                 if count >= max_files:
                     break
+            if count >= max_files:
+                break
+        if count >= max_files:
+            break
     groups: list[list[dict]] = []
     candidates = [(s, ps) for s, ps in by_size.items() if len(ps) > 1]
     for i, (size, paths) in enumerate(sorted(candidates, key=lambda x: -x[0])):
@@ -69,7 +73,9 @@ def find_duplicates(roots: list[Path], min_size: int = 1024 * 1024, progress: Ca
                 continue
             full: dict[str, list[str]] = {}
             for p in same:
-                h = _hash(p) if size > 128 * 1024 else _hash(p, 64 * 1024)
+                # Partial hashes are only a candidate filter. Final duplicate identity
+                # always requires the entire file, including 64-128 KiB files.
+                h = _hash(p)
                 if h:
                     full.setdefault(h, []).append(p)
             for dup in full.values():

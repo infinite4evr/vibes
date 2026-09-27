@@ -290,6 +290,28 @@ def _print_checks(checks, fix: bool = True) -> None:
                 run_steps_blocking(c.steps)
 
 
+def cmd_optimize(_a) -> int:
+    from .core import advisor
+    items = advisor.recommendations()
+    print(f"{B}Optimization advisor{R}\n")
+    for a in items:
+        risk = a.risk.upper()
+        print(f"  {B}{a.title}{R}  {DIM}[{risk} risk]{R}\n    {a.detail}\n    {DIM}Benefit: {a.benefit}{R}")
+        if a.goto:
+            print(f"    {rgb('overlay1')}→ pc gui {a.goto}{R}")
+    return 0
+
+
+def cmd_network_check(_a) -> int:
+    from .core import network
+    bad = False
+    for title_, ok, detail in network.diagnose_connectivity():
+        bad |= not ok
+        color = rgb("green") if ok else rgb("red")
+        print(f"  {color}{'✓' if ok else '✗'}{R} {B}{title_}{R}  {DIM}{detail}{R}")
+    return 1 if bad else 0
+
+
 def cmd_slow(_a) -> int:
     from .core import diagnose
     print(f"{DIM}Measuring for a couple of seconds…{R}\n")
@@ -357,6 +379,10 @@ def _parse_duration(text: str) -> int | None:
         return None
     if t.isdigit():
         return int(t) * 60
+    # Do not silently accept a valid-looking fragment embedded in garbage
+    # (for example ``abc2hxyz`` or ``2hours``).
+    if not re.fullmatch(r"(?:\d+\s*[hms]\s*)+", t):
+        raise ValueError(text)
     total = 0
     for n, unit in re.findall(r"(\d+)\s*([hms])", t):
         total += int(n) * {"h": 3600, "m": 60, "s": 1}[unit]
@@ -557,6 +583,8 @@ def main(argv: list[str] | None = None) -> int:
     m.set_defaults(fn=cmd_maintain)
     sub.add_parser("backup", help="back up your settings to ~/Backups").set_defaults(fn=cmd_backup)
     sub.add_parser("slow", help="why is my PC slow right now? (with fixes)").set_defaults(fn=cmd_slow)
+    sub.add_parser("optimize", help="evidence-based optimization recommendations").set_defaults(fn=cmd_optimize)
+    sub.add_parser("network-check", help="layered router, internet, DNS and HTTPS diagnosis").set_defaults(fn=cmd_network_check)
     fx = sub.add_parser("fix", help="troubleshooters: internet, sound, bluetooth, apt, desktop, clock, printer…")
     fx.add_argument("what", nargs="?", default="", help="which one (leave empty to list them)")
     fx.add_argument("--no-fix", action="store_true", help="only report, don't offer fixes")

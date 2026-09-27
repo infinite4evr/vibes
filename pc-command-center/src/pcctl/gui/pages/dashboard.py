@@ -39,7 +39,8 @@ class DashboardPage(Page):
                    on_click=self.why_slow),
             button("Updates", icon="software-update-available-symbolic", on_click=lambda: self.win.goto("updates")),
             button("Security", icon="security-high-symbolic", on_click=lambda: self.win.goto("security")),
-            spacing=8, max_per_line=4)
+            button("Advisor", icon="lightbulb-symbolic", tooltip="Evidence-based optimization suggestions", on_click=lambda: self.win.goto("maintenance")),
+            spacing=8, max_per_line=5)
         actions.set_margin_top(6)
         text = vbox(self.hero_title, self.hero_sub, actions, spacing=6)
         text.set_valign(Gtk.Align.CENTER)

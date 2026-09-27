@@ -26,7 +26,7 @@ SECTIONS = [
     ("Monitor", ["processes", "storage", "network", "power", "logs"]),
     ("System", ["services", "security", "privacy", "tweaks"]),
     ("Develop", ["dev"]),
-    ("Care", ["maintenance"]),
+    ("Care", ["maintenance", "configuration"]),
 ]
 
 

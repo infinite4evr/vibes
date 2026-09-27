@@ -259,3 +259,16 @@ boxedlist > row, list.boxed-list > row { min-height: 42px; }
 spinner { color: $mauve; }
 progressbar > trough { min-height: 6px; border-radius: 99px; background-color: $track; }
 progressbar > trough > progress { border-radius: 99px; background-color: $accent_bg; }
+
+/* Configuration inventory */
+.config-value {
+  font-weight: 700;
+  font-feature-settings: "tnum";
+  opacity: .92;
+}
+
+/* ---------- configuration inventory ---------- */
+.config-stats { margin: 2px 0 4px 0; }
+.config-stat { padding: 13px 15px; border-radius: 12px; background-color: $card; box-shadow: 0 0 0 1px $line, 0 1px 2px $shadow; }
+.config-stat .stat-num { font-size: 1.45em; }
+.config-value { font-feature-settings: "tnum"; }

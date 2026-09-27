@@ -209,7 +209,13 @@ def parse_upower(text: str) -> dict:
 
 
 def battery() -> dict | None:
-    b = psutil.sensors_battery() if hasattr(psutil, "sensors_battery") else None
+    # Battery information is optional.  psutil may expose sensors_battery() but
+    # still raise on desktops, containers/VMs, or systems without a readable
+    # /sys/class/power_supply.  A missing probe must never take down a page.
+    try:
+        b = psutil.sensors_battery() if hasattr(psutil, "sensors_battery") else None
+    except (AttributeError, OSError, NotImplementedError):
+        return None
     if b is None:
         return None
     data = {"percent": b.percent, "plugged": b.power_plugged, "secs_left": b.secsleft if b.secsleft and b.secsleft > 0 else None}
