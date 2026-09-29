@@ -167,6 +167,10 @@ class MainWindow(Adw.ApplicationWindow):
         side_tv = Adw.ToolbarView()
         side_hb = Adw.HeaderBar()
         side_hb.add_css_class("side-header")
+        # One set of window controls: the content header owns the end side, and
+        # the start side only while the sidebar (which owns it) is visible.
+        side_hb.set_show_end_title_buttons(False)
+        self.side_hb = side_hb
         ident = system.identity()
         logo = Gtk.Image.new_from_icon_name("io.github.infinite4evr.PcCommandCenter")
         logo.set_pixel_size(28)
@@ -255,6 +259,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.content_tv = Adw.ToolbarView()
         self.content_hb = Adw.HeaderBar()
         self.content_hb.add_css_class("main-header")
+        self.content_hb.set_show_start_title_buttons(not self._sidebar_visible)
         self.sidebar_btn = Gtk.Button(icon_name="sidebar-hide-symbolic" if self._sidebar_visible else "sidebar-show-symbolic",
                                       tooltip_text=("Hide sidebar (Ctrl+Shift+S)" if self._sidebar_visible else "Show sidebar (Ctrl+Shift+S)"))
         self.sidebar_btn.add_css_class("flat")
@@ -287,8 +292,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.split.set_end_child(self.content_tv)
         self._sidebar_clamping = False
         self.split.connect("notify::position", self._sidebar_resized)
-        self.connect("notify::width", self._sidebar_resized)
-        self.connect("notify::width", self._adapt_shell)
+        self._shell_width = -1  # see do_size_allocate
 
         for _section, ids in SECTIONS:
             for pid in ids:
@@ -354,6 +358,19 @@ class MainWindow(Adw.ApplicationWindow):
         self.sidebar_revealer.set_transition_duration(ms)
         self.sidebar_revealer.set_transition_type(Gtk.RevealerTransitionType.NONE if not ms else Gtk.RevealerTransitionType.CROSSFADE)
 
+    def do_size_allocate(self, width: int, height: int, baseline: int) -> None:
+        # GTK 4 widgets have no "width" property, so notify::width never fires;
+        # react to real allocations instead and defer the layout change to idle.
+        Adw.ApplicationWindow.do_size_allocate(self, width, height, baseline)
+        if width != self._shell_width:
+            self._shell_width = width
+            GLib.idle_add(self._after_resize)
+
+    def _after_resize(self) -> bool:
+        self._sidebar_resized()
+        self._adapt_shell()
+        return False
+
     def _sidebar_resized(self, *_a) -> None:
         """Keep the sidebar useful without letting it dominate the application.
 
@@ -412,6 +429,7 @@ class MainWindow(Adw.ApplicationWindow):
             self._sidebar_width = self.split.get_position()
         self._sidebar_visible = visible
         prefs.set("sidebar_visible", visible)
+        self.content_hb.set_show_start_title_buttons(not visible)
         self.sidebar_btn.set_icon_name("sidebar-hide-symbolic" if visible else "sidebar-show-symbolic")
         self.sidebar_btn.set_tooltip_text(("Hide" if visible else "Show") + " sidebar (Ctrl+Shift+S)")
         ms = self.motion_ms()

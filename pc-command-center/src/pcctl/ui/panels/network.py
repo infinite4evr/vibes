@@ -11,7 +11,7 @@ from textual.widgets import Button, Label, Static, TabbedContent, TabPane
 
 from ...core import network as net
 from ...core.fmt import C, human, rate
-from ...core.run import Step, has
+from ...core.run import Step, has, py_step
 from ..widgets import Btn, Card, ChoiceScreen, InputScreen, Panel, SortTable, kv, muted, plain
 
 
@@ -192,13 +192,17 @@ class NetworkPanel(Panel):
         if not ssid:
             return
         security = sel.get("security", "") if sel else "WPA2"
-        cmd = ["nmcli", "dev", "wifi", "connect", ssid]
+        pw = ""
         if security and security != "open":
-            pw = await self.app.push_screen_wait(InputScreen(f"Password for {ssid}", "Leave empty if you've connected before.", "", password=True))
-            if pw:
-                cmd += ["password", pw]
-        step = Step(f"Connect to {ssid}", cmd)
-        step.display = lambda: f"nmcli dev wifi connect '{ssid}'" + (" password ••••••" if "password" in cmd else "")  # type: ignore[method-assign]
+            pw = await self.app.push_screen_wait(InputScreen(f"Password for {ssid}", "Leave empty if you've connected before.", "", password=True)) or ""
+
+        def join() -> str:
+            # wifi_connect keeps the password off the command line (and out of logs/audit).
+            r = net.wifi_connect(ssid, pw, security)
+            if not r.ok:
+                raise RuntimeError((r.err or r.out).strip()[:200] or f"nmcli exited with {r.code}")
+            return r.out.strip()
+        step = py_step(f"Connect to {ssid}", join, f"nmcli: join Wi-Fi '{ssid}'" + (" (password supplied privately)" if pw else ""))
         await self.run(f"Connect to {ssid}", [step], reload=False)
         self.fetch_wifi(False)
 

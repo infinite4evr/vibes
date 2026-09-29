@@ -52,6 +52,14 @@ class App(Adw.Application):
         super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.NON_UNIQUE if shots else Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
         self.start, self.shots, self.shot_pages, self.wait = start, shots, pages, wait
         self.shot_width, self.shot_height = shot_width, shot_height
+        if shots:
+            # Screenshot runs must neither inherit nor overwrite the user's window state/preferences.
+            import tempfile
+            from pathlib import Path
+
+            from . import prefs
+            prefs.FILE = Path(tempfile.mkdtemp(prefix="pcctl-shots-")) / "gui.json"
+            prefs._cache = {"welcomed": True}
         GLib.set_application_name("PC Command Center")
 
     def do_startup(self) -> None:

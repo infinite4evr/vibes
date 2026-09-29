@@ -57,7 +57,8 @@ def junk_check() -> Check:
     total = sum(j.size or 0 for j in items)
     if total > 2 * 1024**3:
         return Check("junk", "Junk piling up", "warn", f"About {human(total)} of caches, logs and old versions.", "Clean up", goto="cleanup")
-    return Check("junk", "Junk", "ok", f"Only {human(total)} of caches and logs.")
+    # A quick subset of probes; Cleanup's full scan covers much more (browsers, IDEs, app caches…).
+    return Check("junk", "Junk", "ok", f"{human(total)} in common caches and logs. A full Cleanup scan checks more places.")
 
 
 def temp_check() -> Check:

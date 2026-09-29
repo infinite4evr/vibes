@@ -169,7 +169,7 @@ class NetworkPage(Page):
             for n in wf.get("networks", [])[:25]:
                 bar = MiniBar(width=60, height=6, warn=101, crit=101, color="green" if n["signal"] > 60 else ("peach" if n["signal"] > 30 else "red"))
                 bar.set(n["signal"] / 100)
-                extra = [pill("connected", "ok")] if n["active"] else [button("Connect", css="flat", on_click=lambda nn=n: self.connect(nn))]
+                extra = [pill("connected", "ok")] if n["active"] else [button("Connect", css="flat", on_click=lambda nn=n: self.connect_wifi(nn))]
                 if n["ssid"] in saved and not n["active"]:
                     extra.insert(0, pill("saved", "neutral"))
                 row = action_row(n["ssid"], f"{n['signal']}% signal · {n['security']}", bar, *extra,
@@ -330,20 +330,21 @@ class NetworkPage(Page):
         self.ltable.set_rows(rows)
         self.lan_status.set_text(f"{len(rows)} devices found.")
 
-    def connect(self, n: dict) -> None:
+    def connect_wifi(self, n: dict) -> None:
+        # Not named `connect`: that would shadow GObject.connect and break signal hookup for this page.
         ssid = n["ssid"]
 
-        def attempt(args: list[str]) -> None:
+        def attempt(fn) -> None:
             self.toast(f"Connecting to {ssid}…")
-            self.bg(lambda: sh(args, timeout=45), lambda r: (self.toast(f"Connected to {ssid}." if r.ok else f"Couldn't connect: {(r.err or r.out).strip()[:120]}", 5),
-                                                             self.load_conn(), self.load()))
+            self.bg(fn, lambda r: (self.toast(f"Connected to {ssid}." if r.ok else f"Couldn't connect: {(r.err or r.out).strip()[:120]}", 5),
+                                   self.load_conn(), self.load()))
         if ssid in getattr(self, "saved", set()):
-            attempt(["nmcli", "con", "up", "id", ssid])
+            attempt(lambda: sh(["nmcli", "con", "up", "id", ssid], timeout=45))
         elif n["security"] in ("open", "--", ""):
-            attempt(["nmcli", "dev", "wifi", "connect", ssid])
+            attempt(lambda: network.wifi_connect(ssid))
         else:
             ask_text(self.win, f"Connect to {ssid}", "Enter the Wi-Fi password.", on_done=lambda pw: pw and attempt(
-                ["nmcli", "dev", "wifi", "connect", ssid, "password", pw]), password=True, ok_label="Connect")
+                lambda: network.wifi_connect(ssid, pw, n["security"])), password=True, ok_label="Connect")
 
     # ---------------------------------------------------------------- ports
     def _build_ports(self) -> None:

@@ -620,7 +620,7 @@ class PowerPage(Page):
                 self.bat_title.set_text("On battery" + (f", about {left} left" if left else ""))
             h = b.get("health")
             self.bat_sub.set_text(("Battery health is " + ("good." if h >= 80 else "OK." if h >= 60 else "worn; it holds much less than new.")) if h else "")
-            facts = [("Health", f"{h:.0f}% of original capacity" if h else "?"), ("Charge cycles", str(b.get("cycles") or "?")),
+            facts = [("Health", f"{h:.0f}% of original capacity" if h else "?"), ("Charge cycles", str(b.get("cycles") or "Not reported")),
                      ("Power draw", f"{b['rate']:.1f} W" if b.get("rate") else "?"),
                      ("Capacity", f"{b['energy_full']:.1f} of {b['energy_design']:.1f} Wh" if b.get("energy_full") and b.get("energy_design") else "?"),
                      ("Battery", " ".join(x for x in (b.get("vendor", ""), b.get("model", ""), b.get("technology", "")) if x) or "?")]

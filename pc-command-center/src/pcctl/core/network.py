@@ -5,12 +5,13 @@ from __future__ import annotations
 import os
 import re
 import socket
+import tempfile
 from dataclasses import dataclass
 
 import psutil
 
 from .dev import DEV_HINTS
-from .run import Step, has, out, sh
+from .run import Result, Step, has, out, sh
 
 
 @dataclass
@@ -332,6 +333,50 @@ def wifi_password(uuid: str) -> str:
     return out(["nmcli", "-s", "-g", "802-11-wireless-security.psk", "con", "show", uuid], timeout=10)
 
 
+def _wifi_key_mgmt(security: str) -> str | None:
+    """NetworkManager key-mgmt for a scanned network's SECURITY field, or None when a password form can't cover it."""
+    sec = security.upper()
+    if "802.1X" in sec or "EAP" in sec or "WEP" in sec:
+        return None
+    if "WPA3" in sec and "WPA2" not in sec and "WPA1" not in sec:
+        return "sae"
+    return "wpa-psk"
+
+
+def wifi_connect(ssid: str, password: str = "", security: str = "") -> Result:
+    """Join a Wi-Fi network without ever putting the password on a command line.
+
+    `nmcli dev wifi connect … password X` exposes X to every local user through
+    /proc/<pid>/cmdline. Instead create the profile without a secret and hand the
+    PSK to `nmcli con up … passwd-file` through a private 0600 file.
+    """
+    if not password:
+        return sh(["nmcli", "dev", "wifi", "connect", ssid], timeout=45)
+    key_mgmt = _wifi_key_mgmt(security)
+    if key_mgmt is None:
+        return Result(2, "", f"{security} networks need a certificate or username; connect from Ubuntu Settings.")
+    added = sh(["nmcli", "-t", "connection", "add", "type", "wifi", "ifname", "*", "con-name", ssid, "ssid", ssid,
+                "wifi-sec.key-mgmt", key_mgmt, "connection.autoconnect", "yes"], timeout=20)
+    if not added.ok:
+        return added
+    m = re.search(r"\(([0-9a-f-]{36})\)", added.out)
+    target = ["uuid", m.group(1)] if m else ["id", ssid]
+    fd, path = tempfile.mkstemp(prefix="pcctl-wifi-", dir=os.environ.get("XDG_RUNTIME_DIR") or None)
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(f"802-11-wireless-security.psk:{password}\n")
+        up = sh(["nmcli", "connection", "up", *target, "passwd-file", path], timeout=60)
+    finally:
+        try:
+            os.unlink(path)
+        except OSError:
+            pass
+    if not up.ok:
+        # Don't leave a half-configured profile with no/wrong secret behind.
+        sh(["nmcli", "connection", "delete", *target], timeout=20)
+    return up
+
+
 def hotspot_steps(on: bool, ssid: str = "", password: str = "") -> list:
     from .run import Step
     if on:
@@ -385,14 +430,14 @@ def diagnose_connectivity() -> list[tuple[str, bool, str]]:
     """Run a layered, read-only network diagnosis suitable for CLI and GUI."""
     from .run import sh
     res: list[tuple[str, bool, str]] = []
-    gw = default_gateway()
+    gw = default_gateway()  # "192.168.1.1 (wlp0s20f3)": display text, not something ping accepts
     if gw:
-        p = ping(gw)
-        res.append(("Router answers", bool(p["ok"]), f"{gw}: {p['avg_ms']:.0f} ms, {p['loss']:.0f}% lost" if p["avg_ms"] else f"{gw} does not answer"))
+        p = ping(gw.split(" ")[0])
+        res.append(("Router answers", bool(p["ok"]), f"{gw}: {p['avg_ms']:.0f} ms, {p['loss']:.0f}% lost" if p["avg_ms"] is not None else f"{gw} does not answer"))
     else:
         res.append(("Router answers", False, "No default gateway found"))
     p = ping("1.1.1.1")
-    res.append(("Internet reachable", bool(p["ok"]), f"1.1.1.1: {p['avg_ms']:.0f} ms, {p['loss']:.0f}% lost" if p["avg_ms"] else "Cannot reach the internet"))
+    res.append(("Internet reachable", bool(p["ok"]), f"1.1.1.1: {p['avg_ms']:.0f} ms, {p['loss']:.0f}% lost" if p["avg_ms"] is not None else "Cannot reach the internet"))
     dns = dns_check()
     res.append(("Names resolve (DNS)", dns, "ubuntu.com resolved" if dns else "DNS lookup failed"))
     https = sh(["curl", "-fsSI", "--max-time", "8", "https://www.google.com"], timeout=10)

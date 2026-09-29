@@ -112,7 +112,7 @@ class MaintenancePage(Page):
         self.backup_box = vbox(spacing=18)
         self.setup_box = vbox(spacing=18)
         self.advisor_box = vbox(spacing=18)
-        sw, self.stack = tabs(("advisor", "Advisor", "lightbulb-symbolic", self.advisor_box), ("fix", "Fix problems", "applications-engineering-symbolic", self.fix_box),
+        sw, self.stack = tabs(("advisor", "Advisor", "dialog-information-symbolic", self.advisor_box), ("fix", "Fix problems", "applications-engineering-symbolic", self.fix_box),
                               ("checkup", "Checkups", "emblem-default-symbolic", self.check_box),
                               ("report", "Report", "x-office-document-symbolic", self.report_box),
                               ("backup", "Backups", "drive-harddisk-symbolic", self.backup_box),

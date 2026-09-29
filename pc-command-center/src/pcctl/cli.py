@@ -221,7 +221,7 @@ def cmd_info(_a) -> int:
         rows.append(("BIOS", hw["bios"]))
     b = system.battery()
     if b and b.get("health"):
-        rows.append(("Battery", f"health {b['health']:.0f}%, {b.get('cycles') or '?'} cycles"))
+        rows.append(("Battery", f"health {b['health']:.0f}%" + (f", {b['cycles']} cycles" if b.get('cycles') else "")))
     for k, v in rows:
         print(f"  {rgb('overlay1')}{k:<10}{R} {v}")
     return 0

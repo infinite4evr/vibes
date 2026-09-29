@@ -16,6 +16,22 @@ from .security import Check
 ME = os.environ.get("USER", "")
 
 
+
+def _installing_updates() -> bool:
+    """apt/dpkg or unattended-upgrades is actually working.
+
+    `unattended-upgrade-shutdown --wait-for-signal` idles for the whole session
+    under the same (truncated) process name, so it must not count.
+    """
+    for p in psutil.process_iter(["name", "cmdline"]):
+        name = p.info.get("name") or ""
+        if name in ("apt", "apt-get", "aptitude", "dpkg"):
+            return True
+        if name.startswith("unattended-upgr"):
+            if not any("unattended-upgrade-shutdown" in a for a in (p.info.get("cmdline") or [])):
+                return True
+    return False
+
 def psi(kind: str) -> dict:
     """Pressure stall info: % of time tasks waited for cpu/memory/io over the last 10 s (some) and fully stalled (full)."""
     res = {"some": 0.0, "full": 0.0}
@@ -155,7 +171,7 @@ def run(secs: float = 1.5) -> list[Check]:
     # background jobs
     names = {p["name"] for p in procs}
     busy_bg = []
-    if names & {"unattended-upgr", "unattended-upgrade", "apt", "apt-get", "dpkg"}:
+    if _installing_updates():
         busy_bg.append("installing updates")
     if names & {"localsearch-3", "localsearch", "tracker-miner-fs-3", "tracker-extract-3"} and \
             sum(p["cpu"] for p in procs if p["name"].startswith(("localsearch", "tracker"))) > 10:

@@ -37,13 +37,21 @@ class Page(Gtk.Box):
         self.body.set_margin_bottom(28)
         self.body.set_margin_start(24)
         self.body.set_margin_end(24)
-        self.connect("notify::width", self._adapt_page_spacing)
+        self._spacing_width = -1
         if self.SCROLL:
             self.append(scrolled(self.body, self.CLAMP))
         else:
             self.body.set_vexpand(True)
             self.append(self.body)
         self.build()
+
+    def do_size_allocate(self, width: int, height: int, baseline: int) -> None:
+        # GTK 4 has no "width" property to notify on; allocation is the resize signal.
+        Gtk.Box.do_size_allocate(self, width, height, baseline)
+        if width != self._spacing_width:
+            self._spacing_width = width
+            # Changing margins inside allocation would re-queue a resize mid-layout.
+            GLib.idle_add(lambda: (self._adapt_page_spacing(), False)[1])
 
     def _adapt_page_spacing(self, *_a) -> None:
         """Reduce chrome, not content, when a page has a compact allocation."""
@@ -183,7 +191,9 @@ def tabs(*pages: tuple[str, str, str, Gtk.Widget]) -> tuple[Gtk.Widget, Adw.View
     sw = Adw.ViewSwitcher(stack=stack, policy=Adw.ViewSwitcherPolicy.WIDE)
     sw.set_halign(Gtk.Align.START)
     stack.connect("notify::visible-child", _remeasure)
-    _auto_compact(sw, len(pages))
+    # Wide tabs need room for icon + the longest label on every tab (Adw makes them equal width).
+    longest = max((len(title) for _n, title, _i, _c in pages), default=8)
+    _auto_compact(sw, len(pages), per_tab=max(150, 64 + longest * 9))
     bar = Gtk.Box()  # full-width underline under the tabs
     bar.add_css_class("tabbar")
     bar.append(sw)
