@@ -470,6 +470,8 @@ async def _put(request: Request, tree: Tree, parts: list[str], base: str) -> Res
     ok, fid = _writable(tree, parts[:-1])
     if not ok:
         return Response("Only My Drive can take new files.", status_code=403)
+    if fid and not tree.acc.drive.accepts_files(fid):
+        return Response("A smart folder shows files that match its rule; it can't take new files.", status_code=403)
     acc = tree.acc
     name = parts[-1]
     if name.startswith(".") or name.endswith(("~", ".part")) or name.startswith(".goutputstream"):

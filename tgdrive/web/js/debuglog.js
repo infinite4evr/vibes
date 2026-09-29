@@ -229,8 +229,8 @@ export async function viewLog() {
       <p class="help">Newest at the bottom. <code class="log-path"></code></p><pre class="logs log-view">Loading…</pre>`,
     actions: [
       { label: 'Refresh', icon: 'refresh', onClick: async (bd) => { await load(bd); return false; } },
-      { label: 'Copy', icon: 'copy', onClick: (bd) => { navigator.clipboard.writeText(bd.querySelector('.logs').textContent).then(() => ui.toast('Log copied')); return false; } },
-      { label: 'Download', icon: 'download', onClick: (bd) => { window.location.href = `/api/logs/download?which=${bd.dataset.which || 'debug'}`; return false; } },
+      { label: 'Copy', icon: 'copy', onClick: (bd) => { ui.copyText(bd.querySelector('.logs').textContent, 'Log copied'); return false; } },
+      { label: 'Download', icon: 'download', onClick: async (bd) => { await ui.saveDownload(`/api/logs/download?which=${bd.dataset.which || 'debug'}`, `tgdrive-${bd.dataset.which || 'debug'}.log`); return false; } },
       { label: 'Clear logs', icon: 'trash', cls: 'danger', onClick: async (bd) => { if (await clearLogs(true)) await load(bd); return false; } },
       '-', { label: 'Close', cls: 'primary' },
     ],

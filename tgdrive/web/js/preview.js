@@ -1,7 +1,7 @@
 // Live previews for the details panel: the real picture, a playable video or song, the first page of a
 // PDF, the start of a text file. Starts the moment a file is clicked; switching files stops the old one.
 import { S, esc, icon, fmtSize, fmtDur, TEXT_EXT, STREAMABLE, streamUrl, thumbUrl, inlineSrc, extColor, bridge, key, waveHtml, displayName } from './core.js';
-import { canPlayInline, savePosition } from './viewer.js';
+import { canPlayInline, savePosition, wireBuffering } from './viewer.js';
 
 export const isPdf = (f) => (f.ext || '').toLowerCase() === 'pdf' || f.mime === 'application/pdf';
 export const isText = (f) => TEXT_EXT.has((f.ext || '').toLowerCase()) && f.size < 3 * 1024 * 1024;
@@ -108,12 +108,32 @@ export function mountPreview(host, f, { onOpen } = {}) {
     const inline = !bridge.ready || canPlayInline(f);
     el.innerHTML = `<div class="pv-audiobox ${voice ? 'is-voice' : ''}">${voice ? `<div class="pv-wave">${waveHtml(f, 48)}</div>` : ''}<div class="pv-art">${art}</div>
       <div class="pv-atext"><strong>${esc(f.audio_title || displayName(f))}</strong><small>${esc(f.performer || f.chat_title || '')}${f.duration ? ` · ${fmtDur(f.duration)}` : ''}</small></div>
-      ${inline ? '<audio controls preload="none"></audio>' : `<button class="btn primary" data-pv-open>${icon('play')}Play</button>`}</div>`;
+      ${inline ? '<audio controls preload="none"></audio>' : `<button class="btn primary" data-pv-open>${icon('play')}Play</button>`}</div>${inline ? spinner : ''}
+      <p class="pv-note" hidden></p>`;
     const a = el.querySelector('audio');
     if (a) {
       cur.media = a;
+      const from = f.watched ? 0 : (f.play_pos || 0);
+      if (from > 5) a.addEventListener('loadedmetadata', () => { if (Number.isFinite(a.duration) && from < a.duration - 5) a.currentTime = from; }, { once: true });
       a.addEventListener('pause', () => savePosition(f, a));
       a.addEventListener('ended', () => savePosition(f, a, true));
+      wireBuffering(a, el);
+      a.addEventListener('playing', () => { el.classList.remove('is-failed'); const n = el.querySelector('.pv-note'); if (n) n.hidden = true; });
+      a.addEventListener('error', () => {
+        if (!a.getAttribute('src')) return;   // stopped on purpose (another file was chosen)
+        const note = el.querySelector('.pv-note');
+        note.hidden = false;
+        failed(a.error?.code === 4 ? "This audio's format can't play here. Open it to use another player." : "Couldn't load the audio. Telegram may be slow.");
+        note.insertAdjacentHTML('beforeend', ' <button class="linkish" data-pv-retry>Try again</button>');
+      });
+      el.addEventListener('click', (e) => {
+        if (!e.target.closest('[data-pv-retry]')) return;
+        e.preventDefault();
+        el.classList.remove('is-failed');
+        el.querySelector('.pv-note').hidden = true;
+        a.src = streamUrl(f);
+        a.play().catch(() => {});
+      });
       cur.timer = setTimeout(() => { if (!ctl.signal.aborted) { a.src = streamUrl(f); a.preload = 'metadata'; } }, 220);
     }
     done();
@@ -143,14 +163,17 @@ export function mountPreview(host, f, { onOpen } = {}) {
     cur.timer = setTimeout(async () => {
       try {
         const r = await fetch(streamUrl(f), { credentials: 'include', headers: { Range: 'bytes=0-24575' }, signal: ctl.signal });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const buf = await r.arrayBuffer();
+        if (ctl.signal.aborted) return;
         let t = new TextDecoder('utf-8', { fatal: false }).decode(buf);
         if (buf.byteLength >= 24576) t = t.replace(/[^\n]*$/, '') + '\n…';
         el.querySelector('.pv-text').textContent = t.slice(0, 6000) || '(empty file)';
         done();
       } catch (e) {
         if (ctl.signal.aborted) return;
-        el.querySelector('.pv-text').textContent = "Couldn't load the text.";
+        el.querySelector('.pv-text').textContent = "Couldn't load the text. Click to open it and try again.";
+        el.classList.add('is-failed');
         done();
       }
     }, 120);

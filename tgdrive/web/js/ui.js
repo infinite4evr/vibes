@@ -21,6 +21,66 @@ export function dismissToast(el) {
 }
 export const fail = (e) => { if (e?.name !== 'AbortError' && e?.status !== 423) toast(e?.message || String(e), { err: true }); };
 
+/* -------------------------------------------------------------- clipboard */
+// Copy text and say whether it worked. Falls back to the older copy command where the clipboard API is
+// refused (it can be, e.g. without focus or permission).
+export async function copyText(text, done = 'Copied') {
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+    document.body.append(ta);
+    ta.select();
+    try { ok = document.execCommand('copy'); } catch { ok = false; }
+    ta.remove();
+  }
+  if (ok) { if (done) toast(done); } else toast("Couldn't copy to the clipboard.", { err: true });
+  return ok;
+}
+
+/* -------------------------------------------------------------- downloads */
+// Exports (CSV, playlists, settings, logs): fetched first, so a problem shows as a message instead of
+// replacing the whole window with an error page; then saved like any download (the desktop app puts it in
+// the download folder and says so).
+export async function saveDownload(url, fallbackName = 'download', btn = null) {
+  try {
+    await busy.run(async () => {
+      let r;
+      try { r = await fetch(url, { credentials: 'same-origin', headers: { 'X-TGDrive': '1' } }); } catch {
+        throw new Error("Can't reach TG Drive. If you closed the app, open it again.");
+      }
+      if (!r.ok) {
+        let msg = '';
+        try { msg = (await r.json()).error; } catch { /* not JSON */ }
+        throw new Error(msg || `Couldn't export: TG Drive answered ${r.status}.`);
+      }
+      const blob = await r.blob();
+      const cd = r.headers.get('content-disposition') || '';
+      const m = cd.match(/filename\*=UTF-8''([^;]+)/i) || cd.match(/filename="?([^";]+)"?/i);
+      let name = fallbackName;
+      if (m) { try { name = decodeURIComponent(m[1]); } catch { name = m[1]; } }
+      const href = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = href;
+      a.download = name;
+      a.hidden = true;
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(href), 60000);
+    }, btn);
+  } catch (e) { fail(e); }
+}
+document.addEventListener('click', (e) => {
+  // Links marked data-save download through saveDownload (see above) instead of navigating.
+  const a = e.target.closest('a[data-save]');
+  if (!a) return;
+  e.preventDefault();
+  saveDownload(a.getAttribute('href'), a.dataset.save || 'download', a);
+});
+
 /* ------------------------------------------------------------------ menus */
 let openMenu = null;
 export function closeMenu() {
@@ -192,14 +252,17 @@ export function descendantIds(id) {
 }
 export const folderColor = (f) => (f && f.color ? `var(--fc-${f.color})` : 'var(--folder)');
 
-export function folderPicker({ title, okLabel, exclude = new Set(), current = null, allowNone = true, noneLabel = 'My Drive (not in a folder)' }) {
-  let chosen = current || '';
+export function folderPicker({ title, okLabel, exclude = new Set(), current = null, allowNone = true, noneLabel = 'My Drive (not in a folder)', forFiles = false }) {
+  // forFiles: choosing where files go. Smart folders show the files matching their rule and can't hold files,
+  // so they're shown but can't be chosen.
+  const blocked = (f) => forFiles && f.kind === 'smart';
+  let chosen = current && !blocked(S.folderById.get(current) || {}) ? current : '';
   let filter = '';
   const matches = (f) => !filter || f.name.toLowerCase().includes(filter);
   const anyMatch = (f) => matches(f) || childrenOf(f.id).some(anyMatch);
   const rows = (parent, depth) => childrenOf(parent).filter((f) => !exclude.has(f.id) && anyMatch(f)).map((f) => `
-      <label style="padding-left:${8 + depth * 20}px"><input type="radio" name="fp" value="${esc(f.id)}" ${chosen === f.id ? 'checked' : ''}>
-      <span class="fold-ic" style="color:${folderColor(f)}">${icon('folder')}</span><span>${esc(f.name)}</span></label>${rows(f.id, depth + 1)}`).join('');
+      <label style="padding-left:${8 + depth * 20}px" class="${blocked(f) ? 'is-disabled' : ''}" ${blocked(f) ? 'title="A smart folder shows the files that match its rule; files can\'t be put into it."' : ''}><input type="radio" name="fp" value="${esc(f.id)}" ${chosen === f.id ? 'checked' : ''} ${blocked(f) ? 'disabled' : ''}>
+      <span class="fold-ic" style="color:${folderColor(f)}">${icon(f.kind === 'smart' ? 'folderSmart' : 'folder')}</span><span>${esc(f.name)}</span>${blocked(f) ? '<small>smart folder</small>' : ''}</label>${rows(f.id, depth + 1)}`).join('');
   const render = (bd) => {
     $('.picker', bd).innerHTML = (allowNone && !filter ? `<label><input type="radio" name="fp" value="" ${!chosen ? 'checked' : ''}>
       <span class="fold-ic">${icon('folder')}</span><span>${esc(noneLabel)}</span></label>` : '') + (rows(null, allowNone && !filter ? 1 : 0) || '<p class="help" style="padding:8px">No folders match.</p>');

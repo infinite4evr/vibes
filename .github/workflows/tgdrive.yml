@@ -1,0 +1,77 @@
+name: TG Drive
+
+on:
+  push:
+    paths:
+      - "tgdrive/**"
+      - ".github/workflows/tgdrive.yml"
+  pull_request:
+    paths:
+      - "tgdrive/**"
+      - ".github/workflows/tgdrive.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.12']
+    defaults:
+      run:
+        working-directory: tgdrive
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: tgdrive/requirements.txt
+      # The desktop window (PyQt6) isn't needed to test the service and the interface.
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          grep -vi pyqt requirements.txt > /tmp/requirements-ci.txt
+          python -m pip install -r /tmp/requirements-ci.txt pytest httpx
+      - run: python -m compileall -q tgdrive desktop tests run.py
+      - name: Unit and integration tests
+        run: timeout 900 python -m pytest tests -q --ignore=tests/test_e2e.py -o faulthandler_timeout=300
+      - name: Interface scripts parse
+        working-directory: tgdrive/web/js
+        run: for f in *.js; do cp "$f" /tmp/check.mjs && node --check /tmp/check.mjs || { echo "::error file=tgdrive/web/js/$f::does not parse"; exit 1; }; done
+      - name: Shell syntax
+        run: bash -n start.sh packaging/build_appimage.sh packaging/install_from_source.sh
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: tgdrive
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tgdrive/requirements.txt
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          grep -vi pyqt requirements.txt > /tmp/requirements-ci.txt
+          python -m pip install -r /tmp/requirements-ci.txt pytest httpx playwright pillow reportlab
+          python -m playwright install --with-deps chromium
+      - name: End-to-end tests (the whole interface in Chromium, on a made-up account)
+        run: timeout 1200 python -m pytest tests/test_e2e.py -v -o faulthandler_timeout=300
+      - name: Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: tgdrive/tests/.e2e-shots
+          if-no-files-found: ignore

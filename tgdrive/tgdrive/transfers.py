@@ -760,7 +760,8 @@ class Transfers:
             if rec:
                 self.db.upsert_files([rec])
                 self.db.refresh_file_count(cid)
-            if t["folder_id"] and self.db.get_folder(t["folder_id"]):
+            # Into its folder; one that became a smart folder (or was removed) meanwhile leaves it in My Drive.
+            if t["folder_id"] and drive.accepts_files(t["folder_id"]):
                 await drive.place([(cid, new_msg.id)], t["folder_id"], undo=False)
             self.db.update_transfer(tid, chat_id=cid, msg_id=new_msg.id)
             self.db.touch_recent(cid, new_msg.id, "upload")

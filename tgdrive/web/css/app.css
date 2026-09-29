@@ -174,7 +174,7 @@ button.chip:hover { border-color: var(--ink-3); }
 .app { display: grid; height: 100vh; grid-template-columns: var(--sidebar) minmax(0, 1fr) auto; grid-template-rows: 60px minmax(0, 1fr) auto; grid-template-areas: "top top top" "side main drawer" "side player player"; }
 .topbar { grid-area: top; display: flex; align-items: center; gap: 12px; padding: 0 12px 0 18px; background: var(--panel); border-bottom: 1px solid var(--line); position: relative; z-index: 20; }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-weight: 600; font-size: calc(17px * var(--fs)); width: calc(var(--sidebar) - 30px); letter-spacing: -.01em; flex: none; }
-.brand .mark { width: 30px; height: 24px; }
+.brand .mark { width: 32px; height: 32px; margin: -4px -2px -4px -4px; }
 .menu-btn { display: none; }
 .top-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
 .badge { position: absolute; top: 2px; right: 1px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); font-size: calc(11.5px * var(--fs)); font-weight: 600; line-height: 17px; text-align: center; }
@@ -597,7 +597,7 @@ body.resizing { cursor: col-resize; user-select: none; }
 .login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
 .login { width: min(440px, 100%); background: var(--panel); border-radius: 18px; padding: 30px; box-shadow: var(--shadow); }
 .login.wide { width: min(560px, 100%); }
-.login > .mark { width: 54px; height: 44px; }
+.login > .mark { width: 64px; height: 64px; margin: -6px 0 2px -6px; }
 .login h1 { font-size: calc(24px * var(--fs)); margin: 14px 0 6px; letter-spacing: -.015em; }
 .login p { color: var(--ink-2); margin: 0 0 18px; }
 .login form { display: grid; gap: 12px; }
@@ -1677,3 +1677,54 @@ kbd { font: inherit; font-size: .9em; padding: 0 5px; border: 1px solid var(--li
 .debug-banner .db-ic { animation-iteration-count: 3; }
 /* Nothing moves in a window you can't see. */
 html.page-hidden *, html.page-hidden *::before, html.page-hidden *::after { animation-play-state: paused !important; }
+
+/* ------------------------------------------------------ 2.4: every wait shows, every failure has a way out */
+/* Media waiting for data from Telegram: a spinner over the video, or over a song's cover. */
+.v-art { position: relative; }
+.v-buffer { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; opacity: 0; transition: opacity .2s var(--ease); z-index: 2; }
+.v-buffer .spin.big { width: 44px; height: 44px; border-width: 3px; border-color: rgba(255, 255, 255, .22); border-top-color: #fff; filter: drop-shadow(0 1px 6px rgba(0, 0, 0, .5)); }
+.v-stage.is-buffering > .v-buffer, .v-audio.is-buffering .v-buffer { opacity: 1; transition-delay: .1s; }
+.v-audio.is-buffering .v-art::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, .35); z-index: 1; }
+.v-textbox { width: min(1100px, 100%); height: calc(100vh - 130px); display: grid; place-items: center; }
+.v-textbox .v-text { width: 100%; height: 100%; }
+.v-loading { color: #aeb6c2; }
+
+/* The mini player: loading shows on the play button; speed is a small text button. */
+.mini-player.is-buffering .mp-play { position: relative; }
+.mini-player.is-buffering .mp-play svg { opacity: 0; }
+.mini-player.is-buffering .mp-play::after { content: ""; position: absolute; left: calc(50% - 8px); top: calc(50% - 8px); width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+.mp-seek:disabled { opacity: .45; cursor: default; }
+.mp-speed { min-width: 50px; justify-content: center; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-2); }
+.mini-player .icon-btn:disabled { opacity: .35; pointer-events: none; }
+:root[data-motion="off"] .mini-player.is-buffering .mp-play::after { animation: spin .8s linear infinite !important; }
+
+/* A page whose data couldn't load: the reason and "Try again". */
+.page-error { padding: 48px 16px; }
+.page-error > svg { width: 32px; height: 32px; color: var(--ink-3); }
+.dup-more { margin: 4px auto 24px; display: flex; }
+/* PDF pages: a spinner until the page is drawn; a page that couldn't load says so. */
+.pdf-wait { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.pdf-wait .spin { width: 22px; height: 22px; border-color: rgba(0, 0, 0, .12); border-top-color: var(--accent); }
+.pdf-page-box.drawn .pdf-wait, .pdf-page-box.failed .pdf-wait, .pdf-page-box:has(canvas) .pdf-wait { display: none; }
+.pdf-fail { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; color: #4b5563; font-size: calc(13px * var(--fs)); text-align: center; }
+.pdf-fail p { margin: 0; }
+/* Starting up: the mark and a spinner until the app (or sign-in) is ready. Hidden by CSS alone as soon as
+   either shows, so nothing has to remember to remove it. */
+.boot { position: fixed; inset: 0; z-index: 5; display: grid; place-content: center; justify-items: center; gap: 14px; background: var(--canvas); color: var(--ink); animation: fade-in .3s var(--ease) .15s both; }
+.boot strong { font-size: calc(18px * var(--fs, 1)); font-weight: 650; letter-spacing: -.01em; }
+.boot-mark { width: 72px; height: 72px; border-radius: 18px; }
+.boot-spin { width: 22px; height: 22px; border: 2.5px solid color-mix(in srgb, var(--accent) 22%, transparent); border-top-color: var(--accent); border-radius: 50%; animation: spin .75s linear infinite; }
+#app:not([hidden]) ~ .boot, #login:not([hidden]) ~ .boot { display: none; }
+/* Photos: a month that couldn't load keeps its place, with "Try again". */
+.ph-failed { display: grid; place-content: center; justify-items: center; gap: 8px; border: 1px dashed var(--line); border-radius: 10px; color: var(--ink-3); text-align: center; }
+.ph-failed p { margin: 0; }
+/* The end of a list whose next page couldn't load. */
+.load-error { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px 14px; margin: 8px 16px 28px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--ink-2); }
+.load-error > span { display: inline-flex; align-items: center; gap: 8px; }
+.load-error svg { width: 16px; height: 16px; color: var(--warn); flex: none; }
+.login .login-alt { margin: 14px 0 0; font-size: calc(13px * var(--fs)); color: var(--ink-3); }
+.login .qr .btn { white-space: nowrap; }
+/* Folder pickers: smart folders are shown for orientation but can't take files. */
+.picker label.is-disabled { color: var(--ink-3); cursor: default; }
+.picker label.is-disabled:hover { background: none; }
+.picker label.is-disabled small { margin-left: auto; font-size: calc(11.5px * var(--fs)); }

@@ -22,3 +22,10 @@ def fresh_settings(tmp_path):
     st.settings.listeners = [fn for fn in st.settings.listeners if not getattr(fn, "__self__", None)
                              or type(fn.__self__).__name__ not in ("Transfers",)]
     yield st.settings
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """Lets a fixture see whether its test failed (test_e2e.py saves a screenshot then)."""
+    rep = (yield).get_result()
+    setattr(item, f"rep_{rep.when}", rep)

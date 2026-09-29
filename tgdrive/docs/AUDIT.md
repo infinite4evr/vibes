@@ -1,6 +1,6 @@
 # TG Drive: feature audit and roadmap
 
-Written for 2.0.0; statuses and roadmap updated for 2.3.2 · September 2026
+Written for 2.0.0; statuses and roadmap updated for 2.4.0 · September 2026
 
 This audit covers TG Drive 0.1 (the web app delivered first) against what a Drive-style manager for **your** Telegram needs: 437,688 indexed files (4.8 TB) across 383k channel files. The biggest chat has 49,749 files; 146k are documents (mostly PDFs without previews) and 15k are videos (mostly long lectures). Each gap is marked **Built** (in 2.0 unless another version is given), **Removed** (built, then taken out) or **Next** (not built yet, listed in the roadmap at the end). Section 1 records the 0.1 → 2.0 search fixes as they were measured then.
 
@@ -151,7 +151,8 @@ Now, with a warm cache: an empty query answers in about 4 ms, `polity` in 190 ms
 | 65 automated tests, including a 60k-file scale test and an old-index upgrade test; the whole suite also passes on the bundled runtime | **Built** (18 in 2.0) |
 | Crash reporter, diagnostics bundle with personal details removed, settings export/import | **Built** (2.1; crash reports extended in 2.3) |
 | Gentle / Full speed / Paused background work, CPU-use measurement per part of the service | **Built** (2.3.1) |
-| Continuous integration for the test suite | **Next** |
+| Continuous integration for the test suite, and an end-to-end test of the whole interface in Chromium | **Built** (2.4) |
+| Loading and failure states everywhere (spinners while media waits, "Try again" on every failure, cancel and retry for uploads) | **Built** (2.4) |
 
 ## 3. Roadmap: everything that could still be added
 
@@ -272,7 +273,7 @@ Grouped by area and roughly ordered by value within each group. Items struck thr
 96. Health panel: flood-wait timers per data centre, queue depths, cache hit rate
 97. ~~Settings export and import~~ (built in 2.1)
 98. Low-memory mode for older PCs
-99. Continuous-integration pipeline, coverage report, fuzzing of the query parser, 1M-file load test
+99. ~~Continuous-integration pipeline~~ (built in 2.4, with an end-to-end interface test); coverage report, fuzzing of the query parser, 1M-file load test
 100. Import from other Telegram-drive tools (e.g. Teldrive)
 
 **AI study features (all offline)**

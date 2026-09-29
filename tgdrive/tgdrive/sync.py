@@ -147,8 +147,12 @@ class SyncEngine:
             raise SyncError("That folder doesn't exist on this computer.")
         if root == Path.home().resolve() or str(root) == "/":
             raise SyncError("Choose a specific folder, not your whole home folder.")
-        if not self.db.get_folder(folder_id):
+        folder = self.db.get_folder(folder_id)
+        if not folder:
             raise SyncError("That TG Drive folder no longer exists.")
+        if folder.get("kind") == "smart":
+            raise SyncError("A smart folder can't be synced: it shows files that match its rule instead of holding "
+                            "files. Choose an ordinary folder.")
         for p in self.db.q("SELECT local_path, folder_id FROM sync_pairs"):
             other = Path(p["local_path"])
             if root == other or root in other.parents or other in root.parents:

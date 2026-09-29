@@ -16,7 +16,11 @@ const openExt = (url) => (bridge.ready ? callBridge('openExternal', url) : windo
 
 export async function showOnboarding(adding = false) {
   let st;
-  try { st = await api('/api/status'); } catch (e) { return frame(`<h1>TG Drive isn't responding</h1><p>${esc(e.message)}</p>`); }
+  try { st = await api('/api/status'); } catch (e) {
+    frame(`<h1>TG Drive isn't responding</h1><p>${esc(e.message)}</p><p><button class="btn primary" id="statusRetry">${icon('refresh')}Try again</button></p>`, { back: adding });
+    $('#statusRetry').addEventListener('click', () => showOnboarding(adding));
+    return undefined;
+  }
   if (st.locked) return showLock();
   if (!adding && st.legacy?.length && !st.accounts.length) return legacyStep(st.legacy);
   if (!st.api_configured) return apiStep(adding);
@@ -103,35 +107,49 @@ function signIn(adding, mode = 'qr') {
       <div class="qr-box"><div class="qr" id="qr"><span class="spin big"></span></div>
       <ol class="steps"><li>Open Telegram on your phone.</li><li>Go to <b>Settings → Devices → Link Desktop Device</b>.</li><li>Point your phone at this code.</li></ol></div>
       <p class="err" role="alert"></p>`);
+    // A code that expired, or a lost connection: a button for a new code where the old one was.
+    const qrDead = (msg) => {
+      clearTimeout(qrTimer);
+      if (!$('#qr')) return;
+      $('#qr').innerHTML = `<button class="btn primary" data-qr-retry>${icon('refresh')}Get a new code</button>`;
+      $('[data-qr-retry]', root()).addEventListener('click', () => signIn(adding, 'qr'));
+      $('.err', root()).textContent = msg;
+    };
     const poll = async () => {
+      if (!$('#qr')) return;   // left the QR step
       try {
         const r = await api(`/api/login/qr/${loginId}`);
+        if (!$('#qr')) return;
         if (r.state === 'done') return finish(r.account);
         if (r.state === 'password') return passwordStep(r.hint);
-        if (r.state === 'error' || r.state === 'expired') { $('.err', root()).textContent = r.error || 'The code expired.'; return; }
-        if (r.svg && $('#qr')) $('#qr').innerHTML = r.svg;
-      } catch (e) { if ($('.err', root())) $('.err', root()).textContent = e.message; return; }
+        if (r.state === 'error' || r.state === 'expired') return qrDead(r.error || 'The code expired. Get a new one and scan it within a minute.');
+        if (r.svg) $('#qr').innerHTML = r.svg;
+      } catch (e) { return qrDead(e.message); }
       qrTimer = setTimeout(poll, 1500);
     };
     api('/api/login/qr', { method: 'POST' }).then((r) => {
       loginId = r.login_id;
       $('#qr').innerHTML = r.svg;
       qrTimer = setTimeout(poll, 1500);
-    }).catch((e) => {
-      // Can't reach Telegram (or another failure): say so where the code would be, with a way forward.
-      if ($('#qr')) {
-        $('#qr').innerHTML = `<button class="btn" data-qr-retry>${icon('refresh')}Try again</button>`;
-        $('[data-qr-retry]', root()).addEventListener('click', () => signIn(adding, 'qr'));
-      }
-      $('.err', root()).textContent = e.message;
-    });
+    }).catch((e) => qrDead(e.message));   // can't reach Telegram, or another failure: say so, with a way forward
     return;
   }
-  const codeStep = (via) => {
+  const codeStep = (via, phone) => {
     const where = via === 'app' ? 'in your Telegram app' : via === 'sms' ? 'by SMS' : 'to you';
-    step(`<h1>Enter the code</h1><p>Telegram sent a login code ${where}.</p>
+    step(`<h1>Enter the code</h1><p>Telegram sent a login code ${where} for <b>${esc(phone)}</b>.</p>
       <form><label class="field"><span>Code</span><input name="code" inputmode="numeric" autocomplete="one-time-code" required></label>
-      <p class="err" role="alert"></p><button class="btn primary" type="submit">Sign in</button></form>`);
+      <p class="err" role="alert"></p><button class="btn primary" type="submit">Sign in</button></form>
+      <p class="login-alt"><button class="linkish" data-resend>Send a new code</button> · <button class="linkish" data-change-number>Change number</button></p>`);
+    $('[data-change-number]', root()).addEventListener('click', () => signIn(adding, 'phone'));
+    $('[data-resend]', root()).addEventListener('click', async (e) => {
+      const b = e.currentTarget;
+      b.disabled = true;
+      try {
+        const r = await api('/api/login/start', { method: 'POST', body: { phone } });
+        loginId = r.login_id;
+        toast('A new code is on its way.');
+      } catch (err) { $('.err', root()).textContent = err.message; } finally { b.disabled = false; }
+    });
     bind(async (fd) => {
       const r = await api('/api/login/code', { method: 'POST', body: { login_id: loginId, code: fd.get('code') } });
       if (r.need_password) return passwordStep(r.hint);
@@ -145,7 +163,7 @@ function signIn(adding, mode = 'qr') {
   bind(async (fd) => {
     const r = await api('/api/login/start', { method: 'POST', body: { phone: fd.get('phone') } });
     loginId = r.login_id;
-    codeStep(r.sent_via);
+    codeStep(r.sent_via, String(fd.get('phone') || '').trim());
   });
 }
 

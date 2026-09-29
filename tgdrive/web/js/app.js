@@ -1,9 +1,9 @@
 // Boot, routing, polling, global shortcuts.
-import { $, $$, S, A, api, esc, icon, initials, bus, pref, initBridge, bridge, callBridge, plural, fmtSize, key, qs, copiesParam } from './core.js';
-import { toast, fail, menu, closeMenu, menuOpen, confirmDialog, shortcutsDialog, folderPath } from './ui.js';
+import { $, $$, S, A, api, esc, icon, initials, bus, pref, initBridge, bridge, callBridge, plural, fmtSize, key, qs, copiesParam, thumbs } from './core.js';
+import { toast, fail, menu, closeMenu, menuOpen, confirmDialog, shortcutsDialog, folderPath, saveDownload } from './ui.js';
 import {
   reload, renderHeader, renderFolderArea, setSelected, selectedFiles, selectedItems, toggleView, setDensity, listParams,
-  doDownload, doMove, doDelete, toggleStar, editTags, renameOne, doLinks, undoLast, openFile, rerenderItems,
+  doDownload, doMove, doDelete, toggleStar, editTags, renameOne, doLinks, undoLast, openFile, rerenderItems, retryLoadMore,
 } from './files.js';
 import { loadFolders, loadChats, renderNav, renderTree, renderChats, renderIndexStatus } from './sidebar.js';
 import { renderDrawer, closeDrawer, startRenameInPanel } from './details.js';
@@ -29,24 +29,31 @@ channel?.addEventListener('message', (e) => {
 function broadcast(evt) { if (!fromOtherWindow) channel?.postMessage({ evt, aid: S.aid }); }
 
 /* ------------------------------------------------------------------- boot */
+let booted = false;   // the one-time set-up below; boot() itself runs again after unlocking or "Try again"
 async function boot() {
-  $('#menuBtn').innerHTML = icon('sidebar');
-  $('#advBtn').innerHTML = icon('sliders');
-  $('#searchClear').innerHTML = icon('close');
-  $('#transfersBtn').insertAdjacentHTML('afterbegin', icon('transfers'));
-  $('#refreshBtn').innerHTML = icon('refresh');
-  $('#moreBtn').innerHTML = icon('more');
-  $('#newBtn').innerHTML = `${icon('plus')}<span>New</span>`;
-  $('#chatSortBtn').innerHTML = icon('sliders');
-  initSidebar();
-  S.desktop = await initBridge();
-  if (S.desktop && !EMBED) import('./wintitle.js').then((m) => m.initWindowChrome()).catch(() => {});
+  if (!booted) {
+    booted = true;
+    $('#menuBtn').innerHTML = icon('sidebar');
+    $('#advBtn').innerHTML = icon('sliders');
+    $('#searchClear').innerHTML = icon('close');
+    $('#transfersBtn').insertAdjacentHTML('afterbegin', icon('transfers'));
+    $('#refreshBtn').innerHTML = icon('refresh');
+    $('#moreBtn').innerHTML = icon('more');
+    $('#newBtn').innerHTML = `${icon('plus')}<span>New</span>`;
+    $('#chatSortBtn').innerHTML = icon('sliders');
+    initSidebar();
+    S.desktop = await initBridge();
+    if (S.desktop && !EMBED) import('./wintitle.js').then((m) => m.initWindowChrome()).catch(() => {});
+  }
   S.localHost = ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname);
   document.documentElement.classList.toggle('desktop', S.desktop);
   let st;
   try { st = await api('/api/status'); } catch (e) {
     $('#login').hidden = false;
-    $('#login').innerHTML = `<div class="login-wrap"><div class="login"><h1>TG Drive isn't responding</h1><p>${esc(e.message)}</p></div></div>`;
+    $('#login').innerHTML = `<div class="login-wrap"><div class="login"><h1>TG Drive isn't responding</h1><p>${esc(e.message)}</p>
+      <p><button class="btn primary" id="bootRetry">${icon('refresh')}Try again</button></p></div></div>`;
+    $('#bootRetry').addEventListener('click', () => { $('#login').hidden = true; boot(); });
+    $('#bootRetry').focus();
     return;
   }
   applyStatus(st);
@@ -297,7 +304,7 @@ document.addEventListener('click', (e) => {
   const folder = e.target.closest('.fitem[data-folder]');
   if (folder && !folder.classList.contains('fhead')) { S.openFolders.add(S.folderById.get(folder.dataset.folder)?.parent_id || ''); go(`#drive/${folder.dataset.folder}`); return; }
   const act = e.target.closest('[data-act]');
-  if (act) { ({ 'new-folder': () => newFolder(), upload: () => pickUpload(), retry: () => reload() })[act.dataset.act]?.(); return; }
+  if (act) { ({ 'new-folder': () => newFolder(), upload: () => pickUpload(), retry: () => reload(), 'load-more': () => retryLoadMore() })[act.dataset.act]?.(); return; }
   const tab = e.target.closest('.tab[data-kind]');
   if (tab) { S.kind = tab.dataset.kind; reload(); }
 });
@@ -399,8 +406,8 @@ $('#moreBtn').addEventListener('click', (e) => {
     { label: 'Select all loaded', icon: 'check', kbd: 'Ctrl A', onClick: () => setSelected(S.items.map(key)) },
     { label: 'Download everything here', icon: 'download', onClick: () => downloadAll(false) },
     { label: 'Download everything as .zip', icon: 'download', onClick: () => downloadAll(true) },
-    { label: 'Playlist for VLC / mpv', icon: 'play', onClick: () => { window.location.href = `${S.mediaBase}${A(`/playlist.m3u?${qs(p)}`)}`; } },
-    { label: 'Export list as CSV', icon: 'download', onClick: () => { window.location.href = A(`/export.csv?${qs(p)}`); } },
+    { label: 'Playlist for VLC / mpv', icon: 'play', onClick: () => saveDownload(A(`/playlist.m3u?${qs(p)}`), 'tgdrive.m3u') },
+    { label: 'Export list as CSV', icon: 'download', onClick: () => saveDownload(A(`/export.csv?${qs(p)}`), 'tgdrive.csv') },
     S.view.type === 'search' ? { label: 'Save this search', icon: 'star', onClick: () => import('./search.js').then((m) => m.saveSearch()) } : null,
   ].filter(Boolean), { alignRight: true });
 });
@@ -498,7 +505,10 @@ function applyEvents(r) {
   if (first) return;
   for (const ev of r.events) {
     if (ev.kind === 'crash' && !EMBED) checkCrashes();
-    if (ev.kind === 'connection' && ev.account === S.aid) toast(ev.online ? 'Connected to Telegram again.' : 'Lost the connection to Telegram. Reconnecting…', ev.online ? {} : { err: true });
+    if (ev.kind === 'connection' && ev.account === S.aid) {
+      toast(ev.online ? 'Connected to Telegram again.' : 'Lost the connection to Telegram. Reconnecting…', ev.online ? {} : { err: true });
+      if (ev.online) thumbs.retryFailed();   // pictures that failed meanwhile
+    }
     if (ev.kind === 'notify' && ev.account === S.aid) {
       if (!S.desktop) {
         toast(`${ev.title}: ${ev.body}`, ev.path && S.localHost ? { action: 'Open', onAction: () => api('/api/open', { method: 'POST', body: { path: ev.path } }).catch(fail) } : {});

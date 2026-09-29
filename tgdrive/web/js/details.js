@@ -1,6 +1,6 @@
 // Details drawer (single file or a multi-selection).
 import { $, S, A, api, esc, icon, key, fmtSize, fmtDate, fmtDur, plural, KIND_NAME, CHAT_KIND_NAME, STREAMABLE, bus, callBridge, bridge, debounce, thumbs, friendlyName, displayName, copiesParam } from './core.js';
-import { toast, fail, chatAvatar } from './ui.js';
+import { toast, fail, chatAvatar, copyText } from './ui.js';
 import {
   selectedFiles, selectedItems, setSelected, thumbHtml, refreshCard, openFile, doDownload, doMove, placeInto, doCopy, doSend,
   doLinks, doDelete, toggleStar, editTags, bulkRename, doOpenLocal, openInTelegram, viewTitle, undoLast,
@@ -13,6 +13,7 @@ let shownKind = null;
 export function renderDrawer() {
   const d = $('#drawer');
   clearTimeout(closeTimer);
+  if (S.drawer !== 'details') flushNote();
   $('#transfersBtn').setAttribute('aria-expanded', String(S.drawer === 'transfers'));
   if (!S.drawer) {
     stopPreview();
@@ -67,6 +68,7 @@ let detailsReq = 0;
 async function renderDetails() {
   const d = $('#drawer');
   const files = selectedFiles();
+  flushNote();
   if (files.length > 1) {
     stopPreview();
     const bytes = files.reduce((a, f) => a + (f.size || 0), 0);
@@ -192,22 +194,33 @@ async function renderDetails() {
     if (ri.value.trim() && ri.value.trim() !== det.name) renameFile(det, ri.value); else stopRename();
   });
   $('#resetName')?.addEventListener('click', () => renameFile(det, ''));
-  $('#copyLink')?.addEventListener('click', () => navigator.clipboard.writeText(det.link).then(() => toast('Link copied'), () => fail(new Error("Couldn't copy to the clipboard."))));
+  $('#copyLink')?.addEventListener('click', () => copyText(det.link, 'Link copied'));
   $('#starBtn').addEventListener('click', async () => { await toggleStar([f]); renderDetails(); });
   $('#tagsBtn').addEventListener('click', async () => { await editTags([f]); renderDetails(); });
   watchTitle(d, friendly || det.name);
+  // The note belongs to this file and this box: a save that is still waiting when the panel closes or
+  // switches to another file is made first, with this box's text (never another file's, never empty).
+  const noteBox = $('#noteInput');
   const saveNote = debounce(async () => {
+    const note = noteBox.value;
     try {
-      await api(A('/files/meta'), { method: 'POST', body: { items: [[f.chat_id, f.msg_id]], note: $('#noteInput')?.value ?? '' } });
-      $('#noteInput')?.classList.add('saved');
-      setTimeout(() => $('#noteInput')?.classList.remove('saved'), 1200);
+      await api(A('/files/meta'), { method: 'POST', body: { items: [[f.chat_id, f.msg_id]], note } });
+      f.note = !!note.trim();
+      noteBox.classList.add('saved');
+      setTimeout(() => noteBox.classList.remove('saved'), 1200);
     } catch (e) { fail(e); }
   }, 900);
-  $('#noteInput').addEventListener('input', saveNote);
+  pendingNote = saveNote;
+  noteBox.addEventListener('input', saveNote);
+  noteBox.addEventListener('blur', () => saveNote.flush());
   d.querySelector('[data-dupes]')?.addEventListener('click', () => bus.emit('go', '#duplicates'));
   d.querySelectorAll('[data-local]').forEach((b) => b.addEventListener('click', () => api('/api/open', { method: 'POST', body: { path: det.local_path, reveal: b.dataset.local === 'reveal' } }).catch(fail)));
 }
 let shownDetail = null;
+let pendingNote = null;   // the open file's note save, if one is waiting
+function flushNote() { pendingNote?.flush(); pendingNote = null; }
+bus.on('flush-note', flushNote);   // other panels that take over the drawer ("Show in chat")
+window.addEventListener('pagehide', flushNote);
 
 // Every copy of the file (forwarded into other chats, or uploaded again), best first.
 function copiesHtml(det) {
@@ -280,7 +293,7 @@ $('#drawer').addEventListener('click', (e) => {
     const items = [[f.chat_id, f.msg_id]];
     ({
       'retry-details': () => { shownDetail = null; renderDetails(); },
-      link: () => (f.link ? navigator.clipboard.writeText(f.link).then(() => toast('Link copied'), () => fail(new Error("Couldn't copy to the clipboard."))) : doLinks([f])),
+      link: () => (f.link ? copyText(f.link, 'Link copied') : doLinks([f])),
       play: () => openFile(f), view: () => openFile(f),
       download: () => doDownload(items), open: () => doOpenLocal(f),
       move: () => doMove(items, f.folder_id), unfile: () => placeInto(items, null),

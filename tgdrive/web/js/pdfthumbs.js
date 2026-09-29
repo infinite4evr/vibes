@@ -2,7 +2,7 @@
 // only a generic icon. The first time a PDF card is on screen, its first page is drawn here with pdf.js
 // (only the bytes page 1 needs are fetched) and the picture is kept by the server, so later it loads
 // like any other thumbnail. Two at a time, only for cards still on screen.
-import { A, S } from './core.js';
+import { A, S, thumbs } from './core.js';
 
 const queue = [];
 let active = 0;
@@ -49,9 +49,11 @@ async function render(img) {
     await renderFirstPage({ chat_id: cid, msg_id: mid, name: 'file.pdf' }, canvas, WIDTH / Math.min(2, window.devicePixelRatio || 1), ctl.signal);
     const blob = await new Promise((res) => canvas.toBlob(res, 'image/webp', 0.78));
     if (!blob) throw new Error('no picture');
+    const url = URL.createObjectURL(blob);
+    thumbs.remember(img.dataset.src, url);   // in the shared picture cache, so its memory is freed in time
     if (img.isConnected) {
-      img.src = URL.createObjectURL(blob);
       img.onload = () => { img.classList.add('loaded'); img.closest('.thumb')?.classList.add('has-img', 'pdf-page'); };
+      img.src = url;
     }
     img.dataset.pdfState = 'done';
     await fetch(A(`/docthumb/${cid}/${mid}`), { method: 'PUT', body: blob, credentials: 'same-origin', headers: { 'X-TGDrive': '1', 'X-TGDrive-Bg': '1' } });

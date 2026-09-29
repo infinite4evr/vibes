@@ -103,6 +103,7 @@ export function reload(keepScroll = false) {
   S.corrected = null;
   thumbs.reset();
   rebuildEntries();
+  showLoadError(null);
   $('#stickyHead').classList.remove('on');
   $('#empty').innerHTML = '';
   if (!keepScroll) $('#content').scrollTop = 0;
@@ -169,7 +170,8 @@ export async function loadMore() {
       showSkeleton(false); S.done = true; S.loading = false;
       // A search the server can't read (400) is explained in place, not as a failure to retry.
       if (e.status === 400 && S.view.type === 'search') renderEmpty(e.message, 'query');
-      else { fail(e); renderEmpty(e.message); }
+      else if (S.items.length) showLoadError(e);   // a later page: the list stays, with "Try again" at its end
+      else renderEmpty(e.message);
     }
   } finally {
     if (id === S.reqId) { S.loading = false; $('#loadingMore').hidden = true; $('#searchForm').classList.remove('busy'); }
@@ -192,6 +194,25 @@ async function loadStats() {
     S.stats = r;
     renderHeader();
   } catch (e) { /* counts are optional; the list still works */ }
+}
+
+// A later page that couldn't load: say so at the end of the list, with "Try again" (loading stops until then).
+function showLoadError(e) {
+  let el = $('#loadMoreError');
+  if (!e) { el?.remove(); return; }
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loadMoreError';
+    el.className = 'load-error';
+    el.setAttribute('role', 'alert');
+    $('#loadingMore').after(el);
+  }
+  el.innerHTML = `<span>${icon('info')}Couldn't load more files: ${esc(e.message || String(e))}</span><button class="btn sm" data-act="load-more">${icon('refresh')}Try again</button>`;
+}
+export function retryLoadMore() {
+  showLoadError(null);
+  S.done = false;
+  loadMore();
 }
 
 new IntersectionObserver((entries) => { if (entries[0].isIntersecting) loadMore(); },
@@ -721,28 +742,33 @@ document.addEventListener('dragstart', (e) => {
 });
 document.addEventListener('dragend', () => { draggingFolder = null; });
 const hasItems = (e) => e.dataTransfer?.types?.includes(ITEMS_MIME);
+// Smart folders show the files that match their rule: files can't be dropped into one (a folder can).
+const isSmartId = (id) => !!id && S.folderById.get(id)?.kind === 'smart';
+// Where files dropped on the list go: the folder shown, or My Drive when that is a smart folder (or not a folder).
+export const dropFolder = () => (S.view.type === 'drive' && !isSmartId(S.view.folderId) ? S.view.folderId : null);
+const dropLabel = (id) => (id ? `“${S.folderById.get(id)?.name}”` : 'My Drive');
 document.addEventListener('dragover', (e) => {
   const target = e.target.closest?.('[data-drop-folder]');
   $$('.drop-hover').forEach((x) => { if (x !== target) x.classList.remove('drop-hover'); });
   if (target && (dragKeys || draggingFolder || hasItems(e))) {
     if (draggingFolder && (target.dataset.dropFolder === draggingFolder || descendantIds(draggingFolder).has(target.dataset.dropFolder))) return;
+    if (!draggingFolder && isSmartId(target.dataset.dropFolder)) return;
     e.preventDefault();
     target.classList.add('drop-hover');
     return;
   }
-  if (hasItems(e) && !dragKeys && e.target.closest?.('#main') && S.view.type === 'drive') {
+  if (hasItems(e) && !dragKeys && e.target.closest?.('#main') && S.view.type === 'drive' && !isSmartId(S.view.folderId)) {
     e.preventDefault();   // from the other pane: drop anywhere to move into this folder
     const ov = $('#dropOverlay');
-    ov.textContent = `Move here: ${S.view.folderId ? `“${S.folderById.get(S.view.folderId)?.name}”` : 'My Drive'}`;
+    ov.textContent = `Move here: ${dropLabel(S.view.folderId)}`;
     ov.hidden = false;
     return;
   }
   const isFiles = e.dataTransfer?.types?.includes('Files');
   if (isFiles && !dragKeys && e.target.closest?.('#main')) {
     e.preventDefault();
-    const folderId = S.view.type === 'drive' ? S.view.folderId : null;
     const ov = $('#dropOverlay');
-    ov.textContent = `Drop to upload to ${folderId ? `“${S.folderById.get(folderId)?.name}”` : 'My Drive'}`;
+    ov.textContent = `Drop to upload to ${dropLabel(dropFolder())}`;
     ov.hidden = false;
   }
 });
@@ -754,6 +780,7 @@ document.addEventListener('drop', async (e) => {
   const target = e.target.closest?.('[data-drop-folder]');
   $$('.drop-hover').forEach((x) => x.classList.remove('drop-hover'));
   if (target && dragKeys) {
+    if (isSmartId(target.dataset.dropFolder)) return undefined;
     e.preventDefault();
     const items = dragKeys.map(unkey);
     dragKeys = null;
@@ -764,7 +791,8 @@ document.addEventListener('drop', async (e) => {
     try {
       const data = JSON.parse(e.dataTransfer.getData(ITEMS_MIME));
       if (data.account !== S.aid) return toast('Files can only move within the same account.', { err: true });
-      const dest = target ? (target.dataset.dropFolder || null) : (S.view.type === 'drive' ? S.view.folderId : null);
+      const dest = target ? (target.dataset.dropFolder || null) : dropFolder();
+      if (isSmartId(dest)) return undefined;
       return actions.placeInto(data.items, dest);
     } catch { return undefined; }
   }
@@ -781,7 +809,7 @@ document.addEventListener('drop', async (e) => {
   }
   if (e.dataTransfer?.files?.length && e.target.closest?.('#main')) {
     e.preventDefault();
-    const folderId = S.view.type === 'drive' ? S.view.folderId : null;
+    const folderId = dropFolder();
     const uris = (e.dataTransfer.getData('text/uri-list') || '').split(/\r?\n/).filter((u) => u.startsWith('file://'));
     const m = await import('./transfers.js');
     const { bridge } = await import('./core.js');

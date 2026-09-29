@@ -1,14 +1,14 @@
-# TG Drive 2.3.2
+# TG Drive 2.4.0
 
 Every file in your Telegram (every channel, group, private chat, bot and Saved Messages) in one place that works like Google Drive: folders, search that understands what you mean, streaming, downloads and uploads. It signs in as your own account and runs on your computer. Nothing goes anywhere except Telegram.
 
 ## Install on Linux
 
-**AppImage (recommended).** Download `TG_Drive-2.3.2-x86_64.AppImage`, then:
+**AppImage (recommended).** Download `TG_Drive-2.4.0-x86_64.AppImage`, then:
 
 ```bash
-chmod +x TG_Drive-2.3.2-x86_64.AppImage
-./TG_Drive-2.3.2-x86_64.AppImage
+chmod +x TG_Drive-2.4.0-x86_64.AppImage
+./TG_Drive-2.4.0-x86_64.AppImage
 ```
 
 It runs on any 64-bit Linux from about 2019 onwards (glibc 2.28+: Ubuntu 20.04+, Debian 10+, Fedora 29+, Mint 20+, RHEL/Rocky/Alma 8+, openSUSE 15.1+, Arch, Manjaro, Pop!_OS …). The first start adds TG Drive to your applications menu. To remove that entry: `./TG_Drive-*.AppImage --uninstall-desktop-entry`.
@@ -47,11 +47,22 @@ Each result shows how it matched (exact, variant, similar, related). Filters by 
 
 **Organise.** Folders with colours and descriptions, nesting, drag and drop, move, copy to Drive, rename (single and bulk with patterns like `{n} - {name}`), stars, tags, notes, undo (Ctrl+Z). The folder tree lives in a private Telegram channel, so it syncs between computers and accounts, with automatic backups you can restore.
 
-**Play and preview (streaming).** Videos, audio, voice notes, round videos, GIFs, photos, PDFs and text files open instantly without downloading first; seeking fetches just the part you jump to. Formats the app window can't decode (most Telegram videos: H.264/H.265 with AAC) play in TG Drive's own player with seeking, speed control and full screen. Background music player with a queue. Open any stream, or a whole folder as a playlist, in VLC or mpv. A disk cache (size in Settings) makes replays and seeking back instant.
+**Play and preview (streaming).** Videos, audio, voice notes, round videos, GIFs, photos, PDFs and text files open instantly without downloading first; seeking fetches just the part you jump to. Formats the app window can't decode (most Telegram videos: H.264/H.265 with AAC) play in TG Drive's own player with seeking, speed control and full screen. Background music player with a queue and playback speed. Open any stream, or a whole folder as a playlist, in VLC or mpv. A disk cache (size in Settings) makes replays and seeking back instant.
 
 **Transfers.** Parallel downloads and uploads with pause, resume (also after restarting), retry, cancel and speed/ETA; download whole folders or selections (keeping the folder structure, or as a zip); upload files and folders by drag and drop or the file picker; upload into any chat with a caption; files up to Telegram's limit (2 GB, 4 GB with Premium). Desktop notifications when they finish.
 
 **Manage.** Storage view (by type, chat, kind of chat, year), duplicate finder (exact and similar), index manager (per-chat progress, pause, rescan, verify, exclude), activity log, several accounts, proxy (SOCKS5/4, HTTP, MTProto), app lock with a passcode and auto-lock, CSV export, database maintenance (optimise, vacuum, integrity check, rebuild search), logs.
+
+**New in 2.4: polished for everyday use.** No new features: everything that was there now shows when it's working, says what went wrong, and offers a way forward.
+
+- *A new icon*, on a modern rounded tile, in the applications menu, the window, the tray and the browser tab.
+- *Every wait shows.* A startup screen until TG Drive is ready; a spinner while a video, song or picture waits for Telegram (in the viewer, the details panel and the background player); a spinner on each PDF page until it's drawn; loaders on Photos, Storage, Duplicates and text files; a count while a dropped folder is read.
+- *Every failure has a way out.* "Try again" when TG Drive isn't responding, a page couldn't load, a later page of files couldn't load, a PDF page, picture, month of photos or text file couldn't load, or reading a chat failed; a QR code that expired gets "Get a new code"; the phone step has "Send a new code" and "Change number". Pictures that failed while you were offline come back when you're online again. Exports (CSV, playlists, settings, logs) show a message instead of an error page.
+- *Uploads:* uploads from the browser can be cancelled; one that failed stays in the list with Retry; files you upload appear in the folder you're looking at as soon as they're done; the Transfers panel updates in place, so its buttons don't move under the pointer.
+- *Background player:* shows when it's loading, a seek bar that works once the length is known, playback speed (0.75× to 2×, remembered), and it skips a track it can't play instead of stopping.
+- *Fixed:* a note could be lost, or saved onto another file, when you switched files or closed the panel within a second of typing; "Show more" on Duplicates did nothing; "Play the next file automatically" didn't work for songs (and now skips pictures in between); some actions said they worked after they had failed, and "Mark as watched" didn't say when some files failed; loaders kept spinning after an error; Activity said "Nothing yet" when it couldn't load; files could be moved, copied, uploaded or synced into a smart folder, where they vanished (smart folders show files matching their rule, so now they can't take files); after unlocking, the Transfers button showed two icons; deleting a saved search had no confirmation and left you on an empty page.
+- *Lighter:* thumbnail memory stays bounded however far you scroll (and scrolling back is instant); the unused map code and data from 2.1's Places are gone.
+- *Tested end to end:* an automated browser test clicks through every screen and flow on a made-up account, and runs with the other tests on every change.
 
 **New in 2.3.2: quits fast, and nothing stays behind.**
 
@@ -141,7 +152,9 @@ Needs `uv` (or `PYTHON_DIST` pointing at a python-build-standalone build), `curl
 
 ```bash
 python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt pytest httpx
-python -m pytest tests          # 65 tests, including a 60,000-file scale test
+python -m pytest tests --ignore=tests/test_e2e.py   # 65 tests, including a 60,000-file scale test
+pip install playwright pillow reportlab && python -m playwright install chromium
+python -m pytest tests/test_e2e.py   # the whole interface in Chromium, on a made-up account (about 2 minutes)
 python -m desktop               # the desktop app from source
 python run.py                   # server only; open http://127.0.0.1:8765
 python -m tests.demo_server     # the UI on a fake account (http://127.0.0.1:8766)

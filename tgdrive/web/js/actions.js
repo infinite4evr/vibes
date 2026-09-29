@@ -1,6 +1,6 @@
 // File actions (download, move, star, tags, rename, send, delete …) and the file context menu.
 import { S, A, api, bus, bridge, callBridge, plural, STREAMABLE } from './core.js';
-import { toast, fail, confirmDialog, promptDialog, folderPicker, chatPicker, tagsDialog, dialog, menu } from './ui.js';
+import { toast, fail, confirmDialog, promptDialog, folderPicker, chatPicker, tagsDialog, dialog, menu, copyText } from './ui.js';
 import { refreshCard, setSelected, reload, removeFromList, viewTitle, selectedFiles } from './files.js';
 
 export async function openFile(f) {
@@ -31,7 +31,7 @@ export async function doOpenLocal(f) {
   } catch (e) { fail(e); }
 }
 export async function doMove(items, current) {
-  const r = await folderPicker({ title: items.length === 1 ? 'Move to folder' : `Move ${items.length} files to folder`, okLabel: 'Move here', current });
+  const r = await folderPicker({ title: items.length === 1 ? 'Move to folder' : `Move ${items.length} files to folder`, okLabel: 'Move here', current, forFiles: true });
   if (!r) return;
   await placeInto(items, r.folderId);
 }
@@ -51,7 +51,7 @@ export async function placeInto(items, folderId) {
   } catch (e) { fail(e); }
 }
 export async function doCopy(items) {
-  const r = await folderPicker({ title: 'Save a copy to Drive', okLabel: 'Save copy', current: S.view.type === 'drive' ? S.view.folderId : null });
+  const r = await folderPicker({ title: 'Save a copy to Drive', okLabel: 'Save copy', current: S.view.type === 'drive' ? S.view.folderId : null, forFiles: true });
   if (!r) return;
   try {
     toast('Saving copies…');
@@ -79,11 +79,8 @@ export async function doSend(items) {
 export async function doLinks(files) {
   const links = files.map((f) => f.link).filter(Boolean);
   if (!links.length) return toast('Private chats and basic groups have no t.me links.', { err: true });
-  try {
-    await navigator.clipboard.writeText(links.join('\n'));
-    const missing = files.length - links.length;
-    toast(`Copied ${plural(links.length, 'link')}${missing ? `. ${missing} in private chats have none.` : ''}`);
-  } catch { toast("Couldn't copy to the clipboard. Open the details panel to copy links.", { err: true }); }
+  const missing = files.length - links.length;
+  await copyText(links.join('\n'), `Copied ${plural(links.length, 'link')}${missing ? `. ${missing} in private chats have none.` : ''}`);
 }
 export async function doDelete(items) {
   const ok = !S.settings.confirm_delete || await confirmDialog(items.length === 1 ? 'Delete this file from Telegram?' : `Delete ${items.length} files from Telegram?`,
@@ -160,7 +157,8 @@ export async function bulkRename(files) {
   } catch (e) { fail(e); }
 }
 export async function editNote(f) {
-  const det = await api(A(`/files/${f.chat_id}/${f.msg_id}`));
+  let det;
+  try { det = await api(A(`/files/${f.chat_id}/${f.msg_id}`)); } catch (e) { fail(e); return; }
   const note = await promptDialog('Note', 'Your note (synced, searchable with has:note)', det.note || '', 'Save', { multiline: true, allowEmpty: true, max: 2000 });
   if (note === null || note === undefined) return;
   try {
