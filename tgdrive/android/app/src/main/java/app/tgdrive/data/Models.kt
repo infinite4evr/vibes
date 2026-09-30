@@ -1,13 +1,43 @@
+@file:UseSerializers(FlexBoolean::class)
+
 package app.tgdrive.data
 
 import app.tgdrive.util.Format
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 // The shapes of TG Drive's HTTP API (tgdrive/tgdrive/api.py). Unknown fields are ignored, so the
 // app keeps working when the service grows.
+
+/**
+ * Yes/no fields as the service sends them: true/false, and also 1/0 or "1"/"0" where a value comes
+ * straight from its database (SQLite has no booleans). Used for every Boolean in this file.
+ */
+object FlexBoolean : KSerializer<Boolean> {
+    override val descriptor = PrimitiveSerialDescriptor("app.tgdrive.FlexBoolean", PrimitiveKind.BOOLEAN)
+    override fun serialize(encoder: Encoder, value: Boolean) = encoder.encodeBoolean(value)
+    override fun deserialize(decoder: Decoder): Boolean {
+        val json = decoder as? JsonDecoder ?: return decoder.decodeBoolean()
+        val el = json.decodeJsonElement()
+        if (el is JsonNull || el !is JsonPrimitive) return false
+        return when (el.content.lowercase()) {
+            "true", "1" -> true
+            "false", "0", "" -> false
+            else -> el.content.toDoubleOrNull()?.let { it != 0.0 } ?: false
+        }
+    }
+}
 
 @Serializable
 data class Account(
@@ -381,3 +411,10 @@ data class Backup(val id: Long, val at: Long? = null, val reason: String? = null
 @Serializable
 data class ServerEvent(val id: Long, val at: Long = 0, val kind: String = "", val title: String? = null, val body: String? = null,
                        val path: String? = null, val account: Long? = null, val online: Boolean? = null)
+
+/** Duplicates (Tools → Duplicates): groups of copies of one file. */
+@Serializable
+data class DupGroup(val n: Long = 0, val size: Long = 0, val waste: Long = 0, val files: List<FileItem> = emptyList())
+
+@Serializable
+data class DuplicatesPage(val groups: List<DupGroup> = emptyList(), val offset: Int = 0, val more: Boolean = false)

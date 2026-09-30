@@ -38,6 +38,12 @@ class SignInFlow {
 
     private fun fields(): List<UiObject2> = device.findObjects(By.clazz("android.widget.EditText"))
 
+    /** Close the keyboard if it is open (Back with no keyboard would leave the screen). */
+    private fun hideKeyboard() {
+        val open = inst.uiAutomation.windows.any { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_INPUT_METHOD }
+        if (open) { device.pressBack(); Thread.sleep(400) }
+    }
+
     /** A button that may be below the fold on a small screen: scroll the page until it shows. */
     private fun scrollTo(text: String): UiObject2? {
         repeat(6) {
@@ -65,7 +71,7 @@ class SignInFlow {
             assertTrue("expected the API ID and hash fields, found ${keyFields.size}", keyFields.size >= 2)
             keyFields[0].text = "1234567"
             keyFields[1].text = "0123456789abcdef0123456789abcdef"
-            device.pressBack()   // close the keyboard
+            hideKeyboard()
             val cont = scrollTo("Continue")
             assertNotNull(cont)
             shot("32-api-key-filled")
@@ -77,7 +83,7 @@ class SignInFlow {
             assertNotNull("Continue on the app key screen didn't lead to signing in", signIn)
             device.wait(Until.hasObject(By.clazz("android.widget.EditText")), 10_000)
             fields().first().text = "+15550100000"
-            device.pressBack()
+            hideKeyboard()
             val send = scrollTo("Send code")
             assertNotNull(send)
             send!!.click()

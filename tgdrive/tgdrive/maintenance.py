@@ -246,6 +246,8 @@ async def duplicates(acc: "Account", mode: str = "exact", offset: int = 0, limit
                            "f.chat_title, f.date, f.has_thumb, p.folder_id FROM files f LEFT JOIN placements p ON "
                            "p.chat_id=f.chat_id AND p.msg_id=f.msg_id WHERE f.media_id=? ORDER BY f.date LIMIT 50",
                            (g["k"],))
+            for x in rows:
+                x["has_thumb"] = bool(x.get("has_thumb"))
             out.append({"n": g["n"], "size": g["size"], "waste": g["waste"], "files": rows})
         return {"groups": out, "offset": offset, "more": len(groups) == limit}
 

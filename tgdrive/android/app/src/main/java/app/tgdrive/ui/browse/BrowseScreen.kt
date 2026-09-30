@@ -353,12 +353,20 @@ private fun KindTabs(model: BrowseModel) {
     val c = Tg.colors
     val st = model.stats
     val tabs = Format.KIND_PLURAL.filter { (k, _) -> k.isEmpty() || (st?.kindCounts?.get(k) ?: 0) > 0 || model.kind == k }
+    val scroll = rememberScrollState()
     Column(Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 4.dp)) {
-            for ((k, label) in tabs) {
-                val n = if (k.isEmpty()) st?.total else st?.kindCounts?.get(k)
-                CountTab(label, n, model.kind == k, { model.setKindFilter(k) }, dot = if (k.isEmpty()) null else c.kind(k))
+        Box(Modifier.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth().horizontalScroll(scroll).padding(horizontal = 4.dp)) {
+                for ((k, label) in tabs) {
+                    val n = if (k.isEmpty()) st?.total else st?.kindCounts?.get(k)
+                    CountTab(label, n, model.kind == k, { model.setKindFilter(k) }, dot = if (k.isEmpty()) null else c.kind(k))
+                }
             }
+            // More types to the side: fade the edge, so it's clear the row scrolls.
+            if (scroll.canScrollForward) Box(Modifier.align(Alignment.CenterEnd).width(36.dp).height(45.dp)
+                .background(androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(c.canvas.copy(alpha = 0f), c.canvas))))
+            if (scroll.canScrollBackward) Box(Modifier.align(Alignment.CenterStart).width(28.dp).height(45.dp)
+                .background(androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(c.canvas, c.canvas.copy(alpha = 0f)))))
         }
         Box(Modifier.fillMaxWidth().height(1.dp).background(c.line))
         Spacer(Modifier.height(6.dp))

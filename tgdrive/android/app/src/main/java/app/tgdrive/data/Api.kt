@@ -275,8 +275,8 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
 
     // insights
     suspend fun storage(aid: Long): JsonObject = get("${a(aid)}/storage", JsonObject.serializer())
-    suspend fun duplicates(aid: Long, mode: String, offset: Int): JsonObject =
-        get("${a(aid)}/duplicates", JsonObject.serializer(), mapOf("mode" to mode, "offset" to offset))
+    suspend fun duplicates(aid: Long, mode: String, offset: Int): DuplicatesPage =
+        get("${a(aid)}/duplicates", DuplicatesPage.serializer(), mapOf("mode" to mode, "offset" to offset))
     suspend fun activityLog(aid: Long): List<Activity> = get("${a(aid)}/activity", Wrapped(ListSerializer(Activity.serializer()), "activity"))
     suspend fun maintenance(aid: Long, task: String): JsonElement = json("POST", "${a(aid)}/maintenance/$task")
     suspend fun exportCsv(aid: Long, params: Map<String, String>): String = raw("GET", "${a(aid)}/export.csv", params)

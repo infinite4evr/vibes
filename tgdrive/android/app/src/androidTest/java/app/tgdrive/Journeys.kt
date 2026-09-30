@@ -140,8 +140,10 @@ class Journeys {
     private fun fileMenu(name: String) {
         val row = need(By.textContains(name), "file “$name”", 15_000)
         val y = row.visibleBounds.centerY()
-        val button = device.findObjects(By.desc("File options")).minByOrNull { Math.abs(it.visibleBounds.centerY() - y) }
-            ?: throw AssertionError("no File options button next to “$name”")
+        // A row has it on the same line; a card at the top of its picture, above the name.
+        val button = device.findObjects(By.desc("File options")).filter { it.visibleBounds.centerY() <= y + 40 }
+            .maxByOrNull { it.visibleBounds.centerY() }
+            ?: throw AssertionError("no File options button for “$name”")
         button.click()
         need(By.text("Details"), "the file menu")
     }
@@ -157,10 +159,20 @@ class Journeys {
     private fun search(q: String) {
         home()
         tap("Search everything…")
-        val field = need(By.focused(true), "the search field")
-        field.text = q
-        device.pressEnter()
-        Thread.sleep(2000)
+        // Type into the search box, and check it took the text (the screen may still be settling).
+        repeat(4) {
+            val field = find(By.clazz("android.widget.EditText"), 5000)
+            if (field != null) {
+                try { field.text = q } catch (_: StaleObjectException) { }
+                if (find(By.clazz("android.widget.EditText").text(q), 1500) != null) {
+                    device.pressEnter()
+                    Thread.sleep(2000)
+                    return
+                }
+            }
+            Thread.sleep(500)
+        }
+        throw AssertionError("couldn't type “$q” into the search box")
     }
 
     /** Back to My Drive with nothing open. */
@@ -363,10 +375,30 @@ class Journeys {
                 back()
             }
 
+            // Every type with files gets a tab (not only Photos and Videos), and a tab shows only that type.
+            step("type-tabs") {
+                sidebar("All files")
+                need(By.desc("File options"), "files in All files", 15_000)
+                var docs = find(By.text("Documents"), 3000)
+                if (docs == null) {
+                    val row = need(By.text("Photos"), "the type tabs").visibleBounds
+                    device.swipe(device.displayWidth * 4 / 5, row.centerY(), device.displayWidth / 5, row.centerY(), 20)
+                    docs = find(By.text("Documents"), 3000)
+                }
+                (docs ?: throw AssertionError("no Documents tab above All files")).click()
+                Thread.sleep(2500)
+                val shown = runBlocking { g.api.files(aid, mapOf("kinds" to "document", "copies" to "hide")).items.take(3).map { it.displayName } }
+                need(By.textContains(shown.firstOrNull() ?: "?"), "a document in the Documents tab", 10_000)
+                shot("e2e-documents-tab", 500)
+                if (find(By.text("Audio"), 1000) == null) throw AssertionError("no Audio tab next to Documents")
+            }
+
             step("photos") {
                 sidebar("Photos")
                 Thread.sleep(3000)
-                device.click(device.displayWidth / 8, device.displayHeight * 3 / 10)
+                // The first picture (the grid has no text): just below the first month's title.
+                val month = find(By.textContains("20"), 5000)?.visibleBounds
+                device.click(device.displayWidth / 4, (month?.bottom ?: device.displayHeight / 3) + device.displayWidth / 5)
                 need(By.desc("Details"), "a photo in the viewer", 15_000)
                 device.swipe(device.displayWidth * 4 / 5, device.displayHeight / 2, device.displayWidth / 5, device.displayHeight / 2, 15)
                 shot("e2e-photo-next", 2000)

@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import app.tgdrive.data.AppState
 import app.tgdrive.data.explain
 import app.tgdrive.data.Chat
+import app.tgdrive.data.DupGroup
 import app.tgdrive.data.FileItem
 import app.tgdrive.data.JsonCodec
 import app.tgdrive.data.Transfer
@@ -447,7 +448,6 @@ private fun LoadingCards() {
 }
 
 // ---------------------------------------------------------------------- duplicates
-private class DupGroup(val n: Long, val size: Long, val waste: Long, val files: List<FileItem>)
 
 @Composable
 fun DuplicatesScreen(state: AppState, actions: Actions, thumbs: ThumbSource, onMenu: () -> Unit, onOpen: (List<FileItem>, Int) -> Unit) {
@@ -468,11 +468,8 @@ fun DuplicatesScreen(state: AppState, actions: Actions, thumbs: ThumbSource, onM
         try {
             val r = state.api.duplicates(aid, mode, offset)
             if (offset == 0) groups.clear()
-            groups += r.arr("groups").filterIsInstance<JsonObject>().map { o ->
-                DupGroup(o.long("n"), o.long("size"), o.long("waste"),
-                    JsonCodec.decodeFromJsonElement(ListSerializer(FileItem.serializer()), o.arr("files")))
-            }
-            more = r.bool("more")
+            groups += r.groups
+            more = r.more
             error = null
         } catch (e: Exception) {
             if (offset == 0) error = e.explain("loading duplicates") else state.failed("Couldn't load more.", e)

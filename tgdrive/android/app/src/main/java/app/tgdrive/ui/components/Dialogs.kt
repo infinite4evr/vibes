@@ -61,8 +61,10 @@ fun TgDialog(
             Column(Modifier.padding(start = 22.dp, end = 22.dp, top = 20.dp, bottom = 16.dp)) {
                 Text(title, style = Tg.type.heading, color = c.ink)
                 Spacer(Modifier.height(12.dp))
-                Column(Modifier.heightIn(max = 520.dp).then(if (scroll) Modifier.verticalScroll(rememberScrollState()) else Modifier),
-                    content = content)
+                // The content takes what is left and scrolls: the buttons stay on screen however long it is
+                // (small phones, landscape, large text).
+                Column(Modifier.weight(1f, fill = false).heightIn(max = 520.dp)
+                    .then(if (scroll) Modifier.verticalScroll(rememberScrollState()) else Modifier), content = content)
                 Spacer(Modifier.height(18.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)) {
                     if (dismiss != null) TgButton(dismiss, onDismiss, kind = ButtonKind.Ghost)

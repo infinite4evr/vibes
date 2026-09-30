@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -33,12 +32,12 @@ import java.io.File
 @Composable
 fun rememberSendReport(): Pair<(String?) -> Unit, Boolean> {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
     var busy by remember { mutableStateOf(false) }
     val send: (String?) -> Unit = { error ->
         if (!busy) {
             busy = true
-            scope.launch {
+            // The app's scope, not the screen's: a menu that closes as it starts this must not cancel it.
+            ctx.graph.scope.launch {
                 try {
                     ProblemReport.share(ctx, ctx.graph.engine, error)
                 } catch (e: Exception) {
@@ -61,7 +60,7 @@ fun ErrorDetailsDialog(message: String, detail: String?, onClose: () -> Unit) {
         Text(message, style = Tg.type.bodyStrong, color = Tg.colors.ink)
         if (detail != null) {
             Spacer(Modifier.height(10.dp))
-            SelectionContainer { Text(detail, style = Tg.type.mono.copy(fontSize = 11.sp), color = Tg.colors.ink2) }
+            SelectionContainer { Text(detail, style = Tg.type.mono.copy(fontSize = 11.sp), color = Tg.colors.ink2, maxLines = 60) }
         }
         Spacer(Modifier.height(12.dp))
         Text("“Send report” makes a file with TG Drive's logs to send to whoever helps you fix this. It has no passwords, keys or messages.",

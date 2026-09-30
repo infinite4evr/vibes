@@ -57,14 +57,19 @@ class ScreenshotTour {
             tries++
         }
         if (o == null) { missed += text; Log.w("ScreenshotTour", "not found: $text"); return false }
-        // The screen can redraw between finding and tapping (StaleObjectException): find it again once.
-        try {
-            if (long) o.longClick() else o.click()
-        } catch (e: androidx.test.uiautomator.StaleObjectException) {
-            val again = find(sel, 3000) ?: run { missed += text; return false }
-            if (long) again.longClick() else again.click()
+        // The screen can redraw between finding and tapping (StaleObjectException): find it again.
+        repeat(4) {
+            try {
+                val target = o ?: find(sel, 3000) ?: run { missed += text; return false }
+                if (long) target.longClick() else target.click()
+                return true
+            } catch (e: androidx.test.uiautomator.StaleObjectException) {
+                o = null
+                Thread.sleep(300)
+            }
         }
-        return true
+        missed += text
+        return false
     }
 
     private fun back() { device.pressBack(); Thread.sleep(600) }

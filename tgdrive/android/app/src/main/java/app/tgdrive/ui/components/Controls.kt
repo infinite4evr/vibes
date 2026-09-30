@@ -256,7 +256,7 @@ fun CountTab(text: String, count: Long?, selected: Boolean, onClick: () -> Unit,
         Modifier
             .clip(RoundedCornerShape(8.dp))
             .clickable(role = Role.Tab, onClick = onClick)
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(Modifier.height(42.dp), verticalAlignment = Alignment.CenterVertically) {

@@ -112,6 +112,13 @@ fun main(args: Array<String>): Unit = runBlocking {
         }
         check("stats: $name") { api.stats(aid, params - "sort" - "order" - "limit") }
     }
+    // The type tabs above a list: every type with files gets one (Documents, Audio … not only Photos and Videos).
+    check("stats: every type counted") {
+        val st = api.stats(aid, mapOf("copies" to "hide"))
+        println("      kind counts: ${st.kindCounts}")
+        for (k in listOf("photo", "video", "document", "audio"))
+            require((st.kindCounts[k] ?: 0L) > 0L) { "no count for $k: ${st.kindCounts}" }
+    }
     for (sort in listOf("name:asc", "size:desc", "chat:asc", "duration:desc", "type:asc", "ext:asc", "date:asc")) {
         val (s, o) = sort.split(":")
         check("files sorted $sort") { api.files(aid, base + mapOf("sort" to s, "order" to o)) }
