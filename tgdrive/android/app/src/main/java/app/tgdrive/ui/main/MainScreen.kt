@@ -258,7 +258,7 @@ private fun Page(
                     else Screen.SearchInput(scope = if (state.setting("search_scope_default") == "here") app.tgdrive.ui.actions.scopeOf(state, v, m) else null))
                 },
                     onTransfers = { onGo(Screen.Transfers) }, onAccount = { actions.open(Overlay.AccountMenu) },
-                    searchText = (s.view as? View.Search)?.q)
+                    searchText = (s.view as? View.Search)?.q, onFilters = { actions.open(Overlay.Filters(m)) })
                 BrowseScreen(m, state, actions, thumbs, onOpen = onOpen, onNavigate = { v -> if (v is View.Drive || v is View.Album || v is View.Search) nav.push(Screen.Browse(v)) else onGo(Screen.Browse(v)) },
                     onUpload = onUpload, onNewFolder = onNewFolder, contentPadding = PaddingValues(0.dp))
             }
@@ -291,7 +291,7 @@ private fun Page(
 // ---------------------------------------------------------------------- top bar
 @Composable
 fun TopBar(state: AppState, onMenu: () -> Unit, onBack: (() -> Unit)?, onSearch: () -> Unit, onTransfers: () -> Unit, onAccount: () -> Unit,
-           searchText: String? = null) {
+           searchText: String? = null, onFilters: (() -> Unit)? = null) {
     val c = Tg.colors
     val account by state.account.collectAsState()
     val status by state.status.collectAsState()
@@ -306,7 +306,7 @@ fun TopBar(state: AppState, onMenu: () -> Unit, onBack: (() -> Unit)?, onSearch:
         Spacer(Modifier.width(4.dp))
         Row(
             Modifier.weight(1f).height(46.dp).clip(RoundedCornerShape(23.dp)).background(c.panel2).border(1.dp, c.line, RoundedCornerShape(23.dp))
-                .clickable(onClick = onSearch).padding(start = 14.dp, end = 12.dp),
+                .clickable(onClick = onSearch).padding(start = 14.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TgIconView(TgIcons.search, tint = c.ink3, size = 19.dp)
@@ -314,7 +314,7 @@ fun TopBar(state: AppState, onMenu: () -> Unit, onBack: (() -> Unit)?, onSearch:
             Text(searchText?.takeIf { it.isNotBlank() } ?: "Search everything…", style = Tg.type.body,
                 color = if (searchText.isNullOrBlank()) c.ink3 else c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f))
-            TgIconView(TgIcons.sliders, tint = c.ink3, size = 19.dp)
+            if (onFilters != null) IconBtn(TgIcons.sliders, onFilters, size = 36.dp, iconSize = 19.dp, tint = c.ink3, contentDescription = "Filters")
         }
         Spacer(Modifier.width(4.dp))
         TransfersButton(account?.transfers?.active ?: 0, account?.transfers?.let { if (it.size > 0) it.done.toFloat() / it.size else null }, onTransfers)
