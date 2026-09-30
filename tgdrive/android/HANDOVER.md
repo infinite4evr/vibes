@@ -268,20 +268,17 @@ an uninstall. Now:
 
 ## 8. Status and open items (September 2026)
 
-Verified on the emulator (CI, the minified `staging` build), as of the last runs of this session:
-- `EngineTest`, `ScreenshotTour`, `CrashScreenTest`, `SignInFlow`: pass. The real crash of the
-  interface's process brings up the crash screen (`after-crash.txt` shows `CrashActivity` resumed).
-- `Journeys`: 34 of 37 passed in the run before last. Among them are the viewer, download,
-  share-upload, the refusal of a share of TG Drive's own files, passcode lock, landscape, large
-  text, background sync, error details, the GitHub issue, and a service killed mid-use coming back
-  by itself. The 3 others (audio, the video error, the PDF) failed only because the test tapped the
-  results' title ("“query”") instead of the file; fixed in `UiDriver.clickFile`.
-- `BigLibraryTest` (100 000 files, 1 700 chats): the service is ready in 1.7 s and the main screen
-  shows 2.1 s later. The service answers status plus a page of files in at most 0.6 s while its
-  background jobs run. Every page works (the timings include the test's own swipes and waits).
-- `BackgroundSyncTest`: both tests (with the app closed; the app opened during a sync) pass on their
-  own. The second one's order dependency (stopping the service while the previous test's screen
-  still counted as open) is fixed in the test.
+Verified: **everything green on commit `4a9262d`**. That covers the three workflows (TG Drive Android,
+TG Drive desktop, CI) and, on the emulator with the minified `staging` build:
+- `EngineTest` (7, including the cancelled-requests crash regression), `ScreenshotTour`,
+  `CrashScreenTest` plus a real crash of the interface's process (the crash screen came up),
+  `SignInFlow` against Telegram.
+- `Journeys`: all 37.
+- `BackgroundSyncTest`: both tests.
+- `BigLibraryTest` (100 000 files, 1 700 chats): the service is ready in 0.8 s and the main screen
+  shows 2.0 s later. Status plus a page of files takes at most 143 ms while the background jobs run.
+  Memory at 100 000 files: about 146 MB for the app and 250 MB for the service (PSS). The emulator
+  draws in software, so its frame statistics can't be compared with a phone's.
 
 **The owner's black screen at ~100 000 files** could not be reproduced on the emulator: with a
 100 000-file index the app opens in about 2 s. The real difference is a signed-in account whose
@@ -291,13 +288,15 @@ the first requests could take tens of seconds (a desktop measurement: 1.8 s for 
 it happens: `app.log` shows "status answered in … ms" and each phase, and `engine-start.log` shows
 the start steps.
 
-Also fixed in the last batch: the crash above (cancelled requests closed on the main thread), and a
-test-order cascade (a run that died in the passcode journey left the passcode set and locked every
-later test out; `TestHygiene.removeLeftoverPasscode` now runs first). Found by reading the screenshots: the list toolbar pushed *View* and
-*More* off narrow screens and with large text (sort, copies and filters now scroll sideways); the
-crash screen's buttons were below a 40-line report (now above it); the *Chats and indexing* page
-was titled "Index manager" (the desktop's name; the sidebar and the owner call it *Chats and
-indexing*).
+Also fixed in the last batch:
+- A crash: cancelled requests had their responses closed on the main thread (§4).
+- A download race on pause and resume (§4).
+- A test-order cascade: a run that died in the passcode journey left the passcode set, which locked
+  every later test out. `TestHygiene.removeLeftoverPasscode` now runs first.
+- Found by reading the screenshots: the list toolbar pushed *View* and *More* off narrow screens
+  and with large text (sort, copies and filters now scroll sideways). The crash screen's buttons
+  were below a 40-line report (now above it). The *Chats and indexing* page was titled "Index
+  manager", the desktop's name; the sidebar and the owner call it *Chats and indexing*.
 
 Open items:
 1. **Signing secret**: the owner adds it (§7). Then fill in `expected-certificate.sha256`.
