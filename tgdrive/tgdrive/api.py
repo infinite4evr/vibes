@@ -15,6 +15,7 @@ import json
 import logging
 import re
 import secrets
+import sqlite3
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -122,6 +123,18 @@ async def flood_error(_: Request, exc: errors.FloodWaitError):
 @app.exception_handler(errors.RPCError)
 async def rpc_error(_: Request, exc: errors.RPCError):
     return JSONResponse({"error": f"Telegram refused: {exc.message or exc.__class__.__name__}"}, status_code=400)
+
+
+@app.exception_handler(sqlite3.OperationalError)
+async def database_error(request: Request, exc: sqlite3.OperationalError):
+    """The index is busy (a long background write holds it past the wait, most often on phones):
+    nothing was changed, so say so plainly and let the app try again, instead of a crash message."""
+    text = str(exc).lower()
+    if "locked" in text or "busy" in text:
+        log.warning("%s %s: the database was busy (%s)", request.method, request.url.path, exc)
+        return JSONResponse({"error": "TG Drive is busy saving its index. Try again in a moment.", "busy": True},
+                            status_code=503, headers={"Retry-After": "1"})
+    return await unexpected_error(request, exc)
 
 
 @app.exception_handler(Exception)

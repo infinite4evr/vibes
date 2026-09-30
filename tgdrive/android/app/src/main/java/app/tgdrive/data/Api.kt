@@ -36,7 +36,8 @@ import okhttp3.Response
 import java.io.IOException
 import kotlin.coroutines.resumeWithException
 
-class ApiException(val status: Int, message: String, val locked: Boolean = false) : IOException(message)
+/** An error answer from TG Drive's service. [busy]: its index was busy; nothing changed, trying again is safe. */
+class ApiException(val status: Int, message: String, val locked: Boolean = false, val busy: Boolean = false) : IOException(message)
 
 val JsonCodec = Json { ignoreUnknownKeys = true; isLenient = true; coerceInputValues = true; explicitNulls = false }
 
@@ -65,6 +66,22 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
 
     suspend fun raw(method: String, path: String, params: Map<String, Any?> = emptyMap(), body: RequestBody? = null,
                     background: Boolean = false): String {
+        // A read that found the index busy (a long background write, mostly on slow phones) is simply
+        // asked again a moment later, instead of showing an error.
+        var attempt = 0
+        while (true) {
+            try {
+                return rawOnce(method, path, params, body, background)
+            } catch (e: ApiException) {
+                if (!e.busy || method != "GET" || attempt >= 3) throw e
+                attempt++
+                kotlinx.coroutines.delay(700L * attempt)
+            }
+        }
+    }
+
+    private suspend fun rawOnce(method: String, path: String, params: Map<String, Any?>, body: RequestBody?,
+                                background: Boolean): String {
         val rb = request(url(path, params))
         if (background) rb.header("x-tgdrive-bg", "1")
         val needsBody = method in setOf("POST", "PUT", "PATCH")
@@ -101,7 +118,8 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
         val msg = obj?.get("error")?.jsonPrimitive?.contentOrNull
             ?: obj?.get("detail")?.toString()
             ?: text.take(200).ifBlank { "HTTP ${resp.code}" }
-        return ApiException(resp.code, msg, locked = resp.code == 423)
+        return ApiException(resp.code, msg, locked = resp.code == 423,
+            busy = resp.code == 503 && obj?.get("busy")?.jsonPrimitive?.contentOrNull == "true")
     }
 
     suspend fun <T> get(path: String, s: DeserializationStrategy<T>, params: Map<String, Any?> = emptyMap(), background: Boolean = false): T {

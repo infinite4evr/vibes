@@ -149,9 +149,13 @@ def _prepare_demo(data_dir: Path, download_dir: str) -> None:
     world.mkdir(parents=True)
     loop = asyncio.new_event_loop()
     try:
-        demo_server.prepare(world, download_dir=download_dir, loop=loop)
+        acc = demo_server.prepare(world, download_dir=download_dir, loop=loop)
     finally:
         loop.close()
+    # The desktop's demo shows a chat being indexed (for its screenshots), but no indexer runs on
+    # sample data: on the phone that read as indexing forever, and a background sync waited on it.
+    acc.indexer.phase = "idle"
+    acc.indexer.current_title = None
 
 
 def set_background(on: bool) -> None:

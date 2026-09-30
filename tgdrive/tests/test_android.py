@@ -225,3 +225,63 @@ def test_quiet_start_holds_the_heavy_jobs_then_lets_go():
         assert pace.mode() == (settings.get("background_work") or "gentle")
     finally:
         pace.quiet_for(0)
+
+
+def test_sample_data_on_the_phone_is_not_indexing_forever(tmp_path):
+    """No indexer runs on sample data: the phone must show it finished (a background sync waits for idle)."""
+    from tgdrive import api, mobile
+    saved = dict(api.manager.accounts)
+    try:
+        mobile._prepare_demo(tmp_path, str(tmp_path / "Downloads"))
+        acc = next(iter(api.manager.accounts.values()))
+        assert acc.indexer.phase == "idle"
+    finally:
+        api.manager.accounts = saved
+
+
+def test_qr_sign_in_with_a_wrong_app_key_says_what_to_do(monkeypatch):
+    """Telegram answers a QR request made with a wrong API ID as a bare BAD_REQUEST: the app must
+    say what that means (it showed "Telegram refused: BAD_REQUEST")."""
+    import asyncio
+    import pytest
+    from telethon import errors as tg_errors
+    from tgdrive import accounts
+
+    class Client:
+        async def qr_login(self):
+            raise tg_errors.BadRequestError(None, "BAD_REQUEST")
+
+        async def disconnect(self):
+            return None
+
+    mgr = accounts.AccountManager.__new__(accounts.AccountManager)
+    mgr.accounts, mgr.logins, mgr.done_logins = {}, {}, {}
+    mgr._require_api = lambda: None
+
+    async def connect(lg):
+        lg.client = Client()
+
+    mgr._connect_for_login = connect
+
+    class Login:
+        id = "qr1"
+        client = None
+
+    monkeypatch.setattr(accounts, "Login", Login)
+    with pytest.raises(accounts.AccountError) as e:
+        asyncio.run(mgr.login_qr_start())
+    assert "rejected the QR sign-in" in str(e.value) and "my.telegram.org" in str(e.value)
+    assert not mgr.logins
+
+
+def test_a_busy_database_is_a_retryable_answer_not_a_crash():
+    """"database is locked" (a long background write on a slow phone) must come back as 503 busy,
+    which the app retries, not as "Something went wrong (OperationalError)"."""
+    import asyncio
+    import json
+    import sqlite3
+    from types import SimpleNamespace
+    from tgdrive import api
+    req = SimpleNamespace(method="POST", url=SimpleNamespace(path="/api/a/1/files/star"))
+    r = asyncio.run(api.database_error(req, sqlite3.OperationalError("database is locked")))
+    assert r.status_code == 503 and json.loads(r.body)["busy"] is True

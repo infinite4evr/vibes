@@ -683,7 +683,19 @@ class AccountManager:
         self._require_api()
         lg = Login()
         await self._connect_for_login(lg)
-        lg.qr = await lg.client.qr_login()
+        try:
+            lg.qr = await lg.client.qr_login()
+        except errors.ApiIdInvalidError:
+            await _disconnect_quietly(lg.client)
+            raise AccountError("Telegram rejected the API ID / hash. Check them at my.telegram.org.")
+        except errors.FloodWaitError as exc:
+            await _disconnect_quietly(lg.client)
+            raise AccountError(f"Too many sign-in attempts. Telegram asks to wait {exc.seconds // 60 + 1} minutes.")
+        except errors.BadRequestError as exc:
+            # Telegram answers a QR request with a wrong app key as a bare BAD_REQUEST.
+            await _disconnect_quietly(lg.client)
+            raise AccountError("Telegram rejected the QR sign-in (" + (exc.message or "BAD_REQUEST") + "). Check the API ID / "
+                               "hash at my.telegram.org, or sign in with your phone number.")
         self.logins[lg.id] = lg
         lg.qr_task = spawn(self._qr_wait(lg), "QR sign-in")
         return {"login_id": lg.id, **self._qr_payload(lg)}

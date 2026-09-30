@@ -54,8 +54,14 @@ class UploadService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        ServiceCompat.startForeground(this, NOTIFY_ID, notification(getString(R.string.upload_preparing), null),
-            if (Build.VERSION.SDK_INT >= 29) ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC else 0)
+        try {
+            ServiceCompat.startForeground(this, NOTIFY_ID, notification(getString(R.string.upload_preparing), null),
+                if (Build.VERSION.SDK_INT >= 29) ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC else 0)
+        } catch (e: Exception) {
+            // Android refused a foreground service (see EngineService.goForeground): upload anyway while
+            // the app is open, rather than taking the whole app down.
+            AppLog.w("upload", "couldn't run as a foreground service; uploading without it", e)
+        }
         if (intent == null) {
             if (pending.get() == 0) stopSelf()
             return START_NOT_STICKY
@@ -188,8 +194,9 @@ class UploadService : Service() {
         const val EXTRA_CAPTION = "caption"
         const val EXTRA_TREE = "tree"
 
-        fun start(context: Context, aid: Long, uris: List<Uri>, folderId: String?, chatId: Long? = null, caption: String = "") {
-            if (uris.isEmpty()) return
+        /** Upload [uris]; false if Android didn't let the upload start (the caller says so). */
+        fun start(context: Context, aid: Long, uris: List<Uri>, folderId: String?, chatId: Long? = null, caption: String = ""): Boolean {
+            if (uris.isEmpty()) return true
             val clip = ClipData.newRawUri("files", uris.first()).apply { uris.drop(1).forEach { addItem(ClipData.Item(it)) } }
             val i = Intent(context, UploadService::class.java).apply {
                 clipData = clip
@@ -199,16 +206,25 @@ class UploadService : Service() {
                 putExtra(EXTRA_CAPTION, caption)
                 if (chatId != null) putExtra(EXTRA_CHAT, chatId)
             }
-            ContextCompat.startForegroundService(context, i)
+            return requestStart(context, i)
         }
 
-        fun startTree(context: Context, aid: Long, tree: Uri, folderId: String?) {
+        /** Start the upload service; false if Android refused (the caller says so). */
+        private fun requestStart(context: Context, i: Intent): Boolean = try {
+            ContextCompat.startForegroundService(context, i)
+            true
+        } catch (e: Exception) {
+            AppLog.w("upload", "couldn't start the upload service", e)
+            false
+        }
+
+        fun startTree(context: Context, aid: Long, tree: Uri, folderId: String?): Boolean {
             val i = Intent(context, UploadService::class.java).apply {
                 putExtra(EXTRA_TREE, tree.toString())
                 putExtra(EXTRA_AID, aid)
                 putExtra(EXTRA_FOLDER, folderId)
             }
-            ContextCompat.startForegroundService(context, i)
+            return requestStart(context, i)
         }
     }
 }

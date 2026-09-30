@@ -336,10 +336,17 @@ class EngineService : Service() {
 
     // ------------------------------------------------------------------ notification
     private fun goForeground(text: String) {
-        foreground = true
         val n = baseNotification(text, null)
-        ServiceCompat.startForeground(this, NOTIFY_ID, n,
-            if (Build.VERSION.SDK_INT >= 29) ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC else 0)
+        try {
+            ServiceCompat.startForeground(this, NOTIFY_ID, n,
+                if (Build.VERSION.SDK_INT >= 29) ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC else 0)
+            foreground = true
+        } catch (e: Exception) {
+            // Android refused (15+: data-sync services have a daily time limit, reset when the app is opened;
+            // 12+: not from the background). Serve anyway while the app is open; never crash over a notification.
+            foreground = false
+            AppLog.w("engine", "couldn't run as a foreground service; running without it", e)
+        }
     }
 
     private fun updateNotification(text: String, progress: Int?) {

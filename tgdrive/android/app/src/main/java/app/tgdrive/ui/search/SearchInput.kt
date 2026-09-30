@@ -43,6 +43,9 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -131,7 +134,11 @@ fun SearchInputScreen(
                         cursorBrush = SolidColor(c.accent),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                         keyboardActions = KeyboardActions(onSearch = { submit() }),
-                        modifier = Modifier.fillMaxWidth().focusRequester(focus),
+                        // Enter on a hardware keyboard searches too (the soft keyboard sends its Search action).
+                        modifier = Modifier.fillMaxWidth().focusRequester(focus).onPreviewKeyEvent { e ->
+                            val enter = e.key == androidx.compose.ui.input.key.Key.Enter || e.key == androidx.compose.ui.input.key.Key.NumPadEnter
+                            if (enter && e.type == androidx.compose.ui.input.key.KeyEventType.KeyUp) { submit(); true } else enter
+                        },
                     )
                 }
                 if (text.text.isNotEmpty()) IconBtn(TgIcons.close, { text = TextFieldValue("") }, size = 36.dp, iconSize = 18.dp,

@@ -121,11 +121,12 @@ fun MainScreen(activity: MainActivity, state: AppState) {
     val top = nav.top
 
     // Pickers for uploads (files, or a whole folder with its sub-folders).
+    val refused = { state.message("Android didn't let TG Drive start the upload. Try again in a moment.", error = true) }
     val pickFiles = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris: List<Uri> ->
-        if (uris.isNotEmpty()) UploadService.start(ctx, aid, uris, currentFolder(top.screen, state))
+        if (uris.isNotEmpty() && !UploadService.start(ctx, aid, uris, currentFolder(top.screen, state))) refused()
     }
     val pickTree = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
-        if (uri != null) UploadService.startTree(ctx, aid, uri, currentFolder(top.screen, state))
+        if (uri != null && !UploadService.startTree(ctx, aid, uri, currentFolder(top.screen, state))) refused()
     }
     val upload = { pickFiles.launch(arrayOf("*/*")) }
 
@@ -133,7 +134,7 @@ fun MainScreen(activity: MainActivity, state: AppState) {
     val shared by activity.incomingShare.collectAsState()
     LaunchedEffect(shared) {
         if (shared.isNotEmpty()) {
-            UploadService.start(ctx, aid, shared, currentFolder(top.screen, state))
+            if (!UploadService.start(ctx, aid, shared, currentFolder(top.screen, state))) refused()
             activity.incomingShare.value = emptyList()
         }
     }
