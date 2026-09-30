@@ -38,6 +38,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import app.tgdrive.ui.components.TgDialog
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -100,27 +102,65 @@ private fun ErrorText(text: String?) {
 }
 
 // ---------------------------------------------------------------------- splash
+/**
+ * While the service starts: what it's doing right now and, if that takes unusually long, a way to
+ * see why and to start it again (never a spinner with no way out).
+ */
 @Composable
-fun SplashScreen(slow: Boolean) {
+fun SplashScreen(stage: String, seconds: Int, report: () -> String, onRestart: () -> Unit) {
     val c = Tg.colors
-    Box(Modifier.fillMaxSize().background(c.canvas), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    var details by remember { mutableStateOf(false) }
+    Box(Modifier.fillMaxSize().background(c.canvas).systemBarsPadding(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 32.dp)) {
             TgLogo(84.dp)
             Spacer(Modifier.height(26.dp))
             Spinner(24.dp)
             Spacer(Modifier.height(14.dp))
             Text("Starting TG Drive…", style = Tg.type.label, color = c.ink2)
-            if (slow) {
+            if (stage.isNotBlank() && seconds >= 2) {
                 Spacer(Modifier.height(6.dp))
-                Text("The first start unpacks TG Drive's service; it takes a few seconds.", style = Tg.type.meta, color = c.ink3,
-                    textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 40.dp))
+                Text(stage, style = Tg.type.meta, color = c.ink3, textAlign = TextAlign.Center)
+            }
+            if (seconds >= 6 && seconds < 45) {
+                Spacer(Modifier.height(4.dp))
+                Text("The first start unpacks TG Drive's service; it takes a little longer.", style = Tg.type.meta, color = c.ink3,
+                    textAlign = TextAlign.Center)
+            }
+            if (seconds >= 45) {
+                Spacer(Modifier.height(10.dp))
+                Text("This is taking longer than it should (${seconds}s).", style = Tg.type.meta, color = c.warn, textAlign = TextAlign.Center)
+                Spacer(Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    TgButton("Show details", { details = true }, small = true, icon = TgIcons.info)
+                    TgButton("Restart", onRestart, small = true, icon = TgIcons.refresh)
+                }
             }
         }
+    }
+    if (details) ReportDialog(report) { details = false }
+}
+
+/** The start report, to read, copy or send (the error screen and a slow start show it). */
+@Composable
+fun ReportDialog(report: () -> String, onClose: () -> Unit) {
+    val ctx = LocalContext.current
+    val text = remember { report() }
+    TgDialog("Details", onClose, confirm = "Copy", onConfirm = {
+        app.tgdrive.ui.actions.Platform.copy(ctx, "TG Drive start report", text)
+    }, dismiss = "Close") {
+        Text("Copy this and send it to report the problem. It has no passwords, keys or messages.", style = Tg.type.meta, color = Tg.colors.ink3)
+        Spacer(Modifier.height(10.dp))
+        androidx.compose.foundation.text.selection.SelectionContainer {
+            Text(text, style = Tg.type.mono.copy(fontSize = 11.sp), color = Tg.colors.ink2)
+        }
+        Spacer(Modifier.height(10.dp))
+        TgButton("Share…", { app.tgdrive.ui.actions.Platform.shareText(ctx, text) }, small = true, icon = TgIcons.send)
     }
 }
 
 @Composable
-fun EngineFailedScreen(error: String, onRetry: () -> Unit, onSample: () -> Unit) {
+fun EngineFailedScreen(error: String, report: () -> String, onRetry: () -> Unit, onSample: () -> Unit) {
+    var details by remember { mutableStateOf(false) }
     FramePage {
         H1("TG Drive's service didn't start")
         P("Something went wrong while starting the part of TG Drive that talks to Telegram. Your files and sign-in are safe.")
@@ -133,7 +173,10 @@ fun EngineFailedScreen(error: String, onRetry: () -> Unit, onSample: () -> Unit)
             TgButton("Try again", onRetry, kind = ButtonKind.Primary, icon = TgIcons.refresh)
             TgButton("Use sample data", onSample)
         }
+        Spacer(Modifier.height(10.dp))
+        TgButton("Show details", { details = true }, kind = ButtonKind.Ghost, icon = TgIcons.info)
     }
+    if (details) ReportDialog(report) { details = false }
 }
 
 // ---------------------------------------------------------------------- welcome

@@ -66,6 +66,17 @@ class EngineService : Service() {
     override fun onCreate() {
         super.onCreate()
         createChannels(this)
+        // Anything that escapes in this process ends it: say so first, so the app shows the error
+        // instead of waiting for a service that is gone.
+        val previous = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { t, e ->
+            runCatching {
+                Log.e(TAG, "the service crashed", e)
+                trace("crashed: ${e.stackTraceToString().take(4000)}")
+                publish(state.copy(phase = EngineState.Phase.Failed, error = "TG Drive's service crashed: $e", pid = Process.myPid()))
+            }
+            previous?.uncaughtException(t, e)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -95,28 +106,36 @@ class EngineService : Service() {
     // ------------------------------------------------------------------ lifecycle
     private fun start(demo: Boolean) {
         if (state.phase == EngineState.Phase.Ready || state.phase == EngineState.Phase.Starting) return
-        publish(EngineState(phase = EngineState.Phase.Starting, demo = demo, pid = Process.myPid()))
+        startLog().delete()
+        stage(EngineState(phase = EngineState.Phase.Starting, demo = demo, pid = Process.myPid()), "Preparing")
         try {
+            stage(state, "Loading search (full-text index)")
             System.loadLibrary("tgfts5")
+            stage(state, if (Python.isStarted()) "Starting Python" else "Unpacking Python (first start takes longer)")
             if (!Python.isStarted()) Python.start(AndroidPlatform(this))
             val token = secret()
             val mediaToken = secret()
+            stage(state, "Unpacking the meaning model")
+            val model = modelDir()
             val opts = buildJsonObject {
                 put("data_dir", File(filesDir, "tgdrive").absolutePath)
                 put("download_dir", downloadDir().absolutePath)
-                put("model_dir", modelDir()?.absolutePath ?: "")
+                put("model_dir", model?.absolutePath ?: "")
                 put("fts5_library", "libtgfts5.so")
                 put("token", token)
                 put("media_token", mediaToken)
                 put("demo", demo)
             }
+            stage(state, if (demo) "Starting TG Drive with sample data" else "Starting TG Drive")
             val out = mobile().callAttr("start", opts.toString()).toString()
             val info = json.parseToJsonElement(out).jsonObject
+            trace("started: $out")
             publish(EngineState(
                 phase = EngineState.Phase.Ready, port = info.int("port"), mediaPort = info.int("media_port"),
                 token = token, mediaToken = mediaToken, demo = demo, pid = Process.myPid(),
                 startedAt = System.currentTimeMillis(), crypto = info.str("crypto"), fts5 = info.str("fts5"),
                 numpy = info["numpy"]?.jsonPrimitive?.boolean ?: false, version = info.str("version"),
+                updatedAt = System.currentTimeMillis(),
             ))
             lastEvent = 0
             idleSince = 0
@@ -124,11 +143,25 @@ class EngineService : Service() {
             updateNotification(getString(R.string.engine_ready), null)
         } catch (e: Throwable) {
             Log.e(TAG, "the service didn't start", e)
+            trace("failed at “${state.stage}”: ${e.stackTraceToString().take(6000)}")
             val msg = (e as? PyException)?.message ?: e.toString()
-            publish(state.copy(phase = EngineState.Phase.Failed, error = msg.lineSequence().lastOrNull { it.isNotBlank() } ?: msg))
+            val last = msg.lineSequence().lastOrNull { it.isNotBlank() } ?: msg
+            publish(state.copy(phase = EngineState.Phase.Failed, error = "$last\n(while: ${state.stage})"))
             // Python can't be restarted inside a process: end this one, the app starts a fresh one to retry.
             stopEverything()
         }
+    }
+
+    /** Say what the service is doing now (the app shows it under the spinner, and keeps a log of it). */
+    private fun stage(s: EngineState, what: String) {
+        trace(what)
+        publish(s.copy(stage = what, updatedAt = System.currentTimeMillis()))
+    }
+
+    private fun startLog() = File(filesDir, START_LOG)
+
+    private fun trace(line: String) {
+        runCatching { startLog().appendText("${java.time.Instant.now()} [${Process.myPid()}] $line\n") }
     }
 
     private fun tick() {
@@ -307,6 +340,8 @@ class EngineService : Service() {
         const val CHANNEL_DONE = "transfers"
         private const val NOTIFY_ID = 1
         private const val IDLE_STOP_MS = 60_000L
+        /** How the last start went, step by step (Settings → About and the error screen show it). */
+        const val START_LOG = "engine-start.log"
 
         private fun mobile() = Python.getInstance().getModule("tgdrive.mobile")
 

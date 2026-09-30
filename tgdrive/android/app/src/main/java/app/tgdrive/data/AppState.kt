@@ -135,8 +135,13 @@ class AppState(
 
     fun retryEngine() {
         _phase.value = Phase.Starting
-        engine.start()
+        bootFailedSince = 0
+        // A service that runs but doesn't answer needs a fresh process, not just a start.
+        scope.launch { if (engine.state.value.ready) engine.restart(engine.demo) else engine.start() }
     }
+
+    /** Since when the running service hasn't answered (0: it answers). */
+    private var bootFailedSince = 0L
 
     suspend fun switchMode(demo: Boolean) {
         _phase.value = Phase.Starting
@@ -162,7 +167,17 @@ class AppState(
                     }
                 }
                 if (_phase.value == Phase.Ready) startLive()
+                bootFailedSince = 0
             } catch (e: Exception) {
+                val now = System.currentTimeMillis()
+                if (bootFailedSince == 0L) bootFailedSince = now
+                if (now - bootFailedSince > 25_000) {
+                    // Never wait on a service that runs but doesn't answer: say what it answers.
+                    android.util.Log.w("TGDrive", "the service doesn't answer", e)
+                    _phase.value = Phase.Failed("TG Drive's service is running but doesn't answer: ${e.message ?: e.javaClass.simpleName}")
+                    bootFailedSince = 0
+                    return@launch
+                }
                 delay(800)
                 if (engine.state.value.ready) bootstrap()
             }

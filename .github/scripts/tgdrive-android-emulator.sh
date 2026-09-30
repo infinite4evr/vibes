@@ -4,14 +4,16 @@
 set -uo pipefail
 mkdir -p out/shots
 adb logcat -c || true
-adb install -r -g app/build/outputs/apk/debug/app-debug.apk
-adb install -r -g app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb install -r -g app/build/outputs/apk/staging/app-staging.apk
+adb install -r -g app/build/outputs/apk/androidTest/staging/app-staging-androidTest.apk
 status=0
 adb shell am instrument -w -r -e class app.tgdrive.EngineTest app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/engine-test.txt
 grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/engine-test.txt && status=1
 adb shell am instrument -w -r -e class app.tgdrive.ScreenshotTour app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/tour.txt
 grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/tour.txt && status=1
 adb pull /sdcard/Android/data/app.tgdrive/files/Pictures/tour out/shots/ || true
+adb shell run-as app.tgdrive cat files/engine-start.log > out/engine-start.log 2>/dev/null || true
+echo "---- service start steps"; cat out/engine-start.log || true
 adb shell run-as app.tgdrive cat files/tgdrive/logs/tgdrive.log > out/service.log 2>/dev/null || true
 adb logcat -d > out/logcat.txt || true
 grep -E "TGDrive|python|chaquopy|AndroidRuntime|FATAL" out/logcat.txt | tail -n 300 > out/logcat-app.txt || true

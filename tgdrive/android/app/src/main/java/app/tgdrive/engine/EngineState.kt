@@ -25,6 +25,9 @@ data class EngineState(
     val fts5: String = "",
     val numpy: Boolean = true,
     val version: String = "",
+    /** What the service is doing while it starts ("Starting Python" …), shown under the spinner. */
+    val stage: String = "",
+    val updatedAt: Long = 0,
 ) {
     @Serializable
     enum class Phase { Stopped, Starting, Ready, Failed }

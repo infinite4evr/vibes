@@ -45,11 +45,13 @@ fun AppRoot(activity: MainActivity) {
     )
     TgTheme(appearance) {
         val phase by state.phase.collectAsState()
-        var slow by remember { mutableStateOf(false) }
+        val engineState by g.engine.state.collectAsState()
+        var seconds by remember { mutableStateOf(0) }
         LaunchedEffect(phase) {
-            slow = false
-            if (phase == Phase.Starting) { delay(2500); slow = true }
+            seconds = 0
+            while (phase == Phase.Starting) { delay(1000); seconds++ }
         }
+        val report = { app.tgdrive.engine.StartupReport.build(activity, g.engine, (phase as? Phase.Failed)?.error) }
         AnimatedContent(
             targetState = phase::class,
             transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(160)) },
@@ -58,8 +60,8 @@ fun AppRoot(activity: MainActivity) {
         ) { _ ->
             Box(Modifier.fillMaxSize()) {
                 when (val p = phase) {
-                    Phase.Starting -> SplashScreen(slow)
-                    is Phase.Failed -> EngineFailedScreen(p.error, onRetry = { state.retryEngine() }, onSample = { state.chooseStart(true) })
+                    Phase.Starting -> SplashScreen(engineState.stage, seconds, report, onRestart = { state.retryEngine() })
+                    is Phase.Failed -> EngineFailedScreen(p.error, report, onRetry = { state.retryEngine() }, onSample = { state.chooseStart(true) })
                     Phase.Welcome -> WelcomeScreen(onSignIn = { state.chooseStart(false) }, onSample = { state.chooseStart(true) })
                     Phase.Locked -> LockScreen(state, biometric = null)
                     Phase.NeedsApiKey -> ApiKeyScreen(state, onBack = null)

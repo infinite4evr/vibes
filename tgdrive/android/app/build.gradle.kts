@@ -35,6 +35,10 @@ android {
         cmake { path = file("src/main/cpp/CMakeLists.txt") }
     }
 
+    // Instrumented tests run against "staging" in CI: the release build (minified by R8), only
+    // debuggable and debug-signed, so the emulator checks what phones actually get.
+    testBuildType = (project.findProperty("testBuildType") as String?) ?: "debug"
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -42,6 +46,14 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // Signed with the debug key; CI restores a stable one from a secret (see README)
             signingConfig = signingConfigs.getByName("debug")
+        }
+        create("staging") {
+            initWith(getByName("release"))
+            isDebuggable = true
+            signingConfig = signingConfigs.getByName("debug")
+            proguardFiles("proguard-staging.pro")
+            testProguardFiles("proguard-test.pro")
+            matchingFallbacks += listOf("release")
         }
     }
 
