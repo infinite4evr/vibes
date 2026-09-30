@@ -105,7 +105,9 @@ class SignInFlow {
             val retry = waitText("Get a new code", 90_000)
             shot("36-qr-answer")
             assertNotNull("QR sign-in showed no answer from Telegram (or no way to try again)", retry)
-            assertNotNull("QR sign-in didn't say why", waitText("rejected the API ID", 3_000))
+            val why = waitText("Telegram rejected", 3_000)
+            assertNotNull("QR sign-in didn't say why", why)
+            assertTrue("QR sign-in didn't say what to check: ${why!!.text}", why.text.contains("my.telegram.org"))
         }
     }
 }

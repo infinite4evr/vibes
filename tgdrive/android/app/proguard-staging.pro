@@ -17,3 +17,4 @@
 -keepclassmembers class app.tgdrive.player.PlayerController$Companion { public *; }
 -keepclassmembers class app.tgdrive.util.Format { public *; }
 -keepclassmembers class app.tgdrive.engine.BatteryLimits { public *; }
+-keepclassmembers class app.tgdrive.diag.** { public *; }

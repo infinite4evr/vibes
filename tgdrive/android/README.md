@@ -67,7 +67,16 @@ shortcuts, drag and drop, importing from old desktop versions, and the VLC/mpv l
 playlists. Android opens streams in any installed player instead, and plays queues in its own
 background player.
 
-## Problem reports
+## Problems and crashes
+
+Wherever an error shows (its **Details**, error screens, the crash notice, *Settings → About &
+diagnostics*, the account menu) there is **Create GitHub issue**. It opens a new issue on this
+repository, filled in with the error, the phone, the service's state and the end of the logs; you
+see it before sending. If the app crashes, it shows a crash screen with the same button instead
+of closing (in its own process, so it works whatever broke). If the crashes repeat, the screen
+also offers to reset the app's settings, keeping accounts and the index.
+
+### Problem reports
 
 *Settings → About & diagnostics → Send report* (also *Account menu → Report a problem*, error
 screens and error **Details**) makes one `.zip` with the app's and the service's logs, crash
@@ -81,7 +90,8 @@ plus the contract harness (the app's real API code against the real service), th
 APK, and an emulator run of the minified build:
 - `EngineTest`: the service on Android (search, streaming, the FTS5 extension).
 - `ScreenshotTour`: every screen.
-- `Journeys`: 34 end-to-end journeys, each checked against the service.
+- `Journeys`: 35 end-to-end journeys, each checked against the service.
+- `CrashScreenTest`, plus a real crash of the running app: the crash screen must come up.
 - `BackgroundSyncTest`: a sync with the app closed.
 - `SignInFlow`: the real sign-in against Telegram.
 

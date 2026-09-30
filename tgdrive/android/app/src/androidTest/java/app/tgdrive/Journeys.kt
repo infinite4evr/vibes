@@ -15,6 +15,7 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 import app.tgdrive.data.FileItem
+import app.tgdrive.diag.GitHubIssue
 import app.tgdrive.engine.BackgroundSync
 import app.tgdrive.player.PlayerController
 import app.tgdrive.util.Format
@@ -66,6 +67,9 @@ class Journeys {
     private fun find(sel: BySelector, ms: Long = 8000): UiObject2? = device.wait(Until.findObject(sel), ms)
 
     private fun need(sel: BySelector, what: String, ms: Long = 8000): UiObject2 = find(sel, ms) ?: throw AssertionError("not on screen: $what")
+
+    /** A file's name on screen (a label, never the search box that may hold the same words). */
+    private fun label(text: String): BySelector = By.clazz("android.widget.TextView").textContains(text)
 
     /**
      * Tap what [sel] finds, by its position: live parts of the screen (the indexing counter, progress)
@@ -153,22 +157,28 @@ class Journeys {
         // (home() also brings TG Drive back if Back left it).
         if (find(By.desc("Menu"), 1500) == null) home()
         tapDesc("Menu")
-        Thread.sleep(500)
+        // Wait for the drawer to be fully open (its scrim), or the page behind it gets scrolled instead.
+        need(By.desc("Close navigation menu"), "the open sidebar", 6000)
+        Thread.sleep(700)
         fun drawerList(): UiObject2? = runCatching {
-            val lists = device.findObjects(By.scrollable(true))
-            lists.firstOrNull { it.visibleBounds.right < device.displayWidth - 8 } ?: lists.firstOrNull()
+            device.findObjects(By.scrollable(true)).firstOrNull { it.visibleBounds.right < device.displayWidth - 8 }
         }.getOrNull()
-        // The drawer keeps where it was scrolled to: start from its top.
-        repeat(4) { runCatching { drawerList()?.scroll(Direction.UP, 1f, SLOW) } }
-        Thread.sleep(400)
+        // The drawer keeps where it was scrolled to: back to its top (My Drive is its first row).
+        var up = 0
+        while (find(By.text("My Drive"), 600) == null && up++ < 8) {
+            runCatching { drawerList()?.scroll(Direction.UP, 0.8f) }
+            device.waitForIdle()
+            Thread.sleep(400)
+        }
         fun scrollFind(sel: BySelector): UiObject2? {
-            var o = find(sel, 1200)
+            var o = find(sel, 1500)
             var tries = 0
-            while (o == null && tries < 6) {
+            while (o == null && tries < 10) {
                 // Slowly, so the list doesn't fling on after a row was found (it would be gone when tapped).
-                runCatching { drawerList()?.scroll(Direction.DOWN, 0.6f, SLOW) }
+                runCatching { drawerList()?.scroll(Direction.DOWN, 0.45f, SLOW) }
+                device.waitForIdle()
                 Thread.sleep(500)
-                o = find(sel, 600)
+                o = find(sel, 1500)
                 tries++
             }
             return o
@@ -187,9 +197,9 @@ class Journeys {
 
     /** The menu of the file showing [name]; searches for it first when it isn't on screen. */
     private fun fileMenu(name: String) {
-        if (find(By.textContains(name), 2000) == null || find(By.desc("Menu"), 200) != null && find(By.desc("Back"), 200) == null)
+        if (find(label(name), 2000) == null || find(By.desc("Menu"), 200) != null && find(By.desc("Back"), 200) == null)
             search(name.substringBefore('.'))
-        val row = need(By.textContains(name), "file “$name”", 15_000)
+        val row = need(label(name), "file “$name”", 15_000)
         val y = row.visibleBounds.centerY()
         // A row has it on the same line; a card at the top of its picture, above the name.
         val button = device.findObjects(By.desc("File options")).filter { it.visibleBounds.centerY() <= y + 40 }
@@ -216,9 +226,15 @@ class Journeys {
             if (field != null) {
                 try { field.text = q } catch (_: StaleObjectException) { }
                 if (find(By.clazz("android.widget.EditText").text(q), 1500) != null) {
-                    device.pressEnter()
-                    Thread.sleep(2000)
-                    return
+                    // Submitted when the search box gives way to the results page.
+                    repeat(3) {
+                        device.pressEnter()
+                        if (device.wait(Until.gone(By.clazz("android.widget.EditText").text(q)), 4000)) {
+                            Thread.sleep(1500)
+                            return
+                        }
+                    }
+                    throw AssertionError("the search for “$q” wasn't submitted")
                 }
             }
             Thread.sleep(500)
@@ -319,7 +335,7 @@ class Journeys {
 
             step("search") {
                 search("syllabus")
-                need(By.textContains("syllabus.txt"), "syllabus.txt in the results", 15_000)
+                need(label("syllabus.txt"), "syllabus.txt in the results", 15_000)
             }
 
             step("star") {
@@ -502,13 +518,13 @@ class Journeys {
                 app.startActivity(send)
                 eventually("the shared file is in TG Drive", 120_000) { file("shared", "e2e shared note.txt") != null }
                 search("e2e shared note")
-                need(By.textContains("e2e shared note"), "the uploaded file in search", 15_000)
+                need(label("e2e shared note"), "the uploaded file in search", 15_000)
             }
 
             // A song that really plays: in the background player, with the mini player to stop it.
             step("audio-player") {
                 search("Morning raga")
-                click(By.textContains("Morning raga"), "the sample recording", ms = 15_000)
+                click(label("Morning raga"), "the sample recording", ms = 15_000)
                 val player = PlayerController.get(app)
                 eventually("the recording plays", 30_000) { player.playing && player.position > 1500 }
                 need(By.desc("Stop"), "the mini player")
@@ -523,7 +539,7 @@ class Journeys {
                     g.api.files(aid, mapOf("kinds" to "video", "copies" to "hide", "limit" to "5")).items.firstOrNull()?.displayName
                 } ?: throw AssertionError("the sample has no videos")
                 search(name.substringBeforeLast('.').take(24))
-                click(By.textContains(name.take(18)), "the video", ms = 15_000)
+                click(label(name.take(18)), "the video", ms = 15_000)
                 need(By.textContains("this video"), "the video error message", 30_000)
                 need(By.desc("Details"), "the viewer, still open")
                 shot("e2e-video-error", 300)
@@ -532,7 +548,7 @@ class Journeys {
 
             step("pdf-viewer") {
                 search("Fundamental Rights")
-                click(By.textContains("Fundamental Rights"), "the sample PDF", ms = 15_000)
+                click(label("Fundamental Rights"), "the sample PDF", ms = 15_000)
                 need(By.textContains("1 / "), "the PDF's page counter", 30_000)
                 shot("e2e-pdf", 1200)
                 back()
@@ -589,15 +605,19 @@ class Journeys {
             // Turned sideways, and with Android's largest text: the main screens still work.
             step("landscape") {
                 home()
-                device.setOrientationLeft()
-                Thread.sleep(2500)
-                need(By.text("Search everything…"), "the search bar in landscape", 15_000)
-                shot("e2e-landscape-home", 800)
-                sidebar("Photos")
-                shot("e2e-landscape-photos", 2000)
-                device.setOrientationNatural()
-                device.unfreezeRotation()
-                Thread.sleep(1500)
+                try {
+                    device.setOrientationLeft()
+                    Thread.sleep(2500)
+                    need(By.text("Search everything…"), "the search bar in landscape", 15_000)
+                    shot("e2e-landscape-home", 800)
+                    sidebar("Photos")
+                    shot("e2e-landscape-photos", 2000)
+                } finally {
+                    // Always upright again: later journeys (and bottom sheets) assume portrait.
+                    device.setOrientationNatural()
+                    device.unfreezeRotation()
+                    Thread.sleep(1500)
+                }
                 home()
             }
 
@@ -660,6 +680,36 @@ class Journeys {
                 for (entry in listOf("report.txt", "app/app.log", "engine/engine.log", "service/tgdrive.log"))
                     if (entry !in names) throw AssertionError("the report has no $entry (has: $names)")
                 back()
+                if (find(By.text("What went wrong"), 1000) != null) tap("Close")
+            }
+
+            // An error's details open a GitHub issue about it (in the browser; copied when there is none).
+            step("github-issue-from-error") {
+                home()
+                runBlocking { withContext(Dispatchers.Main) {
+                    g.state.failed(PLANTED, IllegalStateException("$PLANTED for the GitHub issue"))
+                } }
+                tap("Details")
+                need(By.text("What went wrong"), "the error details")
+                val canBrowse = app.packageManager.resolveActivity(
+                    android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com")), 0) != null
+                tap("Create GitHub issue")
+                val until = System.currentTimeMillis() + 15_000
+                var left = false
+                while (!left && System.currentTimeMillis() < until) { left = device.currentPackageName != app.packageName; Thread.sleep(300) }
+                shot("e2e-github-issue", 2500)
+                if (canBrowse && !left) throw AssertionError("Create GitHub issue didn't open GitHub")
+                if (!canBrowse) {
+                    val clip = runBlocking { withContext(Dispatchers.Main) {
+                        app.getSystemService(android.content.ClipboardManager::class.java)?.primaryClip?.getItemAt(0)?.text?.toString()
+                    } }
+                    if (clip?.contains("github.com/${GitHubIssue.REPO}/issues/new") != true)
+                        throw AssertionError("with no browser, the issue link wasn't copied")
+                }
+                // Back to TG Drive (a browser may need several Backs, or keep the screen).
+                repeat(4) { if (device.currentPackageName != app.packageName) { device.pressBack(); Thread.sleep(600) } }
+                if (device.currentPackageName != app.packageName) ActivityScenario.launch(MainActivity::class.java)
+                Thread.sleep(1500)
                 if (find(By.text("What went wrong"), 1000) != null) tap("Close")
             }
 

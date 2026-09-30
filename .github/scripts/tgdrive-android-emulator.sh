@@ -17,6 +17,19 @@ grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/journeys.txt 
 # The background sync with the app closed: starts the service by binding, syncs, and it stops after.
 adb shell am instrument -w -r -e class app.tgdrive.BackgroundSyncTest app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/background-sync.txt
 grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/background-sync.txt && status=1
+# The crash screen: its test, then a real crash of the running app, which must show the crash
+# screen instead of the app vanishing (or closing again at every launch).
+adb shell am instrument -w -r -e class app.tgdrive.CrashScreenTest app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/crash-screen-test.txt
+grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/crash-screen-test.txt && status=1
+adb shell am start -W -n app.tgdrive/.MainActivity > /dev/null
+sleep 8
+adb shell am crash app.tgdrive || true
+sleep 6
+adb shell dumpsys activity activities | grep -E "ResumedActivity" | tee out/after-crash.txt
+adb exec-out screencap -p > out/shots/43-after-a-real-crash.png || true
+if grep -q "CrashActivity" out/after-crash.txt; then echo "crash screen shown after a real crash"
+else echo "::error::A crash of the app didn't show the crash screen"; status=1; fi
+adb shell am force-stop app.tgdrive || true
 adb pull /sdcard/Android/data/app.tgdrive/files/Pictures/tour/. out/shots/ || true
 adb shell run-as app.tgdrive cat files/tgdrive/logs/tgdrive.log > out/service-demo.log 2>/dev/null || true
 adb shell run-as app.tgdrive cat files/logs/app.log > out/app-demo.log 2>/dev/null || true

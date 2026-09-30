@@ -66,7 +66,9 @@ a home-screen widget, a notification when new files arrive.
 | `engine/StartupReport.kt` | The text report (phone, service state, exit reasons, start steps, log tail). |
 | `data/Api.kt`, `data/Models.kt` | HTTP API and models. **Response bodies are read on Dispatchers.IO** (reading them on Main threw NetworkOnMainThreadException and broke every list). `FlexBoolean` accepts 0/1 for every Boolean (SQLite has no booleans). |
 | `data/AppState.kt` | Shared state: phases (Welcome, Starting, NeedsApiKey, NeedsLogin, Ready, Locked, Failed), live events (SSE), messages, `failed()`. It loads data only once the app is visible (`bootstrapWhenVisible`), so a background sync waking the process costs nothing. New-file events are bundled: lists refresh at most every 15 s. |
-| `diag/AppLog.kt`, `diag/ProblemReport.kt`, `diag/ReportUi.kt` | Log files, crash reports, the problem-report zip and its UI (see §6). |
+| `diag/AppLog.kt`, `diag/ProblemReport.kt`, `diag/ReportUi.kt` | Log files, crash reports, the problem-report zip and its UI (see §6). The crash handler is installed in `TGDriveApp.attachBaseContext`, before any library starts. |
+| `diag/GitHubIssue.kt` | "Create GitHub issue": a pre-filled issue link on `infinite4evr/vibes` with the error, stack, phone, service state, the service's latest crash report and log tails (tokens removed), kept under 7 600 characters. |
+| `diag/CrashActivity.kt` | The crash screen, in its own process `:crash` with plain Android views. Any crash in the interface's process lands here instead of the app vanishing, with Create GitHub issue, Send report, Copy, Open again, and (after 2+ crashes in 10 min) Reset settings. The reset clears only the `app` and `player` prefs and `engine-state.json`, never the service's data. |
 | `ui/…` | Compose UI: `main` (scaffold, drawer, top bar), `browse`, `viewer`, `photos`, `pages` (Transfers, Storage, Duplicates, Index, Activity), `settings`, `onboarding` (welcome, API key, sign-in, lock, splash, error), `actions` (every menu, sheet and dialog), `search`, `components`, `theme`. |
 | `player/` | Media3 background player (`PlayerService`, `PlayerController`). |
 | `app/src/main/cpp` | FTS5 built as a SQLite loadable extension (Android's Python SQLite lacks FTS5). |
@@ -94,8 +96,20 @@ a home-screen widget, a notification when new files arrive.
   (at least 6 h), This phone says so in red with a button to the right settings. On Samsung phones
   it always adds a hint about Sleeping / Deep sleeping apps.
 - **Errors:** every failure goes through `AppState.failed(what, e)` or `Throwable.explain(where)`.
-  The reason shows on screen, the stack goes to the log, and error snackbars have **Details**
-  (full text, Copy, Send report).
+  The reason shows on screen, the stack goes to the log, and error snackbars have **Details**:
+  the full text, **Create GitHub issue** (the main button), Send report, Copy. Failed pages and
+  lists offer "Report this", which opens the same dialog. Error screens, the crash notice,
+  Settings → About and the account menu have the GitHub button too.
+- **Crashes:** a crash in the interface's process opens the crash screen (`CrashActivity`), so the
+  app never just closes, or closes again at every launch. The service's own crashes are shown by
+  the app (Failed screen).
+- **Foreground services can be refused** (Android 12+ from the background; Android 15+ after
+  data-sync's 6 h/day limit, reset when the app is opened). `EngineService.goForeground` and
+  `UploadService` catch that and carry on without the notification. Upload starts return false
+  and the screen says so; before this they would crash the app.
+- **Busy index:** SQLite "database is locked/busy" (a long background write, mostly on slow phones)
+  answers 503 `{"busy": true}` instead of a crash message. The app retries reads up to 3 times;
+  writes say "TG Drive is busy saving its index. Try again in a moment."
 
 ## 5. Building and testing
 
@@ -133,14 +147,18 @@ run of the same branch):
    x86_64). It builds `staging` (the release build, R8-minified, made debuggable) and runs:
    - `EngineTest`: the service on Android (FTS5, OpenSSL, numpy, search, ranges, organising).
    - `ScreenshotTour`: every screen, screenshots only.
-   - `Journeys`: 34 end-to-end journeys, each checked against the service. Folders, search,
+   - `Journeys`: 35 end-to-end journeys, each checked against the service. Folders, search,
      star, tags, note, rename, move, viewer, details, download, selection, type tabs, photos,
      the Tools pages, dark theme, share-to-upload, audio playback and mini player, a video that
      can't play, the PDF viewer, passcode lock/unlock/remove, the accounts screen, landscape,
      large text, background sync from Settings, error details with a problem report, and the
-     report from the account menu. Any error the app shows fails the run.
+     report from the account menu, and a GitHub issue from an error's details. Any error the app
+     shows fails the run.
    - `BackgroundSyncTest`: a sync with the app closed starts the service by binding, finishes,
      and the service stops afterwards.
+   - `CrashScreenTest`: the crash screen with a planted report (error, buttons, the GitHub link,
+     Open again). After it, the script crashes the running app for real (`am crash app.tgdrive`)
+     and fails if the crash screen doesn't come up.
    - `SignInFlow`: a fresh install, the real sign-in screens against Telegram with a made-up key
      (phone code and QR). Telegram must answer, and the app must show it.
 
@@ -179,6 +197,10 @@ run of the same branch):
   tail), `app/` (app log and crashes), `engine/` (engine log and `engine-start.log`), and
   `service/` (`tgdrive.log`, `tgdrive-debug.log`, the service's crash reports). No passwords,
   keys, tokens or messages are included.
+- **GitHub issues:** the owner mostly reports with the **Create GitHub issue** button, so bug
+  reports arrive as issues on `infinite4evr/vibes` (label `android`, `bug` if the labels exist).
+  The body has "What happened", "Details" (the stack), "Phone and app", "The service's latest
+  crash report" and log tails. Read them with the GitHub tools. The zip may be attached too.
 - When the owner uploads one, read `report.txt` first, then `engine/engine-start.log` (timings),
   `app/app.log` (phases, "status answered in"), then `service/tgdrive.log`.
 
@@ -206,18 +228,30 @@ Done and verified by CI before the last batch: every screen and action in §5, s
 Telegram, background sync scheduling in release builds (an R8 rule for WorkManager's Room
 database), the Duplicates page, problem reports, and dialogs on small screens.
 
-The **last batch** (the final push of this session) contains the following. The next session
-should start by checking its CI run (§5):
-- signing (§7) and the certificate check
-- the battery-limits warnings (§4)
-- the stale "failed" state fix (routine kills are *Stopped*; the sync ignores failures from
-  before it started)
-- bundled, silent list refreshes and the "New files · Show" pill
-- the top bar following only the transfer badge
-- the quiet start deferring prefetch and vocabulary
-- the new journeys (share-upload, audio, video error, PDF, passcode, accounts, landscape, large
-  text) and QR sign-in
-- the real WAV in the sample data
+The CI run of the signing / battery-limits / quiet-start batch (commit `232605a`) built and signed
+fine. Its emulator run found problems, all fixed in the **final push** of this session, together
+with the owner's last requests:
+- **Create GitHub issue** everywhere an error shows, and the **crash screen**, so the app never
+  vanishes or closes at every launch again (§4).
+- **Foreground-service refusals** no longer crash the app. This is the likeliest cause of the
+  owner's "crashes, then closes again when I open it" on Android 16.
+- **Busy database**: 503 plus retries instead of an "OperationalError" message. The exact
+  database error the owner saw is still unknown; its issue or report will show the traceback.
+- **QR sign-in with a wrong app key** showed a raw "Telegram refused: BAD_REQUEST". It now says
+  what to check (`accounts.login_qr_start`).
+- **Sample data** showed "Indexing 7/8 chats" forever: the desktop demo freezes the indexer for its
+  screenshots, and no indexer runs on sample data. So a background sync on sample data never
+  finished. The phone's sample mode now shows indexing finished (`mobile._prepare_demo`).
+- **Search** submitted only through the soft keyboard's Search key. A hardware Enter now submits
+  too.
+- Test harness: the drawer helper waits for the drawer to be open (it used to scroll the page
+  behind it). Searches are checked to have been submitted, file taps target labels (not the search
+  box), and the landscape journey always rotates back.
+
+The next session should start by checking the CI run of that final push (§5), mainly the crash
+screen checks and the journeys that hadn't passed yet: audio playback, the video error, the PDF
+viewer, passcode lock, landscape, background sync, the report from the account menu, and the
+GitHub issue.
 
 Open items:
 1. **Signing secret**: the owner adds it (§7). Then fill in `expected-certificate.sha256`.
