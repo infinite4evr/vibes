@@ -106,7 +106,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         val g = c.graph
         val t0 = System.currentTimeMillis()
         BackgroundSync.started(c)
-        AppLog.i("sync", "background sync starting (attempt ${runAttemptCount + 1})")
+        AppLog.i("sync", "background sync starting (attempt ${runAttemptCount + 1}; ${BatteryLimits.status(c).describe()})")
         val conn = object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName?, service: IBinder?) {}
             override fun onServiceDisconnected(name: ComponentName?) {}
@@ -114,11 +114,13 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         var bound = false
         return try {
             val intent = Intent(c, EngineService::class.java).putExtra(EngineService.EXTRA_DEMO, g.engine.demo)
+            val boundAt = System.currentTimeMillis()
             bound = c.bindService(intent, conn, Context.BIND_AUTO_CREATE)
             if (!bound) throw IllegalStateException("Android didn't let the background sync reach TG Drive's service")
+            // A failure recorded before this sync (an earlier run of the app) says nothing about this start.
             val s = withTimeoutOrNull(150_000) {
-                g.engine.state.first { it.ready || it.phase == EngineState.Phase.Failed }
-            } ?: throw IllegalStateException("TG Drive's service didn't start in time")
+                g.engine.state.first { it.ready || (it.phase == EngineState.Phase.Failed && it.updatedAt >= boundAt) }
+            } ?: throw IllegalStateException("TG Drive's service didn't start in time (${g.engine.state.value.phase})")
             if (!s.ready) throw IllegalStateException(s.error ?: "TG Drive's service didn't start")
 
             val accounts = g.api.status().accounts.filter { it.status != "logged_out" }

@@ -87,6 +87,7 @@ import app.tgdrive.ui.theme.TgIcons
 import app.tgdrive.ui.theme.TgShape
 import app.tgdrive.ui.theme.parseHex
 import app.tgdrive.engine.BackgroundSync
+import app.tgdrive.engine.BatteryLimits
 import app.tgdrive.util.Format
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -675,7 +676,9 @@ private fun BackgroundSyncGroup() {
     var wifi by remember { mutableStateOf(BackgroundSync.wifiOnly(ctx)) }
     var charging by remember { mutableStateOf(BackgroundSync.chargingOnly(ctx)) }
     var last by remember { mutableStateOf(BackgroundSync.last(ctx)) }
-    LaunchedEffect(Unit) { while (true) { last = BackgroundSync.last(ctx); delay(2000) } }
+    var limits by remember { mutableStateOf(BatteryLimits.status(ctx)) }
+    // Also picks up a change made in Android's settings and coming back.
+    LaunchedEffect(Unit) { while (true) { last = BackgroundSync.last(ctx); limits = BatteryLimits.status(ctx); delay(2000) } }
     fun save() = BackgroundSync.update(ctx, on, minutes, wifi, charging)
     Group("Background sync", "While the app is closed, TG Drive checks your chats for new files now and then and indexes them, so " +
         "search and folders are up to date when you open it. Android picks the moment to save battery (with other apps' work, never " +
@@ -683,6 +686,36 @@ private fun BackgroundSyncGroup() {
         "duplicates) waits until you open the app.") {
         Row2("Sync in the background", if (on) "On" else "Off: new files are found when you open TG Drive",
             control = { TgSwitch(on, { on = it; save() }) }, onClick = { on = !on; save() })
+        if (on) {
+            // Android (or the phone's maker) can stop it quietly: say so, and open the screen that fixes it.
+            val stale = last.at > 0 && !last.running &&
+                System.currentTimeMillis() - last.at > maxOf(3L * minutes * 60_000, 6 * 3_600_000L)
+            val problems = buildList {
+                if (limits.backgroundRestricted) add("Android is set to restrict TG Drive in the background, so background sync can't run. " +
+                    "Open the battery settings and choose “Unrestricted” (or “Optimised”).")
+                if (limits.restrictedBucket) add("Android has put TG Drive among its restricted apps (it does this to apps it thinks are " +
+                    "unused), so background sync runs about once a day at most. Choosing “Unrestricted” battery use prevents it.")
+                if (stale) add("Background sync last ran ${Format.relative(last.at / 1000)}, although it's set to every " +
+                    "${if (minutes < 60) "$minutes minutes" else "${minutes / 60} h"}: Android may be holding it back.")
+            }
+            if (problems.isNotEmpty() || limits.samsung) {
+                Divider()
+                Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
+                    problems.forEach {
+                        Text(it, style = Tg.type.meta, color = c.danger, modifier = Modifier.padding(bottom = 8.dp))
+                    }
+                    if (limits.samsung) Text("On Samsung phones, also check Settings → Battery → Background usage limits: TG Drive " +
+                        "must not be in “Sleeping apps” or “Deep sleeping apps” (add it to “Never sleeping apps”).",
+                        style = Tg.type.meta, color = c.ink2, modifier = Modifier.padding(bottom = 8.dp))
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TgButton("Battery settings", { BatteryLimits.openAppSettings(ctx) }, small = true, icon = TgIcons.external,
+                            kind = if (problems.isNotEmpty()) ButtonKind.Primary else ButtonKind.Ghost)
+                        if (limits.samsung) TgButton("Samsung battery", { BatteryLimits.openSamsungBattery(ctx) }, small = true,
+                            icon = TgIcons.external, kind = ButtonKind.Ghost)
+                    }
+                }
+            }
+        }
         if (on) {
             Divider()
             Row2("How often", "At most this often; Android may wait longer when the phone is idle or the battery is saving.", below = {

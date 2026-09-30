@@ -21,6 +21,9 @@ object StartupReport {
             "ABIs ${Build.SUPPORTED_ABIS.joinToString()} · page size ${runCatching { Os.sysconf(OsConstants._SC_PAGESIZE) }.getOrDefault(-1)}")
         appendLine("Service: ${s.phase} · stage “${s.stage}” · pid ${s.pid} · port ${s.port} · demo ${s.demo}" +
             (if (s.version.isNotBlank()) " · ${s.version} · crypto ${s.crypto} · fts5 ${s.fts5} · numpy ${s.numpy}" else ""))
+        appendLine("Background: ${BatteryLimits.status(context).describe()} · sync ${if (BackgroundSync.enabled(context))
+            "every ${BackgroundSync.minutes(context)} min" else "off"} · last: ${BackgroundSync.last(context).let { l ->
+            if (l.at == 0L) "never" else "${java.time.Instant.ofEpochMilli(l.at)} ${l.result}" }}")
         if (!error.isNullOrBlank()) { appendLine(); appendLine("Error:"); appendLine(error) }
         appendLine()
         appendLine("How the service's process ended (newest first):")

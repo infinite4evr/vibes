@@ -102,10 +102,14 @@ class EngineClient(private val context: Context) {
         }
         val why = exitReason(file.pid)
         AppLog.w("engine-client", "the service process ${file.pid} is gone ($why) while ${file.phase} at “${file.stage}”")
-        if (visible && restarts < 1 && file.phase == EngineState.Phase.Ready) {
-            restarts++
-            EngineState.write(context, file.copy(phase = EngineState.Phase.Stopped))
-            start()
+        // Android ends background processes all the time (memory, battery, a force stop): a service that
+        // was running and didn't crash simply stopped. Only a crash, or dying while starting, is a failure;
+        // anything else must not greet the next start with an error.
+        if (file.phase == EngineState.Phase.Ready && crashed(file.pid) != true) {
+            val stopped = file.copy(phase = EngineState.Phase.Stopped)
+            EngineState.write(context, stopped)
+            _state.value = stopped
+            if (visible && restarts < 2) { restarts++; start() }   // on screen: start it again
             return
         }
         val msg = if (file.phase == EngineState.Phase.Starting) "TG Drive's service stopped while starting (${file.stage.ifBlank { "early" }})."
@@ -125,6 +129,18 @@ class EngineClient(private val context: Context) {
                 .filter { it.processName.endsWith(":engine") && (pid <= 0 || it.pid == pid) }
             infos.firstOrNull()?.let { i -> "${reasonName(i.reason)}${i.description?.let { ": $it" } ?: ""} (status ${i.status})" }.orEmpty()
         }.getOrDefault("")
+    }
+
+    /** Whether the service's process [pid] crashed (true), ended otherwise (false), or can't be told (null: before Android 11). */
+    private fun crashed(pid: Int): Boolean? {
+        if (Build.VERSION.SDK_INT < 30) return null
+        return runCatching {
+            val am = context.getSystemService(ActivityManager::class.java)
+            val info = am.getHistoricalProcessExitReasons(context.packageName, 0, 10)
+                .firstOrNull { it.processName.endsWith(":engine") && it.pid == pid } ?: return null
+            info.reason in setOf(ApplicationExitInfo.REASON_CRASH, ApplicationExitInfo.REASON_CRASH_NATIVE,
+                ApplicationExitInfo.REASON_ANR, ApplicationExitInfo.REASON_INITIALIZATION_FAILURE)
+        }.getOrNull()
     }
 
     /** The last few ways the service's process ended, for the details on the error screen. */
