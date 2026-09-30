@@ -7,6 +7,9 @@ native interface built after the desktop design. No server, no computer needed.
 Download the APK from the latest `tgdrive-android-v…` release (built by CI). Android 8.0 or newer,
 64-bit ARM or x86.
 
+Picking up development? Read **[HANDOVER.md](HANDOVER.md)**: scope decisions, code map, how to
+build and verify, lessons learned, open items.
+
 ## How it works
 
 ```
@@ -32,7 +35,15 @@ Download the APK from the latest `tgdrive-android-v…` release (built by CI). A
   every start (`x-tgdrive-token`); streams handed to other players (VLC, MX Player) use a separate
   token that can only play streams.
 - **Battery**: the service runs while the app is open and while something needs it (transfers,
-  the background player, or *Settings → This phone → Keep running*), then stops after a minute.
+  the background player), then stops after a minute. For the first 20 seconds after a start the
+  CPU-heavy background jobs wait, so the first screens load first.
+- **Background sync** (*Settings → This phone*): Android's job scheduler checks your chats for new
+  files every 30 min–12 h (default 1 h) while the app is closed. It needs a network, never runs
+  on low battery, and can be limited to Wi-Fi or charging. It binds the service without a
+  notification, holds the heavy jobs until you open the app, and stops as soon as the chats are
+  checked. If Android or Samsung's battery saver is holding it back, the page says so and opens
+  the right settings. *Stay connected all the time* keeps the service running instead, at a
+  higher battery cost.
 - **The meaning model** (offline semantic search) is downloaded at build time, checked against a
   pinned SHA-256, and bundled; numpy comes from Chaquopy's repository. If numpy can't load on a
   device, search keeps working without the meaning tier.
@@ -49,15 +60,32 @@ Storage, Duplicates, Index manager, Activity, several accounts, sample data, pro
 maintenance, folder backups, settings backup, logs, crash reports and diagnostics. Settings are
 the desktop's settings.
 
-Not on Android: the WebDAV drive, folder sync with a folder on disk, split view and the desktop
-integration settings (tray, title bar, file-manager menus).
+**Not on Android, by decision** (details in HANDOVER.md §2): folder sync with a folder on the
+device, the "Drive on this computer" WebDAV mount (and an Android Files-app equivalent), desktop
+integration (tray, autostart, title bar, file-manager menus), split and column views, keyboard
+shortcuts, drag and drop, importing from old desktop versions, and the VLC/mpv launcher and `.m3u`
+playlists. Android opens streams in any installed player instead, and plays queues in its own
+background player.
+
+## Problem reports
+
+*Settings → About & diagnostics → Send report* (also *Account menu → Report a problem*, error
+screens and error **Details**) makes one `.zip` with the app's and the service's logs, crash
+reports, startup timings and the phone's details. It has no passwords, keys, tokens or messages.
+Turn on *Detailed debug logging* first, reproduce the problem, then send the zip.
 
 ## Build
 
-CI builds everything (`.github/workflows/tgdrive-android.yml`): the release APK, the service tests
-in Android mode, and an emulator run (`EngineTest` starts the real service and checks search,
-streaming and the FTS5 extension; `ScreenshotTour` walks through every screen on the sample data
-and keeps the screenshots as an artifact).
+CI builds everything (`.github/workflows/tgdrive-android.yml`): the service tests in Android mode
+plus the contract harness (the app's real API code against the real service), the signed release
+APK, and an emulator run of the minified build:
+- `EngineTest`: the service on Android (search, streaming, the FTS5 extension).
+- `ScreenshotTour`: every screen.
+- `Journeys`: 34 end-to-end journeys, each checked against the service.
+- `BackgroundSyncTest`: a sync with the app closed.
+- `SignInFlow`: the real sign-in against Telegram.
+
+Screenshots and logs are pushed to the `tgdrive-android-screens` branch.
 
 Locally, with JDK 17 and the Android SDK (platform 36, NDK and CMake from the SDK manager):
 
@@ -67,18 +95,25 @@ cd tgdrive/android
 ./gradlew :app:assembleDebug -Pabis=arm64-v8a  # faster, one ABI
 ```
 
-CI signs releases with a stable key restored from the `TGDRIVE_DEBUG_KEYSTORE_BASE64` secret (the
-same arrangement as LumaClean), so each new APK installs as an update over the last one. A local
-build uses your own debug key.
+## Signing
+
+Every release must be signed with the same key, or Android won't install it as an update. CI
+signs with the key in the `TGDRIVE_KEYSTORE_BASE64` / `TGDRIVE_KEYSTORE_PASSWORD` repository
+secrets and checks the certificate. **Setup and rules: [signing/README.md](signing/README.md).**
+Without the secrets a build is signed with a throwaway key and warns about it. Local builds use
+your own debug key.
 
 ## Layout
 
 | Path | What |
 |---|---|
 | `app/build.gradle.kts` | Android, Chaquopy (Python 3.13, pinned `python-requirements.txt`), the model download, copying `../tgdrive` into the APK |
-| `app/src/main/java/app/tgdrive/engine` | the service process, the client that starts/holds it, uploads |
+| `app/src/main/java/app/tgdrive/engine` | the service process, the client that starts/holds it, background sync, battery limits, uploads |
+| `app/src/main/java/app/tgdrive/diag` | log files, crash reports, problem reports |
 | `app/src/main/java/app/tgdrive/data` | the HTTP API, models, shared app state and live events |
 | `app/src/main/java/app/tgdrive/ui` | the interface: theme (desktop design tokens and icons), browse, viewer, menus, pages, settings |
 | `app/src/main/java/app/tgdrive/player` | Media3 background player |
 | `app/src/main/cpp` | FTS5 as a SQLite extension |
 | `app/src/androidTest` | emulator tests |
+| `contract` | the app's API code run against the real service on a computer (CI and locally) |
+| `signing` | how releases are signed (the key itself is in the repository secrets) |

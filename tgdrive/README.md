@@ -23,7 +23,7 @@ If it doesn't start, install FUSE (`sudo apt install fuse3`, `sudo dnf install f
 
 ## On Android
 
-TG Drive for Android runs this same service on the phone, with a native interface after the desktop design: download the APK from the latest `tgdrive-android-v…` release. See [android/README.md](android/README.md).
+TG Drive for Android runs this same service on the phone, with a native interface after the desktop design: download the APK from the latest `tgdrive-android-v…` release. See [android/README.md](android/README.md); to continue developing it, [android/HANDOVER.md](android/HANDOVER.md).
 
 ## First start
 

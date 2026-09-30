@@ -10,7 +10,7 @@ Personal tools, in independent projects:
 | [`pc-command-center/`](pc-command-center/README.md) | **PC Command Center** (GTK app) and **pc** (terminal app) for managing a whole Ubuntu computer (v2.2.4) |
 | [`ubuntu-setup/`](ubuntu-setup/README.md) | Ubuntu cleanup and Catppuccin dev-environment setup; also installs PC Command Center |
 | [`tgdrive/`](tgdrive/README.md) | **TG Drive**: every file in your Telegram, browsed, searched, streamed and organised like Google Drive (desktop app, AppImage) |
-| [`tgdrive/android/`](tgdrive/android/README.md) | **TG Drive for Android**: the same service running on the phone (Python via Chaquopy) with a native Compose interface, built and released as an APK by CI |
+| [`tgdrive/android/`](tgdrive/android/README.md) | **TG Drive for Android**: the same service running on the phone (Python via Chaquopy) with a native Compose interface, built and released as an APK by CI. Handover notes: [`HANDOVER.md`](tgdrive/android/HANDOVER.md) |
 
 `commands/RESUME.md` says where the study tools stand and how to run every test.
 `todo.txt`, the feature requests the study tools were built against, is kept
