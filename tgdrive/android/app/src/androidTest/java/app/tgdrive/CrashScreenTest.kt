@@ -48,10 +48,24 @@ class CrashScreenTest {
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             .putExtra(CrashActivity.EXTRA_REPORT, report.path))
         assertNotNull("the crash screen didn't show", device.wait(Until.findObject(By.text("TG Drive stopped")), 15_000))
-        assertNotNull("the crash screen doesn't show the error", device.findObject(By.textContains(planted)))
-        for (b in listOf("Create GitHub issue", "Send report", "Open TG Drive again"))
-            assertNotNull("no “$b” on the crash screen", device.findObject(By.text(b)))
+        // The buttons show without scrolling; the error is below them.
+        for (b in listOf("Create GitHub issue", "Send report", "Open TG Drive again")) {
+            val o = device.findObject(By.text(b))
+            assertNotNull("no “$b” on the crash screen", o)
+            // Its whole height on screen (visible bounds are cut at the screen's edge).
+            val full = (48 * app.resources.displayMetrics.density).toInt()
+            assertTrue("“$b” is cut off by the screen's edge", o!!.visibleBounds.height() >= full)
+        }
         shot("41-crash-screen")
+        var error = device.findObject(By.textContains(planted))
+        repeat(3) {
+            if (error == null) {
+                device.swipe(device.displayWidth / 2, device.displayHeight * 3 / 4, device.displayWidth / 2, device.displayHeight / 4, 60)
+                Thread.sleep(500)
+                error = device.findObject(By.textContains(planted))
+            }
+        }
+        assertNotNull("the crash screen doesn't show the error", error)
 
         // The issue link it opens: TG Drive's repository, the error in it, short enough for a browser.
         val url = GitHubIssue.link(GitHubIssue.titleFor("Android crash", "IllegalStateException: $planted"),
@@ -61,6 +75,10 @@ class CrashScreenTest {
         assertTrue("the issue doesn't carry the error", android.net.Uri.decode(url).contains(planted))
 
         // And back into the app.
+        repeat(3) {   // back to the top, where the buttons are
+            device.swipe(device.displayWidth / 2, device.displayHeight / 4, device.displayWidth / 2, device.displayHeight * 3 / 4, 60)
+            Thread.sleep(400)
+        }
         device.findObject(By.text("Open TG Drive again")).click()
         assertTrue("TG Drive didn't open again", device.wait(Until.gone(By.text("TG Drive stopped")), 15_000))
         assertTrue("TG Drive isn't in front", device.wait(Until.hasObject(By.pkg(app.packageName)), 15_000))

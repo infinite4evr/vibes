@@ -72,18 +72,6 @@ class CrashActivity : Activity() {
         text("Reporting it gets it fixed: “Create GitHub issue” opens a new issue with this error and the end of TG Drive's " +
             "logs (you see it before sending). “Send report” makes a file with all the logs.", 14f, INK2, top = 10)
 
-        TextView(this).apply {
-            text = report.lineSequence().take(40).joinToString("\n")
-            typeface = Typeface.MONOSPACE
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
-            setTextColor(INK2)
-            setTextIsSelectable(true)
-            setPadding(dp(12), dp(12), dp(12), dp(12))
-            background = GradientDrawable().apply { setColor(PANEL); cornerRadius = dp(10).toFloat() }
-            col.addView(this, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-                .apply { topMargin = dp(16) })
-        }
-
         fun button(label: String, primary: Boolean, onClick: () -> Unit) = Button(this).apply {
             text = label
             isAllCaps = false
@@ -103,6 +91,19 @@ class CrashActivity : Activity() {
         }
         button("Open TG Drive again", primary = recent < 2) { reopen() }
         if (recent >= 2) button("Reset TG Drive's settings and open", primary = true) { confirmReset() }
+
+        // The error itself below the buttons: they must show without scrolling.
+        TextView(this).apply {
+            text = report.lineSequence().take(40).joinToString("\n")
+            typeface = Typeface.MONOSPACE
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+            setTextColor(INK2)
+            setTextIsSelectable(true)
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+            background = GradientDrawable().apply { setColor(PANEL); cornerRadius = dp(10).toFloat() }
+            col.addView(this, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                .apply { topMargin = dp(16) })
+        }
 
         return ScrollView(this).apply {
             setBackgroundColor(CANVAS)
