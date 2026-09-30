@@ -123,21 +123,28 @@ class Journeys {
     private fun sidebar(label: String) {
         tapDesc("Menu")
         Thread.sleep(500)
-        var o = find(By.text(label), 1500)
-        if (o == null && label in TOOLS) { find(By.text("TOOLS"), 1000)?.click(); Thread.sleep(400); o = find(By.text(label), 1500) }
-        var tries = 0
-        while (o == null && tries < 6) {
-            val lists = device.findObjects(By.scrollable(true))
-            (lists.firstOrNull { it.visibleBounds.right < device.displayWidth - 8 } ?: lists.firstOrNull())?.scroll(Direction.DOWN, 0.7f)
-            o = find(By.text(label), 800)
-            tries++
+        fun scrollFind(sel: BySelector): UiObject2? {
+            var o = find(sel, 1200)
+            var tries = 0
+            while (o == null && tries < 6) {
+                val lists = device.findObjects(By.scrollable(true))
+                (lists.firstOrNull { it.visibleBounds.right < device.displayWidth - 8 } ?: lists.firstOrNull())?.scroll(Direction.DOWN, 0.7f)
+                o = find(sel, 600)
+                tries++
+            }
+            return o
         }
+        var o = scrollFind(By.text(label))
+        // Tools start folded: open the group, then look again.
+        if (o == null && label in TOOLS) { scrollFind(By.text("TOOLS"))?.click(); Thread.sleep(400); o = scrollFind(By.text(label)) }
         (o ?: throw AssertionError("sidebar has no “$label”")).click()
         Thread.sleep(1200)
     }
 
-    /** The menu of the file row showing [name] (the “File options” button on the same line). */
+    /** The menu of the file showing [name]; searches for it first when it isn't on screen. */
     private fun fileMenu(name: String) {
+        if (find(By.textContains(name), 2000) == null || find(By.desc("Menu"), 200) != null && find(By.desc("Back"), 200) == null)
+            search(name.substringBefore('.'))
         val row = need(By.textContains(name), "file “$name”", 15_000)
         val y = row.visibleBounds.centerY()
         // A row has it on the same line; a card at the top of its picture, above the name.
@@ -205,7 +212,7 @@ class Journeys {
     private val aid get() = g.state.aid.value
 
     private suspend fun file(q: String, name: String): FileItem? =
-        g.api.files(aid, mapOf("q" to q, "limit" to "50")).items.firstOrNull { it.name == name || it.displayName == name }
+        g.api.files(aid, mapOf("q" to q, "limit" to "50", "copies" to "hide")).items.firstOrNull { it.name == name || it.displayName == name }
 
     private suspend fun folderId(name: String): String? { g.state.loadFolders(); return g.state.folders.value.folders.firstOrNull { it.name == name }?.id }
 
@@ -379,18 +386,18 @@ class Journeys {
             step("type-tabs") {
                 sidebar("All files")
                 need(By.desc("File options"), "files in All files", 15_000)
-                var docs = find(By.text("Documents"), 3000)
+                var docs = find(By.textStartsWith("Documents"), 3000)
                 if (docs == null) {
-                    val row = need(By.text("Photos"), "the type tabs").visibleBounds
+                    val row = need(By.textStartsWith("Photos"), "the type tabs").visibleBounds
                     device.swipe(device.displayWidth * 4 / 5, row.centerY(), device.displayWidth / 5, row.centerY(), 20)
-                    docs = find(By.text("Documents"), 3000)
+                    docs = find(By.textStartsWith("Documents"), 3000)
                 }
                 (docs ?: throw AssertionError("no Documents tab above All files")).click()
                 Thread.sleep(2500)
                 val shown = runBlocking { g.api.files(aid, mapOf("kinds" to "document", "copies" to "hide")).items.take(3).map { it.displayName } }
                 need(By.textContains(shown.firstOrNull() ?: "?"), "a document in the Documents tab", 10_000)
                 shot("e2e-documents-tab", 500)
-                if (find(By.text("Audio"), 1000) == null) throw AssertionError("no Audio tab next to Documents")
+                if (find(By.textStartsWith("Audio"), 1000) == null) throw AssertionError("no Audio tab next to Documents")
             }
 
             step("photos") {
