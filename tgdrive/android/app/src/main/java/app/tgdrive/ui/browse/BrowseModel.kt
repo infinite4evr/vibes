@@ -126,7 +126,7 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
         return p
     }
 
-    fun setSort(value: String) {
+    fun applySort(value: String) {
         val (s, o) = value.split(":")
         sort = s
         order = o

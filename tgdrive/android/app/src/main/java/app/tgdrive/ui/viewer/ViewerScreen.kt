@@ -391,7 +391,7 @@ fun SpeedRow(player: PlayerController, dark: Boolean = true) {
                 color = if (on) (if (dark) Black else Color.White) else (if (dark) Color.White else Tg.colors.ink2),
                 modifier = Modifier.clip(RoundedCornerShape(8.dp))
                     .background(if (on) (if (dark) Color.White else Tg.colors.accent) else Color.Transparent)
-                    .clickable { player.setSpeed(s) }.padding(horizontal = 9.dp, vertical = 5.dp))
+                    .clickable { player.changeSpeed(s) }.padding(horizontal = 9.dp, vertical = 5.dp))
         }
     }
 }

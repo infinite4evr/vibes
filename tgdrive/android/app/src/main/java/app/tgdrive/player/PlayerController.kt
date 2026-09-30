@@ -127,7 +127,7 @@ class PlayerController private constructor(private val ctx: Context) {
     fun previous() = connect { if (it.currentPosition > 3000 || !it.hasPreviousMediaItem()) it.seekTo(0) else it.seekToPreviousMediaItem() }
     fun stop() = connect { it.stop(); it.clearMediaItems(); current = null }
 
-    fun setSpeed(s: Float) {
+    fun changeSpeed(s: Float) {
         speed = s
         prefs.edit().putFloat("speed", s).apply()
         connect { it.playbackParameters = PlaybackParameters(s) }

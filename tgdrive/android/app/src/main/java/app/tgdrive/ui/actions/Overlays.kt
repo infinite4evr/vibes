@@ -671,7 +671,7 @@ private fun SortSheet(model: BrowseModel, close: () -> Unit) {
         SheetTitle("Sort by")
         Column(Modifier.padding(horizontal = 16.dp)) {
             SORTS.filter { it.first != "relevance:desc" || model.isTextSearch }.forEach { (k, l) ->
-                ChoiceRow(l, cur == k, { model.setSort(k); close() })
+                ChoiceRow(l, cur == k, { model.applySort(k); close() })
             }
         }
     }
