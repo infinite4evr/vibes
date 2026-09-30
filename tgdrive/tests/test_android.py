@@ -285,3 +285,17 @@ def test_a_busy_database_is_a_retryable_answer_not_a_crash():
     req = SimpleNamespace(method="POST", url=SimpleNamespace(path="/api/a/1/files/star"))
     r = asyncio.run(api.database_error(req, sqlite3.OperationalError("database is locked")))
     assert r.status_code == 503 and json.loads(r.body)["busy"] is True
+
+
+def test_background_work_steps_aside_while_someone_waits():
+    """A request someone is waiting on makes background batches pause (never longer than MAX_YIELD)."""
+    import time as _time
+    from tgdrive import pace
+    pace.foreground()
+    t = _time.monotonic()
+    pace.rest(0.0)
+    waited = _time.monotonic() - t
+    assert pace.FOREGROUND_HOLD * 0.5 <= waited <= pace.FOREGROUND_HOLD + 0.3
+    t = _time.monotonic()
+    pace.rest(0.0)      # nothing waiting now: straight on
+    assert _time.monotonic() - t < 0.05

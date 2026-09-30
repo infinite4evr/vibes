@@ -18,6 +18,7 @@ What is different from a computer, and handled here:
 from __future__ import annotations
 
 import json
+import sys
 import logging
 import os
 import threading
@@ -106,6 +107,9 @@ def start(options: str) -> str:
         os.environ.setdefault("HOME", str(data_dir))
         info: dict[str, Any] = {"fts5": enable_fts5(opts.get("fts5_library") or "libtgfts5.so")}
         from . import pace
+        # Phones: switch between Python threads more often, so the server answers promptly while a
+        # background job computes (Python runs one thread at a time).
+        sys.setswitchinterval(0.002)
         pace.force("paused" if opts.get("background") else None)
         # The first screens load before the meaning index, subjects and duplicates start working.
         pace.quiet_for(STARTUP_QUIET)

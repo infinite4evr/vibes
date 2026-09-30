@@ -27,6 +27,21 @@ MAX_REST = 30.0
 
 _forced: Optional[str] = None
 _quiet_until = 0.0
+_foreground_until = 0.0
+FOREGROUND_HOLD = 0.6   # after a request someone is waiting on, background work steps aside this long
+MAX_YIELD = 10.0        # but never waits more than this per batch (it must still get done)
+
+
+def foreground() -> None:
+    """Someone is waiting on an answer (a list, a search, a picture): background jobs pause between
+    their batches for a moment, so they don't compete with it for Python (one thread runs at a time)."""
+    global _foreground_until
+    _foreground_until = time.monotonic() + FOREGROUND_HOLD
+
+
+def _yield_left(start: float) -> float:
+    now = time.monotonic()
+    return 0.0 if now - start >= MAX_YIELD else max(0.0, _foreground_until - now)
 
 
 def force(m: Optional[str]) -> None:
@@ -76,6 +91,9 @@ def rest(elapsed: float, stop: Optional[threading.Event] = None) -> None:
     wait = rest_for(elapsed)
     if wait:
         stop.wait(wait) if stop is not None else time.sleep(wait)
+    start = time.monotonic()
+    while (left := _yield_left(start)) > 0 and not (stop is not None and stop.is_set()):
+        stop.wait(min(left, 0.25)) if stop is not None else time.sleep(min(left, 0.25))
 
 
 def wait_while_paused(stop: Optional[threading.Event] = None, state_cb=None) -> None:
@@ -90,5 +108,8 @@ async def arest(elapsed: float) -> None:
     wait = rest_for(elapsed)
     if wait:
         await asyncio.sleep(wait)
+    start = time.monotonic()
+    while (left := _yield_left(start)) > 0:
+        await asyncio.sleep(min(left, 0.25))
     while mode() == "paused":
         await asyncio.sleep(5)

@@ -25,7 +25,7 @@ from .webapp import Body, FastAPI, FileResponse, JSONResponse, PlainTextResponse
     Response, StaticFiles, StreamingResponse
 from telethon import errors, utils as tl_utils
 
-from . import config, maintenance
+from . import config, maintenance, pace
 from .accounts import Account, AccountError, AccountManager, events, open_path
 from .db import QueryTimeout
 from .drive import DriveError
@@ -226,6 +226,7 @@ async def guard(request: Request, call_next):
         RUNTIME["client_seen"] = time.monotonic()   # a TG Drive page is open (browser mode stops without one)
     if path.startswith("/api/") and not _BACKGROUND.match(path) and request.headers.get("x-tgdrive-bg") != "1":
         maintenance.app_lock.touch()   # only what the person does counts as activity (not polling)
+        pace.foreground()              # and background jobs step aside while it's answered
     t0 = time.perf_counter()
     try:
         response = await call_next(request)
