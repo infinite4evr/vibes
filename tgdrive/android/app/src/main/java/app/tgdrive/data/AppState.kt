@@ -232,6 +232,18 @@ class AppState(
 
     fun setting(key: String): String? = (_settings.value[key] as? JsonPrimitive)?.contentOrNull
 
+    /** Choices kept on this phone only (like the desktop window's own preferences): folder order, last tab … */
+    private val _local = MutableStateFlow(prefs.all.filterKeys { it.startsWith("pref.") }
+        .mapKeys { it.key.removePrefix("pref.") }.mapValues { it.value.toString() })
+    val local: StateFlow<Map<String, String>> = _local.asStateFlow()
+
+    fun pref(key: String): String? = _local.value[key]
+
+    fun setPref(key: String, value: String?) {
+        _local.value = if (value == null) _local.value - key else _local.value + (key to value)
+        prefs.edit().apply { if (value == null) remove("pref.$key") else putString("pref.$key", value) }.apply()
+    }
+
     fun changed(what: String = "files") {
         _changes.tryEmit(what)
     }

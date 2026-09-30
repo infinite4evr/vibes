@@ -29,7 +29,7 @@ sealed interface Screen {
     data class Viewer(val files: List<FileItem>, val index: Int) : Screen
     data class Details(val ref: FileRef) : Screen
     data class ChatContext(val ref: FileRef, val title: String) : Screen
-    data object SearchInput : Screen
+    data class SearchInput(val q: String = "", val scope: SearchScope? = null) : Screen
     data object Transfers : Screen
     data object Photos : Screen
     data object Storage : Screen

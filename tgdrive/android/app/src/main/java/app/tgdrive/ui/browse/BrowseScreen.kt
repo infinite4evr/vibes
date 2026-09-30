@@ -89,6 +89,7 @@ fun BrowseScreen(
     val c = Tg.colors
     val settings by state.settings.collectAsState()
     val foldersResp by state.folders.collectAsState()
+    val local by state.local.collectAsState()
     val gridView = (settings.str("view") ?: "grid") != "list"
     val size = settings.str("grid_size") ?: "m"
     val minCell: Dp = when (size) { "s" -> 104.dp; "l" -> 230.dp; else -> 156.dp }
@@ -103,8 +104,8 @@ fun BrowseScreen(
     }
 
     val folderId = (model.view as? View.Drive)?.folderId
-    val subFolders: List<Folder> = remember(foldersResp, model.view) {
-        if (model.view is View.Drive && model.smartFolder == null) sortFolders(foldersResp.folders.filter { it.parentId == folderId }, settings.str("folder_sort"))
+    val subFolders: List<Folder> = remember(foldersResp, model.view, local["folder_sort"]) {
+        if (model.view is View.Drive && model.smartFolder == null) sortFolders(foldersResp.folders.filter { it.parentId == folderId }, local["folder_sort"])
         else emptyList()
     }
     var foldersOpen by rememberSaveable(model.view) { mutableStateOf(true) }

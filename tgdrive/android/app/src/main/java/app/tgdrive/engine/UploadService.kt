@@ -16,7 +16,6 @@ import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import app.tgdrive.R
 import app.tgdrive.graph
-import app.tgdrive.util.Format
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -82,6 +81,7 @@ class UploadService : Service() {
                 val (uri, rel) = pair
                 val (name, size) = describe(uri)
                 update(getString(R.string.upload_sending, name), if (files.size > 1) (i * 100 / files.size) else null)
+                sending.value = Sending(name, i + 1, files.size)
                 try {
                     val body = UriBody(this, uri, size, contentResolver.getType(uri)?.toMediaTypeOrNull())
                     g.api.upload(job.aid, name, body, job.folderId, rel = if (rel.isEmpty()) "" else "$rel/$name",
@@ -102,6 +102,7 @@ class UploadService : Service() {
         } catch (e: Exception) {
             g.state.message(e.message ?: "Upload failed.", error = true)
         } finally {
+            sending.value = null
             pending--
             if (pending <= 0) {
                 withContext(Dispatchers.Main) {
@@ -176,6 +177,9 @@ class UploadService : Service() {
 
     companion object {
         private const val NOTIFY_ID = 7
+        /** The file being handed to TG Drive's service right now (shown on the Transfers page). */
+        val sending = kotlinx.coroutines.flow.MutableStateFlow<Sending?>(null)
+
         const val EXTRA_AID = "aid"
         const val EXTRA_FOLDER = "folder"
         const val EXTRA_CHAT = "chat"
@@ -207,5 +211,4 @@ class UploadService : Service() {
     }
 }
 
-@Suppress("unused")
-private fun sizeLabel(n: Long) = Format.size(n)
+data class Sending(val name: String, val index: Int, val total: Int)

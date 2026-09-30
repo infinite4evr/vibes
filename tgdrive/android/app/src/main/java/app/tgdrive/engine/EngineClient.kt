@@ -27,6 +27,14 @@ class EngineClient(private val context: Context) {
         get() = prefs.getBoolean("demo", false)
         private set(v) { prefs.edit().putBoolean("demo", v).apply() }
 
+    /** Settings → This phone → Keep running: the service stays up (indexing, live updates) while the app is closed. */
+    var keepRunning: Boolean
+        get() = prefs.getBoolean("keep", false)
+        set(v) {
+            prefs.edit().putBoolean("keep", v).apply()
+            hold("keep", v)
+        }
+
     init {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(c: Context, i: Intent) = refresh()

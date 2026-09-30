@@ -170,8 +170,8 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
         json("POST", "${a(aid)}/files/place", buildJsonObject { put("items", items(refs)); put("folder_id", folderId) })
     suspend fun rename(aid: Long, ref: FileRef, name: String) =
         json("POST", "${a(aid)}/files/${ref.chatId}/${ref.msgId}/rename", buildJsonObject { put("name", name) })
-    suspend fun bulkRename(aid: Long, refs: Collection<FileRef>, pattern: String, start: Int) =
-        json("POST", "${a(aid)}/files/rename", buildJsonObject { put("items", items(refs)); put("pattern", pattern); put("start", start) })
+    suspend fun bulkRename(aid: Long, refs: Collection<FileRef>, pattern: String, start: Int): JsonObject =
+        json("POST", "${a(aid)}/files/rename", buildJsonObject { put("items", items(refs)); put("pattern", pattern); put("start", start) }).jsonObject
     suspend fun meta(aid: Long, refs: Collection<FileRef>, starred: Boolean? = null, tagsAdd: List<String>? = null,
                      tagsRemove: List<String>? = null, tags: List<String>? = null, note: String? = null) =
         json("POST", "${a(aid)}/files/meta", buildJsonObject {
@@ -278,7 +278,7 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
             mapOf("t" to engine().mediaToken), media = true).toString()
 
     suspend fun saveDocThumb(aid: Long, ref: FileRef, png: ByteArray) =
-        raw("PUT", "${a(aid)}/docthumb/${ref.chatId}/${ref.msgId}", body = png.toRequestBody("image/png".toMediaType()))
+        raw("PUT", "${a(aid)}/docthumb/${ref.chatId}/${ref.msgId}", body = png.toRequestBody("image/jpeg".toMediaType()))
     suspend fun docThumbFailed(aid: Long, ref: FileRef) = raw("POST", "${a(aid)}/docthumb/${ref.chatId}/${ref.msgId}/failed")
 
     private fun encodeName(n: String) = java.net.URLEncoder.encode(n, "UTF-8").replace("+", "%20")

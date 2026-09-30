@@ -69,6 +69,7 @@ class MainActivity : ComponentActivity() {
             val g = graph
             if (g.state.needsWelcome()) return   // nothing runs until the first-run choice
             g.engine.hold("ui", true)             // starts the engine if it isn't running
+            if (g.engine.keepRunning) g.engine.hold("keep", true)
         }
 
         override fun onStop(owner: LifecycleOwner) {
