@@ -90,10 +90,13 @@ plus the contract harness (the app's real API code against the real service), th
 APK, and an emulator run of the minified build:
 - `EngineTest`: the service on Android (search, streaming, the FTS5 extension).
 - `ScreenshotTour`: every screen.
-- `Journeys`: 35 end-to-end journeys, each checked against the service.
-- `CrashScreenTest`, plus a real crash of the running app: the crash screen must come up.
+- `Journeys`: 36 end-to-end journeys, each checked against the service.
 - `BackgroundSyncTest`: a sync with the app closed.
+- `CrashScreenTest`, plus a real crash of the app's interface process: the crash screen must come up.
 - `SignInFlow`: the real sign-in against Telegram.
+- `BigLibraryTest`: a 100 000-file, 1 700-chat library built on the emulator. The main screen must
+  show quickly and every big page must stay responsive (timings, frame statistics and memory are
+  kept).
 
 Screenshots and logs are pushed to the `tgdrive-android-screens` branch.
 

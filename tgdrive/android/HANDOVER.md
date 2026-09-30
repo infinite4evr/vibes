@@ -62,7 +62,7 @@ a home-screen widget, a notification when new files arrive.
 | `engine/EngineClient.kt` | The app's side: start, hold ("ui", "keep", "player" …), state (a file plus a broadcast), and a watchdog that notices a dead service. It uses `ActivityManager.runningAppProcesses`, not `/proc`, which some phones hide across processes. A routine kill counts as *Stopped*; only a crash, or dying while starting, counts as *Failed*. |
 | `engine/BackgroundSync.kt` | WorkManager periodic sync + `SyncWorker` (binds the service, `index/resync` for each account, waits until idle, 8 min cap). Settings in the `sync` SharedPreferences. |
 | `engine/BatteryLimits.kt` | Background restriction, standby bucket, battery optimisation, Samsung detection and deep links. |
-| `engine/UploadService.kt` | Uploads (picked files, whole folders through SAF, *Share → TG Drive*). |
+| `engine/UploadService.kt` | Uploads (picked files, whole folders through SAF, *Share → TG Drive*). Only `content://` links from other apps are accepted: a share naming a file path or TG Drive's own FileProvider (`<package>.files`) is refused, since it would make TG Drive upload its private data (a Telegram session). |
 | `engine/StartupReport.kt` | The text report (phone, service state, exit reasons, start steps, log tail). |
 | `data/Api.kt`, `data/Models.kt` | HTTP API and models. **Response bodies are read on Dispatchers.IO** (reading them on Main threw NetworkOnMainThreadException and broke every list). `FlexBoolean` accepts 0/1 for every Boolean (SQLite has no booleans). |
 | `data/AppState.kt` | Shared state: phases (Welcome, Starting, NeedsApiKey, NeedsLogin, Ready, Locked, Failed), live events (SSE), messages, `failed()`. It loads data only once the app is visible (`bootstrapWhenVisible`), so a background sync waking the process costs nothing. New-file events are bundled: lists refresh at most every 15 s. |
@@ -72,10 +72,11 @@ a home-screen widget, a notification when new files arrive.
 | `ui/…` | Compose UI: `main` (scaffold, drawer, top bar), `browse`, `viewer`, `photos`, `pages` (Transfers, Storage, Duplicates, Index, Activity), `settings`, `onboarding` (welcome, API key, sign-in, lock, splash, error), `actions` (every menu, sheet and dialog), `search`, `components`, `theme`. |
 | `player/` | Media3 background player (`PlayerService`, `PlayerController`). |
 | `app/src/main/cpp` | FTS5 built as a SQLite loadable extension (Android's Python SQLite lacks FTS5). |
-| `app/src/androidTest` | Emulator tests (§5). |
+| `MainActivity.kt` | The single activity. Intents: share targets, and `EXTRA_OPEN_SCREEN` ("transfers", "storage", "settings/phone" …, mapped by `ui/main/MainScreen.kt` `screenNamed`), which the notifications use (the upload notification opens Transfers) and the tests use to reach a page directly. |
+| `app/src/androidTest` | Emulator tests (§5). `UiDriver.kt` is the shared base class: taps by position, slow scrolls, the sidebar, search, `open(screen)`, screenshots. |
 | `contract/` | JVM harness: compiles the app's real `Api.kt`, `Models.kt` and `Format.kt` and runs ~130 calls against the real service (§5). |
 | `../tgdrive/mobile.py` | The service's Android entry points: `start`, `stop`, `activity`, `events_since`, `set_background`. |
-| `../tgdrive/pace.py` | CPU pacing: `quiet_for` (the first 20 s after a start on phones), `force` (background sync: heavy jobs paused). |
+| `../tgdrive/pace.py` | CPU pacing: `quiet_for` (the first 20 s after a start on phones), `force` (background sync: heavy jobs paused), `foreground()` (called by the API middleware on every request from the app: background jobs step aside for 0.6 s, so pages answer quickly while the index works). |
 
 ## 4. How it behaves (decisions worth knowing)
 
@@ -107,6 +108,14 @@ a home-screen widget, a notification when new files arrive.
   data-sync's 6 h/day limit, reset when the app is opened). `EngineService.goForeground` and
   `UploadService` catch that and carry on without the notification. Upload starts return false
   and the screen says so; before this they would crash the app.
+- **Big libraries** (the owner has ~100 000 files): every endpoint is fast on an idle service, but
+  background CPU jobs (subjects, meaning index, duplicates, prefetch) held Python's GIL, and a page
+  took seconds (Storage 1.8 s instead of 2 ms on a computer, 10× that on a phone). Now each request
+  calls `pace.foreground()` and the jobs' `rest()`/`arest()` wait while requests keep coming (at most
+  10 s in a row, so they still progress). On phones `sys.setswitchinterval(0.002)` makes Python hand
+  the GIL to the request thread sooner. `BigLibraryTest` checks it on the emulator (§5).
+- **Opening a downloaded file** always goes through the FileProvider (the whole external storage is
+  a root, links are granted per file). A `file://` fallback used to crash on Android 7+.
 - **Busy index:** SQLite "database is locked/busy" (a long background write, mostly on slow phones)
   answers 503 `{"busy": true}` instead of a crash message. The app retries reads up to 3 times;
   writes say "TG Drive is busy saving its index. Try again in a moment."
@@ -125,7 +134,7 @@ change back. Two traps that cost CI runs:
 ```sh
 # Service tests with the Android package set (numpy 1.26 like Chaquopy's; no numpy.bitwise_count)
 python3.12 -m venv /tmp/avenv && /tmp/avenv/bin/pip install -r tgdrive/requirements.txt numpy==1.26.4 pytest   # once
-cd tgdrive && /tmp/avenv/bin/python -m pytest -q tests          # 74 passed, 4 skipped (desktop browser tests need Playwright)
+cd tgdrive && /tmp/avenv/bin/python -m pytest -q tests          # 78 passed, 4 skipped (desktop browser tests need Playwright)
 
 # Contract harness: the app's real Api.kt/Models.kt against the real service
 cd tgdrive/android/contract && gradle -q --no-daemon installDist && PY=/tmp/avenv/bin/python ./run.sh
@@ -138,7 +147,7 @@ Maven Central sometimes answers 429 in cloud sessions; `contract/settings.gradle
 `ps aux | grep "python boot.py" | grep -v grep | awk '{print $2}' | xargs -r kill`. Don't use
 `pkill -f`: it matches your own shell.
 
-**CI** (`.github/workflows/tgdrive-android.yml`, about 40 minutes; each push cancels the previous
+**CI** (`.github/workflows/tgdrive-android.yml`, about 90 minutes; each push cancels the previous
 run of the same branch):
 1. *Service tests (Android package set)*: pytest plus the contract harness plus the Telegram check.
 2. *Build APK*: the release APK (arm64-v8a + x86_64), signed (§7), with its certificate checked.
@@ -147,9 +156,10 @@ run of the same branch):
    x86_64). It builds `staging` (the release build, R8-minified, made debuggable) and runs:
    - `EngineTest`: the service on Android (FTS5, OpenSSL, numpy, search, ranges, organising).
    - `ScreenshotTour`: every screen, screenshots only.
-   - `Journeys`: 35 end-to-end journeys, each checked against the service. Folders, search,
+   - `Journeys`: 36 end-to-end journeys, each checked against the service. Folders, search,
      star, tags, note, rename, move, viewer, details, download, selection, type tabs, photos,
-     the Tools pages, dark theme, share-to-upload, audio playback and mini player, a video that
+     the Tools pages, the sidebar, dark theme, share-to-upload (a real Downloads file through the
+     media store) and the refusal of a share naming TG Drive's own files, audio playback and mini player, a video that
      can't play, the PDF viewer, passcode lock/unlock/remove, the accounts screen, landscape,
      large text, background sync from Settings, error details with a problem report, and the
      report from the account menu, and a GitHub issue from an error's details. Any error the app
@@ -157,10 +167,17 @@ run of the same branch):
    - `BackgroundSyncTest`: a sync with the app closed starts the service by binding, finishes,
      and the service stops afterwards.
    - `CrashScreenTest`: the crash screen with a planted report (error, buttons, the GitHub link,
-     Open again). After it, the script crashes the running app for real (`am crash app.tgdrive`)
-     and fails if the crash screen doesn't come up.
+     Open again). After it, the script crashes the interface's process for real (`am crash <pid>`
+     of `app.tgdrive`; `am crash app.tgdrive` hit the `:engine` process instead) and fails if the
+     crash screen doesn't come up.
    - `SignInFlow`: a fresh install, the real sign-in screens against Telegram with a made-up key
      (phone code and QR). Telegram must answer, and the app must show it.
+   - `BigLibraryTest`: replaces the app's data with a 100 000-file, 1 700-chat index built on the
+     emulator by `tests/bigdb.py` (packaged in the APK's `tests/` for this only), with a signed-out
+     account (no live indexing). The main screen must show within 30 s of the service being ready,
+     then the sidebar, All files (5 pages), Photos, a search, Storage and the chats list; Android
+     must not report it as not responding. `big-library-timings.txt`, `big-library-frames.txt`
+     (gfxinfo) and `big-library-memory-*.txt` are kept.
 
    The screenshots, logs, a `*-FAIL.png`/`*-FAIL.xml` (window dump) per failed journey and the
    test outputs are force-pushed to the branch **`tgdrive-android-screens`**. That's the quickest
@@ -174,9 +191,19 @@ run of the same branch):
    the first error of each file.
 
 **UI-test lessons (UiAutomator + Compose):**
+- All UI tests extend `UiDriver`; add helpers there, not in one test.
 - Views are replaced while live data (the indexing counter, progress) redraws. Tap by position
-  (`Journeys.click`/`tapAt`), not with `UiObject2.click()`.
-- Scroll slowly (`SLOW`, 1200 px/s) so lists don't fling on after a row is found.
+  (`UiDriver.click`/`tapAt`), not with `UiObject2.click()`. `find` clears UiAutomator's
+  accessibility cache first (stale nodes caused false "not found").
+- Reach pages with `open("storage")` / `page("Storage")` (the open-screen intent), and use the
+  sidebar only where the sidebar itself is under test.
+- Scroll slowly (`SLOW`, 1200 px/s) so lists don't fling on after a row is found. `scrollTo` uses
+  plain swipes plus fresh lookups (`swipeUp`); `UiObject2.scrollUntil` reads the cached tree and
+  scrolled past a row that was on screen.
+- Open files with `openFile(name) { opened }`: it taps the label below the top bar (the results
+  page shows the query in the top bar, and a tap there reopened the search) and taps again if the
+  first tap didn't take. Search submits with the app's own magnifier (`By.desc("Search").pkg(…)`);
+  the keyboard's Search key has the same description.
 - The accessibility tree lags behind scrolled rows. The type tabs are a `LazyRow` for this reason.
 - Check results against the service (`g.api`) or app state, not only the screen.
 - The test APK shares the app's copy of Kotlin, coroutines and OkHttp. `proguard-staging.pro`
