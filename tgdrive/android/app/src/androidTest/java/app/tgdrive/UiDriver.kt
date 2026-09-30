@@ -94,17 +94,76 @@ abstract class UiDriver {
         Thread.sleep(500)
     }
 
-    /** Something further down a page: scroll the page until it shows. */
+    /**
+     * Move the page's content up by [fraction] of the screen, slowly (no fling), with a plain swipe in
+     * the middle of the screen: no found view involved, so nothing can go stale.
+     */
+    protected fun swipeUp(fraction: Float = 0.4f) {
+        val x = device.displayWidth / 2
+        val from = device.displayHeight * 3 / 4
+        device.swipe(x, from, x, (from - device.displayHeight * fraction).toInt().coerceAtLeast(device.displayHeight / 8), 90)
+        Thread.sleep(400)
+    }
+
+    /**
+     * Something further down a page: scroll the page until it shows. Swipes and fresh lookups, not
+     * UiObject2.scrollUntil: that reads UiAutomator's cached tree and scrolled past a row on screen.
+     */
     protected fun scrollTo(sel: BySelector, what: String): UiObject2 {
         find(sel, 1500)?.let { return it }
-        repeat(3) {
-            runCatching {
-                device.findObjects(By.scrollable(true)).maxByOrNull { it.visibleBounds.height() }
-                    ?.scrollUntil(Direction.DOWN, Until.findObject(sel))
-            }.getOrNull()?.let { return it }
-            find(sel, 800)?.let { return it }
+        repeat(12) {
+            swipeUp()
+            find(sel, 700)?.let { return it }
         }
         return need(sel, what, 1000)
+    }
+
+    /** The bottom of the top bar (the menu or back button's row); what is above it isn't the page. */
+    protected fun topBarBottom(): Int {
+        freshTree()
+        val icon = device.findObjects(By.desc("Back")).plus(device.findObjects(By.desc("Menu")))
+            .mapNotNull { runCatching { it.visibleBounds }.getOrNull() }
+            .filter { it.top < device.displayHeight / 4 }
+            .maxOfOrNull { it.bottom } ?: return 0
+        return icon + 12
+    }
+
+    /**
+     * Tap the file (or result) named [text] on the page: its label below the top bar, never the search
+     * box above that shows the same words.
+     */
+    protected fun clickFile(text: String, what: String, ms: Long = 15_000) {
+        val until = System.currentTimeMillis() + ms
+        while (System.currentTimeMillis() < until) {
+            freshTree()
+            val bar = topBarBottom()
+            val b = device.findObjects(label(text)).firstNotNullOfOrNull { o ->
+                runCatching { o.visibleBounds }.getOrNull()?.takeIf { it.centerY() > bar }
+            }
+            if (b != null) {
+                device.click(b.centerX(), b.centerY())
+                Thread.sleep(500)
+                return
+            }
+            Thread.sleep(400)
+        }
+        throw AssertionError("not on screen: $what")
+    }
+
+    /**
+     * Open a file and wait until [opened]; tapped a second time if the first tap didn't take (the list
+     * was still settling after a reload).
+     */
+    protected fun openFile(text: String, what: String, opened: () -> Boolean) {
+        repeat(2) { attempt ->
+            clickFile(text, what)
+            val until = System.currentTimeMillis() + if (attempt == 0) 10_000 else 30_000
+            while (System.currentTimeMillis() < until) {
+                if (opened()) return
+                Thread.sleep(400)
+            }
+        }
+        throw AssertionError("$what didn't open")
     }
 
     /** A dialog's button whose text is also its title ("Rename"): the lowest one on screen. */
@@ -188,7 +247,8 @@ abstract class UiDriver {
             try { field.text = q } catch (_: StaleObjectException) { }
             if (find(By.clazz("android.widget.EditText").text(q), 1500) != null) {
                 // The magnifier submits (the keyboard's Search key too, but a test can't press that reliably).
-                tapDesc("Search")
+                // TG Drive's own button: the keyboard's Search key has the same description.
+                click(By.desc("Search").pkg(app.packageName), "the search button")
                 // Submitted when the results page (no text box) has replaced the search box.
                 if (device.wait(Until.gone(By.clazz("android.widget.EditText")), 6000)) {
                     Thread.sleep(1500)

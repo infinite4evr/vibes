@@ -1,19 +1,9 @@
 package app.tgdrive
 
-import android.graphics.Bitmap
-import android.os.Environment
 import android.util.Log
 import androidx.test.core.app.ActivityScenario
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
-import androidx.test.uiautomator.BySelector
-import androidx.test.uiautomator.Direction
-import androidx.test.uiautomator.StaleObjectException
-import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.UiObject2
-import androidx.test.uiautomator.Until
 import app.tgdrive.data.FileItem
 import app.tgdrive.diag.GitHubIssue
 import app.tgdrive.engine.BackgroundSync
@@ -220,9 +210,7 @@ class Journeys : UiDriver() {
             }
 
             step("viewer") {
-                click(By.textContains(renamed), "“$renamed”", ms = 15_000)
-                Thread.sleep(2500)
-                need(By.desc("Details"), "the viewer")
+                openFile(renamed, "the viewer of “$renamed”") { find(By.desc("Details"), 300) != null }
                 shot("e2e-viewer-text", 1500)
                 tapDesc("Details")
                 need(By.textContains("written by the e2e run"), "the note on the details page", 15_000)
@@ -401,8 +389,8 @@ class Journeys : UiDriver() {
             // A song that really plays: in the background player, with the mini player to stop it.
             step("audio-player") {
                 search("Morning raga")
-                click(label("Morning raga"), "the sample recording", ms = 15_000)
                 val player = PlayerController.get(app)
+                openFile("Morning raga", "the sample recording") { player.playing || find(By.desc("Stop"), 200) != null }
                 eventually("the recording plays", 30_000) { player.playing && player.position > 1500 }
                 need(By.desc("Stop"), "the mini player")
                 shot("e2e-mini-player", 300)
@@ -416,7 +404,7 @@ class Journeys : UiDriver() {
                     g.api.files(aid, mapOf("kinds" to "video", "copies" to "hide", "limit" to "5")).items.firstOrNull()?.displayName
                 } ?: throw AssertionError("the sample has no videos")
                 search(name.substringBeforeLast('.').take(24))
-                click(label(name.take(18)), "the video", ms = 15_000)
+                openFile(name.take(18), "the video") { find(By.desc("Details"), 300) != null }
                 need(By.textContains("this video"), "the video error message", 30_000)
                 need(By.desc("Details"), "the viewer, still open")
                 shot("e2e-video-error", 300)
@@ -425,7 +413,7 @@ class Journeys : UiDriver() {
 
             step("pdf-viewer") {
                 search("Fundamental Rights")
-                click(label("Fundamental Rights"), "the sample PDF", ms = 15_000)
+                openFile("Fundamental Rights", "the sample PDF") { find(By.desc("Details"), 300) != null }
                 need(By.textContains("1 / "), "the PDF's page counter", 30_000)
                 shot("e2e-pdf", 1200)
                 back()

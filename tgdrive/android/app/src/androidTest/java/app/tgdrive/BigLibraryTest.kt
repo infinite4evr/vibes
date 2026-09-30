@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.By
-import androidx.test.uiautomator.Direction
 import app.tgdrive.engine.EngineState
 import com.chaquo.python.Kwarg
 import com.chaquo.python.Python
@@ -96,10 +95,7 @@ class BigLibraryTest : UiDriver() {
                 for (group in listOf("CHANNELS", "GROUPS")) {
                     device.findObject(By.textStartsWith(group))?.let { tapAt(it) }
                 }
-                repeat(4) {
-                    device.findObjects(By.scrollable(true)).firstOrNull { it.visibleBounds.right < device.displayWidth - 8 }
-                        ?.scroll(Direction.DOWN, 0.9f)
-                }
+                repeat(4) { swipeUp(0.6f) }
                 shot("51-big-sidebar", 800)
                 device.pressBack()
             }
@@ -107,10 +103,7 @@ class BigLibraryTest : UiDriver() {
             timed("All files, five pages") {
                 sidebar("All files")
                 need(By.desc("File options"), "files in All files", 30_000)
-                repeat(5) {
-                    device.findObjects(By.scrollable(true)).maxByOrNull { it.visibleBounds.height() }?.scroll(Direction.DOWN, 1f)
-                    Thread.sleep(700)
-                }
+                repeat(5) { swipeUp(0.6f); Thread.sleep(300) }
                 need(By.desc("File options"), "files after scrolling", 15_000)
                 shot("52-big-all-files", 800)
             }
@@ -118,10 +111,7 @@ class BigLibraryTest : UiDriver() {
             timed("Photos") {
                 sidebar("Photos")
                 need(By.textContains("20"), "the photo timeline", 30_000)
-                repeat(3) {
-                    device.findObjects(By.scrollable(true)).maxByOrNull { it.visibleBounds.height() }?.scroll(Direction.DOWN, 1f)
-                    Thread.sleep(700)
-                }
+                repeat(3) { swipeUp(0.6f); Thread.sleep(300) }
                 shot("53-big-photos", 1500)
             }
 
@@ -140,10 +130,7 @@ class BigLibraryTest : UiDriver() {
             timed("Chats and indexing") {
                 sidebar("Chats and indexing")
                 Thread.sleep(3000)
-                repeat(3) {
-                    device.findObjects(By.scrollable(true)).maxByOrNull { it.visibleBounds.height() }?.scroll(Direction.DOWN, 1f)
-                    Thread.sleep(500)
-                }
+                repeat(3) { swipeUp(0.6f) }
                 shot("56-big-chats", 800)
             }
 
