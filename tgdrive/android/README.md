@@ -90,7 +90,7 @@ plus the contract harness (the app's real API code against the real service), th
 APK, and an emulator run of the minified build:
 - `EngineTest`: the service on Android (search, streaming, the FTS5 extension).
 - `ScreenshotTour`: every screen.
-- `Journeys`: 36 end-to-end journeys, each checked against the service.
+- `Journeys`: 37 end-to-end journeys, each checked against the service.
 - `BackgroundSyncTest`: a sync with the app closed.
 - `CrashScreenTest`, plus a real crash of the app's interface process: the crash screen must come up.
 - `SignInFlow`: the real sign-in against Telegram.

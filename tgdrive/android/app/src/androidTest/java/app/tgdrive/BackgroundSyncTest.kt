@@ -31,10 +31,18 @@ class BackgroundSyncTest {
     private suspend fun stoppedService() {
         app.getSharedPreferences("app", 0).edit().putBoolean("welcomed", true).commit()
         app.getSharedPreferences("engine", 0).edit().putBoolean("demo", true).commit()
-        engine.stop()
-        withTimeoutOrNull(40_000) { engine.state.first { it.phase == EngineState.Phase.Stopped || it.phase == EngineState.Phase.Failed } }
-        withTimeoutOrNull(10_000) { while (engine.state.value.ready) kotlinx.coroutines.delay(200) }
-        Thread.sleep(2000)
+        // An earlier test's screen counts as open until Android says it stopped (0.7 s late): the app would
+        // rightly start a service stopped under it again.
+        Thread.sleep(2500)
+        repeat(3) {
+            engine.stop()
+            withTimeoutOrNull(40_000) { engine.state.first { it.phase == EngineState.Phase.Stopped || it.phase == EngineState.Phase.Failed } }
+            withTimeoutOrNull(10_000) { while (engine.state.value.ready) kotlinx.coroutines.delay(200) }
+            Thread.sleep(3000)
+            val s = engine.state.value
+            if (!s.ready && s.phase != EngineState.Phase.Starting) return
+        }
+        throw AssertionError("the service kept starting again (${engine.state.value.phase})")
     }
 
     /** Until the sync that started after [before] has ended. */

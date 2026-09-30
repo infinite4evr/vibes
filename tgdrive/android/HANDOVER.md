@@ -156,16 +156,18 @@ run of the same branch):
    x86_64). It builds `staging` (the release build, R8-minified, made debuggable) and runs:
    - `EngineTest`: the service on Android (FTS5, OpenSSL, numpy, search, ranges, organising).
    - `ScreenshotTour`: every screen, screenshots only.
-   - `Journeys`: 36 end-to-end journeys, each checked against the service. Folders, search,
+   - `Journeys`: 37 end-to-end journeys, each checked against the service. Folders, search,
      star, tags, note, rename, move, viewer, details, download, selection, type tabs, photos,
      the Tools pages, the sidebar, dark theme, share-to-upload (a real Downloads file through the
      media store) and the refusal of a share naming TG Drive's own files, audio playback and mini player, a video that
      can't play, the PDF viewer, passcode lock/unlock/remove, the accounts screen, landscape,
-     large text, background sync from Settings, error details with a problem report, and the
+     large text, background sync from Settings, the service's process killed mid-use (it must come
+     back by itself, with no error shown), error details with a problem report, and the
      report from the account menu, and a GitHub issue from an error's details. Any error the app
      shows fails the run.
    - `BackgroundSyncTest`: a sync with the app closed starts the service by binding, finishes,
-     and the service stops afterwards.
+     and the service stops afterwards. And the app opened during a sync: the main screen shows,
+     and the service keeps running for it when the sync lets go.
    - `CrashScreenTest`: the crash screen with a planted report (error, buttons, the GitHub link,
      Open again). After it, the script crashes the interface's process for real (`am crash <pid>`
      of `app.tgdrive`; `am crash app.tgdrive` hit the `:engine` process instead) and fails if the
@@ -251,47 +253,47 @@ an uninstall. Now:
 
 ## 8. Status and open items (September 2026)
 
-Done and verified by CI before the last batch: every screen and action in §5, sign-in against
-Telegram, background sync scheduling in release builds (an R8 rule for WorkManager's Room
-database), the Duplicates page, problem reports, and dialogs on small screens.
+Verified on the emulator (CI, the minified `staging` build), as of the last runs of this session:
+- `EngineTest`, `ScreenshotTour`, `CrashScreenTest`, `SignInFlow`: pass. The real crash of the
+  interface's process brings up the crash screen (`after-crash.txt` shows `CrashActivity` resumed).
+- `Journeys`: 34 of 37 passed in the run before last. Among them are the viewer, download,
+  share-upload, the refusal of a share of TG Drive's own files, passcode lock, landscape, large
+  text, background sync, error details, the GitHub issue, and a service killed mid-use coming back
+  by itself. The 3 others (audio, the video error, the PDF) failed only because the test tapped the
+  results' title ("“query”") instead of the file; fixed in `UiDriver.clickFile`.
+- `BigLibraryTest` (100 000 files, 1 700 chats): the service is ready in 1.7 s and the main screen
+  shows 2.1 s later. The service answers status plus a page of files in at most 0.6 s while its
+  background jobs run. Every page works (the timings include the test's own swipes and waits).
+- `BackgroundSyncTest`: both tests (with the app closed; the app opened during a sync) pass on their
+  own. The second one's order dependency (stopping the service while the previous test's screen
+  still counted as open) is fixed in the test.
 
-The CI run of the signing / battery-limits / quiet-start batch (commit `232605a`) built and signed
-fine. Its emulator run found problems, all fixed in the **final push** of this session, together
-with the owner's last requests:
-- **Create GitHub issue** everywhere an error shows, and the **crash screen**, so the app never
-  vanishes or closes at every launch again (§4).
-- **Foreground-service refusals** no longer crash the app. This is the likeliest cause of the
-  owner's "crashes, then closes again when I open it" on Android 16.
-- **Busy database**: 503 plus retries instead of an "OperationalError" message. The exact
-  database error the owner saw is still unknown; its issue or report will show the traceback.
-- **QR sign-in with a wrong app key** showed a raw "Telegram refused: BAD_REQUEST". It now says
-  what to check (`accounts.login_qr_start`).
-- **Sample data** showed "Indexing 7/8 chats" forever: the desktop demo freezes the indexer for its
-  screenshots, and no indexer runs on sample data. So a background sync on sample data never
-  finished. The phone's sample mode now shows indexing finished (`mobile._prepare_demo`).
-- **Search** submitted only through the soft keyboard's Search key. A hardware Enter now submits
-  too.
-- Test harness: the drawer helper waits for the drawer to be open (it used to scroll the page
-  behind it). Searches are checked to have been submitted, file taps target labels (not the search
-  box), and the landscape journey always rotates back.
-
-The next session should start by checking the CI run of that final push (§5), mainly the crash
-screen checks and the journeys that hadn't passed yet: audio playback, the video error, the PDF
-viewer, passcode lock, landscape, background sync, the report from the account menu, and the
-GitHub issue.
+**The owner's black screen at ~100 000 files** could not be reproduced on the emulator: with a
+100 000-file index the app opens in about 2 s. The real difference is a signed-in account whose
+indexer and background jobs run while the app opens. Those jobs held Python's GIL, and on a phone
+the first requests could take tens of seconds (a desktop measurement: 1.8 s for Storage instead of
+2 ms). That is fixed (`pace.foreground`, §4). If it still happens, ask for **Send report** right after
+it happens: `app.log` shows "status answered in … ms" and each phase, and `engine-start.log` shows
+the start steps.
 
 Open items:
 1. **Signing secret**: the owner adds it (§7). Then fill in `expected-certificate.sha256`.
-2. **Slow start on the owner's phone** (Samsung SM-M336BU, Android 16): waiting for a problem
+2. **Black screen at ~100 000 files** on the owner's phone: see above, needs the owner's
+   confirmation or a report.
+3. **Slow start on the owner's phone** (Samsung SM-M336BU, Android 16): waiting for a problem
    report after a slow start, to see which step is slow. Everything measurable on the emulator is
    fast.
-3. **Folder upload through the system folder picker** isn't automated: the picker is another
+4. **Folder upload through the system folder picker** isn't automated: the picker is another
    app, different on each Android version. Test it by hand on a phone after changes to
    `UploadService`.
-4. **Accessibility:** the accessibility tree lagging behind scrolled rows (see §5) may also affect
+5. **Accessibility:** the accessibility tree lagging behind scrolled rows (see §5) may also affect
    TalkBack. Worth a check with TalkBack on a real phone.
-5. The Samsung battery deep link (`com.samsung.android.lool`) differs between One UI versions.
+6. The Samsung battery deep link (`com.samsung.android.lool`) differs between One UI versions.
    It falls back to the app's settings page.
+7. A sync whose process is killed shows "Syncing now…" in Settings until its time budget has
+   passed (up to 10 min, `BackgroundSync.last`). Harmless; WorkManager reruns it.
+8. Offered to the owner, not asked for yet: a "Remove file types no longer indexed" button (after
+   narrowing *Indexing types*, the old types stay in the index until a full re-index).
 
 ## 9. Working with the owner
 

@@ -130,15 +130,16 @@ abstract class UiDriver {
 
     /**
      * Tap the file (or result) named [text] on the page: its label below the top bar, never the search
-     * box above that shows the same words.
+     * box or the results' title that show the same words.
      */
     protected fun clickFile(text: String, what: String, ms: Long = 15_000) {
         val until = System.currentTimeMillis() + ms
         while (System.currentTimeMillis() < until) {
             freshTree()
             val bar = topBarBottom()
+            // Not the results page's title either (“the query”, in quotes, right under the top bar).
             val b = device.findObjects(label(text)).firstNotNullOfOrNull { o ->
-                runCatching { o.visibleBounds }.getOrNull()?.takeIf { it.centerY() > bar }
+                runCatching { if (o.text.startsWith("“")) null else o.visibleBounds }.getOrNull()?.takeIf { it.centerY() > bar }
             }
             if (b != null) {
                 device.click(b.centerX(), b.centerY())
