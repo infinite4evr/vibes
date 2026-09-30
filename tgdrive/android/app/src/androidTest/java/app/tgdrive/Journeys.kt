@@ -66,26 +66,43 @@ class Journeys {
 
     private fun need(sel: BySelector, what: String, ms: Long = 8000): UiObject2 = find(sel, ms) ?: throw AssertionError("not on screen: $what")
 
+    /**
+     * Tap what [sel] finds, by its position: live parts of the screen (the indexing counter, progress)
+     * redraw every second, and a found view can be replaced before it is tapped.
+     */
     private fun click(sel: BySelector, what: String, long: Boolean = false, ms: Long = 8000) {
-        repeat(3) { attempt ->
+        repeat(6) {
             val o = need(sel, what, ms)
-            try {
-                if (long) o.longClick() else o.click()
+            val b = try { o.visibleBounds } catch (_: StaleObjectException) { null }
+            if (b != null) {
+                if (long) device.swipe(b.centerX(), b.centerY(), b.centerX(), b.centerY(), 160)
+                else device.click(b.centerX(), b.centerY())
                 Thread.sleep(500)
                 return
-            } catch (e: StaleObjectException) {
-                if (attempt == 2) throw e
             }
+            Thread.sleep(300)
         }
+        throw AssertionError("couldn't tap $what (it kept changing)")
     }
 
     private fun tap(text: String) = click(By.text(text), "“$text”")
 
+    /** Tap a view already found, by its position (see [click]). */
+    private fun tapAt(o: UiObject2, long: Boolean = false) {
+        val b = try { o.visibleBounds } catch (_: StaleObjectException) { throw AssertionError("the view changed before it could be tapped") }
+        if (long) device.swipe(b.centerX(), b.centerY(), b.centerX(), b.centerY(), 160) else device.click(b.centerX(), b.centerY())
+        Thread.sleep(500)
+    }
+
     /** Something further down a page: scroll the page until it shows. */
     private fun scrollTo(sel: BySelector, what: String): UiObject2 {
-        repeat(8) {
+        find(sel, 1500)?.let { return it }
+        repeat(3) {
+            runCatching {
+                device.findObjects(By.scrollable(true)).maxByOrNull { it.visibleBounds.height() }
+                    ?.scrollUntil(Direction.DOWN, Until.findObject(sel))
+            }.getOrNull()?.let { return it }
             find(sel, 800)?.let { return it }
-            runCatching { device.findObjects(By.scrollable(true)).maxByOrNull { it.visibleBounds.height() }?.scroll(Direction.DOWN, 0.6f) }
         }
         return need(sel, what, 1000)
     }
@@ -94,8 +111,7 @@ class Journeys {
     private fun tapButton(text: String) {
         need(By.text(text), "“$text”")
         val o = device.findObjects(By.text(text)).maxByOrNull { it.visibleBounds.centerY() } ?: throw AssertionError("no “$text”")
-        o.click()
-        Thread.sleep(500)
+        tapAt(o)
     }
 
     /** The share sheet opened (the system's chooser, in front of TG Drive). */
@@ -114,7 +130,7 @@ class Journeys {
     private fun sheetTap(text: String) {
         repeat(5) {
             val o = find(By.text(text), 1200)
-            if (o != null) { o.click(); Thread.sleep(500); return }
+            if (o != null) { tapAt(o); return }
             device.swipe(device.displayWidth / 2, device.displayHeight * 85 / 100, device.displayWidth / 2, device.displayHeight * 45 / 100, 25)
         }
         tap(text)
@@ -155,18 +171,12 @@ class Journeys {
         var o = scrollFind(By.text(label))
         // Tools start folded: open the group, then look again.
         if (o == null && label in TOOLS) {
-            runCatching { scrollFind(By.text("TOOLS"))?.click() }
+            runCatching { scrollFind(By.text("TOOLS"))?.let { tapAt(it) } }
             Thread.sleep(1500)   // the group opens with an animation
             o = scrollFind(By.text(label))
         }
         if (o == null) throw AssertionError("sidebar has no “$label”")
-        // Rows can still be moving: on a stale view, find it again.
-        var done = false
-        for (i in 0 until 8) {
-            try { (if (i == 0) o else find(By.text(label), 2000))?.click(); done = true; break }
-            catch (_: StaleObjectException) { Thread.sleep(600) }
-        }
-        if (!done) throw AssertionError("couldn't tap “$label” in the sidebar")
+        click(By.text(label), "“$label” in the sidebar")
         Thread.sleep(1200)
     }
 
@@ -180,7 +190,7 @@ class Journeys {
         val button = device.findObjects(By.desc("File options")).filter { it.visibleBounds.centerY() <= y + 40 }
             .maxByOrNull { it.visibleBounds.centerY() }
             ?: throw AssertionError("no File options button for “$name”")
-        button.click()
+        tapAt(button)
         need(By.text("Details"), "the file menu")
     }
 
@@ -188,7 +198,7 @@ class Journeys {
         val row = need(By.text(name), "folder “$name”", 15_000)
         val y = row.visibleBounds.centerY()
         val button = device.findObjects(By.desc("Folder options")).minByOrNull { Math.abs(it.visibleBounds.centerY() - y) }
-        if (button != null && Math.abs(button.visibleBounds.centerY() - y) < 200) button.click() else row.longClick()
+        if (button != null && Math.abs(button.visibleBounds.centerY() - y) < 200) tapAt(button) else tapAt(row, long = true)
         need(By.text("Delete folder"), "the folder menu")
     }
 
@@ -421,15 +431,20 @@ class Journeys {
                 if (docs <= 0L) throw AssertionError("the sample has no documents to show")
                 val header = "${Format.num(docs)} files"
                 // The row scrolls; tap along it (after a swipe) until the list says it shows the documents.
-                val row = need(By.textStartsWith("All"), "the type tabs").visibleBounds
-                val y = row.centerY()
-                device.swipe(device.displayWidth * 4 / 5, y, device.displayWidth / 5, y, 20)
-                Thread.sleep(1200)
-                var found = false
-                for (x in (24 until device.displayWidth - 16) step 28) {
-                    device.click(x, y)
-                    Thread.sleep(900)
-                    if (find(By.textContains(header), 800) != null) { found = true; break }
+                val y = need(By.textStartsWith("All"), "the type tabs").visibleBounds.centerY()
+                fun sweep(): Boolean {
+                    for (x in (device.displayWidth - 12 downTo 24) step 26) {
+                        device.click(x, y)
+                        Thread.sleep(900)
+                        if (find(By.textContains(header), 700) != null) return true
+                    }
+                    return false
+                }
+                var found = sweep()
+                if (!found) {
+                    device.swipe(device.displayWidth * 4 / 5, y, device.displayWidth / 5, y, 20)
+                    Thread.sleep(1200)
+                    found = sweep()
                 }
                 if (!found) throw AssertionError("no tab shows the $docs documents")
                 val first = runBlocking { g.api.files(aid, mapOf("kinds" to "document", "copies" to "hide")).items.firstOrNull()?.displayName }
@@ -471,12 +486,14 @@ class Journeys {
 
             step("background-sync") {
                 sidebar("Settings")
-                scrollTo(By.text("This phone"), "This phone in Settings").click()
+                scrollTo(By.text("This phone"), "This phone in Settings")
+                click(By.text("This phone"), "This phone in Settings")
                 Thread.sleep(1000)
                 need(By.text("BACKGROUND SYNC"), "the background sync settings")
                 need(By.text("Sync in the background"), "the background sync switch")
                 val before = BackgroundSync.last(app).at
-                scrollTo(By.text("Sync now"), "Sync now").click()
+                scrollTo(By.text("Sync now"), "Sync now")
+                click(By.text("Sync now"), "Sync now")
                 eventually("the sync finishes", 180_000) {
                     val l = BackgroundSync.last(app)
                     l.at != before && !l.running

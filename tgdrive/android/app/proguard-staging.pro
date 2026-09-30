@@ -10,3 +10,5 @@
 -keep class kotlinx.coroutines.** { *; }
 -keep class okhttp3.** { *; }
 -keep class okio.** { *; }
+-keepclassmembers class app.tgdrive.engine.BackgroundSync { public *; }
+-keepclassmembers class app.tgdrive.engine.BackgroundSync$Last { public *; }
