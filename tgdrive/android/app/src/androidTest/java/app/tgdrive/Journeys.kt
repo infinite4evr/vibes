@@ -125,12 +125,17 @@ class Journeys {
         repeat(4) { if (find(By.desc("Menu"), 800) == null) back() }
         tapDesc("Menu")
         Thread.sleep(500)
+        fun drawerList(): UiObject2? = runCatching {
+            val lists = device.findObjects(By.scrollable(true))
+            lists.firstOrNull { it.visibleBounds.right < device.displayWidth - 8 } ?: lists.firstOrNull()
+        }.getOrNull()
+        // The drawer keeps where it was scrolled to: start from its top.
+        repeat(4) { runCatching { drawerList()?.scroll(Direction.UP, 1f) } }
         fun scrollFind(sel: BySelector): UiObject2? {
             var o = find(sel, 1200)
             var tries = 0
             while (o == null && tries < 6) {
-                val lists = device.findObjects(By.scrollable(true))
-                (lists.firstOrNull { it.visibleBounds.right < device.displayWidth - 8 } ?: lists.firstOrNull())?.scroll(Direction.DOWN, 0.7f)
+                runCatching { drawerList()?.scroll(Direction.DOWN, 0.7f) }
                 o = find(sel, 600)
                 tries++
             }
@@ -138,8 +143,19 @@ class Journeys {
         }
         var o = scrollFind(By.text(label))
         // Tools start folded: open the group, then look again.
-        if (o == null && label in TOOLS) { scrollFind(By.text("TOOLS"))?.click(); Thread.sleep(400); o = scrollFind(By.text(label)) }
-        (o ?: throw AssertionError("sidebar has no “$label”")).click()
+        if (o == null && label in TOOLS) {
+            runCatching { scrollFind(By.text("TOOLS"))?.click() }
+            Thread.sleep(800)   // the group opens with an animation
+            o = scrollFind(By.text(label))
+        }
+        if (o == null) throw AssertionError("sidebar has no “$label”")
+        // Rows can still be moving: on a stale view, find it again.
+        var done = false
+        for (i in 0 until 4) {
+            try { (if (i == 0) o else find(By.text(label), 2000))?.click(); done = true; break }
+            catch (_: StaleObjectException) { Thread.sleep(400) }
+        }
+        if (!done) throw AssertionError("couldn't tap “$label” in the sidebar")
         Thread.sleep(1200)
     }
 

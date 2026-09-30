@@ -353,11 +353,15 @@ private fun KindTabs(model: BrowseModel) {
     val c = Tg.colors
     val st = model.stats
     val tabs = Format.KIND_PLURAL.filter { (k, _) -> k.isEmpty() || (st?.kindCounts?.get(k) ?: 0) > 0 || model.kind == k }
-    val scroll = rememberScrollState()
+    // A lazy row, not a scrolled Row: screen readers (and UI tests) get the tabs' real positions
+    // after it scrolls, and can scroll it themselves.
+    val scroll = androidx.compose.foundation.lazy.rememberLazyListState()
     Column(Modifier.fillMaxWidth()) {
         Box(Modifier.fillMaxWidth()) {
-            Row(Modifier.fillMaxWidth().horizontalScroll(scroll).padding(horizontal = 4.dp)) {
-                for ((k, label) in tabs) {
+            androidx.compose.foundation.lazy.LazyRow(Modifier.fillMaxWidth(), state = scroll,
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp)) {
+                items(tabs.size, key = { tabs[it].first }) { i ->
+                    val (k, label) = tabs[i]
                     val n = if (k.isEmpty()) st?.total else st?.kindCounts?.get(k)
                     CountTab(label, n, model.kind == k, { model.setKindFilter(k) }, dot = if (k.isEmpty()) null else c.kind(k))
                 }
