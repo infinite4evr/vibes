@@ -4,3 +4,9 @@
 -keepclassmembers class app.tgdrive.AppGraph { public *; }
 -keepclassmembers class app.tgdrive.engine.EngineClient { public *; }
 -keepclassmembers class app.tgdrive.data.Api { public *; }
+# The test APK shares the app's copy of these libraries (it doesn't carry its own), so keep them
+# whole here; the app's own code is still shrunk and optimised as in release.
+-keep class kotlin.** { *; }
+-keep class kotlinx.coroutines.** { *; }
+-keep class okhttp3.** { *; }
+-keep class okio.** { *; }

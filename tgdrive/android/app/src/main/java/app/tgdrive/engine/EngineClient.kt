@@ -65,8 +65,16 @@ class EngineClient(private val context: Context) {
         if ((s.phase == EngineState.Phase.Ready || s.phase == EngineState.Phase.Starting) && !alive(s.pid))
             s.copy(phase = EngineState.Phase.Stopped) else s
 
-    private fun alive(pid: Int): Boolean = pid > 0 &&
-        runCatching { File("/proc/$pid/cmdline").readText().trim('\u0000').endsWith(":engine") }.getOrDefault(false)
+    /**
+     * Whether the service's process runs. Asked of Android (the app's own running processes), not
+     * of /proc: many phones don't let one process of an app see another's /proc entry.
+     */
+    private fun alive(pid: Int): Boolean {
+        if (pid <= 0) return false
+        val am = context.getSystemService(ActivityManager::class.java) ?: return true
+        val procs = runCatching { am.runningAppProcesses }.getOrNull() ?: return true   // can't tell: assume it runs
+        return procs.any { it.pid == pid && it.processName.endsWith(":engine") }
+    }
 
     /**
      * Every couple of seconds: a service process that died without saying so (killed by Android,
@@ -169,7 +177,7 @@ class EngineClient(private val context: Context) {
         withTimeoutOrNull(30_000) { state.first { it.phase == EngineState.Phase.Stopped || it.phase == EngineState.Phase.Failed } }
         // The old process ends itself right after saying so; give it a moment to be gone.
         withTimeoutOrNull(5_000) {
-            while (File("/proc/${_state.value.pid}").exists() && _state.value.pid > 0) kotlinx.coroutines.delay(100)
+            while (alive(_state.value.pid)) kotlinx.coroutines.delay(100)
         }
         start(demo)
     }

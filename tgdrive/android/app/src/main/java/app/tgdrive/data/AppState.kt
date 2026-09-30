@@ -128,7 +128,11 @@ class AppState(
     fun chooseStart(demo: Boolean) {
         welcomed = true
         _phase.value = Phase.Starting
-        scope.launch { if (engine.state.value.ready && engine.state.value.demo != demo) engine.restart(demo) else engine.start(demo) }
+        scope.launch {
+            if (engine.state.value.ready && engine.state.value.demo != demo) engine.restart(demo) else engine.start(demo)
+            // The app is on screen: keep the service running (MainActivity does this on every later start).
+            engine.hold("ui", true)
+        }
     }
 
     fun needsWelcome(): Boolean = !welcomed
