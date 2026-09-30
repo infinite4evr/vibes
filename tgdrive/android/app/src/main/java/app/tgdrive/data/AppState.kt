@@ -189,7 +189,11 @@ class AppState(
     fun bootstrap() {
         scope.launch {
             try {
+                val t0 = System.currentTimeMillis()
                 val st = api.status()
+                val since = engine.state.value.startedAt.takeIf { it > 0 }?.let { " (${t0 - it} ms after the service was ready)" } ?: ""
+                AppLog.i("app", "status answered in ${System.currentTimeMillis() - t0} ms$since: " +
+                    "${st.accounts.size} account(s), key ${if (st.apiConfigured) "set" else "missing"}")
                 _status.value = st
                 _settings.value = st.settings
                 _phase.value = when {

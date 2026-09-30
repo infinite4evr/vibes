@@ -26,6 +26,7 @@ MAX_REST = 30.0
 
 
 _forced: Optional[str] = None
+_quiet_until = 0.0
 
 
 def force(m: Optional[str]) -> None:
@@ -35,9 +36,17 @@ def force(m: Optional[str]) -> None:
     _forced = m if m in MODES else None
 
 
+def quiet_for(seconds: float) -> None:
+    """Hold the CPU jobs for the first moments after starting (phones: the first screens load first)."""
+    global _quiet_until
+    _quiet_until = time.monotonic() + seconds
+
+
 def mode() -> str:
     if _forced:
         return _forced
+    if _quiet_until and time.monotonic() < _quiet_until:
+        return "paused"
     from .settings import settings
     m = settings.get("background_work") or "gentle"
     return m if m in MODES else "gentle"

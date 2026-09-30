@@ -55,7 +55,9 @@ async def lifespan(app: FastAPI):
         settings.on_change(_apply_autostart)
     if not settings.get("autostart"):
         _apply_autostart({"autostart"})   # a login entry left from an older version: remove it
+    t0 = time.monotonic()
     await manager.startup()
+    log.info("accounts opened in %.2f s", time.monotonic() - t0)
     yield
     RUNTIME["stopping"] = True
     t0 = time.monotonic()

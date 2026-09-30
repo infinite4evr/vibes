@@ -27,6 +27,8 @@ from typing import Any, Optional
 
 log = logging.getLogger("tgdrive.mobile")
 
+STARTUP_QUIET = 20.0   # seconds the CPU-heavy background jobs wait after the service starts
+
 _lock = threading.Lock()
 _state: dict[str, Any] = {"server": None, "thread": None}
 
@@ -105,6 +107,8 @@ def start(options: str) -> str:
         info: dict[str, Any] = {"fts5": enable_fts5(opts.get("fts5_library") or "libtgfts5.so")}
         from . import pace
         pace.force("paused" if opts.get("background") else None)
+        # The first screens load before the meaning index, subjects and duplicates start working.
+        pace.quiet_for(STARTUP_QUIET)
 
         from . import config, diagnostics, fastcrypto, maintenance
         maintenance.setup_logging()
@@ -120,6 +124,7 @@ def start(options: str) -> str:
         if demo:
             _prepare_demo(data_dir, opts.get("download_dir") or "")
         api.RUNTIME["platform"] = "android"
+        t_serve = time.monotonic()
         server, thread, port, media = run.serve_in_thread(host="127.0.0.1", port=0, media_port=0,
                                                          token=opts["token"], desktop=False)
         deadline = time.monotonic() + 60
@@ -128,6 +133,7 @@ def start(options: str) -> str:
         if not server.started:
             server.should_exit = True
             raise RuntimeError("the service didn't start (see the log)")
+        log.info("service up in %.2f s (accounts opened, server listening)", time.monotonic() - t_serve)
         info.update(port=port, media_port=media, version=config.VERSION, demo=demo,
                     data_dir=str(config.DATA_DIR), log=str(maintenance.log_path()))
         _state.update(server=server, thread=thread, info=info)
