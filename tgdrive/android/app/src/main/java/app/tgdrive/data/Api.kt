@@ -3,6 +3,7 @@ package app.tgdrive.data
 import app.tgdrive.diag.AppLog
 import app.tgdrive.engine.EngineState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.DeserializationStrategy
@@ -86,13 +87,15 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
         if (background) rb.header("x-tgdrive-bg", "1")
         val needsBody = method in setOf("POST", "PUT", "PATCH")
         rb.method(method, body ?: if (needsBody) "{}".toRequestBody(jsonType) else null)
-        // The answer is read off the main thread: a big one (a page of files) needs more reads from
-        // the socket, which Android forbids on the main thread (NetworkOnMainThreadException).
+        // The answer is read, and closed, off the main thread: a big one (a page of files) needs more
+        // reads from the socket, and so does closing one that wasn't read to the end (its caller gave
+        // up: the screen closed), which Android forbids on the main thread (NetworkOnMainThreadException,
+        // a crash when a screen closed just as its answer arrived).
         val t0 = System.nanoTime()
         fun ms() = (System.nanoTime() - t0) / 1_000_000
         try {
-            return http.newCall(rb.build()).await().use { resp ->
-                withContext(Dispatchers.IO) {
+            return withContext(Dispatchers.IO) {
+                http.newCall(rb.build()).await().use { resp ->
                     val text = resp.body.string()
                     if (!resp.isSuccessful) {
                         val err = error(resp, text)
@@ -340,7 +343,8 @@ private class Wrapped<T>(private val inner: KSerializer<T>, private val key: Str
 suspend fun Call.await(): Response = suspendCancellableCoroutine { cont ->
     enqueue(object : Callback {
         override fun onResponse(call: Call, response: Response) {
-            cont.resume(response) { _, r, _ -> r.close() }
+            // Nobody waits any more: close it, on a background thread (closing may read the socket).
+            cont.resume(response) { _, r, _ -> Dispatchers.IO.asExecutor().execute { runCatching { r.close() } } }
         }
 
         override fun onFailure(call: Call, e: IOException) {
