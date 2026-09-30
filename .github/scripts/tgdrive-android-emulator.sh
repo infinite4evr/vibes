@@ -16,6 +16,7 @@ adb shell run-as app.tgdrive cat files/tgdrive/logs/tgdrive.log > out/service-de
 
 # A first start on a fresh install: the real sign-in screens against Telegram (made-up key).
 adb shell pm clear app.tgdrive
+adb shell pm grant app.tgdrive android.permission.POST_NOTIFICATIONS || true   # as if Allow was tapped
 adb shell am instrument -w -r -e class app.tgdrive.SignInFlow app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/signin.txt
 grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/signin.txt && status=1
 adb pull /sdcard/Android/data/app.tgdrive/files/Pictures/tour/. out/shots/ || true

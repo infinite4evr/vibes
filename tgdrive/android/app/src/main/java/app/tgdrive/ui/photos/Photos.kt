@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import app.tgdrive.data.AppState
 import app.tgdrive.data.FileItem
 import app.tgdrive.data.Month
+import app.tgdrive.data.explain
 import app.tgdrive.ui.actions.ChatPickerSheet
 import app.tgdrive.ui.components.EmptyState
 import app.tgdrive.ui.components.IconBtn
@@ -90,6 +91,8 @@ fun PhotosScreen(state: AppState, thumbs: ThumbSource, onMenu: () -> Unit, onOpe
     var reload by remember { mutableIntStateOf(0) }
     val cache = remember { mutableStateMapOf<String, List<FileItem>>() }
     val loading = remember { HashSet<String>() }
+    /** Months that couldn't be loaded, with why (shown with a way to try again). */
+    val failed = remember { mutableStateMapOf<String, String>() }
     val scope = rememberCoroutineScope()
 
     fun filters(): Map<String, String> = buildMap {
@@ -100,16 +103,16 @@ fun PhotosScreen(state: AppState, thumbs: ThumbSource, onMenu: () -> Unit, onOpe
     }
 
     LaunchedEffect(aid, kind, chat, starred, reload) {
-        months = null; error = null; cache.clear(); loading.clear()
+        months = null; error = null; cache.clear(); loading.clear(); failed.clear()
         try {
             val t = state.api.timeline(aid, filters())
             months = t.months
             total = t.total
-        } catch (e: Exception) { error = e.message }
+        } catch (e: Exception) { error = e.explain("loading the photo timeline") }
     }
 
     fun loadMonth(ym: String) {
-        if (ym in cache || !loading.add(ym)) return
+        if (ym in cache || ym in failed || !loading.add(ym)) return
         val p = filters()
         scope.launch {
             try {
@@ -122,7 +125,10 @@ fun PhotosScreen(state: AppState, thumbs: ThumbSource, onMenu: () -> Unit, onOpe
                     cursor = page.next
                 } while (cursor != null && out.size < 5000)
                 if (p == filters()) cache[ym] = out
-            } catch (_: Exception) {
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                failed[ym] = e.explain("loading photos of $ym")
             } finally {
                 loading.remove(ym)
             }
@@ -159,7 +165,7 @@ fun PhotosScreen(state: AppState, thumbs: ThumbSource, onMenu: () -> Unit, onOpe
                 repeat(4) { Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { repeat(3) { Box(Modifier.weight(1f).aspectRatio(1f).shimmer(RoundedCornerShape(2.dp))) } } }
             }
             ms.isEmpty() || total == 0L -> EmptyState(TgIcons.image, "No photos or videos here yet", "They show up as TG Drive indexes your chats.")
-            else -> Timeline(ms, cache, thumbs, SIZES[size] ?: SIZES.getValue("m"), size == "l", ::loadMonth, onOpen, total, kind)
+            else -> Timeline(ms, cache, failed, thumbs, SIZES[size] ?: SIZES.getValue("m"), size == "l", ::loadMonth, onOpen, total, kind)
         }
     }
     if (pickChat) ChatPickerSheet(state, "Only photos from", onDismiss = { pickChat = false }, onPick = { chat = it.id })
@@ -172,7 +178,8 @@ private fun monthLabel(ym: String): String = runCatching {
 
 @Composable
 private fun Timeline(
-    months: List<Month>, cache: Map<String, List<FileItem>>, thumbs: ThumbSource, cell: androidx.compose.ui.unit.Dp, big: Boolean,
+    months: List<Month>, cache: Map<String, List<FileItem>>, failed: MutableMap<String, String>, thumbs: ThumbSource,
+    cell: androidx.compose.ui.unit.Dp, big: Boolean,
     loadMonth: (String) -> Unit, onOpen: (List<FileItem>, Int) -> Unit, total: Long, kind: String,
 ) {
     val c = Tg.colors
@@ -211,6 +218,10 @@ private fun Timeline(
                         Text(Format.num(m.n), style = Tg.type.meta, color = c.ink3)
                         Spacer(Modifier.weight(1f))
                         val items = cache[m.ym].orEmpty().filter { it.kind == "photo" }
+                        failed[m.ym]?.let {
+                            app.tgdrive.ui.components.TgButton("Try again", { failed.remove(m.ym); loadMonth(m.ym) }, small = true,
+                                icon = TgIcons.refresh)
+                        }
                         if (items.size > 1) IconBtn(TgIcons.slides, { onOpen(items, 0) }, size = 32.dp, iconSize = 17.dp,
                             contentDescription = "Slideshow of ${monthLabel(m.ym)}")
                     }
@@ -219,8 +230,9 @@ private fun Timeline(
                     val list = cache[m.ym]
                     val f = list?.getOrNull(i)
                     if (list == null) LaunchedEffect(m.ym) { loadMonth(m.ym) }
+                    val broken = m.ym in failed
                     Box(Modifier.aspectRatio(1f).clip(RoundedCornerShape(2.dp)).background(c.hover)
-                        .then(if (f != null) Modifier.clickable { onOpen(list, i) } else Modifier.shimmer(RoundedCornerShape(2.dp)))) {
+                        .then(if (f != null) Modifier.clickable { onOpen(list, i) } else if (broken) Modifier else Modifier.shimmer(RoundedCornerShape(2.dp)))) {
                         if (f != null) {
                             FileThumb(f, thumbs, Modifier.fillMaxSize(), big = big, showBadges = false)
                             val video = f.kind == "video" || f.kind == "gif" || f.kind == "round"

@@ -47,6 +47,20 @@ class EngineTest {
         assertTrue("numpy loads (meaning search)", s.numpy)
     }
 
+    /** The screens call the API from the main thread: big answers (a page of files, a month of
+     *  photos, the folders) must still load (they failed with NetworkOnMainThreadException). */
+    @Test
+    fun bigPagesLoadFromTheMainThread() = runBlocking {
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+            val page = g.api.files(AID, mapOf("limit" to "90", "sort" to "date", "order" to "desc", "copies" to "hide"))
+            assertTrue(page.items.size >= 90)
+            assertTrue(g.api.folders(AID).folders.isNotEmpty())
+            val m = g.api.timeline(AID, mapOf("kinds" to "photo,video")).months.first()
+            g.api.files(AID, mapOf("kinds" to "photo,video", "date_from" to m.ym, "date_to" to m.ym, "limit" to "500"))
+            g.api.storage(AID)
+        }
+    }
+
     @Test
     fun sampleAccountIsThere() = runBlocking {
         val st = g.api.status()

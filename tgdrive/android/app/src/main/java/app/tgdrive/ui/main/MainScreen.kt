@@ -148,12 +148,16 @@ fun MainScreen(activity: MainActivity, state: AppState) {
     val model: BrowseModel? = (top.screen as? Screen.Browse)?.let { b -> top.keep("model") { BrowseModel(state, b.view, scope) } }
     actions.model = model
 
-    BackHandler(enabled = drawer.isOpen || model?.selecting == true || nav.canPop || actions.overlay != null) {
+    // Back: close what's open, then go back; from any other top-level page it goes to My Drive
+    // first (like the home of a file app), and only from My Drive does it leave the app.
+    val home = Screen.Browse(View.Drive(null))
+    BackHandler(enabled = drawer.isOpen || model?.selecting == true || nav.canPop || actions.overlay != null || top.screen != home) {
         when {
             actions.overlay != null -> actions.close()
             drawer.isOpen -> scope.launch { drawer.close() }
             model?.selecting == true -> model.clearSelection()
-            else -> nav.pop()
+            nav.canPop -> nav.pop()
+            else -> nav.navigate(home)
         }
     }
 

@@ -1,7 +1,9 @@
 package app.tgdrive.data
 
 import app.tgdrive.engine.EngineState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
@@ -66,10 +68,14 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
         if (background) rb.header("x-tgdrive-bg", "1")
         val needsBody = method in setOf("POST", "PUT", "PATCH")
         rb.method(method, body ?: if (needsBody) "{}".toRequestBody(jsonType) else null)
+        // The answer is read off the main thread: a big one (a page of files) needs more reads from
+        // the socket, which Android forbids on the main thread (NetworkOnMainThreadException).
         return http.newCall(rb.build()).await().use { resp ->
-            val text = resp.body.string()
-            if (!resp.isSuccessful) throw error(resp, text)
-            text
+            withContext(Dispatchers.IO) {
+                val text = resp.body.string()
+                if (!resp.isSuccessful) throw error(resp, text)
+                text
+            }
         }
     }
 
@@ -81,12 +87,14 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
         return ApiException(resp.code, msg, locked = resp.code == 423)
     }
 
-    suspend fun <T> get(path: String, s: DeserializationStrategy<T>, params: Map<String, Any?> = emptyMap(), background: Boolean = false): T =
-        JsonCodec.decodeFromString(s, raw("GET", path, params, background = background))
+    suspend fun <T> get(path: String, s: DeserializationStrategy<T>, params: Map<String, Any?> = emptyMap(), background: Boolean = false): T {
+        val text = raw("GET", path, params, background = background)
+        return withContext(Dispatchers.Default) { JsonCodec.decodeFromString(s, text) }   // big pages: not on the main thread
+    }
 
     suspend fun json(method: String, path: String, body: JsonElement? = null, params: Map<String, Any?> = emptyMap()): JsonElement {
         val text = raw(method, path, params, body?.toString()?.toRequestBody(jsonType))
-        return if (text.isBlank()) JsonNull else JsonCodec.parseToJsonElement(text)
+        return if (text.isBlank()) JsonNull else withContext(Dispatchers.Default) { JsonCodec.parseToJsonElement(text) }
     }
 
     private fun a(aid: Long) = "/api/a/$aid"
@@ -316,3 +324,9 @@ fun JsonObject.bool(k: String, default: Boolean = false): Boolean = (this[k] as?
 fun JsonObject.obj(k: String): JsonObject = (this[k] as? JsonObject) ?: JsonObject(emptyMap())
 fun JsonObject.arr(k: String): JsonArray = (this[k] as? JsonArray) ?: JsonArray(emptyList())
 fun JsonElement.asObj(): JsonObject = this as? JsonObject ?: JsonObject(emptyMap())
+
+/** What went wrong, for the screen (never blank), after logging it with its stack for diagnosis. */
+fun Throwable.explain(where: String): String {
+    android.util.Log.w("TGDrive", "$where failed", this)
+    return message?.takeIf { it.isNotBlank() } ?: javaClass.simpleName.ifBlank { "Unexpected error" }
+}

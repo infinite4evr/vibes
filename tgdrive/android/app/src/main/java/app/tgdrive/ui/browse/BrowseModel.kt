@@ -12,6 +12,7 @@ import app.tgdrive.data.FileItem
 import app.tgdrive.data.FileRef
 import app.tgdrive.data.FileStats
 import app.tgdrive.data.Folder
+import app.tgdrive.data.explain
 import app.tgdrive.data.str
 import app.tgdrive.ui.nav.View
 import kotlinx.coroutines.CoroutineScope
@@ -60,6 +61,7 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
     val selecting: Boolean get() = selected.isNotEmpty()
 
     private var job: Job? = null
+    private var recorded = false
     private var statsJob: Job? = null
     private var gen = 0
 
@@ -152,7 +154,10 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
         error = null
         moreError = null
         loading = true
-        val p = params(mapOf("limit" to PAGE.toString()))
+        // A search typed by you goes into Recent searches (as on the desktop); reloads don't add it again.
+        val record = view is View.Search && !recorded
+        val p = params(mapOf("limit" to PAGE.toString()) + (if (record) mapOf("record" to "1") else emptyMap()))
+        if (record) recorded = true
         if (p == null) {
             items.clear(); loading = false; loaded = true
             return
@@ -176,7 +181,7 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {
-                if (my == gen) error = e.message ?: "TG Drive isn't responding."
+                if (my == gen) error = e.explain("loading ${view}")
             } finally {
                 if (my == gen) loading = false
             }
@@ -199,7 +204,7 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
                 items.addAll(page.items.filter { it.key !in have })
                 next = page.next
             } catch (e: Exception) {
-                if (my == gen) moreError = e.message ?: "Couldn't load more files."
+                if (my == gen) moreError = e.explain("loading more of ${view}")
             } finally {
                 if (my == gen) loadingMore = false
             }
@@ -212,7 +217,10 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
         statsJob = scope.launch {
             try {
                 stats = state.api.stats(aid, p - "sort" - "order")
-            } catch (_: Exception) {
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                e.explain("counting ${view}")
             }
         }
     }

@@ -296,8 +296,11 @@ class AppState(
         try {
             block()
         } catch (e: ApiException) {
-            if (e.locked) onLocked()
-        } catch (_: Exception) {
+            if (e.locked) onLocked() else e.explain("loading")
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            e.explain("loading")
         }
     }
 

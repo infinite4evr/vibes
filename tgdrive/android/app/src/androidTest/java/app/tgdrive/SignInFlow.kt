@@ -42,13 +42,14 @@ class SignInFlow {
     fun signInWithAMadeUpKeyShowsTelegramsAnswer() {
         ActivityScenario.launch(MainActivity::class.java).use {
             val start = waitText("Sign in with Telegram", 30_000)
-            assertNotNull("the welcome screen didn't show", start)
             shot("30-welcome")
+            assertNotNull("the welcome screen didn't show", start)
             start!!.click()
 
             // The app key (my.telegram.org). The service starts first: up to a couple of minutes on a fresh install.
-            assertNotNull("the app key screen didn't show", waitText("Connect TG Drive to Telegram", 180_000))
+            val keyScreen = waitText("Connect TG Drive to Telegram", 180_000)
             shot("31-api-key")
+            assertNotNull("the app key screen didn't show", keyScreen)
             device.wait(Until.hasObject(By.clazz("android.widget.EditText")), 10_000)
             val keyFields = fields()
             assertTrue("expected the API ID and hash fields, found ${keyFields.size}", keyFields.size >= 2)
