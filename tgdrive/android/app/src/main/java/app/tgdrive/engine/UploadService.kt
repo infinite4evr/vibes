@@ -84,7 +84,14 @@ class UploadService : Service() {
         withContext(Dispatchers.Main) { g.engine.hold("upload", true) }
         try {
             withTimeoutOrNull(60_000) { g.engine.state.first { it.ready } } ?: error("TG Drive's service isn't running.")
-            val files = if (job.tree != null) walkTree(job.tree) else job.uris.map { it to "" }
+            val all = if (job.tree != null) walkTree(job.tree) else job.uris.map { it to "" }
+            // Only what other apps and Android's pickers hand over: never a file path, or TG Drive's own
+            // files (a share naming them would make TG Drive read its private data, e.g. a Telegram session).
+            val files = all.filter { (uri, _) -> uploadable(uri) }
+            if (files.size < all.size) {
+                AppLog.w("upload", "refused ${all.size - files.size} shared item(s) that aren't another app's files")
+                g.state.message("Skipped ${all.size - files.size} of the shared items: TG Drive only uploads files other apps share.", error = true)
+            }
             var sent = 0
             var failed = 0
             for ((i, pair) in files.withIndex()) {
@@ -106,7 +113,7 @@ class UploadService : Service() {
                 failed == 0 -> resources.getQuantityString(R.plurals.upload_queued, sent, sent)
                 else -> getString(R.string.upload_some_failed, sent, failed)
             }
-            g.state.message(msg, error = failed > 0)
+            if (files.isNotEmpty()) g.state.message(msg, error = failed > 0)
             g.state.changed("upload")
             withContext(Dispatchers.Main) { g.state.loadTransfers() }
         } catch (e: Exception) {
@@ -163,7 +170,7 @@ class UploadService : Service() {
         .setContentText(text)
         .setOngoing(true)
         .setSilent(true)
-        .setContentIntent(EngineService.openApp(this, null))
+        .setContentIntent(EngineService.openScreen(this, "transfers"))
         .apply { if (progress != null) setProgress(100, progress, false) else setProgress(0, 0, true) }
         .build()
 
@@ -183,6 +190,8 @@ class UploadService : Service() {
                 ?: throw java.io.IOException("can't read ${uri.lastPathSegment}")
         }
     }
+
+    private fun uploadable(uri: Uri): Boolean = uri.scheme == "content" && uri.authority != "$packageName.files"
 
     companion object {
         private const val NOTIFY_ID = 7
