@@ -121,6 +121,8 @@ class Journeys {
     private fun back() { device.pressBack(); Thread.sleep(600) }
 
     private fun sidebar(label: String) {
+        // A page opened from another shows Back instead of Menu: go back to where the menu is.
+        repeat(4) { if (find(By.desc("Menu"), 800) == null) back() }
         tapDesc("Menu")
         Thread.sleep(500)
         fun scrollFind(sel: BySelector): UiObject2? {
@@ -232,6 +234,8 @@ class Journeys {
             Log.e(TAG, "FAIL  $name", e)
             failures += "$name: ${e.message ?: e.javaClass.simpleName}"
             runCatching { shot("$tag-FAIL", 300) }
+            // What the screen offered (texts, descriptions, bounds), to see why something wasn't found.
+            runCatching { dir.mkdirs(); device.dumpWindowHierarchy(File(dir, "$tag-FAIL.xml")) }
             runCatching { home() }
         }
     }
@@ -404,7 +408,7 @@ class Journeys {
                 sidebar("Photos")
                 Thread.sleep(3000)
                 // The first picture (the grid has no text): just below the first month's title.
-                val month = find(By.textContains("20"), 5000)?.visibleBounds
+                val month = runCatching { find(By.textContains("20"), 5000)?.visibleBounds }.getOrNull()
                 device.click(device.displayWidth / 4, (month?.bottom ?: device.displayHeight / 3) + device.displayWidth / 5)
                 need(By.desc("Details"), "a photo in the viewer", 15_000)
                 device.swipe(device.displayWidth * 4 / 5, device.displayHeight / 2, device.displayWidth / 5, device.displayHeight / 2, 15)

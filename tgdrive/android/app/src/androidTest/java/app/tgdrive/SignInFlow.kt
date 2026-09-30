@@ -40,16 +40,18 @@ class SignInFlow {
 
     /** Close the keyboard if it is open (Back with no keyboard would leave the screen). */
     private fun hideKeyboard() {
-        val open = inst.uiAutomation.windows.any { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_INPUT_METHOD }
-        if (open) { device.pressBack(); Thread.sleep(400) }
+        Thread.sleep(500)
+        val ime = runCatching { device.executeShellCommand("dumpsys input_method") }.getOrDefault("")
+        if (ime.contains("mInputShown=true")) { device.pressBack(); Thread.sleep(600) }
     }
 
     /** A button that may be below the fold on a small screen: scroll the page until it shows. */
     private fun scrollTo(text: String): UiObject2? {
-        repeat(6) {
+        repeat(8) {
             device.findObject(By.text(text))?.let { return it }
-            device.findObject(By.scrollable(true))?.scroll(androidx.test.uiautomator.Direction.DOWN, 0.6f)
-            Thread.sleep(300)
+            device.findObjects(By.scrollable(true)).maxByOrNull { it.visibleBounds.height() }
+                ?.let { runCatching { it.scroll(androidx.test.uiautomator.Direction.DOWN, 0.6f) } }
+            Thread.sleep(400)
         }
         return device.findObject(By.text(text))
     }
