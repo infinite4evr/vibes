@@ -143,7 +143,7 @@ jobs:
   emulator:
     name: Emulator tests and screenshots
     runs-on: ubuntu-latest
-    timeout-minutes: 80
+    timeout-minutes: 100
     defaults:
       run:
         working-directory: tgdrive/android

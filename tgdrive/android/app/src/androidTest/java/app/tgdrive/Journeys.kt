@@ -22,7 +22,9 @@ import app.tgdrive.util.Format
 import app.tgdrive.data.UiMessage
 import app.tgdrive.data.str
 import app.tgdrive.engine.EngineState
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
@@ -30,6 +32,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,79 +49,12 @@ import java.io.File
  * each leaves a screenshot (e2e-*.png, next to the tour's).
  */
 @RunWith(AndroidJUnit4::class)
-class Journeys {
-    private val inst = InstrumentationRegistry.getInstrumentation()
-    private val device = UiDevice.getInstance(inst)
-    private val app = ApplicationProvider.getApplicationContext<TGDriveApp>()
-    private val g get() = app.graph
-    private val dir = File(inst.targetContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "tour")
+class Journeys : UiDriver() {
     private val failures = ArrayList<String>()
     private val errors = java.util.Collections.synchronizedList(ArrayList<UiMessage>())
     private var n = 0
 
     // ------------------------------------------------------------------ helpers
-    private fun shot(name: String, settle: Long = 1200) {
-        Thread.sleep(settle)
-        device.waitForIdle()
-        val bmp: Bitmap = inst.uiAutomation.takeScreenshot() ?: return
-        dir.mkdirs()
-        File(dir, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
-    }
-
-    private fun find(sel: BySelector, ms: Long = 8000): UiObject2? = device.wait(Until.findObject(sel), ms)
-
-    private fun need(sel: BySelector, what: String, ms: Long = 8000): UiObject2 = find(sel, ms) ?: throw AssertionError("not on screen: $what")
-
-    /** A file's name on screen (a label, never the search box that may hold the same words). */
-    private fun label(text: String): BySelector = By.clazz("android.widget.TextView").textContains(text)
-
-    /**
-     * Tap what [sel] finds, by its position: live parts of the screen (the indexing counter, progress)
-     * redraw every second, and a found view can be replaced before it is tapped.
-     */
-    private fun click(sel: BySelector, what: String, long: Boolean = false, ms: Long = 8000) {
-        repeat(6) {
-            val o = need(sel, what, ms)
-            val b = try { o.visibleBounds } catch (_: StaleObjectException) { null }
-            if (b != null) {
-                if (long) device.swipe(b.centerX(), b.centerY(), b.centerX(), b.centerY(), 160)
-                else device.click(b.centerX(), b.centerY())
-                Thread.sleep(500)
-                return
-            }
-            Thread.sleep(300)
-        }
-        throw AssertionError("couldn't tap $what (it kept changing)")
-    }
-
-    private fun tap(text: String) = click(By.text(text), "“$text”")
-
-    /** Tap a view already found, by its position (see [click]). */
-    private fun tapAt(o: UiObject2, long: Boolean = false) {
-        val b = try { o.visibleBounds } catch (_: StaleObjectException) { throw AssertionError("the view changed before it could be tapped") }
-        if (long) device.swipe(b.centerX(), b.centerY(), b.centerX(), b.centerY(), 160) else device.click(b.centerX(), b.centerY())
-        Thread.sleep(500)
-    }
-
-    /** Something further down a page: scroll the page until it shows. */
-    private fun scrollTo(sel: BySelector, what: String): UiObject2 {
-        find(sel, 1500)?.let { return it }
-        repeat(3) {
-            runCatching {
-                device.findObjects(By.scrollable(true)).maxByOrNull { it.visibleBounds.height() }
-                    ?.scrollUntil(Direction.DOWN, Until.findObject(sel))
-            }.getOrNull()?.let { return it }
-            find(sel, 800)?.let { return it }
-        }
-        return need(sel, what, 1000)
-    }
-
-    /** A dialog's button whose text is also its title ("Rename"): the lowest one on screen. */
-    private fun tapButton(text: String) {
-        need(By.text(text), "“$text”")
-        val o = device.findObjects(By.text(text)).maxByOrNull { it.visibleBounds.centerY() } ?: throw AssertionError("no “$text”")
-        tapAt(o)
-    }
 
     /** The share sheet opened (the system's chooser, in front of TG Drive). */
     private fun shareSheetOpened(): Boolean {
@@ -128,71 +65,6 @@ class Journeys {
             Thread.sleep(300)
         }
         return false
-    }
-    private fun tapDesc(desc: String) = click(By.desc(desc), "button “$desc”")
-
-    /** An action in a bottom sheet, which may be below the sheet's fold: swipe the sheet up until it shows. */
-    private fun sheetTap(text: String) {
-        repeat(5) {
-            val o = find(By.text(text), 1200)
-            if (o != null) { tapAt(o); return }
-            device.swipe(device.displayWidth / 2, device.displayHeight * 85 / 100, device.displayWidth / 2, device.displayHeight * 45 / 100, 25)
-        }
-        tap(text)
-    }
-
-    /** Type into the dialog's text field (the focused one, else the last on screen). */
-    private fun type(text: String) {
-        val field = find(By.clazz("android.widget.EditText").focused(true), 4000)
-            ?: device.findObjects(By.clazz("android.widget.EditText")).lastOrNull()
-            ?: throw AssertionError("no text field to type “$text” into")
-        field.text = text
-        Thread.sleep(300)
-    }
-
-    private fun back() { device.pressBack(); Thread.sleep(600) }
-
-    private fun sidebar(label: String) {
-        // A page opened from another shows Back instead of Menu: go back to where the menu is
-        // (home() also brings TG Drive back if Back left it).
-        if (find(By.desc("Menu"), 1500) == null) home()
-        tapDesc("Menu")
-        // Wait for the drawer to be fully open (its scrim), or the page behind it gets scrolled instead.
-        need(By.desc("Close navigation menu"), "the open sidebar", 6000)
-        Thread.sleep(700)
-        fun drawerList(): UiObject2? = runCatching {
-            device.findObjects(By.scrollable(true)).firstOrNull { it.visibleBounds.right < device.displayWidth - 8 }
-        }.getOrNull()
-        // The drawer keeps where it was scrolled to: back to its top (My Drive is its first row).
-        var up = 0
-        while (find(By.text("My Drive"), 600) == null && up++ < 8) {
-            runCatching { drawerList()?.scroll(Direction.UP, 0.8f) }
-            device.waitForIdle()
-            Thread.sleep(400)
-        }
-        fun scrollFind(sel: BySelector): UiObject2? {
-            var o = find(sel, 1500)
-            var tries = 0
-            while (o == null && tries < 10) {
-                // Slowly, so the list doesn't fling on after a row was found (it would be gone when tapped).
-                runCatching { drawerList()?.scroll(Direction.DOWN, 0.45f, SLOW) }
-                device.waitForIdle()
-                Thread.sleep(500)
-                o = find(sel, 1500)
-                tries++
-            }
-            return o
-        }
-        var o = scrollFind(By.text(label))
-        // Tools start folded: open the group, then look again.
-        if (o == null && label in TOOLS) {
-            runCatching { scrollFind(By.text("TOOLS"))?.let { tapAt(it) } }
-            Thread.sleep(1500)   // the group opens with an animation
-            o = scrollFind(By.text(label))
-        }
-        if (o == null) throw AssertionError("sidebar has no “$label”")
-        click(By.text(label), "“$label” in the sidebar")
-        Thread.sleep(1200)
     }
 
     /** The menu of the file showing [name]; searches for it first when it isn't on screen. */
@@ -217,62 +89,18 @@ class Journeys {
         need(By.text("Delete folder"), "the folder menu")
     }
 
-    private fun search(q: String) {
-        home()
-        tap("Search everything…")
-        // Type into the search box, and check it took the text (the screen may still be settling).
-        repeat(4) {
-            val field = find(By.clazz("android.widget.EditText"), 5000)
-            if (field != null) {
-                try { field.text = q } catch (_: StaleObjectException) { }
-                if (find(By.clazz("android.widget.EditText").text(q), 1500) != null) {
-                    // Submitted when the search box gives way to the results page.
-                    repeat(3) {
-                        device.pressEnter()
-                        if (device.wait(Until.gone(By.clazz("android.widget.EditText").text(q)), 4000)) {
-                            Thread.sleep(1500)
-                            return
-                        }
-                    }
-                    throw AssertionError("the search for “$q” wasn't submitted")
-                }
-            }
-            Thread.sleep(500)
-        }
-        throw AssertionError("couldn't type “$q” into the search box")
-    }
-
-    /** Back to My Drive with nothing open. */
-    private fun home() {
-        repeat(6) {
-            if (find(By.text("Search everything…"), 600) != null && find(By.desc("Menu"), 300) != null) {
-                if (find(By.text("My Drive"), 300) != null) return
-            }
-            device.pressBack()
-            Thread.sleep(400)
-            if (device.currentPackageName != app.packageName) {
-                ActivityScenario.launch(MainActivity::class.java)
-                Thread.sleep(2000)
-            }
-        }
-        runCatching { sidebar("My Drive") }
-    }
-
-    /** Wait until [check] holds, asking the service again every half second. */
-    private fun eventually(what: String, ms: Long = 15_000, check: suspend () -> Boolean) = runBlocking {
-        val until = System.currentTimeMillis() + ms
-        var last: Throwable? = null
-        while (System.currentTimeMillis() < until) {
-            try { if (check()) return@runBlocking } catch (e: Exception) { last = e }
-            Thread.sleep(500)
-        }
-        throw AssertionError("never happened: $what" + (last?.let { " (last error: ${it.message})" } ?: ""))
-    }
-
     private val aid get() = g.state.aid.value
 
     private suspend fun file(q: String, name: String): FileItem? =
         g.api.files(aid, mapOf("q" to q, "limit" to "50", "copies" to "hide")).items.firstOrNull { it.name == name || it.displayName == name }
+
+    /** [uri] shared to TG Drive from another app (the share sheet's ACTION_SEND). */
+    private fun share(uri: android.net.Uri) {
+        app.startActivity(android.content.Intent(android.content.Intent.ACTION_SEND)
+            .setClass(app, MainActivity::class.java).setType("text/plain")
+            .putExtra(android.content.Intent.EXTRA_STREAM, uri)
+            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION))
+    }
 
     private suspend fun folderId(name: String): String? { g.state.loadFolders(); return g.state.folders.value.folders.firstOrNull { it.name == name }?.id }
 
@@ -406,7 +234,7 @@ class Journeys {
                 if (find(By.textContains(renamed), 2000) == null) { home(); tap(folder2) }
                 fileMenu(renamed)
                 tap("Download")
-                sidebar("Transfers")
+                page("Transfers")
                 need(By.textContains("syllabus"), "the download in Transfers", 20_000)
                 eventually("the download finishes", 60_000) {
                     g.api.transfers(aid).transfers.any { it.name.contains("syllabus") && it.status == "done" }
@@ -434,7 +262,7 @@ class Journeys {
             }
 
             step("all-files-and-filters") {
-                sidebar("All files")
+                page("All files")
                 need(By.desc("File options"), "files in All files", 15_000)
                 tapDesc("Filters")
                 shot("e2e-filters", 800)
@@ -446,7 +274,7 @@ class Journeys {
 
             // Every type with files gets a tab (not only Photos and Videos), and a tab shows only that type.
             step("type-tabs") {
-                sidebar("All files")
+                page("All files")
                 need(By.desc("File options"), "files in All files", 15_000)
                 val docs = runBlocking { g.api.stats(aid, mapOf("copies" to "hide")).kindCounts["document"] } ?: 0L
                 if (docs <= 0L) throw AssertionError("the sample has no documents to show")
@@ -475,7 +303,7 @@ class Journeys {
             }
 
             step("photos") {
-                sidebar("Photos")
+                page("Photos")
                 Thread.sleep(3000)
                 // The first picture (the grid has no text): just below the first month's title.
                 val month = runCatching { find(By.textContains("20"), 5000)?.visibleBounds }.getOrNull()
@@ -486,39 +314,88 @@ class Journeys {
                 back()
             }
 
-            for (page in listOf("Storage", "Duplicates", "Chats and indexing", "Activity", "Transfers")) {
-                step("page-" + page.lowercase().replace(' ', '-')) {
-                    sidebar(page)
+            // Each Tools page opens with its title and content (an error screen fails the step).
+            for ((name, title) in listOf("Storage" to "Storage", "Duplicates" to "Duplicates", "Chats and indexing" to "Index manager",
+                    "Activity" to "Activity", "Transfers" to "Transfers")) {
+                step("page-" + name.lowercase().replace(' ', '-')) {
+                    page(name)
+                    need(By.text(title), "the $title page", 15_000)
                     Thread.sleep(2500)
+                    if (find(By.text("Couldn't load this"), 500) != null) throw AssertionError("the $title page couldn't load")
                 }
             }
 
-            step("dark-theme") {
-                sidebar("Settings")
-                tap("Appearance")
-                tap("Dark")
-                eventually("the theme is saved") { g.state.settings.value.str("theme") == "dark" }
+            // The sidebar itself (the other journeys open pages by their links): a page from it, and back.
+            step("sidebar") {
                 home()
-                shot("e2e-dark-home", 1500)
-                sidebar("Settings")
-                tap("Appearance")
-                tap("Match the system")
-                eventually("the theme is back") { g.state.settings.value.str("theme") == "system" }
+                sidebar("Photos")
+                need(By.textContains("items"), "Photos, opened from the sidebar", 20_000)
+                sidebar("My Drive")
+                need(By.text("My Drive"), "My Drive, opened from the sidebar", 10_000)
             }
 
-            // A file shared from another app (the share sheet → TG Drive) is uploaded to Telegram.
+            step("dark-theme") {
+                try {
+                    open("settings/appearance")
+                    tap("Dark")
+                    eventually("the theme is saved") { g.state.settings.value.str("theme") == "dark" }
+                    home()
+                    shot("e2e-dark-home", 1500)
+                    open("settings/appearance")
+                    tap("Match the system")
+                    eventually("the theme is back") { g.state.settings.value.str("theme") == "system" }
+                } finally {
+                    // Never leave the next journeys in dark mode.
+                    if (g.state.settings.value.str("theme") != "system")
+                        runBlocking { withContext(Dispatchers.Main) { g.state.setSetting("theme", "system") } }
+                }
+            }
+
+            // A file shared from another app (the share sheet → TG Drive) is uploaded to Telegram. The file is
+            // put in Downloads through Android's media store, so the share carries a real other-app URI.
             step("share-upload") {
                 home()
-                val f = File(app.cacheDir, "e2e shared note.txt").apply { writeText("Shared from another app by the end-to-end run.\n") }
-                val uri = androidx.core.content.FileProvider.getUriForFile(app, "${app.packageName}.files", f)
-                val send = android.content.Intent(android.content.Intent.ACTION_SEND)
-                    .setClass(app, MainActivity::class.java).setType("text/plain")
-                    .putExtra(android.content.Intent.EXTRA_STREAM, uri)
-                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                app.startActivity(send)
-                eventually("the shared file is in TG Drive", 120_000) { file("shared", "e2e shared note.txt") != null }
-                search("e2e shared note")
-                need(label("e2e shared note"), "the uploaded file in search", 15_000)
+                val name = "e2e shared note ${System.currentTimeMillis() % 100_000}.txt"
+                val resolver = app.contentResolver
+                val uri = resolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                    android.content.ContentValues().apply {
+                        put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, name)
+                        put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "text/plain")
+                    }) ?: throw AssertionError("couldn't make a file in Downloads")
+                try {
+                    resolver.openOutputStream(uri)!!.use { it.write("Shared from another app by the end-to-end run.\n".toByteArray()) }
+                    share(uri)
+                    eventually("the shared file is in TG Drive", 120_000) { file(name.substringBeforeLast('.'), name) != null }
+                    search(name.substringBeforeLast('.'))
+                    need(label(name.take(16)), "the uploaded file in search", 15_000)
+                } finally {
+                    runCatching { resolver.delete(uri, null, null) }
+                }
+            }
+
+            // A share naming TG Drive's own files (its private data, e.g. a Telegram session) is refused.
+            step("share-own-files-refused") {
+                home()
+                val name = "e2e private ${System.currentTimeMillis() % 100_000}.txt"
+                val f = File(app.cacheDir, name).apply { writeText("TG Drive's own file: never uploaded.\n") }
+                val refused = CompletableDeferred<String>()
+                val watch = CoroutineScope(Dispatchers.Default).launch(start = CoroutineStart.UNDISPATCHED) {
+                    g.state.messages.first { it.text.contains("Skipped") }.let { refused.complete(it.text) }
+                }
+                try {
+                    share(androidx.core.content.FileProvider.getUriForFile(app, "${app.packageName}.files", f))
+                    val text = runBlocking { withTimeoutOrNull(60_000) { refused.await() } }
+                        ?: throw AssertionError("sharing TG Drive's own file wasn't refused")
+                    assertTrue("unclear refusal: $text", text.contains("only uploads files other apps share"))
+                    Thread.sleep(3000)
+                    assertTrue("TG Drive uploaded its own file", runBlocking { file(name.substringBeforeLast('.'), name) } == null)
+                    // The refusal is the expected answer here, not an error of the run.
+                    errors.removeAll { it.text.startsWith("Skipped") }
+                    find(By.desc("Dismiss"), 3000)?.let { tapAt(it) }
+                } finally {
+                    watch.cancel()
+                    f.delete()
+                }
             }
 
             // A song that really plays: in the background player, with the mini player to stop it.
@@ -558,9 +435,7 @@ class Journeys {
             step("passcode-lock") {
                 val code = "2468"
                 try {
-                    sidebar("Settings")
-                    scrollTo(By.text("Security"), "Security in Settings")
-                    click(By.text("Security"), "Security")
+                    open("settings/security")
                     click(By.text("Set"), "Set (passcode)")
                     need(By.text("Set a passcode"), "the passcode dialog")
                     val fields = device.findObjects(By.clazz("android.widget.EditText"))
@@ -575,9 +450,7 @@ class Journeys {
                     (find(By.clazz("android.widget.EditText"), 5000) ?: throw AssertionError("no passcode field")).text = code
                     click(By.text("Unlock"), "Unlock")
                     eventually("TG Drive unlocks", 20_000) { !g.api.status().locked }
-                    sidebar("Settings")
-                    scrollTo(By.text("Security"), "Security in Settings")
-                    click(By.text("Security"), "Security")
+                    open("settings/security")
                     click(By.text("Change"), "Change (passcode)")
                     val again = device.findObjects(By.clazz("android.widget.EditText"))
                     if (again.isEmpty()) throw AssertionError("no current-passcode field")
@@ -610,7 +483,7 @@ class Journeys {
                     Thread.sleep(2500)
                     need(By.text("Search everything…"), "the search bar in landscape", 15_000)
                     shot("e2e-landscape-home", 800)
-                    sidebar("Photos")
+                    page("Photos")
                     shot("e2e-landscape-photos", 2000)
                 } finally {
                     // Always upright again: later journeys (and bottom sheets) assume portrait.
@@ -640,9 +513,7 @@ class Journeys {
             }
 
             step("background-sync") {
-                sidebar("Settings")
-                scrollTo(By.text("This phone"), "This phone in Settings")
-                click(By.text("This phone"), "This phone in Settings")
+                open("settings/phone")
                 Thread.sleep(1000)
                 need(By.text("BACKGROUND SYNC"), "the background sync settings")
                 need(By.text("Sync in the background"), "the background sync switch")
@@ -731,7 +602,5 @@ class Journeys {
     private companion object {
         const val TAG = "Journeys"
         const val PLANTED = "E2E planted error"
-        const val SLOW = 1200   // px/s: a scroll that doesn't fling
-        val TOOLS = setOf("Transfers", "Storage", "Duplicates", "Chats and indexing", "Activity", "Settings")
     }
 }

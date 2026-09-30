@@ -120,7 +120,9 @@ val syncTgdrivePython by tasks.registering(Sync::class) {
     from(root.resolve("run.py"))
     from(root.resolve("tests")) {
         into("tests")
-        include("__init__.py", "fake.py", "demo_server.py")
+        // The sample data ("Try it with sample data"), and the big-library generator the emulator's
+        // BigLibraryTest builds 100 000 files with (never used by the app itself).
+        include("__init__.py", "fake.py", "demo_server.py", "bigdb.py")
     }
     into(layout.buildDirectory.dir("generated/tgdrive-python"))
 }
