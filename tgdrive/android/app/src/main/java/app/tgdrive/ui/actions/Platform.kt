@@ -9,6 +9,7 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
+import app.tgdrive.diag.AppLog
 import java.io.File
 
 /** Android's side of opening, sharing and copying things. */
@@ -31,7 +32,11 @@ object Platform {
     fun openFile(ctx: Context, path: String, mime: String?): Boolean {
         val f = File(path)
         if (!f.exists()) return false
-        val uri = try { uriFor(ctx, path) } catch (_: IllegalArgumentException) { Uri.fromFile(f) }
+        // Never a file:// link: Android 7+ refuses those with a crash (FileUriExposedException).
+        val uri = try { uriFor(ctx, path) } catch (e: IllegalArgumentException) {
+            AppLog.w("platform", "no content link for a file outside TG Drive's shared folders", e)
+            return false
+        }
         val i = Intent(Intent.ACTION_VIEW).setDataAndType(uri, mime ?: mimeOf(f.name))
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         return try {
