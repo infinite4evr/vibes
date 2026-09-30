@@ -230,7 +230,7 @@ class AppState(
                 if (bootFailedSince == 0L) bootFailedSince = now
                 if (now - bootFailedSince > 25_000) {
                     // Never wait on a service that runs but doesn't answer: say what it answers.
-                    android.util.Log.w("TGDrive", "the service doesn't answer", e)
+                    AppLog.w("app", "the service doesn't answer", e)
                     _reconnecting.value = false
                     _phase.value = Phase.Failed("TG Drive's service is running but doesn't answer: ${e.message ?: e.javaClass.simpleName}")
                     bootFailedSince = 0

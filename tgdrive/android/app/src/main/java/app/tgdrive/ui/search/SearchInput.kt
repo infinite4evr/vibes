@@ -119,11 +119,12 @@ fun SearchInputScreen(
             IconBtn(TgIcons.chevLeft, onBack, contentDescription = "Back", iconSize = 24.dp)
             Row(
                 Modifier.weight(1f).height(46.dp).clip(RoundedCornerShape(23.dp)).background(c.panel2)
-                    .border(2.dp, c.accent, RoundedCornerShape(23.dp)).padding(start = 14.dp, end = 4.dp),
+                    .border(2.dp, c.accent, RoundedCornerShape(23.dp)).padding(start = 4.dp, end = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                TgIconView(TgIcons.search, tint = c.accent, size = 19.dp)
-                Spacer(Modifier.width(10.dp))
+                // Tapping the magnifier searches too (not only the keyboard's Search key).
+                IconBtn(TgIcons.search, { submit() }, size = 38.dp, iconSize = 19.dp, tint = c.accent, contentDescription = "Search")
+                Spacer(Modifier.width(2.dp))
                 Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                     if (text.text.isEmpty()) {
                         Text(if (scope != null) "Search in ${scope!!.label}" else "Search everything", style = Tg.type.body, color = c.ink3,

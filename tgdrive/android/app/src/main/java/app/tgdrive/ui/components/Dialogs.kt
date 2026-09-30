@@ -41,6 +41,7 @@ import app.tgdrive.ui.theme.TgIconView
 import app.tgdrive.ui.theme.TgShape
 
 /** A dialog in the desktop's style: a title, content and right-aligned buttons. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun TgDialog(
     title: String,
@@ -66,7 +67,10 @@ fun TgDialog(
                 Column(Modifier.weight(1f, fill = false).heightIn(max = 520.dp)
                     .then(if (scroll) Modifier.verticalScroll(rememberScrollState()) else Modifier), content = content)
                 Spacer(Modifier.height(18.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)) {
+                // Wraps onto a second line rather than cutting a long label short ("Create GitHub is…").
+                androidx.compose.foundation.layout.FlowRow(Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (dismiss != null) TgButton(dismiss, onDismiss, kind = ButtonKind.Ghost)
                     if (confirm != null && onConfirm != null) {
                         TgButton(confirm, onConfirm, kind = if (danger) ButtonKind.DangerSolid else ButtonKind.Primary,

@@ -413,6 +413,13 @@ class EngineService : Service() {
                 NotificationManager.IMPORTANCE_DEFAULT))
         }
 
+        /** Opens TG Drive on [screen] (see MainScreen's screenNamed), e.g. "transfers". */
+        fun openScreen(context: Context, screen: String): PendingIntent {
+            val i = Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                .putExtra(MainActivity.EXTRA_OPEN_SCREEN, screen)
+            return PendingIntent.getActivity(context, screen.hashCode(), i, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        }
+
         fun openApp(context: Context, path: String?): PendingIntent {
             val i = Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             if (path != null) i.putExtra(MainActivity.EXTRA_OPEN_PATH, path)

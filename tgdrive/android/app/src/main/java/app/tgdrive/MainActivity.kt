@@ -23,6 +23,8 @@ class MainActivity : ComponentActivity() {
     /** Files shared from another app, waiting for the user to pick where they go. */
     val incomingShare = MutableStateFlow<List<Uri>>(emptyList())
     val openPlayer = MutableStateFlow(false)
+    /** A screen to show (from a notification: "transfers" …; see MainScreen's screenNamed). */
+    val openScreen = MutableStateFlow<String?>(null)
 
     private val notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
@@ -56,6 +58,7 @@ class MainActivity : ComponentActivity() {
             }
         }
         if (intent?.getBooleanExtra(EXTRA_OPEN_PLAYER, false) == true) openPlayer.value = true
+        intent?.getStringExtra(EXTRA_OPEN_SCREEN)?.let { openScreen.value = it }
     }
 
     override fun onDestroy() {
@@ -80,5 +83,6 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val EXTRA_OPEN_PATH = "open_path"
         const val EXTRA_OPEN_PLAYER = "open_player"
+        const val EXTRA_OPEN_SCREEN = "open_screen"
     }
 }

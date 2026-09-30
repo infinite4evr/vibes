@@ -183,6 +183,14 @@ fun MainScreen(activity: MainActivity, state: AppState) {
         if (s is Screen.Browse || s in ROOTS || s is Screen.Settings) nav.navigate(s) else nav.push(s)
     }
 
+    // "Open this screen" (a notification's tap: the upload notification opens Transfers).
+    val openScreen by activity.openScreen.collectAsState()
+    LaunchedEffect(openScreen) {
+        val name = openScreen ?: return@LaunchedEffect
+        screenNamed(name)?.let { go(it) }
+        activity.openScreen.value = null
+    }
+
     val openFiles: (List<FileItem>, Int) -> Unit = { list, i ->
         val f = list[i]
         if (f.kind in setOf("audio", "voice") ) player.playList(state, list.filter { it.kind in setOf("audio", "voice") }, f)
@@ -248,6 +256,23 @@ fun MainScreen(activity: MainActivity, state: AppState) {
             activity.openPlayer.value = false
         }
     }
+}
+
+/** The screens a link can open by name: "transfers", "photos", "settings/security" … */
+fun screenNamed(name: String): Screen? = when (name.substringBefore('/')) {
+    "drive" -> Screen.Browse(View.Drive(null))
+    "all" -> Screen.Browse(View.All)
+    "starred" -> Screen.Browse(View.Starred)
+    "recent" -> Screen.Browse(View.Recent)
+    "photos" -> Screen.Photos
+    "transfers" -> Screen.Transfers
+    "storage" -> Screen.Storage
+    "duplicates" -> Screen.Duplicates
+    "index" -> Screen.Index
+    "activity" -> Screen.Activity
+    "accounts" -> Screen.Accounts
+    "settings" -> Screen.Settings(name.substringAfter('/', "").ifEmpty { null })
+    else -> null
 }
 
 private val ROOTS = setOf(Screen.Photos, Screen.Transfers, Screen.Storage, Screen.Duplicates, Screen.Index, Screen.Activity, Screen.Accounts)

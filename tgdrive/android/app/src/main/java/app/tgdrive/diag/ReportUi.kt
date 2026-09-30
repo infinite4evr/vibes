@@ -63,18 +63,19 @@ fun ErrorDetailsDialog(message: String, detail: String?, onClose: () -> Unit) {
     val full = message + (detail?.let { "\n\n$it" } ?: "")
     TgDialog("What went wrong", onClose, confirm = "Create GitHub issue", onConfirm = { createIssue(ctx, message, detail) }, dismiss = "Close") {
         Text(message, style = Tg.type.bodyStrong, color = Tg.colors.ink)
-        if (detail != null) {
-            Spacer(Modifier.height(10.dp))
-            SelectionContainer { Text(detail, style = Tg.type.mono.copy(fontSize = 11.sp), color = Tg.colors.ink2, maxLines = 60) }
-        }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
         Text("“Create GitHub issue” opens a new issue on TG Drive's GitHub with this error and the end of the logs; you see it " +
             "before sending. “Send report” makes a file with all the logs. Neither has passwords, keys or messages.",
             style = Tg.type.meta, color = Tg.colors.ink3)
         Spacer(Modifier.height(8.dp))
+        // The actions before the (long) stack, so they're on screen without scrolling.
         androidx.compose.foundation.layout.FlowRow(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
             TgButton("Send report", { send(full) }, kind = ButtonKind.Secondary, small = true, icon = TgIcons.bug, busy = busy)
             TgButton("Copy", { Platform.copy(ctx, "TG Drive error", full) }, kind = ButtonKind.Ghost, small = true, icon = TgIcons.copy)
+        }
+        if (detail != null) {
+            Spacer(Modifier.height(10.dp))
+            SelectionContainer { Text(detail, style = Tg.type.mono.copy(fontSize = 11.sp), color = Tg.colors.ink2, maxLines = 60) }
         }
     }
 }
