@@ -84,6 +84,8 @@ def start(options: str) -> str:
         token          secret every request must carry (x-tgdrive-token header or ?t=)
         media_token    secret that only allows playing streams (for other apps: VLC, MX Player …)
         demo           true: a made-up account instead of Telegram ("Try it with sample data")
+        background     true: started by the background sync, with nobody looking: the CPU-heavy jobs
+                       (meaning index, subjects, duplicates) wait until the app is opened
     Returns JSON with the ports and what the runtime could set up."""
     opts = json.loads(options)
     with _lock:
@@ -101,6 +103,8 @@ def start(options: str) -> str:
             os.environ["TGDRIVE_MODEL_DIR"] = str(opts["model_dir"])
         os.environ.setdefault("HOME", str(data_dir))
         info: dict[str, Any] = {"fts5": enable_fts5(opts.get("fts5_library") or "libtgfts5.so")}
+        from . import pace
+        pace.force("paused" if opts.get("background") else None)
 
         from . import config, diagnostics, fastcrypto, maintenance
         maintenance.setup_logging()
@@ -142,6 +146,13 @@ def _prepare_demo(data_dir: Path, download_dir: str) -> None:
         demo_server.prepare(world, download_dir=download_dir, loop=loop)
     finally:
         loop.close()
+
+
+def set_background(on: bool) -> None:
+    """The app was opened (False) while a background sync had started the service, or the reverse."""
+    from . import pace
+    pace.force("paused" if on else None)
+    log.info("background mode %s", "on" if on else "off")
 
 
 def stop(timeout: float = 20.0) -> bool:

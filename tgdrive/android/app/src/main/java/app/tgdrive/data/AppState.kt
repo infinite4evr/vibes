@@ -106,9 +106,24 @@ class AppState(
         get() = prefs.getBoolean("welcomed", false)
         set(v) { prefs.edit().putBoolean("welcomed", v).apply() }
 
+    /** The service became ready while no screen was showing (the background sync woke this process). */
+    private var bootstrapWhenVisible = false
+
+    private fun appVisible() = androidx.lifecycle.ProcessLifecycleOwner.get().lifecycle.currentState
+        .isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)
+
     init {
         scope.launch {
             engine.state.collect { s -> onEngine(s) }
+        }
+        // Load everything (and follow live updates) only once someone is looking.
+        scope.launch {
+            androidx.lifecycle.ProcessLifecycleOwner.get().lifecycle.currentStateFlow.collect {
+                if (it.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED) && bootstrapWhenVisible) {
+                    bootstrapWhenVisible = false
+                    if (engine.state.value.ready) bootstrap()
+                }
+            }
         }
         // "Detailed debug logging" (Settings → About & diagnostics) also makes the app's own log detailed.
         scope.launch { settings.collect { AppLog.verbose = it.bool("debug_logging") } }
@@ -124,7 +139,9 @@ class AppState(
         val prev = lastEngine
         lastEngine = s
         when (s.phase) {
-            EngineState.Phase.Ready -> if (prev?.ready != true || prev.startedAt != s.startedAt) bootstrap()
+            EngineState.Phase.Ready -> if (prev?.ready != true || prev.startedAt != s.startedAt) {
+                if (appVisible()) bootstrap() else bootstrapWhenVisible = true
+            }
             EngineState.Phase.Failed -> { stopLive(); _reconnecting.value = false; _phase.value = Phase.Failed(s.error ?: "TG Drive's service didn't start.") }
             else -> {
                 stopLive()

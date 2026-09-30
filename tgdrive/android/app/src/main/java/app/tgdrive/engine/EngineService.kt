@@ -10,6 +10,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.os.Binder
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
@@ -50,6 +51,9 @@ import java.util.concurrent.TimeUnit
  * It runs as a foreground service while the app is open, while something needs it (transfers,
  * the background player, "keep running" in Settings), and stops a minute after nothing does:
  * like the desktop app, TG Drive doesn't sit in the background using battery for nothing.
+ *
+ * The background sync ([SyncWorker]) binds to it instead of starting it: no notification, the
+ * CPU-heavy jobs held, and it ends as soon as the sync lets go (unless the app opened meanwhile).
  */
 class EngineService : Service() {
 
@@ -60,9 +64,33 @@ class EngineService : Service() {
     private var lastEvent = 0L
     private var state = EngineState()
     private var shuttingDown = false
+    /** Started (by the app: a foreground service), not only bound by the background sync. */
+    private var started = false
+    private var foreground = false
+    /** Python runs in background mode (started for a sync: CPU-heavy jobs held). */
+    private var backgroundMode = false
     private val json = Json { ignoreUnknownKeys = true }
 
-    override fun onBind(intent: Intent?): IBinder? = null
+    override fun onBind(intent: Intent?): IBinder {
+        val demo = intent?.getBooleanExtra(EXTRA_DEMO, false) ?: false
+        exec.execute {
+            AppLog.i("engine", "background sync bound (running: ${state.phase})")
+            holds += HOLD_SYNC
+            idleSince = 0
+            if (state.phase == EngineState.Phase.Stopped) start(demo, background = !started)
+        }
+        return Binder()
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        exec.execute {
+            holds -= HOLD_SYNC
+            idleSince = 0
+            AppLog.i("engine", "background sync let go (started by the app: $started)")
+            if (!started) shutdown()   // only the sync wanted it: stop now, nothing waits a minute
+        }
+        return false
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -85,6 +113,12 @@ class EngineService : Service() {
         val action = intent?.action ?: ACTION_START
         val demo = intent?.getBooleanExtra(EXTRA_DEMO, false) ?: false
         exec.execute {
+            if (action != ACTION_STOP) started = true
+            if (backgroundMode && action != ACTION_STOP && state.ready) {
+                // The app opened during a background sync: everything runs normally again.
+                runCatching { mobile().callAttr("set_background", false) }
+                backgroundMode = false
+            }
             when (action) {
                 ACTION_START -> start(demo)
                 ACTION_HOLD -> {
@@ -109,7 +143,7 @@ class EngineService : Service() {
     }
 
     // ------------------------------------------------------------------ lifecycle
-    private fun start(demo: Boolean) {
+    private fun start(demo: Boolean, background: Boolean = false) {
         if (state.phase == EngineState.Phase.Ready || state.phase == EngineState.Phase.Starting) return
         startLog().delete()
         stage(EngineState(phase = EngineState.Phase.Starting, demo = demo, pid = Process.myPid()), "Preparing")
@@ -130,7 +164,9 @@ class EngineService : Service() {
                 put("token", token)
                 put("media_token", mediaToken)
                 put("demo", demo)
+                put("background", background)
             }
+            backgroundMode = background
             stage(state, if (demo) "Starting TG Drive with sample data" else "Starting TG Drive")
             val out = mobile().callAttr("start", opts.toString()).toString()
             val info = json.parseToJsonElement(out).jsonObject
@@ -300,12 +336,14 @@ class EngineService : Service() {
 
     // ------------------------------------------------------------------ notification
     private fun goForeground(text: String) {
+        foreground = true
         val n = baseNotification(text, null)
         ServiceCompat.startForeground(this, NOTIFY_ID, n,
             if (Build.VERSION.SDK_INT >= 29) ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC else 0)
     }
 
     private fun updateNotification(text: String, progress: Int?) {
+        if (!foreground) return   // bound by the background sync only: no notification
         if (shuttingDown && text != getString(R.string.engine_stopping)) return
         try {
             NotificationManagerCompat.from(this).notify(NOTIFY_ID, baseNotification(text, progress))
@@ -347,6 +385,7 @@ class EngineService : Service() {
         const val CHANNEL_DONE = "transfers"
         private const val NOTIFY_ID = 1
         private const val IDLE_STOP_MS = 60_000L
+        const val HOLD_SYNC = "sync"
         /** How the last start went, step by step (Settings → About and the error screen show it). */
         const val START_LOG = "engine-start.log"
 

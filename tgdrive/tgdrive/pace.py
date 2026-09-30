@@ -25,7 +25,19 @@ GENTLE_REST = 3.0      # rest this many times as long as the work took
 MAX_REST = 30.0
 
 
+_forced: Optional[str] = None
+
+
+def force(m: Optional[str]) -> None:
+    """Override the setting for this run (Android's background sync holds the CPU jobs: "paused"
+    while nobody is looking, so a sync wakes the phone briefly; None goes back to the setting)."""
+    global _forced
+    _forced = m if m in MODES else None
+
+
 def mode() -> str:
+    if _forced:
+        return _forced
     from .settings import settings
     m = settings.get("background_work") or "gentle"
     return m if m in MODES else "gentle"

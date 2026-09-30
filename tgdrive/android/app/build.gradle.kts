@@ -187,6 +187,8 @@ dependencies {
     implementation("androidx.media3:media3-ui:1.8.0")
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("androidx.documentfile:documentfile:1.0.1")
+    // Background sync: Android's job scheduler (runs when the phone allows, with network, not on low battery).
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

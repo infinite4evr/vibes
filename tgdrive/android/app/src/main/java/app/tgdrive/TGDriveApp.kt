@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.Process
 import app.tgdrive.data.Api
 import app.tgdrive.data.AppState
+import app.tgdrive.engine.BackgroundSync
 import app.tgdrive.engine.EngineClient
 import app.tgdrive.engine.EngineService
 import coil3.ImageLoader
@@ -22,7 +23,7 @@ import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
 import java.util.concurrent.TimeUnit
 
-class TGDriveApp : Application(), SingletonImageLoader.Factory {
+class TGDriveApp : Application(), SingletonImageLoader.Factory, androidx.work.Configuration.Provider {
 
     lateinit var graph: AppGraph
         private set
@@ -37,7 +38,12 @@ class TGDriveApp : Application(), SingletonImageLoader.Factory {
         if (engineProcess) return
         EngineService.createChannels(this)
         graph = AppGraph(this)
+        BackgroundSync.schedule(this)
     }
+
+    /** WorkManager (background sync) lives in this process only, never in the engine's. */
+    override val workManagerConfiguration: androidx.work.Configuration
+        get() = androidx.work.Configuration.Builder().setDefaultProcessName(packageName).build()
 
     override fun newImageLoader(context: PlatformContext): ImageLoader = ImageLoader.Builder(context)
         .components { add(OkHttpNetworkFetcherFactory(callFactory = { graph.mediaHttp })) }

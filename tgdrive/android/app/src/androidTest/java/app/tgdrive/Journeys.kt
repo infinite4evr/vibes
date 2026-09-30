@@ -15,6 +15,8 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 import app.tgdrive.data.FileItem
+import app.tgdrive.engine.BackgroundSync
+import app.tgdrive.util.Format
 import app.tgdrive.data.UiMessage
 import app.tgdrive.data.str
 import app.tgdrive.engine.EngineState
@@ -78,6 +80,15 @@ class Journeys {
     }
 
     private fun tap(text: String) = click(By.text(text), "“$text”")
+
+    /** Something further down a page: scroll the page until it shows. */
+    private fun scrollTo(sel: BySelector, what: String): UiObject2 {
+        repeat(8) {
+            find(sel, 800)?.let { return it }
+            runCatching { device.findObjects(By.scrollable(true)).maxByOrNull { it.visibleBounds.height() }?.scroll(Direction.DOWN, 0.6f) }
+        }
+        return need(sel, what, 1000)
+    }
 
     /** A dialog's button whose text is also its title ("Rename"): the lowest one on screen. */
     private fun tapButton(text: String) {
@@ -408,7 +419,7 @@ class Journeys {
                 need(By.desc("File options"), "files in All files", 15_000)
                 val docs = runBlocking { g.api.stats(aid, mapOf("copies" to "hide")).kindCounts["document"] } ?: 0L
                 if (docs <= 0L) throw AssertionError("the sample has no documents to show")
-                val header = "${app.tgdrive.util.Format.num(docs)} files"
+                val header = "${Format.num(docs)} files"
                 // The row scrolls; tap along it (after a swipe) until the list says it shows the documents.
                 val row = need(By.textStartsWith("All"), "the type tabs").visibleBounds
                 val y = row.centerY()
@@ -456,6 +467,25 @@ class Journeys {
                 tap("Appearance")
                 tap("Match the system")
                 eventually("the theme is back") { g.state.settings.value.str("theme") == "system" }
+            }
+
+            step("background-sync") {
+                sidebar("Settings")
+                scrollTo(By.text("This phone"), "This phone in Settings").click()
+                Thread.sleep(1000)
+                need(By.text("BACKGROUND SYNC"), "the background sync settings")
+                need(By.text("Sync in the background"), "the background sync switch")
+                val before = BackgroundSync.last(app).at
+                scrollTo(By.text("Sync now"), "Sync now").click()
+                eventually("the sync finishes", 180_000) {
+                    val l = BackgroundSync.last(app)
+                    l.at != before && !l.running
+                }
+                val l = BackgroundSync.last(app)
+                if (!l.ok) throw AssertionError("the sync failed: ${l.result}")
+                need(By.textContains(l.result.take(12)), "the result under Last sync", 6000)
+                shot("e2e-background-sync", 300)
+                home()
             }
 
             step("error-details-and-report") {

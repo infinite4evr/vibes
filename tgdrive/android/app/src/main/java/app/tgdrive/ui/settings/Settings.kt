@@ -86,6 +86,7 @@ import app.tgdrive.ui.theme.TgIconView
 import app.tgdrive.ui.theme.TgIcons
 import app.tgdrive.ui.theme.TgShape
 import app.tgdrive.ui.theme.parseHex
+import app.tgdrive.engine.BackgroundSync
 import app.tgdrive.util.Format
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -111,7 +112,7 @@ private val SECTIONS = listOf(
     Section("telegram", "Telegram API", TgIcons.telegram, "API ID and hash"),
     Section("accounts", "Accounts", TgIcons.user, "Switch, add, sign out"),
     Section("security", "Security", TgIcons.lock, "App passcode"),
-    Section("phone", "This phone", TgIcons.disk, "Running in the background, battery, storage"),
+    Section("phone", "This phone", TgIcons.disk, "Background sync, battery, storage"),
     Section("data", "Data & maintenance", TgIcons.database, "Index tools, folder backups, settings backup"),
     Section("about", "About & diagnostics", TgIcons.info, "Version, logs, crash reports"),
 )
@@ -198,7 +199,7 @@ private val KEYWORDS = mapOf(
     "network" to "proxy socks http mtproto",
     "telegram" to "api id hash my.telegram.org channel",
     "security" to "passcode lock idle",
-    "phone" to "battery background keep running notification storage restart service",
+    "phone" to "battery background sync keep running notification storage restart service wifi charging",
     "data" to "optimize vacuum integrity rebuild backup restore export import manifest",
     "about" to "version log debug crash diagnostics cpu",
 )
@@ -664,6 +665,56 @@ private fun PasscodeDialog(state: AppState, set: Boolean, onClose: () -> Unit) {
     }
 }
 
+/** Background sync (see engine/BackgroundSync.kt): on/off, how often, and when it may run. */
+@Composable
+private fun BackgroundSyncGroup() {
+    val ctx = LocalContext.current
+    val c = Tg.colors
+    var on by remember { mutableStateOf(BackgroundSync.enabled(ctx)) }
+    var minutes by remember { mutableIntStateOf(BackgroundSync.minutes(ctx)) }
+    var wifi by remember { mutableStateOf(BackgroundSync.wifiOnly(ctx)) }
+    var charging by remember { mutableStateOf(BackgroundSync.chargingOnly(ctx)) }
+    var last by remember { mutableStateOf(BackgroundSync.last(ctx)) }
+    LaunchedEffect(Unit) { while (true) { last = BackgroundSync.last(ctx); delay(2000) } }
+    fun save() = BackgroundSync.update(ctx, on, minutes, wifi, charging)
+    Group("Background sync", "While the app is closed, TG Drive checks your chats for new files now and then and indexes them, so " +
+        "search and folders are up to date when you open it. Android picks the moment to save battery (with other apps' work, never " +
+        "on low battery); a check takes seconds to a few minutes, with no notification. Heavier work (meaning search, subjects, " +
+        "duplicates) waits until you open the app.") {
+        Row2("Sync in the background", if (on) "On" else "Off: new files are found when you open TG Drive",
+            control = { TgSwitch(on, { on = it; save() }) }, onClick = { on = !on; save() })
+        if (on) {
+            Divider()
+            Row2("How often", "At most this often; Android may wait longer when the phone is idle or the battery is saving.", below = {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    BackgroundSync.INTERVALS.forEach { m ->
+                        TgChip(if (m < 60) "$m min" else "${m / 60} h", selected = minutes == m, onClick = { minutes = m; save() })
+                    }
+                }
+            })
+            Divider()
+            Row2("Only on Wi-Fi", "Don't use mobile data for it.",
+                control = { TgSwitch(wifi, { wifi = it; save() }) }, onClick = { wifi = !wifi; save() })
+            Divider()
+            Row2("Only while charging", "Uses no battery at all; new files arrive less often.",
+                control = { TgSwitch(charging, { charging = it; save() }) }, onClick = { charging = !charging; save() })
+        }
+        Divider()
+        Row2("Last sync", when {
+            last.running -> "Syncing now…"
+            last.at == 0L -> "Not yet"
+            else -> Format.dateTime(last.at / 1000) + " · " + last.result
+        }, control = {
+            TgButton("Sync now", { BackgroundSync.syncNow(ctx); last = last.copy(running = true) }, small = true,
+                icon = TgIcons.refresh, busy = last.running)
+        })
+        if (!last.ok && !last.running && last.at > 0) {
+            Text("The last sync didn't finish: ${last.result}", style = Tg.type.meta, color = c.danger,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+        }
+    }
+}
+
 @Composable
 private fun ThisPhone(state: AppState) {
     val ctx = LocalContext.current
@@ -672,10 +723,12 @@ private fun ThisPhone(state: AppState) {
     val scope = rememberCoroutineScope()
     var keep by remember { mutableStateOf(g.engine.keepRunning) }
     var restart by remember { mutableStateOf(false) }
+    BackgroundSyncGroup()
     Group(intro = "TG Drive's service (Telegram, index, search, streaming) runs on this phone. It runs while the app is open and while " +
         "something needs it — transfers, the player — then stops after a minute to save battery.") {
-        Row2("Keep running in the background",
-            "New files are indexed and folders auto-file even while the app is closed. Uses more battery; Android shows a notification while it runs.",
+        Row2("Stay connected all the time",
+            "Instead of syncing now and then: new files show up the moment they arrive, even with the app closed. Uses much more battery; " +
+                "Android shows a notification while it runs. Most people only need background sync.",
             control = { TgSwitch(keep, { keep = it; g.engine.keepRunning = it }) }, onClick = { keep = !keep; g.engine.keepRunning = keep })
         Divider()
         Row2("Battery optimisation", "If Android stops long downloads, let TG Drive run without battery restrictions.", onClick = {

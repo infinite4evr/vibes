@@ -196,3 +196,17 @@ def test_qr_sign_in_result_can_be_collected_after_it_finishes():
 
     st = asyncio.run(go())
     assert st["state"] == "done" and st["account"]["name"] == "Priya"
+
+
+def test_background_sync_holds_the_cpu_jobs_until_the_app_opens():
+    """A service started by the background sync pauses the heavy jobs; opening the app resumes them."""
+    from tgdrive import mobile, pace
+    try:
+        mobile.set_background(True)
+        assert pace.mode() == "paused"
+        assert pace.rest_for(1.0) == 0.0        # the indexer doesn't rest: the sync ends sooner
+        mobile.set_background(False)
+        from tgdrive.settings import settings
+        assert pace.mode() == (settings.get("background_work") or "gentle")
+    finally:
+        pace.force(None)

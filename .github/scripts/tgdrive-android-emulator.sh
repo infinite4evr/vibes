@@ -14,6 +14,9 @@ grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/tour.txt && s
 # What people do, through the screens, each result checked against the service.
 adb shell am instrument -w -r -e class app.tgdrive.Journeys app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/journeys.txt
 grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/journeys.txt && status=1
+# The background sync with the app closed: starts the service by binding, syncs, and it stops after.
+adb shell am instrument -w -r -e class app.tgdrive.BackgroundSyncTest app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/background-sync.txt
+grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/background-sync.txt && status=1
 adb pull /sdcard/Android/data/app.tgdrive/files/Pictures/tour/. out/shots/ || true
 adb shell run-as app.tgdrive cat files/tgdrive/logs/tgdrive.log > out/service-demo.log 2>/dev/null || true
 adb shell run-as app.tgdrive cat files/logs/app.log > out/app-demo.log 2>/dev/null || true
