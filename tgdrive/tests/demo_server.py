@@ -15,7 +15,7 @@ os.environ.setdefault("TGDRIVE_DATA", tempfile.mkdtemp(prefix="tgdrive-demo-"))
 
 from telethon.tl import types  # noqa: E402
 
-from tests.fake import CH, doc_msg, make_account, sample_world  # noqa: E402
+from tests.fake import CH, audio_attr, doc_msg, make_account, sample_world  # noqa: E402
 from tgdrive import api  # noqa: E402
 from tgdrive.settings import settings  # noqa: E402
 
@@ -38,6 +38,20 @@ def fake_jpeg(seed: int, w=320, h=240) -> bytes:
     buf = io.BytesIO()
     img.save(buf, "JPEG", quality=82)
     return buf.getvalue()
+
+
+def demo_wav(seconds: int = 12, rate: int = 8000) -> bytes:
+    """A real, playable recording (a soft two-note tone, 16-bit mono WAV): the other sample songs are
+    made-up bytes, and the phone's player tests need one that actually plays."""
+    import math
+    import struct
+    frames = bytearray()
+    for i in range(seconds * rate):
+        f = 440.0 if (i // rate) % 2 == 0 else 660.0
+        frames += struct.pack("<h", int(6000 * math.sin(2 * math.pi * f * i / rate)))
+    header = b"RIFF" + struct.pack("<I", 36 + len(frames)) + b"WAVE" + b"fmt " + struct.pack(
+        "<IHHIIHH", 16, 1, 1, rate, rate * 2, 2, 16) + b"data" + struct.pack("<I", len(frames))
+    return header + bytes(frames)
 
 
 def demo_pdf() -> bytes:
@@ -170,6 +184,11 @@ async def setup(tmp: Path):
                     world[0][cid][0].date, caption="Chapter 7 notes with PYQs")
         client.content[m.media.document.id] = pdf
         client.chats[cid].append(m)
+    wav = demo_wav()
+    m = doc_msg(cid, 6001, "Morning raga (sample recording).wav", "audio/x-wav", len(wav), world[0][cid][0].date,
+                attrs=[audio_attr(12, title="Morning raga", performer="TG Drive sample")], caption="A sample that really plays")
+    client.content[m.media.document.id] = wav
+    client.chats[cid].append(m)
     for msgs in client.chats.values():  # full-size photos for the viewer
         for m in msgs:
             if isinstance(m.media, types.MessageMediaPhoto):

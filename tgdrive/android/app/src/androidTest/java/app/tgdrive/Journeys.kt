@@ -16,6 +16,7 @@ import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 import app.tgdrive.data.FileItem
 import app.tgdrive.engine.BackgroundSync
+import app.tgdrive.player.PlayerController
 import app.tgdrive.util.Format
 import app.tgdrive.data.UiMessage
 import app.tgdrive.data.str
@@ -148,8 +149,9 @@ class Journeys {
     private fun back() { device.pressBack(); Thread.sleep(600) }
 
     private fun sidebar(label: String) {
-        // A page opened from another shows Back instead of Menu: go back to where the menu is.
-        repeat(4) { if (find(By.desc("Menu"), 800) == null) back() }
+        // A page opened from another shows Back instead of Menu: go back to where the menu is
+        // (home() also brings TG Drive back if Back left it).
+        if (find(By.desc("Menu"), 1500) == null) home()
         tapDesc("Menu")
         Thread.sleep(500)
         fun drawerList(): UiObject2? = runCatching {
@@ -157,12 +159,15 @@ class Journeys {
             lists.firstOrNull { it.visibleBounds.right < device.displayWidth - 8 } ?: lists.firstOrNull()
         }.getOrNull()
         // The drawer keeps where it was scrolled to: start from its top.
-        repeat(4) { runCatching { drawerList()?.scroll(Direction.UP, 1f) } }
+        repeat(4) { runCatching { drawerList()?.scroll(Direction.UP, 1f, SLOW) } }
+        Thread.sleep(400)
         fun scrollFind(sel: BySelector): UiObject2? {
             var o = find(sel, 1200)
             var tries = 0
             while (o == null && tries < 6) {
-                runCatching { drawerList()?.scroll(Direction.DOWN, 0.7f) }
+                // Slowly, so the list doesn't fling on after a row was found (it would be gone when tapped).
+                runCatching { drawerList()?.scroll(Direction.DOWN, 0.6f, SLOW) }
+                Thread.sleep(500)
                 o = find(sel, 600)
                 tries++
             }
@@ -431,9 +436,10 @@ class Journeys {
                 if (docs <= 0L) throw AssertionError("the sample has no documents to show")
                 val header = "${Format.num(docs)} files"
                 // The row scrolls; tap along it (after a swipe) until the list says it shows the documents.
-                val y = need(By.textStartsWith("All"), "the type tabs").visibleBounds.centerY()
+                val y = need(By.text("All"), "the type tabs").visibleBounds.centerY()   // the tab (not the "All files" title)
                 fun sweep(): Boolean {
-                    for (x in (device.displayWidth - 12 downTo 24) step 26) {
+                    // Every 14 px from the row's visible end (the next tab only peeks in by ~20 px).
+                    for (x in (device.displayWidth - 16 downTo 24) step 14) {
                         device.click(x, y)
                         Thread.sleep(900)
                         if (find(By.textContains(header), 700) != null) return true
@@ -482,6 +488,135 @@ class Journeys {
                 tap("Appearance")
                 tap("Match the system")
                 eventually("the theme is back") { g.state.settings.value.str("theme") == "system" }
+            }
+
+            // A file shared from another app (the share sheet → TG Drive) is uploaded to Telegram.
+            step("share-upload") {
+                home()
+                val f = File(app.cacheDir, "e2e shared note.txt").apply { writeText("Shared from another app by the end-to-end run.\n") }
+                val uri = androidx.core.content.FileProvider.getUriForFile(app, "${app.packageName}.files", f)
+                val send = android.content.Intent(android.content.Intent.ACTION_SEND)
+                    .setClass(app, MainActivity::class.java).setType("text/plain")
+                    .putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                app.startActivity(send)
+                eventually("the shared file is in TG Drive", 120_000) { file("shared", "e2e shared note.txt") != null }
+                search("e2e shared note")
+                need(By.textContains("e2e shared note"), "the uploaded file in search", 15_000)
+            }
+
+            // A song that really plays: in the background player, with the mini player to stop it.
+            step("audio-player") {
+                search("Morning raga")
+                click(By.textContains("Morning raga"), "the sample recording", ms = 15_000)
+                val player = PlayerController.get(app)
+                eventually("the recording plays", 30_000) { player.playing && player.position > 1500 }
+                need(By.desc("Stop"), "the mini player")
+                shot("e2e-mini-player", 300)
+                tapDesc("Stop")
+                eventually("the player stops", 10_000) { !player.playing }
+            }
+
+            // The sample videos are made-up bytes: the viewer must say it can't play, not hang or crash.
+            step("video-that-cannot-play") {
+                val name = runBlocking {
+                    g.api.files(aid, mapOf("kinds" to "video", "copies" to "hide", "limit" to "5")).items.firstOrNull()?.displayName
+                } ?: throw AssertionError("the sample has no videos")
+                search(name.substringBeforeLast('.').take(24))
+                click(By.textContains(name.take(18)), "the video", ms = 15_000)
+                need(By.textContains("this video"), "the video error message", 30_000)
+                need(By.desc("Details"), "the viewer, still open")
+                shot("e2e-video-error", 300)
+                back()
+            }
+
+            step("pdf-viewer") {
+                search("Fundamental Rights")
+                click(By.textContains("Fundamental Rights"), "the sample PDF", ms = 15_000)
+                need(By.textContains("1 / "), "the PDF's page counter", 30_000)
+                shot("e2e-pdf", 1200)
+                back()
+            }
+
+            // App passcode: set it, lock, unlock with it, remove it (and never leave it set).
+            step("passcode-lock") {
+                val code = "2468"
+                try {
+                    sidebar("Settings")
+                    scrollTo(By.text("Security"), "Security in Settings")
+                    click(By.text("Security"), "Security")
+                    click(By.text("Set"), "Set (passcode)")
+                    need(By.text("Set a passcode"), "the passcode dialog")
+                    val fields = device.findObjects(By.clazz("android.widget.EditText"))
+                    if (fields.size < 2) throw AssertionError("expected 2 passcode fields, found ${fields.size}")
+                    fields[0].text = code
+                    fields[1].text = code
+                    click(By.text("Save"), "Save")
+                    eventually("the passcode is set") { g.api.status().lockSet }
+                    click(By.text("Lock"), "Lock now")
+                    need(By.textContains("Enter your passcode"), "the lock screen", 15_000)
+                    shot("e2e-locked", 300)
+                    (find(By.clazz("android.widget.EditText"), 5000) ?: throw AssertionError("no passcode field")).text = code
+                    click(By.text("Unlock"), "Unlock")
+                    eventually("TG Drive unlocks", 20_000) { !g.api.status().locked }
+                    sidebar("Settings")
+                    scrollTo(By.text("Security"), "Security in Settings")
+                    click(By.text("Security"), "Security")
+                    click(By.text("Change"), "Change (passcode)")
+                    val again = device.findObjects(By.clazz("android.widget.EditText"))
+                    if (again.isEmpty()) throw AssertionError("no current-passcode field")
+                    again[0].text = code
+                    click(By.text("Remove the passcode"), "Remove the passcode")
+                    eventually("the passcode is removed") { !g.api.status().lockSet }
+                } finally {
+                    runBlocking {
+                        runCatching { if (g.api.status().locked) g.api.unlock(code) }
+                        runCatching { if (g.api.status().lockSet) g.api.setLock(null, code) }
+                    }
+                }
+                home()
+            }
+
+            step("accounts") {
+                home()
+                tapDesc("Account")
+                sheetTap("Manage accounts")
+                need(By.text("Accounts"), "the accounts screen")
+                shot("e2e-accounts", 600)
+                home()
+            }
+
+            // Turned sideways, and with Android's largest text: the main screens still work.
+            step("landscape") {
+                home()
+                device.setOrientationLeft()
+                Thread.sleep(2500)
+                need(By.text("Search everything…"), "the search bar in landscape", 15_000)
+                shot("e2e-landscape-home", 800)
+                sidebar("Photos")
+                shot("e2e-landscape-photos", 2000)
+                device.setOrientationNatural()
+                device.unfreezeRotation()
+                Thread.sleep(1500)
+                home()
+            }
+
+            step("large-text") {
+                try {
+                    device.executeShellCommand("settings put system font_scale 1.5")
+                    Thread.sleep(2500)
+                    home()
+                    need(By.text("Search everything…"), "the search bar with large text", 15_000)
+                    shot("e2e-large-text-home", 800)
+                    tap("New")
+                    need(By.text("New folder"), "the New menu with large text")
+                    shot("e2e-large-text-new", 600)
+                    back()
+                } finally {
+                    device.executeShellCommand("settings put system font_scale 1.0")
+                    Thread.sleep(2000)
+                }
+                home()
             }
 
             step("background-sync") {
@@ -546,6 +681,7 @@ class Journeys {
     private companion object {
         const val TAG = "Journeys"
         const val PLANTED = "E2E planted error"
+        const val SLOW = 1200   // px/s: a scroll that doesn't fling
         val TOOLS = setOf("Transfers", "Storage", "Duplicates", "Chats and indexing", "Activity", "Settings")
     }
 }

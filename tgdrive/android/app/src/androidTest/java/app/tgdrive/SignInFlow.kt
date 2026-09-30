@@ -96,6 +96,16 @@ class SignInFlow {
             shot("35-telegram-answer")
             assertNotNull("Send code showed no answer from Telegram", answer)
             assertTrue("Telegram couldn't be reached from the emulator: ${answer!!.text}", answer.text.contains("rejected the API ID"))
+
+            // QR sign-in: Telegram answers it too (the same made-up key is rejected), with a way to try again.
+            val qrTab = device.findObject(By.text("QR code"))
+            assertNotNull("no QR code option on the sign-in screen", qrTab)
+            qrTab!!.click()
+            // "Get a new code" only shows once the QR step has Telegram's answer.
+            val retry = waitText("Get a new code", 90_000)
+            shot("36-qr-answer")
+            assertNotNull("QR sign-in showed no answer from Telegram (or no way to try again)", retry)
+            assertNotNull("QR sign-in didn't say why", waitText("rejected the API ID", 3_000))
         }
     }
 }

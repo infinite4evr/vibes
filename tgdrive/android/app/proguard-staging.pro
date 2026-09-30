@@ -12,3 +12,8 @@
 -keep class okio.** { *; }
 -keepclassmembers class app.tgdrive.engine.BackgroundSync { public *; }
 -keepclassmembers class app.tgdrive.engine.BackgroundSync$Last { public *; }
+-keepclassmembers class app.tgdrive.data.AppState { public *; }
+-keepclassmembers class app.tgdrive.player.PlayerController { public *; }
+-keepclassmembers class app.tgdrive.player.PlayerController$Companion { public *; }
+-keepclassmembers class app.tgdrive.util.Format { public *; }
+-keepclassmembers class app.tgdrive.engine.BatteryLimits { public *; }

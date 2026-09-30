@@ -210,3 +210,18 @@ def test_background_sync_holds_the_cpu_jobs_until_the_app_opens():
         assert pace.mode() == (settings.get("background_work") or "gentle")
     finally:
         pace.force(None)
+
+
+def test_quiet_start_holds_the_heavy_jobs_then_lets_go():
+    """Phones: for a while after starting, the CPU jobs and the index warm-up wait (the first screens load first)."""
+    import time as _time
+    from tgdrive import pace
+    from tgdrive.settings import settings
+    try:
+        pace.quiet_for(0.3)
+        assert pace.mode() == "paused" and 0 < pace.quiet_left() <= 0.3
+        _time.sleep(0.35)
+        assert pace.quiet_left() == 0.0
+        assert pace.mode() == (settings.get("background_work") or "gentle")
+    finally:
+        pace.quiet_for(0)
