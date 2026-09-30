@@ -18,3 +18,6 @@
 -keepclassmembers class app.tgdrive.util.Format { public *; }
 -keepclassmembers class app.tgdrive.engine.BatteryLimits { public *; }
 -keepclassmembers class app.tgdrive.diag.** { public *; }
+-keep class app.tgdrive.data.Phase { *; }
+-keep class app.tgdrive.data.Phase$* { *; }
+-keepclassmembers class app.tgdrive.engine.EngineState { public *; }

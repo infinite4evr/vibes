@@ -5,6 +5,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.By
 import app.tgdrive.data.FileItem
+import app.tgdrive.data.Phase
 import app.tgdrive.diag.GitHubIssue
 import app.tgdrive.engine.BackgroundSync
 import app.tgdrive.player.PlayerController
@@ -517,6 +518,23 @@ class Journeys : UiDriver() {
                 need(By.textContains(l.result.take(12)), "the result under Last sync", 6000)
                 shot("e2e-background-sync", 300)
                 home()
+            }
+
+            // Android ends the service's process whenever it likes (memory, battery): with the app on
+            // screen it must start again by itself, and the app carry on without an error.
+            step("service-killed-recovers") {
+                home()
+                val before = g.engine.state.value
+                if (!before.ready || before.pid <= 0) throw AssertionError("the service isn't running (${before.phase})")
+                android.os.Process.killProcess(before.pid)
+                eventually("the service is back in a new process", 120_000) {
+                    val s = g.engine.state.value
+                    s.ready && s.pid != before.pid
+                }
+                eventually("the app is ready again", 60_000) { g.state.phase.value == Phase.Ready && !g.state.reconnecting.value }
+                search("Fundamental Rights")
+                need(label("Fundamental Rights"), "a search result after the restart", 20_000)
+                shot("e2e-after-service-restart", 300)
             }
 
             step("error-details-and-report") {
