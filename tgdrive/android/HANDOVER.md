@@ -104,6 +104,14 @@ a home-screen widget, a notification when new files arrive.
 - **Crashes:** a crash in the interface's process opens the crash screen (`CrashActivity`), so the
   app never just closes, or closes again at every launch. The service's own crashes are shown by
   the app (Failed screen).
+- **Answers are read and closed on Dispatchers.IO** (`Api.rawOnce`, `Call.await`). A request cancelled
+  just as its answer arrived (a screen closing, the lock screen giving way) used to close the
+  response on the main thread. Closing an unread body reads the socket, so Android ended the app
+  with `NetworkOnMainThreadException`. Found by the journeys (the app died after unlocking);
+  `EngineTest.requestsCancelledAsTheirAnswerArrivesDontCrash` covers it. It may explain some of the
+  owner's "sometimes the app crashes".
+- **Background sync while locked:** a locked TG Drive shows no accounts, so the sync used to report
+  "Not signed in". It now says it waits for the passcode.
 - **Foreground services can be refused** (Android 12+ from the background; Android 15+ after
   data-sync's 6 h/day limit, reset when the app is opened). `EngineService.goForeground` and
   `UploadService` catch that and carry on without the notification. Upload starts return false
@@ -116,6 +124,13 @@ a home-screen widget, a notification when new files arrive.
   the GIL to the request thread sooner. `BigLibraryTest` checks it on the emulator (§5).
 - **Opening a downloaded file** always goes through the FileProvider (the whole external storage is
   a root, links are granted per file). A `file://` fallback used to crash on Android 7+.
+- **Pause and resume of a download** (`transfers.py`): pausing cancels the download task, but a
+  map save (`.part.map`) already running in a worker thread goes on, and the cancelled task saves
+  once more. Both used the same temp file, and the download could end in "No such file or
+  directory". Saves and closing the `.part` now take one lock per file (`_map_lock`). A task that
+  was paused or replaced never writes its error over the transfer's status. The regression test
+  `test_download_resumed_while_its_last_save_still_runs` forces the overlap (it failed 3 of 3
+  runs before the fix).
 - **Busy index:** SQLite "database is locked/busy" (a long background write, mostly on slow phones)
   answers 503 `{"busy": true}` instead of a crash message. The app retries reads up to 3 times;
   writes say "TG Drive is busy saving its index. Try again in a moment."
@@ -275,6 +290,14 @@ the first requests could take tens of seconds (a desktop measurement: 1.8 s for 
 2 ms). That is fixed (`pace.foreground`, §4). If it still happens, ask for **Send report** right after
 it happens: `app.log` shows "status answered in … ms" and each phase, and `engine-start.log` shows
 the start steps.
+
+Also fixed in the last batch: the crash above (cancelled requests closed on the main thread), and a
+test-order cascade (a run that died in the passcode journey left the passcode set and locked every
+later test out; `TestHygiene.removeLeftoverPasscode` now runs first). Found by reading the screenshots: the list toolbar pushed *View* and
+*More* off narrow screens and with large text (sort, copies and filters now scroll sideways); the
+crash screen's buttons were below a 40-line report (now above it); the *Chats and indexing* page
+was titled "Index manager" (the desktop's name; the sidebar and the owner call it *Chats and
+indexing*).
 
 Open items:
 1. **Signing secret**: the owner adds it (§7). Then fill in `expected-certificate.sha256`.

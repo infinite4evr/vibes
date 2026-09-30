@@ -39,6 +39,7 @@ class ScreenshotTour : UiDriver() {
         app.getSharedPreferences("engine", 0).edit().putBoolean("demo", true).commit()
         ActivityScenario.launch(MainActivity::class.java).use {
             runBlocking { withTimeout(240_000) { g.engine.state.first { it.ready || it.phase == EngineState.Phase.Failed } } }
+            runBlocking { removeLeftoverPasscode(g) }
             need(By.text("My Drive"), "My Drive", 30_000)
             shot("01-home", 4000)
 

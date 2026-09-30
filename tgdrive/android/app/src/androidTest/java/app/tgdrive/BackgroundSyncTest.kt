@@ -93,6 +93,8 @@ class BackgroundSyncTest {
 
         val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
         ActivityScenario.launch(MainActivity::class.java).use {
+            withTimeoutOrNull(120_000) { engine.state.first { it.ready } }
+            removeLeftoverPasscode(app.graph)
             assertNotNull("the main screen didn't show while a background sync ran",
                 device.wait(Until.findObject(By.text("Search everything…")), 90_000))
             val last = syncEnded(before)

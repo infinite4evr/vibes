@@ -5,6 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tgdrive.data.await
 import app.tgdrive.engine.EngineState
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import okhttp3.Request
@@ -58,6 +59,25 @@ class EngineTest {
             val m = g.api.timeline(AID, mapOf("kinds" to "photo,video")).months.first()
             g.api.files(AID, mapOf("kinds" to "photo,video", "date_from" to m.ym, "date_to" to m.ym, "limit" to "500"))
             g.api.storage(AID)
+        }
+    }
+
+    /** A screen that closes while its big answer arrives: the request is cancelled, and the answer
+     *  must be let go of off the main thread (closing it read the socket on the main thread, and
+     *  Android ended the app). Cancelled at many moments, so some land in that window. */
+    @Test
+    fun requestsCancelledAsTheirAnswerArrivesDontCrash(): Unit = runBlocking {
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+            for (i in 0 until 60) {
+                val job = launch {
+                    g.api.files(AID, mapOf("limit" to "500", "sort" to "date", "order" to "desc", "copies" to "show"))
+                }
+                kotlinx.coroutines.delay((i % 30).toLong() * 3)
+                job.cancel()
+                job.join()
+            }
+            // And the app still talks to the service.
+            assertTrue(g.api.files(AID, mapOf("limit" to "20")).items.isNotEmpty())
         }
     }
 

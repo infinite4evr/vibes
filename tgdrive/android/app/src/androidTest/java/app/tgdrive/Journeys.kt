@@ -126,6 +126,7 @@ class Journeys : UiDriver() {
         watcher.launch { g.state.messages.collect { if (it.error) errors += it } }
         ActivityScenario.launch(MainActivity::class.java).use {
             runBlocking { withTimeout(240_000) { g.engine.state.first { it.ready || it.phase == EngineState.Phase.Failed } } }
+            runBlocking { removeLeftoverPasscode(g) }
             need(By.text("My Drive"), "My Drive", 60_000)
             Thread.sleep(2500)
             val folder = "E2E box"
@@ -422,7 +423,7 @@ class Journeys : UiDriver() {
 
             // App passcode: set it, lock, unlock with it, remove it (and never leave it set).
             step("passcode-lock") {
-                val code = "2468"
+                val code = JOURNEY_PASSCODE
                 try {
                     open("settings/security")
                     click(By.text("Set"), "Set (passcode)")
