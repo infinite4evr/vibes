@@ -1,6 +1,6 @@
 // Transfers panel and uploads.
-import { $, S, A, api, esc, icon, fmtSize, fmtEta, plural, bus, bridge, callBridge, qs } from './core.js';
-import { toast, fail, confirmDialog, chatPicker, promptDialog, dialog, folderPicker } from './ui.js';
+import { $, S, A, api, esc, icon, fmtSize, fmtEta, plural, bus, bridge, callBridge, qs, debounce } from './core.js';
+import { toast, dismissToast, fail, confirmDialog, chatPicker, promptDialog, dialog, folderPicker } from './ui.js';
 
 const openWhenDone = new Set();
 bus.on('open-when-done', (id) => openWhenDone.add(id));
@@ -13,6 +13,11 @@ export function openTransfers() {
 bus.on('open-transfers', openTransfers);
 bus.on('transfers-changed', () => loadTransfers());
 
+// Uploads already finished when this window last looked; one that finishes after that refreshes the list, so
+// the new file shows up in the folder you're looking at.
+let doneUploads = null;
+let doneFor = null;   // the account those belong to
+const uploadsLanded = debounce(() => bus.emit('drive-changed'), 600);
 export async function loadTransfers() {
   try {
     const r = await api(A('/transfers'));
@@ -25,13 +30,17 @@ export async function loadTransfers() {
         api(A(`/transfers/${t.id}/open`), { method: 'POST' }).catch(fail);
       }
     }
+    if (doneFor !== S.aid) { doneUploads = null; doneFor = S.aid; }
+    const done = r.transfers.filter((t) => t.direction === 'up' && t.status === 'done').map((t) => t.id);
+    if (doneUploads && done.some((id) => !doneUploads.has(id))) uploadsLanded();
+    doneUploads = new Set([...(doneUploads || []), ...done]);
     if (S.drawer === 'transfers') renderTransfers();
     updateBadge();
   } catch { /* polling retries */ }
 }
 
 export function updateBadge() {
-  const active = (S.tsummary?.active || 0) + S.localUploads.length;
+  const active = (S.tsummary?.active || 0) + S.localUploads.filter((x) => x.status === 'sending').length;
   $('#tBadge').hidden = !active;
   $('#tBadge').textContent = active;
   // A ring around the button fills up as the active transfers progress.
@@ -49,12 +58,13 @@ export function updateBadge() {
   $('#transfersBtn').title = active ? `Transfers: ${active} active${sp ? `, ${fmtSize(sp)}/s` : ''}` : 'Transfers';
 }
 
-function transferRow(t) {
-  const pct = t.size ? Math.min(100, Math.round((t.done / t.size) * 100)) : 0;
+const pctOf = (t) => (t.size ? Math.min(100, Math.round((t.done / t.size) * 100)) : 0);
+function rowWords(t) {
+  const pct = pctOf(t);
   const up = t.direction === 'up';
   const eta = t.speed ? fmtEta((t.size - t.done) / t.speed) : '';
-  const words = {
-    sending: `Reading into TG Drive, ${pct}%`,
+  return {
+    sending: `Sending to TG Drive · ${pct}% · ${fmtSize(t.done)} of ${fmtSize(t.size)}`,
     queued: 'Waiting to start',
     running: `${up ? 'Uploading' : 'Downloading'} ${pct}% · ${fmtSize(t.done)} of ${fmtSize(t.size)}${t.speed ? ` · ${fmtSize(t.speed)}/s` : ''}${eta ? ` · ${eta}` : ''}`,
     paused: `Paused at ${pct}% · ${fmtSize(t.done)} of ${fmtSize(t.size)}`,
@@ -62,48 +72,84 @@ function transferRow(t) {
     error: `Failed: ${t.error || 'unknown error'}`,
     cancelled: 'Cancelled',
   }[t.status] || t.status;
-  const b = (act, ic, label) => `<button class="icon-btn" data-t="${act}" data-id="${t.id}" title="${label}" aria-label="${label}">${icon(ic)}</button>`;
-  let acts = '';
-  if (t.status === 'running' || t.status === 'queued') acts = b('pause', 'pause', 'Pause') + b('cancel', 'close', 'Cancel');
-  else if (t.status === 'paused' || t.status === 'error') acts = b('resume', 'play', t.status === 'error' ? 'Retry' : 'Resume') + b('cancel', 'close', 'Cancel');
-  else if (t.status === 'done' && !up) {
-    acts = (S.desktop || S.localHost ? b('open', 'external', 'Open') + b('reveal', 'folder', 'Show in folder')
-      : `<a class="icon-btn" href="${A(`/transfers/${t.id}/file`)}" download title="Save to this device">${icon('download')}</a>`) + b('remove', 'trash', 'Remove from list');
-  } else if (t.status !== 'sending') acts = b('remove', 'trash', 'Remove from list');
-  const where = t.status === 'done' && t.path && !up ? `<div class="t-path" title="${esc(t.path)}">&lrm;${esc(t.path)}&lrm;</div>` : '';
-  return `<div class="t-row ${t.status}"><div class="t-top">${icon(up ? 'upload' : 'download')}<span class="t-name" title="${esc(t.name)}">${esc(t.name)}</span><span class="t-acts">${acts}</span></div>
-    ${['running', 'paused', 'sending', 'queued', 'error'].includes(t.status) ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ''}
-    <div class="t-sub ${t.status === 'error' ? 'err' : ''}">${esc(words)}</div>${where}</div>`;
 }
 
+function transferRow(t) {
+  const up = t.direction === 'up';
+  const local = String(t.id).startsWith('l');   // an upload still being sent from this window
+  const b = (act, ic, label) => `<button class="icon-btn" data-t="${act}" data-id="${t.id}" title="${label}" aria-label="${label}">${icon(ic)}</button>`;
+  let acts = '';
+  if (local) {
+    if (t.status === 'sending') acts = b('cancel', 'close', 'Cancel');
+    else acts = (t.status === 'error' ? b('resume', 'refresh', 'Retry') : '') + b('remove', 'trash', 'Remove from list');
+  } else if (t.status === 'running' || t.status === 'queued') acts = b('pause', 'pause', 'Pause') + b('cancel', 'close', 'Cancel');
+  else if (t.status === 'paused' || t.status === 'error') acts = b('resume', t.status === 'error' ? 'refresh' : 'play', t.status === 'error' ? 'Retry' : 'Resume') + b('cancel', 'close', 'Cancel');
+  else if (t.status === 'done' && !up) {
+    acts = (S.desktop || S.localHost ? b('open', 'external', 'Open') + b('reveal', 'folder', 'Show in folder')
+      : `<a class="icon-btn" href="${A(`/transfers/${t.id}/file`)}" download title="Save to this device" aria-label="Save to this device">${icon('download')}</a>`) + b('remove', 'trash', 'Remove from list');
+  } else acts = b('remove', 'trash', 'Remove from list');
+  const where = t.status === 'done' && t.path && !up ? `<div class="t-path" title="${esc(t.path)}">&lrm;${esc(t.path)}&lrm;</div>` : '';
+  return `<div class="t-row ${t.status}" data-tid="${t.id}" data-tstatus="${t.status}"><div class="t-top">${icon(up ? 'upload' : 'download')}<span class="t-name" title="${esc(t.name)}">${esc(t.name)}</span><span class="t-acts">${acts}</span></div>
+    ${['running', 'paused', 'sending', 'queued', 'error'].includes(t.status) ? `<div class="bar"><i style="width:${pctOf(t)}%"></i></div>` : ''}
+    <div class="t-sub ${t.status === 'error' ? 'err' : ''}">${esc(rowWords(t))}</div>${where}</div>`;
+}
+
+function summaryHtml(s) {
+  const eta = s.speed ? fmtEta((s.size - s.done) / s.speed) : '';
+  return `<div class="bar"><i style="width:${s.size ? Math.round((s.done / s.size) * 100) : 0}%"></i></div>
+      <span>${plural(s.active, 'transfer')} · ${fmtSize(s.done)} of ${fmtSize(s.size)}${s.speed ? ` · ${fmtSize(s.speed)}/s` : ''}${eta ? ` · ${eta}` : ''}</span>`;
+}
+
+// When only the numbers moved (progress, speed), the rows are updated in place, so the buttons stay put under
+// the pointer; the panel is rebuilt only when a transfer starts, ends or changes state.
+let shape = '';
 export function renderTransfers() {
   const d = $('#drawer');
   const rows = [...S.localUploads, ...S.transfers];
   const s = S.tsummary || {};
+  const all = [...S.localUploads, ...S.transfers];
   const running = S.transfers.some((t) => t.status === 'running' || t.status === 'queued');
   const paused = S.transfers.some((t) => t.status === 'paused');
   const failed = S.transfers.some((t) => t.status === 'error');
-  const finished = S.transfers.some((t) => t.status === 'done' || t.status === 'cancelled');
-  const eta = s.speed ? fmtEta((s.size - s.done) / s.speed) : '';
+  const finished = all.some((t) => ['done', 'cancelled'].includes(t.status) || (String(t.id).startsWith('l') && t.status === 'error'));
+  const nextShape = JSON.stringify([rows.map((t) => [t.id, t.status, t.path || '']), !!s.active, running, paused, failed, finished]);
+  const body = d.querySelector('.t-list');
+  if (body && nextShape === shape) {
+    for (const t of rows) {
+      const el = body.querySelector(`[data-tid="${CSS.escape(String(t.id))}"]`);
+      if (!el) continue;
+      const bar = el.querySelector('.bar i');
+      if (bar) bar.style.width = `${pctOf(t)}%`;
+      el.querySelector('.t-sub').textContent = rowWords(t);
+    }
+    const sum = d.querySelector('.t-summary');
+    if (sum && s.active) sum.innerHTML = summaryHtml(s);
+    return;
+  }
+  shape = nextShape;
+  const scroll = d.querySelector('.drawer-body')?.scrollTop || 0;
   d.innerHTML = `<div class="drawer-head"><h2>Transfers</h2><button class="icon-btn" data-close aria-label="Close">${icon('close')}</button></div>
-    ${s.active ? `<div class="t-summary"><div class="bar"><i style="width:${s.size ? Math.round((s.done / s.size) * 100) : 0}%"></i></div>
-      <span>${plural(s.active, 'transfer')} · ${fmtSize(s.done)} of ${fmtSize(s.size)}${s.speed ? ` · ${fmtSize(s.speed)}/s` : ''}${eta ? ` · ${eta}` : ''}</span></div>` : ''}
+    ${s.active ? `<div class="t-summary">${summaryHtml(s)}</div>` : ''}
     <div class="t-bulk">${running ? `<button class="btn sm" data-tb="pause">${icon('pause')}Pause all</button>` : ''}${paused ? `<button class="btn sm" data-tb="resume">${icon('play')}Resume all</button>` : ''}
       ${failed ? `<button class="btn sm" data-tb="retry">${icon('refresh')}Retry failed</button>` : ''}${finished ? `<button class="btn sm ghost" data-tb="clear">Clear finished</button>` : ''}
       ${running || paused ? `<button class="btn sm ghost danger" data-tb="cancel">Cancel all</button>` : ''}</div>
-    <div class="drawer-body">${rows.length ? rows.map(transferRow).join('') : `<div class="t-empty">${icon('transfers')}<p>Downloads and uploads show up here.</p><p class="subtle">Downloads are saved to <b>${esc(S.status?.download_dir || S.downloadDir || 'your Downloads folder')}</b>. Change it in Settings → Downloads.</p></div>`}</div>`;
+    <div class="drawer-body t-list">${rows.length ? rows.map(transferRow).join('') : `<div class="t-empty">${icon('transfers')}<p>Downloads and uploads show up here.</p><p class="subtle">Downloads are saved to <b>${esc(S.status?.download_dir || S.downloadDir || 'your Downloads folder')}</b>. Change it in Settings → Downloads.</p></div>`}</div>`;
+  const b = d.querySelector('.drawer-body');
+  if (b) b.scrollTop = scroll;
 }
 
 $('#drawer').addEventListener('click', async (e) => {
   const tb = e.target.closest('[data-tb]');
   if (tb) {
     if (tb.dataset.tb === 'cancel' && !await confirmDialog('Cancel all transfers?', 'Partly downloaded files are deleted.', 'Cancel all', true)) return;
+    if (tb.dataset.tb === 'clear') S.localUploads = S.localUploads.filter((x) => x.status === 'sending');
     try { await api(A(`/transfers/bulk/${tb.dataset.tb}`), { method: 'POST' }); loadTransfers(); } catch (err) { fail(err); }
     return;
   }
   const t = e.target.closest('[data-t]');
   if (!t) return;
   const { t: act, id } = t.dataset;
+  if (id.startsWith('l')) { localAction(act, id); return; }
   try {
     if (act === 'remove') await api(A(`/transfers/${id}`), { method: 'DELETE' });
     else await api(A(`/transfers/${id}/${act}`), { method: 'POST' });
@@ -112,44 +158,61 @@ $('#drawer').addEventListener('click', async (e) => {
 });
 
 /* ---------------------------------------------------------------- uploads */
+// Files picked or dropped in this window are sent to TG Drive's service first (a row "Sending to TG Drive"),
+// which then uploads them to Telegram (a normal transfer row). Sending can be cancelled; one that failed
+// stays in the list with Retry.
 let uploadSeq = 0;
 let renderQueued = false;
+const sendQueue = [];
+let sending = 0;
+function paint() {
+  if (renderQueued || S.drawer !== 'transfers') { updateBadge(); return; }
+  renderQueued = true;
+  requestAnimationFrame(() => { renderQueued = false; if (S.drawer === 'transfers') renderTransfers(); updateBadge(); });
+}
 export function uploadFiles(files, folderId, relPaths = null, dest = {}) {
-  const list = [...files].map((file, i) => ({ file, rel: relPaths ? relPaths[i] : (file.webkitRelativePath || '') })).filter((x) => x.file.size > 0);
-  if (!list.length) return toast('Empty files can’t be uploaded.', { err: true });
+  const all = [...files].map((file, i) => ({ file, rel: relPaths ? relPaths[i] : (file.webkitRelativePath || '') }));
+  const list = all.filter((x) => x.file.size > 0);
+  const empty = all.length - list.length;
+  if (!list.length) return toast(all.length === 1 ? 'That file is empty; Telegram can\u2019t store empty files.' : 'Those files are empty; Telegram can\u2019t store empty files.', { err: true });
   const where = dest.chatId ? `“${S.chatById.get(dest.chatId)?.title || 'the chat'}”` : folderId ? `“${S.folderById.get(folderId)?.name}”` : 'My Drive';
-  toast(list.length === 1 ? `Uploading “${list[0].file.name}” to ${where}` : `Uploading ${list.length} files to ${where}`);
-  let running = 0;
-  const queue = [...list];
-  const pump = () => {
-    while (running < 3 && queue.length) {
-      const { file, rel } = queue.shift();
-      running++;
-      sendOne(file, rel, folderId, dest).finally(() => { running--; pump(); });
-    }
-  };
+  toast(`${list.length === 1 ? `Uploading “${list[0].file.name}”` : `Uploading ${list.length} files`} to ${where}${empty ? ` (${plural(empty, 'empty file')} skipped)` : ''}`);
+  for (const { file, rel } of list) {
+    const local = { id: `l${++uploadSeq}`, name: rel || file.name, size: file.size, done: 0, status: 'sending', direction: 'up', file, rel, folderId, dest, xhr: null };
+    S.localUploads.push(local);
+    sendQueue.push(local);
+  }
   pump();
   openTransfers();
 }
-function sendOne(file, rel, folderId, dest = {}) {
+function pump() {
+  while (sending < 3 && sendQueue.length) {
+    const local = sendQueue.shift();
+    if (local.status !== 'sending') continue;   // cancelled while waiting
+    sending++;
+    sendOne(local).finally(() => { sending--; pump(); });
+  }
+  paint();
+}
+function sendOne(local) {
   return new Promise((resolve) => {
-    const local = { id: `l${++uploadSeq}`, name: rel || file.name, size: file.size, done: 0, status: 'sending', direction: 'up' };
-    S.localUploads.unshift(local);
+    const { file, rel, folderId, dest } = local;
     const xhr = new XMLHttpRequest();
+    local.xhr = xhr;
     xhr.open('PUT', A(`/upload?${qs({ name: file.name, folder_id: folderId, rel, chat_id: dest.chatId, caption: dest.caption })}`));
     xhr.setRequestHeader('X-TGDrive', '1');
-    xhr.upload.onprogress = (e) => {
-      local.done = e.loaded;
-      if (!renderQueued && S.drawer === 'transfers') {
-        renderQueued = true;
-        requestAnimationFrame(() => { renderQueued = false; if (S.drawer === 'transfers') renderTransfers(); });
-      }
-    };
+    xhr.upload.onprogress = (e) => { local.done = e.loaded; paint(); };
     const finish = (err) => {
-      S.localUploads = S.localUploads.filter((x) => x !== local);
-      if (err) toast(`“${file.name}”: ${err}`, { err: true });
+      local.xhr = null;
+      if (local.status === 'cancelled') { S.localUploads = S.localUploads.filter((x) => x !== local); paint(); resolve(); return; }
+      if (err) {
+        local.status = 'error';
+        local.error = err;
+        toast(`“${file.name}” couldn't be uploaded: ${err}`, { err: true });
+      } else S.localUploads = S.localUploads.filter((x) => x !== local);
       loadTransfers();
-      if (rel.includes('/')) bus.emit('drive-changed');
+      if (!err && rel.includes('/')) bus.emit('drive-changed');
+      paint();
       resolve();
     };
     xhr.onload = () => {
@@ -158,8 +221,26 @@ function sendOne(file, rel, folderId, dest = {}) {
       finish(xhr.status >= 400 ? (data?.error || `TG Drive answered ${xhr.status}`) : null);
     };
     xhr.onerror = () => finish("couldn't reach TG Drive");
+    xhr.onabort = () => finish('cancelled');
     xhr.send(file);
   });
+}
+function localAction(act, id) {
+  const local = S.localUploads.find((x) => x.id === id);
+  if (!local) return;
+  if (act === 'cancel') {
+    local.status = 'cancelled';
+    if (local.xhr) local.xhr.abort();
+    else { S.localUploads = S.localUploads.filter((x) => x !== local); paint(); }
+    toast(`Upload of “${local.file.name}” cancelled`);
+  } else if (act === 'resume') {
+    Object.assign(local, { status: 'sending', done: 0, error: null });
+    sendQueue.push(local);
+    pump();
+  } else if (act === 'remove') {
+    S.localUploads = S.localUploads.filter((x) => x !== local);
+    paint();
+  }
 }
 
 export async function uploadPaths(paths, folderId, dest = {}) {
@@ -178,8 +259,19 @@ export async function uploadDropped(dt, folderId) {
   const entries = [...(dt.items || [])].map((i) => i.webkitGetAsEntry?.()).filter(Boolean);
   if (!entries.some((en) => en.isDirectory)) return uploadFiles(dt.files, folderId);
   const files = [], rels = [];
+  let unreadable = 0;
+  // Reading a big folder takes a moment: say so, and count up, until the uploads start.
+  const first = entries.find((en) => en.isDirectory);
+  const note = toast(`Reading “${first.name}”…`, { ms: 600000 });
+  const noteText = note.querySelector('span:not(.toast-ic)');
+  let lastPaint = 0;
+  const found = () => {
+    if (Date.now() - lastPaint < 150) return;
+    lastPaint = Date.now();
+    if (noteText) noteText.textContent = `Reading “${first.name}”… ${plural(files.length, 'file')} found`;
+  };
   const walk = (entry, prefix) => new Promise((resolve) => {
-    if (entry.isFile) entry.file((f) => { files.push(f); rels.push(prefix + f.name); resolve(); }, resolve);
+    if (entry.isFile) entry.file((f) => { files.push(f); rels.push(prefix + f.name); found(); resolve(); }, () => { unreadable++; resolve(); });
     else {
       const reader = entry.createReader();
       const all = [];
@@ -191,10 +283,13 @@ export async function uploadDropped(dt, folderId) {
     }
   });
   for (const en of entries) await walk(en, '');
+  dismissToast(note);
+  if (unreadable) toast(`${plural(unreadable, 'file')} couldn't be read and won't be uploaded.`, { err: true });
+  if (!files.length) { toast('Nothing to upload: the folder is empty.', { err: true }); return; }
   uploadFiles(files, folderId, rels);
 }
 
-export async function pickUpload(folderId = S.view.type === 'drive' ? S.view.folderId : null) {
+export async function pickUpload(folderId = destFolder()) {
   if (bridge.ready) {
     const paths = await callBridge('pickFiles');
     if (paths && paths.length) uploadPaths(paths, folderId);
@@ -206,7 +301,7 @@ export async function pickUpload(folderId = S.view.type === 'drive' ? S.view.fol
   input.onchange = () => uploadFiles(input.files, folderId);
   input.click();
 }
-export async function pickUploadFolder(folderId = S.view.type === 'drive' ? S.view.folderId : null) {
+export async function pickUploadFolder(folderId = destFolder()) {
   if (bridge.ready) {
     const path = await callBridge('pickFolder');
     if (path) uploadPaths([path], folderId);
@@ -253,7 +348,7 @@ async function confirmPaste(n, what) {
   return dialog({
     title: `Upload ${what}?`,
     body: `<p>${esc(n)} from the clipboard will be uploaded to <b>${esc(destLabel(fid))}</b>.</p>`,
-    actions: [{ label: 'Cancel' }, { label: 'Choose folder…', onClick: async () => { const r = await folderPicker({ title: 'Upload to', okLabel: 'Upload here', current: fid }); return r ? { fid: r.folderId } : false; } },
+    actions: [{ label: 'Cancel' }, { label: 'Choose folder…', onClick: async () => { const r = await folderPicker({ title: 'Upload to', okLabel: 'Upload here', current: fid, forFiles: true }); return r ? { fid: r.folderId } : false; } },
       { label: 'Upload', cls: 'primary', submit: true, onClick: () => ({ fid }) }],
   });
 }
@@ -310,7 +405,7 @@ export async function sendToDialog(paths) {
       <div class="send-dest"><span>Upload to</span><strong id="sendWhere">${esc(where())}</strong><button class="btn sm" id="sendPickFolder">${icon('folder')}Folder…</button><button class="btn sm" id="sendPickChat">${icon('send')}Chat…</button></div>`,
     actions: [{ label: 'Cancel' }, { label: 'Upload', cls: 'primary', submit: true, onClick: () => ({ fid, chat }) }],
     onOpen: (bd) => {
-      bd.querySelector('#sendPickFolder').addEventListener('click', async () => { const p = await folderPicker({ title: 'Upload to', okLabel: 'Choose', current: fid }); if (p) { fid = p.folderId; chat = null; bd.querySelector('#sendWhere').textContent = where(); } });
+      bd.querySelector('#sendPickFolder').addEventListener('click', async () => { const p = await folderPicker({ title: 'Upload to', okLabel: 'Choose', current: fid, forFiles: true }); if (p) { fid = p.folderId; chat = null; bd.querySelector('#sendWhere').textContent = where(); } });
       bd.querySelector('#sendPickChat').addEventListener('click', async () => { const p = await chatPicker({ title: 'Upload to a chat', okLabel: 'Choose', filterFn: (c) => c.can_post !== false && c.id !== S.driveChannel }); if (p) { chat = p.chatId; bd.querySelector('#sendWhere').textContent = where(); } });
     },
   });

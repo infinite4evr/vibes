@@ -196,13 +196,26 @@ export function savedMenu(anchor, sid) {
     {
       label: 'Rename', icon: 'edit', onClick: async () => {
         const name = await promptDialog('Rename saved search', 'Name', s.name, 'Rename');
-        if (!name) return;
-        await api(A('/saved'), { method: 'POST', body: { ...s, name } }).catch(fail);
-        loadFolders();
+        if (!name || name === s.name) return;
+        try {
+          await api(A('/saved'), { method: 'POST', body: { ...s, name } });
+          await loadFolders();
+          toast('Saved search renamed');
+        } catch (e) { fail(e); }
       },
     },
     '-',
-    { label: 'Delete', icon: 'trash', danger: true, onClick: async () => { await api(A(`/saved/${sid}`), { method: 'DELETE' }).catch(fail); loadFolders(); toast('Saved search deleted'); } },
+    {
+      label: 'Delete', icon: 'trash', danger: true, onClick: async () => {
+        if (!await confirmDialog('Delete this saved search?', `“${esc(s.name)}” is removed from the sidebar on all your devices. The files stay where they are.`, 'Delete', true)) return;
+        try {
+          await api(A(`/saved/${sid}`), { method: 'DELETE' });
+          await loadFolders();
+          toast('Saved search deleted');
+          if (S.view.type === 'saved' && S.view.savedId === sid) bus.emit('go', '#drive');
+        } catch (e) { fail(e); }
+      },
+    },
   ]);
 }
 

@@ -1,6 +1,6 @@
 // Viewer: photos, video, audio, voice, round videos, GIFs, PDFs and text, streamed from Telegram.
-import { $, S, A, api, esc, icon, fmtSize, fmtDur, fmtDate, STREAMABLE, TEXT_EXT, streamUrl, externalStreamUrl, thumbUrl, inlineSrc, bridge, callBridge, key, bus, extColor } from './core.js';
-import { toast, fail } from './ui.js';
+import { $, S, A, api, esc, icon, fmtSize, fmtDur, fmtDate, STREAMABLE, TEXT_EXT, streamUrl, externalStreamUrl, thumbUrl, inlineSrc, bridge, callBridge, key, bus, extColor, pref } from './core.js';
+import { toast, fail, copyText } from './ui.js';
 import { doDownload, openInTelegram, doOpenLocal, setSelected, refreshCard } from './files.js';
 
 let cur = null;   // { list, i, el }
@@ -101,6 +101,8 @@ function onClick(e) {
     external: () => copyStream(f),
     player: () => api(A(`/play_external/${f.chat_id}/${f.msg_id}`), { method: 'POST' })
       .then((r) => { cur?.el.querySelector('video, audio')?.pause(); toast(`Opened in ${r.player}.`); }).catch(fail),
+    retryimg: () => render(),
+    retrytext: () => { const box = cur.el.querySelector('.v-textbox'); if (box) loadText(f, box); },
     zoom: () => { cur.zoom = !cur.zoom; cur.el.querySelector('.v-img')?.classList.toggle('zoomed', cur.zoom); },
     slideshow: () => startShow(),
     showtoggle: () => toggleShow(),
@@ -142,8 +144,7 @@ async function playNative(f) {
 }
 async function copyStream(f) {
   const url = externalStreamUrl(f);
-  try { await navigator.clipboard.writeText(url); toast('Stream link copied. In VLC: Media → Open Network Stream, then paste.'); }
-  catch { toast(url); }
+  if (!await copyText(url, 'Stream link copied. In VLC: Media → Open Network Stream, then paste.')) toast(url, { ms: 15000 });
 }
 
 function stageHtml(f) {
@@ -151,7 +152,7 @@ function stageHtml(f) {
   if (f.kind === 'photo' || isImageDoc(f)) {
     const lq = f.inline ? `<img class="v-lq" src="${inlineSrc(f.inline)}" alt="">` : '';
     const mid = f.has_thumb ? `<img class="v-mid" src="${thumbUrl(f, 'b')}" alt="">` : '';
-    return `<div class="v-imgwrap">${lq}${mid}<img class="v-img" data-v="zoom" src="${f.kind === 'photo' && !isImageDoc(f) ? thumbUrl(f, 'full') : src}" alt="${esc(f.name)}"></div>`;
+    return `<div class="v-imgwrap">${lq}${mid}<img class="v-img" data-v="zoom" src="${f.kind === 'photo' && !isImageDoc(f) ? thumbUrl(f, 'full') : src}" alt="${esc(f.name)}"></div>${BUFFER}`;
   }
   if ((f.kind === 'video' || f.kind === 'round' || f.kind === 'gif') && useNative(f)) {
     const poster = f.has_thumb ? `<img class="v-poster" src="${thumbUrl(f, 'b')}" alt="">` : (f.inline ? `<img class="v-poster" src="${inlineSrc(f.inline)}" alt="">` : '');
@@ -163,7 +164,7 @@ function stageHtml(f) {
   }
   if (f.kind === 'video' || f.kind === 'round' || f.kind === 'gif') {
     const gif = f.kind === 'gif';
-    return `<video class="v-video ${f.kind === 'round' ? 'round' : ''}" src="${src}" ${gif ? 'autoplay loop muted playsinline' : 'controls autoplay playsinline'} preload="auto" ${f.has_thumb ? `poster="${thumbUrl(f, 'b')}"` : ''}></video>
+    return `<video class="v-video ${f.kind === 'round' ? 'round' : ''}" src="${src}" ${gif ? 'autoplay loop muted playsinline' : 'controls autoplay playsinline'} preload="auto" ${f.has_thumb ? `poster="${thumbUrl(f, 'b')}"` : ''}></video>${BUFFER}
       <div class="v-fallback" hidden><p>This video's format can't play inside the window.</p>
         ${bridge.ready ? `<button class="btn primary" data-v="native">${icon('play')}Play in TG Drive player</button>` : ''}
         <button class="btn" data-v="external">${icon('link')}Copy stream link for VLC / mpv</button>
@@ -175,12 +176,12 @@ function stageHtml(f) {
       ? `<p class="v-asub">Playing in the TG Drive player window.</p><button class="btn primary" data-v="native">${icon('play')}Play again</button>`
       : `<audio controls autoplay preload="auto" src="${src}"></audio>
       <button class="btn ghost" data-v="background">${icon('audio')}Keep playing in the background</button>`;
-    return `<div class="v-audio"><div class="v-art">${art}</div>
+    return `<div class="v-audio"><div class="v-art">${art}${useNative(f) ? '' : BUFFER}</div>
       <div class="v-atitle">${esc(f.audio_title || f.name)}</div><div class="v-asub">${esc(f.performer || f.chat_title || '')}</div>
       ${player}</div>`;
   }
   if (isPdf(f)) return '<div class="v-pdfhost"><div class="page-loading"><span class="spin"></span> Opening PDF…</div></div>';
-  if (isText(f)) return '<pre class="v-text">Loading…</pre>';
+  if (isText(f)) return '<div class="v-textbox"></div>';
   return `<div class="v-none"><span class="docicon big" style="--ec:${extColor(f.ext)}"><span class="ext">${esc((f.ext || 'file').toUpperCase().slice(0, 5))}</span></span>
     <p>No preview for this kind of file.</p><div class="v-none-acts"><button class="btn primary" data-v="open">${icon('external')}Open with default app</button><button class="btn" data-v="download">${icon('download')}Download</button></div></div>`;
 }
@@ -227,24 +228,86 @@ function render() {
         if (bridge.ready && S.settings.native_player_auto !== false) playNative(f);
       } else if (code) toast(`Playback stopped: ${video.error?.message || 'network error'}. Telegram may be slow; try again.`, { err: true });
     });
-    video.addEventListener('ended', () => { if (f.kind !== 'gif' && cur?.list.length > 1 && S.settings.autoplay_next) step(1); });
+    video.addEventListener('ended', () => { if (f.kind !== 'gif') playNextAfter(f); });
   }
+  audio?.addEventListener('ended', () => playNextAfter(f));
   const img = cur.el.querySelector('.v-img');
   if (img) {
-    img.addEventListener('load', () => img.classList.add('loaded'));
-    img.addEventListener('error', () => { if (f.has_thumb && !img.dataset.fb) { img.dataset.fb = 1; img.src = thumbUrl(f, 'b'); } });
+    // A spinner while a big picture comes (over its blurred preview, if it has one); if it can't be shown,
+    // say so with a way forward instead of leaving the screen empty.
+    const stage = cur.el.querySelector('.v-stage');
+    const wait = setTimeout(() => { if (!img.classList.contains('loaded')) stage.classList.add('is-buffering'); }, 250);
+    img.addEventListener('load', () => { clearTimeout(wait); stage.classList.remove('is-buffering'); img.classList.add('loaded'); });
+    img.addEventListener('error', () => {
+      if (f.has_thumb && !img.dataset.fb) { img.dataset.fb = 1; img.src = thumbUrl(f, 'b'); return; }
+      clearTimeout(wait);
+      stage.classList.remove('is-buffering');
+      const wrap = cur?.el.querySelector('.v-imgwrap');
+      if (!wrap || cur.list[cur.i] !== f) return;
+      wrap.outerHTML = `<div class="v-fallback"><p>This picture couldn't be shown. Telegram may be slow, or the file isn't a picture the window can display.</p>
+        <button class="btn primary" data-v="retryimg">${icon('refresh')}Try again</button><button class="btn" data-v="open">${icon('external')}Open with default app</button><button class="btn" data-v="download">${icon('download')}Download</button></div>`;
+    });
   }
-  const pre = cur.el.querySelector('.v-text');
-  if (pre) {
-    fetch(A(`/stream/${f.chat_id}/${f.msg_id}/${encodeURIComponent(f.name)}`), { credentials: 'same-origin' })
-      .then((r) => r.text()).then((t) => { pre.textContent = t.slice(0, 1_000_000); }).catch((e) => { pre.textContent = e.message; });
-  }
+  const textbox = cur.el.querySelector('.v-textbox');
+  if (textbox) loadText(f, textbox);
+  if (video && f.kind !== 'gif') wireBuffering(video, cur.el.querySelector('.v-stage'));
+  if (audio) wireBuffering(audio, cur.el.querySelector('.v-audio'));
   // Prefetch neighbours' previews.
   for (const d of [1, -1]) {
     const nf = cur.list[(cur.i + d + n) % n];
     if (nf && nf.kind === 'photo' && nf.has_thumb) { const im = new Image(); im.src = thumbUrl(nf, 'b'); }
   }
   api(A(`/files/${f.chat_id}/${f.msg_id}`)).catch(() => {}); // records it under Recent
+}
+
+// "Play the next file automatically": after a video or song ends, the next video or audio in the list plays
+// (pictures and documents in between are skipped; the end of the list is the end).
+function playNextAfter(f) {
+  if (!cur || !S.settings.autoplay_next || cur.list[cur.i] !== f) return;
+  for (let j = cur.i + 1; j < cur.list.length; j++) {
+    const nf = cur.list[j];
+    if (STREAMABLE.has(nf.kind) && nf.kind !== 'gif') {   // (the finished one was saved as watched on "ended")
+      if (cur.pdf) { import('./pdfview.js').then((m) => m.closePdf()); cur.pdf = false; }
+      cur.i = j;
+      render();
+      return;
+    }
+  }
+}
+
+// Shown over a video or a song's cover while it waits for data from Telegram (see wireBuffering).
+const BUFFER = '<div class="v-buffer" aria-hidden="true"><span class="spin big"></span></div>';
+
+// Text files: the start of the file (up to 1 MB), with a loader while it comes and a way out if it can't.
+async function loadText(f, box) {
+  box.innerHTML = '<div class="page-loading v-loading">Loading text…</div>';
+  try {
+    const r = await fetch(A(`/stream/${f.chat_id}/${f.msg_id}/${encodeURIComponent(f.name || 'file.txt')}`), {
+      credentials: 'same-origin', headers: { 'X-TGDrive': '1', Range: 'bytes=0-1048575' },
+    });
+    if (r.status === 416) {   // nothing to read: the file is empty
+      if (cur && cur.list[cur.i] === f && box.isConnected) box.innerHTML = '<pre class="v-text">(This file is empty.)</pre>';
+      return;
+    }
+    if (!r.ok) {
+      let msg = '';
+      try { msg = (await r.json()).error; } catch { /* not JSON */ }
+      throw new Error(msg || `TG Drive answered ${r.status}.`);
+    }
+    const buf = await r.arrayBuffer();
+    if (!cur || cur.list[cur.i] !== f || !box.isConnected) return;
+    // Cut short when the file is bigger than the part asked for (Content-Range: bytes 0-1048575/<total>).
+    const total = Number((r.headers.get('content-range') || '').split('/')[1]) || buf.byteLength;
+    const t = new TextDecoder('utf-8', { fatal: false }).decode(buf);
+    box.innerHTML = '<pre class="v-text" tabindex="0"></pre>';
+    box.firstChild.textContent = total > buf.byteLength
+      ? `${t.replace(/[^\n]*$/, '')}\n… (the rest of this ${fmtSize(total)} file isn't shown here; download it to read it all)`
+      : t || '(This file is empty.)';
+  } catch (e) {
+    if (!cur || cur.list[cur.i] !== f || !box.isConnected) return;
+    box.innerHTML = `<div class="v-fallback"><p>Couldn't load this file: ${esc(e.message || String(e))}</p>
+      <button class="btn primary" data-v="retrytext">${icon('refresh')}Try again</button><button class="btn" data-v="download">${icon('download')}Download</button></div>`;
+  }
 }
 
 /* ------------------------------------------------------------ slideshow */
@@ -326,13 +389,25 @@ export function savePosition(f, m, done = false) {
     .catch(() => {});
 }
 export async function setWatched(files, done) {
-  for (const f of files) {
-    await (done ? api(A(`/playback/${f.chat_id}/${f.msg_id}`), { method: 'PUT', body: { pos: 0, dur: f.duration || null, done: true } })
-      : api(A(`/playback/${f.chat_id}/${f.msg_id}`), { method: 'DELETE' })).catch(() => {});
-    f.watched = done; f.play_pos = 0;
-    refreshCard(f);
-  }
-  toast(done ? 'Marked as watched' : 'Marked as not watched');
+  const media = files.filter((f) => STREAMABLE.has(f.kind) && f.kind !== 'gif');
+  let failed = 0;
+  let lastErr = null;
+  // A few at a time: marking a whole lecture series is quick, and one failure doesn't stop the rest.
+  const one = async (f) => {
+    try {
+      await (done ? api(A(`/playback/${f.chat_id}/${f.msg_id}`), { method: 'PUT', body: { pos: 0, dur: f.duration || null, done: true } })
+        : api(A(`/playback/${f.chat_id}/${f.msg_id}`), { method: 'DELETE' }));
+      f.watched = done; f.play_pos = 0;
+      refreshCard(f);
+    } catch (e) { failed++; lastErr = e; }
+  };
+  const queue = [...media];
+  await Promise.all(Array.from({ length: Math.min(4, queue.length) }, async () => { while (queue.length) await one(queue.shift()); }));
+  const ok = media.length - failed;
+  const what = done ? 'watched' : 'not watched';
+  if (!failed) toast(ok === 1 ? `Marked as ${what}` : `Marked ${ok} files as ${what}`);
+  else if (!ok) fail(lastErr);
+  else toast(`Marked ${ok} files as ${what}; ${failed} couldn't be changed (${lastErr?.message || 'error'}).`, { err: true });
 }
 function wireResume(f, m) {
   if (!m || f.kind === 'gif') return;
@@ -357,69 +432,170 @@ function wireResume(f, m) {
 }
 
 /* ------------------------------------------------------------ mini player */
+// Background audio: a queue of songs, voice notes or audio lectures that keeps playing while you browse.
+const SPEEDS = [0.75, 1, 1.25, 1.5, 1.75, 2];
 export const miniPlayer = (() => {
   let queue = [];
   let idx = 0;
   let audio = null;
+  let errorsInARow = 0;
+  let speed = Number(pref('mpSpeed')) || 1;
   const el = () => $('#miniPlayer');
-  function render() {
+  const q = (s) => el().querySelector(s);
+  // The bar is built once per track; playing, pausing, loading and the position update it in place, so the
+  // seek bar can be dragged and the buttons clicked without being rebuilt underneath the pointer.
+  function build() {
     const f = queue[idx];
     const m = el();
-    if (!f) { m.hidden = true; return; }
+    if (!f) { m.hidden = true; m.innerHTML = ''; return; }
     m.hidden = false;
-    m.innerHTML = `<button class="icon-btn" data-mp="prev" aria-label="Previous">${icon('prev')}</button>
-      <button class="icon-btn mp-play" data-mp="toggle" aria-label="Play or pause">${icon(audio && !audio.paused ? 'pause' : 'play')}</button>
-      <button class="icon-btn" data-mp="next" aria-label="Next">${icon('next')}</button>
-      <div class="mp-info"><strong>${esc(f.audio_title || f.name)}</strong><small>${esc(f.performer || f.chat_title || '')}</small>
-        <input type="range" min="0" max="1000" value="0" class="mp-seek" aria-label="Position"></div>
-      <span class="mp-time">0:00</span>
-      <button class="icon-btn" data-mp="close" aria-label="Stop">${icon('close')}</button>`;
+    m.innerHTML = `<button class="icon-btn" data-mp="prev" aria-label="Previous" title="Previous">${icon('prev')}</button>
+      <button class="icon-btn mp-play" data-mp="toggle" aria-label="Play">${icon('play')}</button>
+      <button class="icon-btn" data-mp="next" aria-label="Next" title="Next" ${idx < queue.length - 1 ? '' : 'disabled'}>${icon('next')}</button>
+      <div class="mp-info"><strong title="${esc(f.audio_title || f.name)}">${esc(f.audio_title || f.name)}</strong><small>${esc(f.performer || f.chat_title || '')}${queue.length > 1 ? ` · ${idx + 1} of ${queue.length}` : ''}</small>
+        <input type="range" min="0" max="1000" value="0" class="mp-seek" aria-label="Position" disabled></div>
+      <span class="mp-time" aria-live="off"></span>
+      <button class="btn sm ghost mp-speed" data-mp="speed" title="Playback speed" aria-label="Playback speed">${fmtSpeed(speed)}</button>
+      <button class="icon-btn" data-mp="close" aria-label="Stop" title="Stop">${icon('close')}</button>`;
+    update();
+  }
+  function update() {
+    const f = queue[idx];
+    if (!f || !q('.mp-play')) return;
+    const playing = !!audio && !audio.paused;
+    const loading = el().classList.contains('is-buffering');
+    const btn = q('.mp-play');
+    const state = `${playing}:${loading}`;
+    if (btn.dataset.state !== state) {   // (called several times a second while playing: touch the button only on change)
+      btn.dataset.state = state;
+      btn.innerHTML = icon(playing ? 'pause' : 'play');
+      btn.setAttribute('aria-label', loading ? 'Loading' : playing ? 'Pause' : 'Play');
+      btn.title = loading ? 'Loading from Telegram…' : playing ? 'Pause' : 'Play';
+    }
+    const dur = audio && Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+    const seek = q('.mp-seek');
+    seek.disabled = !dur;
+    if (dur && !seek.matches(':active')) seek.value = String(Math.round((audio.currentTime / dur) * 1000));
+    q('.mp-time').textContent = `${fmtDur(audio?.currentTime || 0)} / ${dur || f.duration ? fmtDur(dur || f.duration) : '–:––'}`;
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = playing ? 'playing' : 'paused';
+  }
+  function stopAudio() {
+    if (!audio) return;
+    const a = audio;
+    audio = null;
+    a.pause();
+    a.removeAttribute('src');   // stop fetching the old track from Telegram
+    a.load();
   }
   function load(start = 0) {
     const f = queue[idx];
     if (!f) return;
-    if (audio) { savePosition(queue[idx], audio); audio.pause(); }
-    audio = new Audio(streamUrl(f));
-    audio.currentTime = start || (!f.watched && f.play_pos > 5 ? f.play_pos : 0);
-    audio.play().catch(() => {});
-    audio.addEventListener('timeupdate', () => {
-      const m = el();
-      const seek = m.querySelector('.mp-seek');
-      if (seek && !seek.matches(':active') && audio.duration) seek.value = String(Math.round((audio.currentTime / audio.duration) * 1000));
-      const t = m.querySelector('.mp-time');
-      if (t) t.textContent = `${fmtDur(audio.currentTime)} / ${fmtDur(audio.duration || f.duration || 0)}`;
-    });
+    if (audio) { savePosition(queue[idx], audio); stopAudio(); }
+    const a = new Audio();
+    audio = a;
+    a.preload = 'auto';
+    a.defaultPlaybackRate = speed;
+    a.playbackRate = speed;
+    a.src = streamUrl(f);
+    const from = start || (!f.watched && f.play_pos > 5 ? f.play_pos : 0);
+    if (from) a.addEventListener('loadedmetadata', () => { if (Number.isFinite(a.duration) && from < a.duration - 5) a.currentTime = from; }, { once: true });
+    const mine = (fn) => (...x) => { if (a === audio) fn(...x); };   // events of a replaced track are ignored
+    wireBuffering(a, el(), mine(update));
     let last = 0;
-    const cf = f;
-    audio.addEventListener('timeupdate', () => { if (Math.abs(audio.currentTime - last) > 10) { last = audio.currentTime; savePosition(cf, audio); } });
-    audio.addEventListener('ended', () => { savePosition(cf, audio, true); if (idx < queue.length - 1) { idx++; load(); render(); } else render(); });
-    audio.addEventListener('error', () => { toast(`Couldn't play “${f.name}”. Telegram may be slow, or the format isn't supported here.`, { err: true }); render(); });
-    audio.addEventListener('play', render);
-    audio.addEventListener('pause', render);
+    a.addEventListener('timeupdate', mine(() => {
+      update();
+      if (Math.abs(a.currentTime - last) > 10) { last = a.currentTime; savePosition(f, a); }
+    }));
+    ['play', 'pause', 'loadedmetadata', 'durationchange'].forEach((ev) => a.addEventListener(ev, mine(update)));
+    a.addEventListener('playing', mine(() => { errorsInARow = 0; }));
+    a.addEventListener('ratechange', mine(() => { if (a.playbackRate !== speed) a.playbackRate = speed; }));
+    a.addEventListener('ended', mine(() => {
+      savePosition(f, a, true);
+      if (idx < queue.length - 1) { idx++; load(); } else update();
+    }));
+    a.addEventListener('error', mine(() => {
+      errorsInARow++;
+      const more = idx < queue.length - 1;
+      // Skip a track that can't be played; after three in a row, stop (the connection is probably down).
+      if (more && errorsInARow < 3) {
+        toast(`Couldn't play “${f.audio_title || f.name}”, skipping to the next one.`, { err: true });
+        idx++;
+        load();
+      } else {
+        toast(`Couldn't play “${f.audio_title || f.name}”. Telegram may be slow or offline; press play to try again.`, { err: true });
+        el().classList.remove('is-buffering');
+        update();
+      }
+    }));
+    a.play().catch(() => {});
     if ('mediaSession' in navigator) {
-      navigator.mediaSession.metadata = new window.MediaMetadata({ title: f.audio_title || f.name, artist: f.performer || f.chat_title || '' });
-      navigator.mediaSession.setActionHandler('nexttrack', () => ctl('next'));
-      navigator.mediaSession.setActionHandler('previoustrack', () => ctl('prev'));
+      try {
+        navigator.mediaSession.metadata = new window.MediaMetadata({ title: f.audio_title || f.name, artist: f.performer || f.chat_title || '' });
+        navigator.mediaSession.setActionHandler('play', () => ctl('play'));
+        navigator.mediaSession.setActionHandler('pause', () => ctl('pause'));
+        navigator.mediaSession.setActionHandler('nexttrack', () => ctl('next'));
+        navigator.mediaSession.setActionHandler('previoustrack', () => ctl('prev'));
+      } catch { /* not supported here */ }
     }
-    render();
+    build();
   }
-  function ctl(a) {
-    if (a === 'toggle' && audio) audio.paused ? audio.play() : audio.pause();
-    if (a === 'next' && idx < queue.length - 1) { idx++; load(); }
-    if (a === 'prev') { if (audio && audio.currentTime > 5) audio.currentTime = 0; else if (idx > 0) { idx--; load(); } }
-    if (a === 'close') { if (audio) savePosition(queue[idx], audio); audio?.pause(); audio = null; queue = []; render(); }
+  function ctl(act) {
+    if (act === 'toggle') act = audio && !audio.paused ? 'pause' : 'play';
+    if (act === 'play') {
+      if (!audio) { load(); return; }
+      if (audio.error) { const t = audio.currentTime; load(t); return; }   // after a failure: fetch again
+      audio.play().catch(() => {});
+    }
+    if (act === 'pause') audio?.pause();
+    if (act === 'next' && idx < queue.length - 1) { idx++; errorsInARow = 0; load(); }
+    if (act === 'prev') { if (audio && audio.currentTime > 5) audio.currentTime = 0; else if (idx > 0) { idx--; errorsInARow = 0; load(); } }
+    if (act === 'speed') {
+      speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length] || 1;
+      pref('mpSpeed', speed);
+      if (audio) { audio.defaultPlaybackRate = speed; audio.playbackRate = speed; }
+      const b = q('.mp-speed');
+      if (b) b.textContent = fmtSpeed(speed);
+    }
+    if (act === 'close') {
+      if (audio) savePosition(queue[idx], audio);
+      stopAudio();
+      queue = [];
+      el().classList.remove('is-buffering');
+      if ('mediaSession' in navigator) { try { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; } catch { /* ignore */ } }
+      build();
+    }
   }
-  document.addEventListener('click', (e) => { const b = e.target.closest('[data-mp]'); if (b) ctl(b.dataset.mp); });
+  document.addEventListener('click', (e) => { const b = e.target.closest('[data-mp]'); if (b && !b.disabled) ctl(b.dataset.mp); });
   document.addEventListener('input', (e) => {
-    if (e.target.classList?.contains('mp-seek') && audio?.duration) audio.currentTime = (Number(e.target.value) / 1000) * audio.duration;
+    if (e.target.classList?.contains('mp-seek') && audio && Number.isFinite(audio.duration)) audio.currentTime = (Number(e.target.value) / 1000) * audio.duration;
   });
+  window.addEventListener('pagehide', () => { if (audio) savePosition(queue[idx], audio); });
   return {
     play(f, start = 0, list = [f]) {
       // Tracks the page can't decode (desktop app: AAC/M4A) play in the native player instead.
       queue = (list.length ? list : [f]).filter((x) => key(x) === key(f) || !useNative(x));
       idx = Math.max(0, queue.findIndex((x) => key(x) === key(f)));
+      errorsInARow = 0;
       load(start);
     },
+    get playing() { return !!audio && !audio.paused; },
   };
 })();
+const fmtSpeed = (s) => `${s}×`;
+
+// Media from Telegram can take a moment: `host` gets the class is-buffering (a spinner in the CSS) while the
+// media waits for data, shown only after a short pause so quick answers don't flash. `onChange` hears about it.
+export function wireBuffering(m, host, onChange = null) {
+  let t = 0;
+  const set = (v) => { if (host.classList.contains('is-buffering') !== v) { host.classList.toggle('is-buffering', v); onChange?.(v); } };
+  const on = () => { clearTimeout(t); t = setTimeout(() => set(true), 250); };
+  const off = () => { clearTimeout(t); set(false); };
+  m.addEventListener('waiting', on);
+  m.addEventListener('seeking', () => { if (m.readyState < 3) on(); });
+  m.addEventListener('loadstart', () => { if (m.autoplay || !m.paused) on(); });
+  m.addEventListener('play', () => { if (m.readyState < 3) on(); });
+  for (const ev of ['playing', 'canplay', 'canplaythrough', 'pause', 'error', 'ended', 'emptied']) m.addEventListener(ev, off);
+  m.addEventListener('seeked', () => { if (m.readyState >= 3) off(); });
+  return off;
+}
 export { fail };

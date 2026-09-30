@@ -77,7 +77,7 @@ export async function addPairDialog(folderId = null) {
       bd.querySelector('#syncPickLocal')?.addEventListener('click', async (e) => { e.preventDefault(); const p = await callBridge('pickFolder'); if (p) bd.querySelector('#syncLocal').value = p; });
       bd.querySelector('#syncPickDrive').addEventListener('click', async (e) => {
         e.preventDefault();
-        const p = await folderPicker({ title: 'TG Drive folder to sync', okLabel: 'Choose', current: fid, allowNone: false });
+        const p = await folderPicker({ title: 'TG Drive folder to sync', okLabel: 'Choose', current: fid, allowNone: false, forFiles: true });
         if (p?.folderId) { fid = p.folderId; bd.querySelector('#syncPickDrive span').textContent = fname(); }
       });
       bd.querySelector('#syncNewDrive').addEventListener('click', async (e) => {

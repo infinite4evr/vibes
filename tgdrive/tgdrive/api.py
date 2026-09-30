@@ -1201,6 +1201,7 @@ async def upload(aid: int, request: Request, name: str, folder_id: Optional[str]
                  caption: str = "", chat_id: Optional[int] = None):
     a = acc(aid)
     a.require_online()
+    a.drive.require_files_folder(folder_id or None)   # before reading the file, not after
     tmp = a.transfers.new_upload_path()
     try:
         length = int(request.headers.get("content-length") or 0)
@@ -1226,6 +1227,7 @@ async def upload_paths(aid: int, body: dict = Body(...)):
     """Upload files or folders straight from disk (desktop app; no temporary copy)."""
     a = acc(aid)
     a.require_online()
+    a.drive.require_files_folder(body.get("folder_id") or None)
     return await a.transfers.add_upload_paths([str(p) for p in body.get("paths", [])], body.get("folder_id") or None,
                                               caption=str(body.get("caption") or ""),
                                               target_chat=body.get("chat_id") or None)

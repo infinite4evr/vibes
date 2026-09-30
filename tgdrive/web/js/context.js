@@ -6,6 +6,7 @@ import { fail } from './ui.js';
 let C = null;
 
 export async function showContext(f) {
+  bus.emit('flush-note');   // a note still being typed in the details panel is saved first
   C = { f, messages: [], hasOlder: false, hasNewer: false, chat: null };
   S.drawer = 'context';
   const d = $('#drawer');
@@ -34,8 +35,14 @@ async function load(before, after, mode, anchor) {
     }
     render(mode);
   } catch (e) {
+    if (!C || C.f !== f) return;
+    // Earlier or later messages: keep what is already shown and say what went wrong.
+    if (mode !== 'center') { fail(e); return; }
     const body = $('.ctx-body');
-    if (body) body.innerHTML = `<p class="warn">${esc(e.message)}</p><p class="help">Telegram needs to be connected to read the chat.</p>`;
+    if (body) {
+      body.innerHTML = `<div class="empty page-error">${icon('info')}<h2>Couldn't read this chat</h2><p>${esc(e.message)}</p>
+        <p class="help">Telegram needs to be connected to read the messages around a file.</p><button class="btn" data-ctx="retry">${icon('refresh')}Try again</button></div>`;
+    }
   }
 }
 
@@ -91,6 +98,10 @@ document.addEventListener('click', async (e) => {
   if (b) {
     const a = b.dataset.ctx;
     if (a === 'close') { C = null; S.drawer = null; (await import('./details.js')).renderDrawer(); return; }
+    if (a === 'retry') {
+      $('.ctx-body').innerHTML = '<div class="page-loading"><span class="spin"></span> Reading messages around this file…</div>';
+      load(15, 15, 'center');
+    }
     if (a === 'older') load(25, 0, 'older', C.messages[0].id);
     if (a === 'newer') load(0, 25, 'newer', C.messages[C.messages.length - 1].id);
     return;

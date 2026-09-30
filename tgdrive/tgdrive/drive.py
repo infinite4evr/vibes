@@ -579,6 +579,22 @@ class Drive:
         if folder_id and not self.db.get_folder(folder_id):
             raise DriveError("That folder no longer exists.")
 
+    def require_files_folder(self, folder_id: Optional[str]) -> None:
+        """A folder files can be put into: it exists and isn't a smart folder. A smart folder shows every file
+        matching its rule; a file put into it would be hidden (not matching, and no longer in My Drive)."""
+        if not folder_id:
+            return
+        f = self.db.get_folder(folder_id)
+        if not f:
+            raise DriveError("That folder no longer exists.")
+        if f.get("kind") == "smart":
+            raise DriveError(f"“{f['name']}” is a smart folder: it shows every file that matches its rule, "
+                             "so files can't be put into it. Choose another folder.")
+
+    def accepts_files(self, folder_id: Optional[str]) -> bool:
+        f = self.db.get_folder(folder_id) if folder_id else None
+        return bool(f) and f.get("kind") != "smart"
+
     async def create_folder(self, name: str, parent_id: Optional[str], color: str = "",
                             description: str = "", emoji: str = "", rules: Optional[dict] = None) -> dict:
         await self.load()
@@ -677,7 +693,7 @@ class Drive:
     # ------------------------------------------------------------------ items
     async def place(self, items: list[tuple[int, int]], folder_id: Optional[str], undo: bool = True) -> None:
         await self.load()
-        self._require_folder(folder_id)
+        self.require_files_folder(folder_id)
         if undo:
             self.push_undo("Move files" if folder_id else "Take files out of folders")
         with self.db.tx():
@@ -791,7 +807,7 @@ class Drive:
     async def copy_to_drive(self, chat_id: int, msg_id: int, folder_id: Optional[str]) -> dict:
         """Re-send a file into the Drive channel (no re-upload) so you own a copy."""
         from .accounts import AccountError
-        self._require_folder(folder_id)
+        self.require_files_folder(folder_id)
         chat = self.db.get_chat(chat_id)
         if chat and chat["noforwards"]:
             raise AccountError("This chat restricts saving content, so Telegram won't allow a copy.")

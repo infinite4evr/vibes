@@ -60,6 +60,7 @@ export async function openPdf(f, stage, bar) {
   bar.addEventListener('click', onClick);
   bar.addEventListener('change', onChange);
   el.querySelector('.pdf-scroll').addEventListener('scroll', onScroll, { passive: true });
+  el.addEventListener('click', (e) => { const b = e.target.closest('[data-pdf-retry]'); if (b) renderPage(Number(b.dataset.pdfRetry)); });
   document.addEventListener('keydown', onKey, true);
   const ro = new ResizeObserver(debounce(() => { if (R?.fit) setScale('fit'); }, 150));
   ro.observe(el.querySelector('.pdf-scroll'));
@@ -104,7 +105,7 @@ export const pdfOpen = () => !!R;
 
 function buildPages(n) {
   const host = R.el.querySelector('.pdf-pages');
-  host.innerHTML = Array.from({ length: n }, (_, i) => `<div class="pdf-page-box" data-p="${i + 1}"><span class="pdf-pno">${i + 1}</span></div>`).join('');
+  host.innerHTML = Array.from({ length: n }, (_, i) => `<div class="pdf-page-box" data-p="${i + 1}"><span class="pdf-pno">${i + 1}</span><span class="pdf-wait" aria-hidden="true"><span class="spin"></span></span></div>`).join('');
   R.pages = $$('.pdf-page-box', host).map((el) => ({ el, rendered: 0, task: null, w: R.base.w, h: R.base.h }));
   R.io = new IntersectionObserver((entries) => {
     for (const e of entries) {
@@ -159,6 +160,8 @@ async function renderPage(n) {
   const p = R?.pages[n - 1];
   if (!p || !R.doc || !R.scale || p.rendered === R.scale || p.busy) return;
   p.busy = true;
+  p.el.querySelector('.pdf-fail')?.remove();
+  p.el.classList.remove('failed');
   const scale = R.scale;
   try {
     const page = await R.doc.getPage(n);
@@ -190,8 +193,15 @@ async function renderPage(n) {
     const layer = new pdf.TextLayer({ textContentSource: page.streamTextContent(), container: tl, viewport: vp });
     await layer.render();
     p.rendered = scale;
+    p.el.classList.add('drawn');
   } catch (e) {
-    if (e?.name !== 'RenderingCancelledException') console.warn('pdf page', n, e);
+    if (e?.name !== 'RenderingCancelledException' && R && !R.destroyed && !p.el.querySelector('canvas')) {
+      // Usually the connection to Telegram: say so on the page, with a way to try again (scrolling back to
+      // the page tries again too).
+      console.warn('pdf page', n, e);
+      p.el.classList.add('failed');
+      p.el.insertAdjacentHTML('beforeend', `<div class="pdf-fail"><p>Couldn't load page ${n}</p><button class="btn sm" data-pdf-retry="${n}">${icon('refresh')}Try again</button></div>`);
+    }
   } finally {
     p.busy = false;
     if (R && !R.destroyed && p.rendered !== R.scale && R.scale !== scale) renderPage(n);   // zoomed meanwhile
@@ -204,6 +214,7 @@ function unrenderPage(n) {
   p.task?.cancel?.();
   p.el.querySelector('canvas')?.remove();
   p.el.querySelector('.textLayer')?.remove();
+  p.el.classList.remove('drawn');
   p.rendered = 0;
 }
 

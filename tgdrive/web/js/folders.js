@@ -1,7 +1,7 @@
 // Folders: the folder area (tiles, cards with covers, or a list), folder menu, icon/colour/cover
 // picker, and rules for smart and auto-filing folders.
 import { $, S, A, api, esc, icon, plural, bus, M, qs, fmtSize, fmtNum, fmtDate, pref, thumbUrl, inlineSrc, debounce, key } from './core.js';
-import { menu, toast, fail, confirmDialog, promptDialog, folderPicker, descendantIds, dialog, childrenOf, folderColor, chatPicker } from './ui.js';
+import { menu, toast, fail, confirmDialog, promptDialog, folderPicker, descendantIds, dialog, childrenOf, folderColor, chatPicker, saveDownload } from './ui.js';
 import { undoLast, folderRules } from './files.js';
 
 export const COLORS = ['', 'red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'grey'];
@@ -311,8 +311,11 @@ export function folderMenu(anchor, id) {
       label: 'Description…', icon: 'note', onClick: async () => {
         const d = await promptDialog('Folder description', 'Shown in the folder header', f.description || '', 'Save', { multiline: true, allowEmpty: true, max: 500 });
         if (d === null || d === undefined) return;
-        await api(A(`/folders/${id}`), { method: 'PATCH', body: { description: d } }).catch(fail);
-        bus.emit('drive-changed');
+        try {
+          await api(A(`/folders/${id}`), { method: 'PATCH', body: { description: d } });
+          toast(d ? 'Description saved' : 'Description removed');
+          bus.emit('drive-changed');
+        } catch (e) { fail(e); }
       },
     },
     { label: rules ? (f.kind === 'smart' ? 'Edit smart rule…' : 'Edit auto-filing rule…') : 'Auto-file matching files…', icon: rules && f.kind === 'smart' ? 'sparkle' : 'wand', onClick: () => rulesDialog(id) },
@@ -332,7 +335,7 @@ export function folderMenu(anchor, id) {
     '-',
     f.kind !== 'smart' ? { label: 'Download folder', icon: 'download', onClick: () => downloadFolder(f, false) } : null,
     f.kind !== 'smart' ? { label: 'Download as .zip', icon: 'download', onClick: () => downloadFolder(f, true) } : null,
-    { label: 'Playlist for VLC / mpv', icon: 'play', onClick: () => { window.location.href = M(`/playlist.m3u?${qs(f.kind === 'smart' && rules ? { ...rules.params, q: rules.q } : { folder_id: id, folder_tree: 1 })}`); } },
+    { label: 'Playlist for VLC / mpv', icon: 'play', onClick: () => saveDownload(A(`/playlist.m3u?${qs(f.kind === 'smart' && rules ? { ...rules.params, q: rules.q } : { folder_id: id, folder_tree: 1 })}`), `${f.name}.m3u`) },
     '-',
     {
       label: 'Delete folder', icon: 'trash', danger: true, onClick: async () => {

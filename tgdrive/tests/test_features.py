@@ -241,6 +241,20 @@ def test_smart_and_auto_folders(tmp_path, fresh_settings):
         assert len(inside) == len(videos) > 0
         # Smart folders never move anything.
         assert not acc.db.q("SELECT 1 FROM placements WHERE folder_id=?", (smart["id"],))
+        # …and files can't be put into one (it would hide them): moving, copying and uploading say why.
+        one = videos[0]
+        with pytest.raises(DriveError, match="smart folder"):
+            await acc.drive.place([(one["chat_id"], one["msg_id"])], smart["id"])
+        with pytest.raises(DriveError, match="smart folder"):
+            await acc.drive.copy_to_drive(one["chat_id"], one["msg_id"], smart["id"])
+        with pytest.raises(DriveError, match="smart folder"):
+            acc.drive.require_files_folder(smart["id"])
+        assert not acc.drive.accepts_files(smart["id"]) and acc.drive.accepts_files(None) is False
+        from tgdrive.sync import SyncError
+        (tmp_path / "local").mkdir()
+        with pytest.raises(SyncError, match="smart folder"):
+            await acc.sync.add_pair(str(tmp_path / "local"), smart["id"])
+        assert not acc.db.q("SELECT 1 FROM placements WHERE folder_id=?", (smart["id"],))
 
         # Auto-filing moves unfiled matches, leaves hand-filed files alone.
         manual = await acc.drive.create_folder("Mine", None)

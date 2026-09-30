@@ -45,10 +45,11 @@ applications menu).
 | study tools | `make -C commands/stack-highlights quick` (and `pdf-safety`); `npm test` in `commands/wa-auto-delete` |
 | pc-command-center | `cd pc-command-center && pip install -e '.[dev]' && pytest` |
 | lumaclean | built by CI only (`gradle :app:assembleRelease` with Android SDK 37) |
-| tgdrive | `cd tgdrive && pip install -r requirements.txt pytest httpx && python -m pytest tests` |
+| tgdrive | `cd tgdrive && pip install -r requirements.txt pytest httpx && python -m pytest tests` (the browser test `tests/test_e2e.py` also needs `playwright`) |
 
 CI: [`ci.yml`](.github/workflows/ci.yml) runs the study-tool checks,
 [`pc-command-center.yml`](.github/workflows/pc-command-center.yml) the PC Command
 Center tests, shell syntax and a GTK smoke test, and
 [`lumaclean-apk.yml`](.github/workflows/lumaclean-apk.yml) builds and releases the
-LumaClean APK. tgdrive has no CI job yet.
+LumaClean APK, and [`tgdrive.yml`](.github/workflows/tgdrive.yml) runs the TG Drive tests and an end-to-end
+test of its interface in Chromium.

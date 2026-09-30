@@ -1,6 +1,6 @@
 // Full-page tools: Storage, Duplicates, Index manager, Activity, Settings.
 import { $, $$, S, A, api, esc, icon, fmtSize, fmtNum, fmtDate, plural, relTime, CHAT_KIND_NAME, KIND_NAME, SOURCES, bus, key, bridge, callBridge, qs, extColor, M } from './core.js';
-import { toast, fail, confirmDialog, dialog, promptDialog, chatAvatar } from './ui.js';
+import { toast, fail, confirmDialog, dialog, promptDialog, chatAvatar, saveDownload, copyText } from './ui.js';
 
 const page = () => $('#pageView');
 const head = (title, sub = '', right = '') => `<div class="page-head"><div><h1>${esc(title)}</h1>${sub ? `<p>${sub}</p>` : ''}</div><div class="page-right">${right}</div></div>`;
@@ -14,9 +14,14 @@ export function renderPage(type, arg) {
 
 /* ---------------------------------------------------------------- storage */
 async function storage() {
-  page().innerHTML = head('Storage', 'What your indexed files are made of. Everything stays in Telegram; this is what TG Drive can see.') + '<div class="page-loading">Adding it all up…</div>';
+  const intro = 'What your indexed files are made of. Everything stays in Telegram; this is what TG Drive can see.';
+  page().innerHTML = head('Storage', intro) + '<div class="page-loading">Adding it all up…</div>';
   let r;
-  try { r = await api(A('/storage')); } catch (e) { page().innerHTML += `<p class="warn">${esc(e.message)}</p>`; return; }
+  try { r = await api(A('/storage')); } catch (e) {
+    if (S.view.type === 'storage') page().innerHTML = head('Storage', intro) + pageError(e, 'data-storage-retry');
+    return;
+  }
+  if (S.view.type !== 'storage') return;
   const max = (rows, k = 'bytes') => Math.max(1, ...rows.map((x) => x[k] || 0));
   const bars = (rows, label, color, go) => {
     const m = max(rows);
@@ -48,22 +53,55 @@ async function storage() {
 
 /* ------------------------------------------------------------- duplicates */
 let dupMode = 'exact';
-async function duplicates() {
-  page().innerHTML = head('Duplicates', 'Files that appear more than once. “Same file” means Telegram stores one copy that was forwarded into several chats; “Same name and size” catches re-uploads.',
-    `<div class="seg"><button class="${dupMode === 'exact' ? 'on' : ''}" data-dup="exact">Same file</button><button class="${dupMode === 'similar' ? 'on' : ''}" data-dup="similar">Same name and size</button></div>`) + '<div class="page-loading">Looking for duplicates…</div>';
-  let r;
-  try { r = await api(A(`/duplicates?${qs({ mode: dupMode })}`)); } catch (e) { fail(e); return; }
-  const groups = r.groups;
-  S.items = groups.flatMap((g) => g.files.map((f) => ({ ...f, name: f.name })));
-  S.byKey = new Map(S.items.map((f) => [key(f), f]));
-  $('.page-loading', page())?.remove();
-  page().insertAdjacentHTML('beforeend', groups.length ? `<div class="dup-tools"><button class="btn" data-dup-select>${icon('check')}Select all but the oldest copy</button><span class="subtle">Then use the selection bar to move, tag, remove from the index or delete.</span></div>` + groups.map((g) => `
+let dup = { groups: [], offset: 0, more: false };
+const dupGroupHtml = (g) => `
     <section class="panel dup"><h2>${esc(g.files[0]?.name || '')}<small>${plural(g.n, 'copy', 'copies')} · ${fmtSize(g.size)} each · ${fmtSize(g.waste)} extra</small></h2>
       ${g.files.map((f, i) => `<label class="dup-row"><input type="checkbox" data-dk="${f.chat_id}:${f.msg_id}" ${S.selected.has(`${f.chat_id}:${f.msg_id}`) ? 'checked' : ''}>
         <span class="grow">${esc(f.chat_title || '')}${f.folder_id ? ` <span class="in-folder">${icon('folder')}${esc(S.folderById.get(f.folder_id)?.name || '')}</span>` : ''}</span>
-        <small>${fmtDate(f.date)}${i === 0 ? ' · oldest' : ''}</small><button class="btn ghost sm" data-open-ref="${f.chat_id}:${f.msg_id}">${icon('eye')}</button></label>`).join('')}</section>`).join('') + (r.more ? `<button class="btn" data-dup-more>Show more</button>` : '')
-    : '<div class="empty"><h2>No duplicates</h2><p>Every file you have is unique.</p></div>');
-  page().dataset.groups = JSON.stringify(groups.map((g) => g.files.map((f) => `${f.chat_id}:${f.msg_id}`)));
+        <small>${fmtDate(f.date)}${i === 0 ? ' · oldest' : ''}</small><button class="btn ghost sm" data-open-ref="${f.chat_id}:${f.msg_id}" title="Open" aria-label="Open this copy">${icon('eye')}</button></label>`).join('')}</section>`;
+
+async function duplicates() {
+  dup = { groups: [], offset: 0, more: false };
+  page().innerHTML = head('Duplicates', 'Files that appear more than once. “Same file” means Telegram stores one copy that was forwarded into several chats; “Same name and size” catches re-uploads.',
+    `<div class="seg"><button class="${dupMode === 'exact' ? 'on' : ''}" data-dup="exact">Same file</button><button class="${dupMode === 'similar' ? 'on' : ''}" data-dup="similar">Same name and size</button></div>`)
+    + '<div id="dupBody"><div class="page-loading">Looking for duplicates…</div></div>';
+  await loadDupes();
+}
+
+// Loads the next batch of groups and adds it below the ones shown ("Show more"); the first batch replaces the loader.
+async function loadDupes(btn = null) {
+  const mode = dupMode;
+  let r;
+  try { r = await api(A(`/duplicates?${qs({ mode, offset: dup.offset })}`)); } catch (e) {
+    if (mode !== dupMode || !$('#dupBody')) return;
+    if (btn) { fail(e); return; }
+    $('#dupBody').innerHTML = pageError(e, 'data-dup-retry');
+    return;
+  }
+  const body = $('#dupBody');
+  if (mode !== dupMode || !body) return;
+  dup.groups.push(...r.groups);
+  dup.offset += r.groups.length;
+  dup.more = !!r.more;
+  const files = dup.groups.flatMap((g) => g.files);
+  S.items = files.map((f) => ({ ...f }));
+  S.byKey = new Map(S.items.map((f) => [key(f), f]));
+  if (!dup.groups.length) {
+    body.innerHTML = '<div class="empty"><h2>No duplicates</h2><p>Every file you have is unique.</p></div>';
+    return;
+  }
+  if (!body.querySelector('.dup-tools')) {
+    body.innerHTML = `<div class="dup-tools"><button class="btn" data-dup-select>${icon('check')}Select all but the oldest copy</button><span class="subtle">Then use the selection bar to move, tag, remove from the index or delete.</span></div><div class="dup-list"></div>`;
+  }
+  body.querySelector('.dup-list').insertAdjacentHTML('beforeend', r.groups.map(dupGroupHtml).join(''));
+  body.querySelector('[data-dup-more]')?.remove();
+  if (dup.more) body.insertAdjacentHTML('beforeend', `<button class="btn dup-more" data-dup-more>${icon('chevronDown')}Show more</button>`);
+}
+
+// A page whose data couldn't be loaded: what went wrong and a way to try again (never a loader left spinning).
+function pageError(e, retryAttr) {
+  return `<div class="empty page-error">${icon('info')}<h2>Couldn't load this</h2><p>${esc(e?.message || String(e))}</p>
+    <button class="btn" ${retryAttr}>${icon('refresh')}Try again</button></div>`;
 }
 
 /* ---------------------------------------------------------- index manager */
@@ -104,8 +142,14 @@ function renderIdxTable() {
 
 /* --------------------------------------------------------------- activity */
 async function activity() {
-  const r = await api(A('/activity')).catch((e) => { fail(e); return { activity: [] }; });
-  page().innerHTML = head('Activity', 'What TG Drive did on your behalf: folder changes, copies, sends, deletions and clean-ups.') +
+  const title = head('Activity', 'What TG Drive did on your behalf: folder changes, copies, sends, deletions and clean-ups.');
+  let r;
+  try { r = await api(A('/activity')); } catch (e) {
+    if (S.view.type === 'activity') page().innerHTML = title + pageError(e, 'data-refresh-page');
+    return;
+  }
+  if (S.view.type !== 'activity') return;
+  page().innerHTML = title +
     `<div class="simple-list">${r.activity.map((a) => `<div class="sl-row static"><span class="pill">${esc(a.action)}</span><span class="grow">${esc(a.detail)}</span><small>${fmtDate(a.at, true)}</small></div>`).join('') || '<p class="subtle">Nothing yet.</p>'}</div>`;
 }
 
@@ -354,7 +398,7 @@ const SECTION_HTML = {
       <button class="btn" data-maint="vacuum">Compact (VACUUM)</button><button class="btn" data-maint="stats">Recount statistics</button>
       <button class="btn" data-maint="rebuild_search">Rebuild search index</button><button class="btn" data-maint="rebuild_semantic">Rebuild meaning index</button><button class="btn" data-maint="clear_thumbs">Clear preview cache</button></div></div>
     <div class="set-block"><strong>Folders, stars, tags and notes</strong><p>They live in a pinned file in your “${esc(S.driveTitle)}” channel and sync to every device. TG Drive keeps the last 30 versions here.</p>
-      <div class="btn-row"><a class="btn" href="${A('/drive/manifest')}" download>${icon('download')}Export</a><button class="btn" data-import-manifest>${icon('upload')}Import…</button><button class="btn" data-drive-sync>${icon('refresh')}Sync now</button></div>
+      <div class="btn-row"><a class="btn" href="${A('/drive/manifest')}" data-save="tgdrive-folders.json">${icon('download')}Export</a><button class="btn" data-import-manifest>${icon('upload')}Import…</button><button class="btn" data-drive-sync>${icon('refresh')}Sync now</button></div>
       ${backups.backups.length ? `<div class="simple-list">${backups.backups.slice(0, 12).map((b) => `<div class="sl-row static"><span class="grow">${esc(b.reason)}<small>${fmtDate(b.at, true)} · ${fmtSize(b.bytes)}</small></span><button class="btn sm" data-restore="${b.id}">Restore</button></div>`).join('')}</div>` : ''}</div>
     <div class="set-block"><strong>Export search results</strong><p>Every file matching the current search or view as a spreadsheet (CSV).</p><button class="btn" data-export-csv>${icon('download')}Export CSV</button></div>
     <div class="set-block"><strong>Import from an earlier TG Drive</strong><p>Bring in an index and sign-in from the TG Drive zip version, so nothing needs re-indexing.</p>
@@ -374,7 +418,7 @@ const SECTION_HTML = {
     <div class="set-block debug-block ${s.debug_logging ? 'is-on' : ''}"><strong>${icon('bug')}Detailed debug logging</strong>
       <p>Records everything in detail while it's on: every request and how long it took, what you clicked and where you went, transfers, streaming, indexing, search, errors and crashes with full tracebacks. It goes to <code>${esc(about.debug_log || 'tgdrive-debug.log')}</code> on this computer only. Turn it on to catch a problem, reproduce it, then send the log (or a diagnostics file) and turn it off again. A large banner shows while it's on.</p>
       ${row(`Debug logging ${s.debug_logging ? '<span class="pill red">ON</span>' : '<span class="pill grey">Off</span>'}`, 'Takes effect at once, no restart. Makes the log grow quickly (kept to about 100 MB).', sw('debug_logging', s))}
-      <div class="btn-row"><button class="btn" data-debug="view">${icon('document')}View log</button><a class="btn" href="/api/logs/download?which=debug" download>${icon('download')}Download debug log</a>
+      <div class="btn-row"><button class="btn" data-debug="view">${icon('document')}View log</button><a class="btn" href="/api/logs/download?which=debug" data-save="tgdrive-debug.log">${icon('download')}Download debug log</a>
         <button class="btn danger" data-debug="clear">${icon('trash')}Clear all logs</button><span class="subtle">${fmtSize(logBytes)} of logs on disk</span></div></div>
     <div class="set-block"><strong>Crash reports</strong><p>When something goes wrong, TG Drive saves a short report on this computer. Nothing is sent anywhere.</p>
       ${row('Save crash reports', '', sw('crash_reports', s))}
@@ -481,9 +525,15 @@ page().addEventListener('click', async (e) => {
   }
   if (d.refreshPage !== undefined) return bus.emit('route');
   if (d.dup) { dupMode = d.dup; return duplicates(); }
+  if (d.dupRetry !== undefined) return duplicates();
+  if (d.storageRetry !== undefined) return storage();
+  if (d.dupMore !== undefined) {
+    t.disabled = true;
+    try { await loadDupes(t); } finally { if (t.isConnected) t.disabled = false; }
+    return;
+  }
   if (d.dupSelect !== undefined) {
-    const groups = JSON.parse(page().dataset.groups || '[]');
-    const keys = groups.flatMap((g) => g.slice(1));
+    const keys = dup.groups.flatMap((g) => g.files.slice(1).map((f) => `${f.chat_id}:${f.msg_id}`));
     const m = await import('./files.js');
     m.setSelected(keys);
     $$('[data-dk]', page()).forEach((c) => { c.checked = S.selected.has(c.dataset.dk); });
@@ -529,7 +579,10 @@ page().addEventListener('click', async (e) => {
     } catch (err) { fail(err); } finally { t.disabled = false; }
     return;
   }
-  if (d.clearHistory !== undefined) { await api(A('/history'), { method: 'DELETE' }).catch(fail); toast('Search history cleared'); return; }
+  if (d.clearHistory !== undefined) {
+    try { await api(A('/history'), { method: 'DELETE' }); toast('Search history cleared'); } catch (err) { fail(err); }
+    return;
+  }
   if (d.pickDir !== undefined) {
     const p = await callBridge('pickFolder');
     if (p) { $('[data-set="download_dir"]', page()).value = p; saveSetting('download_dir', p); }
@@ -555,7 +608,7 @@ page().addEventListener('click', async (e) => {
   }
   if (d.importManifest !== undefined) return importManifest();
   if (d.driveSync !== undefined) { await api(A('/drive/sync'), { method: 'POST' }).then(() => toast('Synced')).catch(fail); return; }
-  if (d.exportCsv !== undefined) { window.location.href = A(`/export.csv?${qs(S.lastListParams || {})}`); return; }
+  if (d.exportCsv !== undefined) { saveDownload(A(`/export.csv?${qs(S.lastListParams || {})}`), 'tgdrive.csv', t); return; }
   if (d.legacy) { return importLegacy(d.legacy); }
   if (d.legacyPick !== undefined) {
     const p = bridge.ready ? await callBridge('pickFolder') : await promptDialog('Import data', 'Path to the old data folder (contains accounts/)', '', 'Import');
@@ -565,10 +618,13 @@ page().addEventListener('click', async (e) => {
   if (d.shortcuts !== undefined) { (await import('./ui.js')).shortcutsDialog(); return; }
   if (d.accent !== undefined) { await saveSetting('accent', d.accent); $$('.accent-sw', page()).forEach((b) => b.classList.toggle('on', b === t)); return; }
   if (d.columnsDlg !== undefined) { (await import('./columns.js')).columnsDialog(); return; }
-  if (d.subjectsRebuild !== undefined) { await api(A('/subjects/rebuild'), { method: 'POST' }).catch(fail); toast('Tagging every file again in the background.'); return; }
+  if (d.subjectsRebuild !== undefined) {
+    try { await api(A('/subjects/rebuild'), { method: 'POST' }); toast('Tagging every file again in the background.'); } catch (err) { fail(err); }
+    return;
+  }
   if (d.subjectsTags !== undefined) { subjectsToTags(); return; }
   if (d.dav) { davAction(d.dav); return; }
-  if (d.copyVal) { navigator.clipboard.writeText(d.copyVal).then(() => toast('Copied')); return; }
+  if (d.copyVal) { copyText(d.copyVal); return; }
   if (d.integ) {
     t.disabled = true;
     try { await api(`/api/integration/${d.integ}`, { method: 'POST' }); toast('Done'); settingsPage('desktop'); } catch (err) { fail(err); } finally { t.disabled = false; }
@@ -579,7 +635,7 @@ page().addEventListener('click', async (e) => {
   if (d.diag !== undefined) { diagnosticsDialog(); return; }
   if (d.settingsExport !== undefined) { exportSettings(); return; }
   if (d.settingsImport !== undefined) { importSettings(); return; }
-  if (d.copyLogs !== undefined) { navigator.clipboard.writeText($('.logs', page()).textContent).then(() => toast('Log copied')); }
+  if (d.copyLogs !== undefined) { copyText($('.logs', page()).textContent, 'Log copied'); return; }
   if (d.idx) { api(A(`/index/${d.idx}`), { method: 'POST' }).then(() => { bus.emit('poll'); setTimeout(indexManager, 500); }).catch(fail); }
 });
 
@@ -622,7 +678,7 @@ async function crashView(id) {
   dialog({
     title: 'Crash report', wide: true,
     body: `<pre class="logs crash-text">${esc(text)}</pre>`,
-    actions: [{ label: 'Copy', onClick: () => { navigator.clipboard.writeText(text).then(() => toast('Copied')); return false; } }, { label: 'Create diagnostics file…', onClick: () => { setTimeout(diagnosticsDialog, 50); } }, { label: 'Close', cls: 'primary' }],
+    actions: [{ label: 'Copy', onClick: () => { copyText(text); return false; } }, { label: 'Create diagnostics file…', onClick: () => { setTimeout(diagnosticsDialog, 50); } }, { label: 'Close', cls: 'primary' }],
   });
 }
 
@@ -651,7 +707,7 @@ async function exportSettings() {
     actions: [{ label: 'Cancel' }, { label: 'Export', cls: 'primary', submit: true, onClick: (bd) => ({ api: bd.querySelector('#expApi').checked }) }],
   });
   if (!r) return;
-  window.location.href = `/api/settings/export?include_api=${r.api ? 1 : 0}`;
+  saveDownload(`/api/settings/export?include_api=${r.api ? 1 : 0}`, 'tgdrive-settings.json');
 }
 
 async function importSettings() {

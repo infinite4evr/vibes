@@ -8,8 +8,11 @@ export const unkey = (k) => k.split(':').map(Number);
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 export function debounce(fn, ms) {
   let t;
-  const d = (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
-  d.cancel = () => clearTimeout(t);
+  let pending = null;   // the arguments of a call still waiting, or null
+  const d = (...a) => { clearTimeout(t); pending = a; t = setTimeout(() => { pending = null; fn(...a); }, ms); };
+  d.cancel = () => { clearTimeout(t); pending = null; };
+  // Run a waiting call now (e.g. before its panel goes away) instead of losing it.
+  d.flush = () => { if (!pending) return undefined; const a = pending; d.cancel(); return fn(...a); };
   return d;
 }
 
@@ -111,7 +114,7 @@ export const ICON = {
 };
 export const icon = (name, attrs = '') => `<svg viewBox="0 0 24 24" aria-hidden="true" ${attrs}>${ICON[name] || ICON.document}</svg>`;
 ICON.image = ICON.photo;
-export const MARK = '<svg class="mark" viewBox="0 0 30 24" aria-hidden="true" style="stroke:none"><path d="M1 4a3 3 0 0 1 3-3h7l3 3h12a3 3 0 0 1 3 3v13a3 3 0 0 1-3 3H4a3 3 0 0 1-3-3z" fill="var(--folder)"/><path d="M8 15l12-5-3 10-3-4z" fill="var(--accent)"/></svg>';
+export const MARK = '<img class="mark" src="/favicon.svg" alt="" width="64" height="64">';
 
 /* ------------------------------------------------------------------ names */
 export const KINDS = [
@@ -474,11 +477,39 @@ export function inlineSrc(b64) {
 /* ------------------------------------------------------ thumbnail loading */
 // Visible-first, limited concurrency, retry after "busy" answers. Media come from their own port,
 // so even a page full of loading thumbnails can't hold up searches.
+// Pictures are kept in a small memory cache (the most recent few hundred): scrolling back shows them at
+// once, and memory stays bounded however far you scroll. A picture that failed because the connection was
+// down is fetched again when TG Drive is back online.
 export const thumbs = (() => {
   const queue = [];
   let active = 0;
   const MAX = 6;
+  const KEEP = 600;
   let pausedUntil = 0;
+  const cache = new Map();          // thumbnail address -> blob: URL, least recently used first
+  const retired = new Set();        // blob: URLs dropped from the cache but maybe still on screen
+  const retry = new Set();          // <img>s whose picture failed for a reason that may pass
+  const inUse = (url) => !!document.querySelector(`img[src="${CSS.escape(url)}"]`);
+  function remember(src, url) {
+    const old = cache.get(src);
+    if (old && old !== url) retired.add(old);
+    cache.delete(src);
+    cache.set(src, url);
+    while (cache.size > KEEP) {
+      const [k, v] = cache.entries().next().value;
+      cache.delete(k);
+      retired.add(v);
+    }
+  }
+  function sweep() {
+    for (const url of retired) if (!inUse(url)) { URL.revokeObjectURL(url); retired.delete(url); }
+    for (const img of retry) if (!img.isConnected) retry.delete(img);
+  }
+  setInterval(sweep, 20000);
+  function show(img, url) {
+    img.onload = () => { img.classList.add('loaded'); img.closest('.thumb')?.classList.add('has-img'); };
+    img.src = url;
+  }
   const io = new IntersectionObserver((entries) => {
     for (const e of entries) {
       const img = e.target;
@@ -492,11 +523,13 @@ export const thumbs = (() => {
     while (active < MAX && queue.length) {
       const img = queue.shift();
       if (!img.isConnected) continue;
+      const hit = cache.get(img.dataset.src);
+      if (hit) { img.dataset.state = 'done'; io.unobserve(img); remember(img.dataset.src, hit); show(img, hit); continue; }
       active++;
       img.dataset.state = 'loading';
-      const done = (ok) => {
+      const done = (state) => {
         active--;
-        img.dataset.state = ok ? 'done' : 'failed';
+        img.dataset.state = state;
         io.unobserve(img);
         pump();
       };
@@ -512,22 +545,39 @@ export const thumbs = (() => {
         if (!r.ok || r.status === 204) {
           // A PDF without a picture yet: draw its first page (pdfthumbs.js), then keep it on the server.
           if (img.dataset.pdf && r.headers.get('X-Doc-Thumb') === 'missing') import('./pdfthumbs.js').then((m) => m.enqueue(img));
+          else if (r.status >= 500) retry.add(img);   // Telegram or the connection: try again later
           else img.closest('.thumb')?.classList.add('no-thumb');
-          done(false);
+          done(r.status >= 500 ? 'failed' : 'none');
           return;
         }
         const blob = await r.blob();
-        img.src = URL.createObjectURL(blob);
-        img.onload = () => { img.classList.add('loaded'); img.closest('.thumb')?.classList.add('has-img'); };
-        done(true);
-      }).catch(() => done(false));
+        const url = URL.createObjectURL(blob);
+        remember(img.dataset.src, url);
+        show(img, url);
+        done('done');
+      }).catch(() => { retry.add(img); done('failed'); });
     }
   }
   return {
-    observe(root) { for (const img of root.querySelectorAll('img[data-src]:not([data-state])')) io.observe(img); },
+    observe(root) {
+      for (const img of root.querySelectorAll('img[data-src]:not([data-state])')) {
+        const hit = cache.get(img.dataset.src);
+        if (hit) { img.dataset.state = 'done'; remember(img.dataset.src, hit); show(img, hit); } else io.observe(img);
+      }
+    },
     reset() { queue.length = 0; },
+    // A picture made here (a PDF's first page): cached like the ones fetched.
+    remember,
+    // The connection is back: fetch the pictures that failed meanwhile (those still on screen).
+    retryFailed() {
+      for (const img of retry) {
+        if (img.isConnected && img.dataset.state === 'failed') { img.dataset.state = ''; io.observe(img); }
+      }
+      retry.clear();
+    },
   };
 })();
+window.addEventListener('online', () => thumbs.retryFailed());
 
 /* ------------------------------------------------------- desktop bridge */
 // In the desktop app, Qt exposes a small native bridge (file dialogs, native player, notifications).
