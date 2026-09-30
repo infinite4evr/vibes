@@ -123,7 +123,13 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             } ?: throw IllegalStateException("TG Drive's service didn't start in time (${g.engine.state.value.phase})")
             if (!s.ready) throw IllegalStateException(s.error ?: "TG Drive's service didn't start")
 
-            val accounts = g.api.status().accounts.filter { it.status != "logged_out" }
+            val st = g.api.status()
+            if (st.locked) {
+                // A locked TG Drive shows nothing, not even its accounts, until the passcode is entered.
+                BackgroundSync.finished(c, "Locked with the app passcode: syncs after you unlock TG Drive", true)
+                return Result.success()
+            }
+            val accounts = st.accounts.filter { it.status != "logged_out" }
             if (accounts.isEmpty()) {
                 BackgroundSync.finished(c, "Not signed in: nothing to sync", true)
                 return Result.success()
