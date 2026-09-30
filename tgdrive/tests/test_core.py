@@ -602,6 +602,7 @@ def test_api(tmp_path):
     assert "chats" in c.get(f"/api/a/{acc.uid}/suggest", params={"q": "phys"}).json()
     assert c.get(f"/api/a/{acc.uid}/storage").json()["total"]["n"] > 0
     assert "groups" in c.get(f"/api/a/{acc.uid}/duplicates").json()
+    assert "groups" in c.get(f"/api/a/{acc.uid}/duplicates", params={"mode": "similar"}).json()
     csv_body = c.get(f"/api/a/{acc.uid}/export.csv", params={"q": "type:video"}).text
     assert csv_body.count("\n") == 11
     # Security: foreign Host, missing header, token.

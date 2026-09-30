@@ -229,14 +229,16 @@ private fun ZoomableImage(f: FileItem, state: AppState, thumbs: ThumbSource, onZ
         val layer = Modifier.fillMaxSize().graphicsLayer {
             scaleX = scale; scaleY = scale; translationX = offset.x; translationY = offset.y
         }
-        if (loading && lowres != null) AsyncImage(lowres, null, layer, contentScale = ContentScale.Fit)
+        // The preview stays under the full picture until it arrives, and instead of it if it can't.
+        if ((loading || failed) && lowres != null) AsyncImage(lowres, null, layer, contentScale = ContentScale.Fit)
         AsyncImage(ImageRequest.Builder(ctx).data(full).build(), f.displayName, layer, contentScale = ContentScale.Fit,
             onState = { st ->
                 loading = st is AsyncImagePainter.State.Loading
                 failed = st is AsyncImagePainter.State.Error
             })
         if (loading) Spinner(28.dp, color = Color.White)
-        if (failed) Text("Couldn't load this picture.", style = Tg.type.label, color = Color(0xFFB8C0CC),
+        if (failed) Text(if (lowres != null) "Showing a preview: the full picture couldn't be loaded." else "Couldn't load this picture.",
+            style = Tg.type.label, color = Color(0xFFB8C0CC),
             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 80.dp))
     }
 }

@@ -11,7 +11,14 @@ adb shell am instrument -w -r -e class app.tgdrive.EngineTest app.tgdrive.test/a
 grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/engine-test.txt && status=1
 adb shell am instrument -w -r -e class app.tgdrive.ScreenshotTour app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/tour.txt
 grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/tour.txt && status=1
-adb pull /sdcard/Android/data/app.tgdrive/files/Pictures/tour out/shots/ || true
+adb pull /sdcard/Android/data/app.tgdrive/files/Pictures/tour/. out/shots/ || true
+adb shell run-as app.tgdrive cat files/tgdrive/logs/tgdrive.log > out/service-demo.log 2>/dev/null || true
+
+# A first start on a fresh install: the real sign-in screens against Telegram (made-up key).
+adb shell pm clear app.tgdrive
+adb shell am instrument -w -r -e class app.tgdrive.SignInFlow app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/signin.txt
+grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/signin.txt && status=1
+adb pull /sdcard/Android/data/app.tgdrive/files/Pictures/tour/. out/shots/ || true
 adb shell run-as app.tgdrive cat files/engine-start.log > out/engine-start.log 2>/dev/null || true
 echo "---- service start steps"; cat out/engine-start.log || true
 adb shell run-as app.tgdrive cat files/tgdrive/logs/tgdrive.log > out/service.log 2>/dev/null || true

@@ -41,6 +41,18 @@ except Exception as _np_exc:  # compiled maths can fail to load (some Android de
 else:
     _NUMPY_ERROR = None
 
+
+# Set bits per byte. numpy 2 has bitwise_count; the numpy built for Android (1.26) doesn't, and
+# a 256-entry table is as fast for uint8 arrays.
+_POP8 = np.array([bin(i).count("1") for i in range(256)], dtype=np.uint8) if np is not None else None
+
+
+def _popcount(a):
+    """Number of set bits in each element of a uint8 array."""
+    f = getattr(np, "bitwise_count", None)
+    return f(a) if f is not None else _POP8[a]
+
+
 from . import pace
 from . import textproc
 
@@ -553,10 +565,10 @@ class SemanticIndex:
                 if not len(allowed):
                     return []
                 cand_pool = allowed
-                ham = np.bitwise_count(np.bitwise_xor(self.bits[cand_pool], qbits)).sum(axis=1, dtype=np.int32)
+                ham = _popcount(np.bitwise_xor(self.bits[cand_pool], qbits)).sum(axis=1, dtype=np.int32)
             else:
                 cand_pool = None
-                ham = np.bitwise_count(np.bitwise_xor(self.bits[:n], qbits)).sum(axis=1, dtype=np.int32)
+                ham = _popcount(np.bitwise_xor(self.bits[:n], qbits)).sum(axis=1, dtype=np.int32)
             take = min(len(ham), PREFILTER)
             top = np.argpartition(ham, take - 1)[:take]
             ids = cand_pool[top] if cand_pool is not None else top

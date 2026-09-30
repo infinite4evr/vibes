@@ -5,3 +5,4 @@
 -keep class app.tgdrive.ScreenshotTour { *; }
 -keep class org.junit.** { *; }
 -keep class androidx.test.** { *; }
+-keep class app.tgdrive.SignInFlow { *; }

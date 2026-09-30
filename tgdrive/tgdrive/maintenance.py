@@ -223,14 +223,14 @@ def _size(p: Path) -> int:
 async def duplicates(acc: "Account", mode: str = "exact", offset: int = 0, limit: int = 50) -> dict:
     """exact: the same Telegram file in several places. similar: same name and size."""
     if mode == "similar":
-        group = "COALESCE(alias, name) COLLATE NOCASE, size"
+        key, group = "COALESCE(alias, name)", "COALESCE(alias, name) COLLATE NOCASE, size"
         where = "size > 0"
     else:
-        group = "media_id"
+        key, group = "media_id", "media_id"
         where = "media_id IS NOT NULL"
 
     def job(r: Reader) -> dict:
-        groups = r.q(f"SELECT {group.split(' COLLATE')[0].split(',')[0]} AS k, COUNT(*) AS n, MAX(size) AS size, "
+        groups = r.q(f"SELECT {key} AS k, COUNT(*) AS n, MAX(size) AS size, "
                      f"(COUNT(*)-1)*MAX(size) AS waste, MIN(id) AS any_id FROM files WHERE {where} "
                      f"GROUP BY {group} HAVING COUNT(*)>1 ORDER BY waste DESC LIMIT ? OFFSET ?", (limit, offset))
         out = []
