@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Themed-icon silhouette (Android 13+): the folder, with the plane cut out of its front. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
+    <group android:pivotX="256" android:pivotY="256" android:scaleX="0.86" android:scaleY="0.86" android:translateY="-5">
+        <path android:fillColor="#80000000"
+            android:pathData="M104,174a36,36 0,0 1,36 -36h66a36,36 0,0 1,25.5 10.5L253,170h119a36,36 0,0 1,36 36v24H104z"/>
+        <path android:fillColor="#FF000000" android:fillType="evenOdd"
+            android:pathData="M104,234a34,34 0,0 1,34 -34h236a34,34 0,0 1,34 34v106a44,44 0,0 1,-44 44H148a44,44 0,0 1,-44 -44z M186,296 L336,238 L306,356 L262,338 L250,360 L256,314z"/>
+    </group>
+</vector>

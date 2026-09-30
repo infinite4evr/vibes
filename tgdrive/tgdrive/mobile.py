@@ -168,3 +168,31 @@ def stop(timeout: float = 20.0) -> bool:
 def running() -> bool:
     server = _state.get("server")
     return bool(server is not None and server.started and not server.should_exit)
+
+
+def activity() -> str:
+    """What the service is busy with, for the app's notification and for deciding whether it can
+    stop when nobody is looking: transfers queued or running (not paused), their speed, indexing."""
+    from . import api
+    from .accounts import events
+    out: dict[str, Any] = {"running": 0, "size": 0, "done": 0, "speed": 0, "indexing": "", "events": events.seq}
+    for a in list(api.manager.accounts.values()):
+        try:
+            r = a.transfers.db.one("SELECT COUNT(*) AS n, COALESCE(SUM(size),0) AS size, COALESCE(SUM(done),0) AS done "
+                                   "FROM transfers WHERE status IN ('queued','running')")
+            out["running"] += r["n"]
+            out["size"] += r["size"]
+            out["done"] += r["done"]
+            out["speed"] += round(sum(v.get("speed", 0) for v in a.transfers.live.values()))
+            st = a.indexer.status()
+            if st.get("chats_pending") and st.get("phase") not in ("paused", "idle"):
+                out["indexing"] = f"{st['chats_done']}/{st['chats_total']} chats · {st['files']} files"
+        except Exception:
+            continue
+    return json.dumps(out)
+
+
+def events_since(after: int) -> str:
+    """Events after `after` (notifications for finished transfers, new files …), like /api/events."""
+    from .accounts import events
+    return json.dumps({"events": events.since(int(after)), "last": events.seq}, default=str)

@@ -1313,7 +1313,8 @@ app.include_router(_dav)
 
 
 # ------------------------------------------------------------------------ web
-app.mount("/static", StaticFiles(directory=str(WEB)), name="static")
+if WEB.is_dir():   # the Android app has its own interface and ships without the web one
+    app.mount("/static", StaticFiles(directory=str(WEB)), name="static")
 
 
 @app.get("/")

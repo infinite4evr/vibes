@@ -1,0 +1,26 @@
+# What TG Drive's service needs on Android, pinned. Everything is pure Python except numpy,
+# which comes from Chaquopy's package repository (built for Android). The desktop-only and
+# compiled-only packages from ../../requirements.txt have stand-ins in the tgdrive package
+# (see tgdrive/webapp.py, tok.py, fuzzy.py, translit.py, fastcrypto.py).
+
+# Telegram
+telethon==1.45.0
+pyaes==1.6.1              # only an sdist on PyPI: the wheel is in app/pywheels (Chaquopy installs wheels only)
+rsa==4.9.1
+pyasn1==0.6.4
+python-socks==3.1.1
+hachoir==3.4.0
+
+# Local server (Starlette instead of FastAPI: pydantic-core has no Android build)
+uvicorn==0.54.0
+click==8.5.0
+h11==0.16.0
+starlette==1.7.0
+anyio==4.15.1
+idna==3.20
+typing-extensions==4.16.0
+segno==1.6.6
+
+# Smart search
+snowballstemmer==3.1.1
+numpy==1.26.2

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TG Drive</string>
+    <string name="engine_starting">Starting…</string>
+    <string name="engine_ready">Ready</string>
+    <string name="engine_stopping">Saving and stopping…</string>
+    <string name="engine_stop">Stop</string>
+    <string name="engine_indexing">Indexing %1$s</string>
+    <plurals name="engine_transfers">
+        <item quantity="one">%d transfer</item>
+        <item quantity="other">%d transfers</item>
+    </plurals>
+    <string name="channel_engine">TG Drive running</string>
+    <string name="channel_transfers">Finished downloads and uploads</string>
+    <string name="channel_player">Player</string>
+    <string name="share_to">Upload to TG Drive</string>
+    <string name="upload_title">Uploading to TG Drive</string>
+    <string name="upload_preparing">Getting ready…</string>
+    <string name="upload_sending">Reading “%1$s”</string>
+    <plurals name="upload_queued">
+        <item quantity="one">%d file is uploading to Telegram.</item>
+        <item quantity="other">%d files are uploading to Telegram.</item>
+    </plurals>
+    <string name="upload_some_failed">%1$d files are uploading; %2$d couldn\'t be read.</string>
+</resources>
