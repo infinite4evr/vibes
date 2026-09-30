@@ -23,6 +23,7 @@ import os
 import re
 import secrets
 import shutil
+import threading
 import time
 import zipfile
 from pathlib import Path
@@ -87,6 +88,16 @@ def _fmt(n: int) -> str:
 
 OFFLINE_ERROR = "Waiting for the connection to Telegram. It continues by itself."
 
+
+
+_map_locks: dict[str, threading.Lock] = {}
+_map_locks_guard = threading.Lock()
+
+
+def _map_lock(mpath: Path) -> threading.Lock:
+    """One lock per download map file (see Transfers._download)."""
+    with _map_locks_guard:
+        return _map_locks.setdefault(str(mpath), threading.Lock())
 
 class TransferError(Exception):
     pass
@@ -562,14 +573,27 @@ class Transfers:
             queue.put_nowait(i)
         dirty = 0
         loop = asyncio.get_running_loop()
+        # A paused download's last saves can still be running in a worker thread when it is resumed:
+        # every save of this file's map, and closing its .part, take the same lock.
+        map_lock = _map_lock(mpath)
+        closed = False
 
         def save_map() -> None:
             # Data first, then the map that describes it (atomically), so a crash never leaves
             # chunks marked done that are not on disk.
-            os.fsync(fd)
-            tmp = mpath.with_name(mpath.name + ".tmp")
-            tmp.write_bytes(bytes(bits))
-            os.replace(tmp, mpath)
+            with map_lock:
+                if closed:
+                    return
+                os.fsync(fd)
+                tmp = mpath.with_name(mpath.name + ".tmp")
+                tmp.write_bytes(bytes(bits))
+                os.replace(tmp, mpath)
+
+        def close_part() -> None:
+            nonlocal closed
+            with map_lock:
+                closed = True
+                os.close(fd)
 
         async def worker() -> None:
             nonlocal done_bytes, dirty
@@ -605,7 +629,7 @@ class Transfers:
             try:
                 await loop.run_in_executor(None, save_map)
             finally:
-                os.close(fd)
+                close_part()
         if not all(has(i) for i in range(n)):
             raise TransferError("Some parts are missing. Press resume to fetch them.")
         os.truncate(part, size)

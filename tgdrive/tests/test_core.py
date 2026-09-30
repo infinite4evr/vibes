@@ -461,6 +461,62 @@ def test_streaming_ranges_and_cache(tmp_path):
     run(go())
 
 
+def test_download_resumed_while_its_last_save_still_runs(tmp_path, fresh_settings, monkeypatch):
+    """Pausing cancels a download while a worker thread may still be saving its .part.map; the
+    cancelled download then saves once more. The two saves must not collide (they did: same temp
+    file, "No such file or directory", and the download ended in an error)."""
+    import threading
+    from tgdrive import transfers as tr
+    real_fsync, real_replace = tr.os.fsync, tr.os.replace
+    started = threading.Event()
+    both = threading.Barrier(2, timeout=1.5)
+    calls = []
+
+    def fsync(fd):
+        calls.append(fd)
+        if len(calls) <= 2:          # the first save, and the one the cancelled download makes
+            started.set()
+            try:
+                both.wait()          # …run together (or one after the other, when they take turns)
+            except threading.BrokenBarrierError:
+                pass
+        real_fsync(fd)
+
+    def replace(src, dst):
+        if str(dst).endswith(".part.map"):
+            time.sleep(0.05)         # a slow disk: the window where the other save overwrites .tmp
+        real_replace(src, dst)
+
+    monkeypatch.setattr(tr.os, "fsync", fsync)
+    monkeypatch.setattr(tr.os, "replace", replace)
+
+    async def go():
+        acc, client = make_account(tmp_path)
+        await index_all(acc)
+        cid, mid = -CH - 101, 1
+        payload = _big_payload(acc, client)
+        tid = acc.transfers.add_download(cid, mid)
+        for _ in range(500):
+            await asyncio.sleep(0.01)
+            if started.is_set():
+                break
+        assert started.is_set(), "the download never saved its map"
+        acc.transfers.pause(tid)
+        await asyncio.sleep(0.3)
+        acc.transfers.resume(tid)
+        for _ in range(800):
+            await asyncio.sleep(0.01)
+            if acc.db.get_transfer(tid)["status"] in ("done", "error"):
+                break
+        await asyncio.sleep(0.3)
+        t = acc.db.get_transfer(tid)
+        assert t["status"] == "done", t
+        assert Path(t["path"]).read_bytes() == payload
+        acc.db.close()
+
+    run(go())
+
+
 def test_download_parallel_pause_resume_and_upload(tmp_path, fresh_settings):
     async def go():
         acc, client = make_account(tmp_path)
