@@ -47,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.tgdrive.data.AppState
+import app.tgdrive.data.explain
 import app.tgdrive.data.Chat
 import app.tgdrive.data.FileItem
 import app.tgdrive.data.JsonCodec
@@ -114,8 +115,11 @@ fun PageIntro(text: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PageError(message: String?, onRetry: () -> Unit) =
-    EmptyState(TgIcons.info, "Couldn't load this", message ?: "TG Drive isn't responding.", action = "Try again", onAction = onRetry)
+fun PageError(message: String?, onRetry: () -> Unit) {
+    val (send, _) = app.tgdrive.diag.rememberSendReport()
+    EmptyState(TgIcons.info, "Couldn't load this", message ?: "TG Drive isn't responding.", action = "Try again", onAction = onRetry,
+        secondary = "Send report", onSecondary = { send(message) })
+}
 
 @Composable
 fun SectionCard(title: String, modifier: Modifier = Modifier, trailing: (@Composable RowScope.() -> Unit)? = null,
@@ -161,7 +165,7 @@ fun TransfersScreen(state: AppState, onMenu: () -> Unit, onBack: (() -> Unit)?) 
         }
     }
     fun act(block: suspend () -> Unit) = scope.launch {
-        try { block(); state.loadTransfers() } catch (e: Exception) { state.message(e.message ?: "That didn't work.", error = true) }
+        try { block(); state.loadTransfers() } catch (e: Exception) { state.failed("That didn't work.", e) }
     }
 
     Column(Modifier.fillMaxSize().background(c.canvas)) {
@@ -297,7 +301,7 @@ fun StorageScreen(state: AppState, onMenu: () -> Unit, onNavigate: (View) -> Uni
     var reload by remember { mutableIntStateOf(0) }
     LaunchedEffect(aid, reload) {
         error = null
-        try { data = state.api.storage(aid) } catch (e: Exception) { error = e.message }
+        try { data = state.api.storage(aid) } catch (e: Exception) { error = e.explain("loading storage") }
     }
     Column(Modifier.fillMaxSize().background(c.canvas)) {
         PageBar("Storage", onMenu) { IconBtn(TgIcons.refresh, { data = null; reload++ }, contentDescription = "Refresh") }
@@ -471,7 +475,7 @@ fun DuplicatesScreen(state: AppState, actions: Actions, thumbs: ThumbSource, onM
             more = r.bool("more")
             error = null
         } catch (e: Exception) {
-            if (offset == 0) error = e.message else state.message(e.message ?: "Couldn't load more.", error = true)
+            if (offset == 0) error = e.explain("loading duplicates") else state.failed("Couldn't load more.", e)
         } finally {
             loading = false
         }
@@ -579,7 +583,7 @@ fun IndexScreen(state: AppState, onMenu: () -> Unit, onOpenChat: (Long) -> Unit)
         }.sortedByDescending { it.fileCount }
     }
     fun act(block: suspend () -> Unit) = scope.launch {
-        try { block(); state.loadChats() } catch (e: Exception) { state.message(e.message ?: "That didn't work.", error = true) }
+        try { block(); state.loadChats() } catch (e: Exception) { state.failed("That didn't work.", e) }
     }
     val idx = account?.index
     val paused = idx?.phase == "paused"
@@ -685,7 +689,7 @@ fun ActivityScreen(state: AppState, onMenu: () -> Unit) {
     var error by remember { mutableStateOf<String?>(null) }
     var reload by remember { mutableIntStateOf(0) }
     LaunchedEffect(aid, reload) {
-        try { list = state.api.activityLog(aid); error = null } catch (e: Exception) { error = e.message }
+        try { list = state.api.activityLog(aid); error = null } catch (e: Exception) { error = e.explain("loading activity") }
     }
     Column(Modifier.fillMaxSize().background(c.canvas)) {
         PageBar("Activity", onMenu) { IconBtn(TgIcons.refresh, { reload++ }, contentDescription = "Refresh") }

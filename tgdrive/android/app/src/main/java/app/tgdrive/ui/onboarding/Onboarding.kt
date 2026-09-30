@@ -52,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import app.tgdrive.data.AppState
+import app.tgdrive.data.explain
 import app.tgdrive.data.QrLogin
 import app.tgdrive.ui.components.ButtonKind
 import app.tgdrive.ui.components.Spinner
@@ -154,7 +155,10 @@ fun ReportDialog(report: () -> String, onClose: () -> Unit) {
             Text(text, style = Tg.type.mono.copy(fontSize = 11.sp), color = Tg.colors.ink2)
         }
         Spacer(Modifier.height(10.dp))
-        TgButton("Share…", { app.tgdrive.ui.actions.Platform.shareText(ctx, text) }, small = true, icon = TgIcons.send)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            app.tgdrive.diag.ReportButton(null)
+            TgButton("Share as text", { app.tgdrive.ui.actions.Platform.shareText(ctx, text) }, small = true, kind = ButtonKind.Ghost)
+        }
     }
 }
 
@@ -174,7 +178,10 @@ fun EngineFailedScreen(error: String, report: () -> String, onRetry: () -> Unit,
             TgButton("Use sample data", onSample)
         }
         Spacer(Modifier.height(10.dp))
-        TgButton("Show details", { details = true }, kind = ButtonKind.Ghost, icon = TgIcons.info)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            TgButton("Show details", { details = true }, kind = ButtonKind.Ghost, icon = TgIcons.info)
+            app.tgdrive.diag.ReportButton(error, small = false)
+        }
     }
     if (details) ReportDialog(report) { details = false }
 }
@@ -252,7 +259,7 @@ fun ApiKeyScreen(state: AppState, onBack: (() -> Unit)?) {
                     state.api.setup(id, hash)
                     state.bootstrap()
                 } catch (e: Exception) {
-                    error = e.message
+                    error = e.explain("saving the API key")
                 } finally { busy = false }
             }
         }, Modifier.fillMaxWidth(), kind = ButtonKind.Primary, busy = busy, enabled = id.isNotBlank() && hash.length >= 32)
@@ -310,7 +317,7 @@ fun SignInScreen(state: AppState, adding: Boolean, onDone: () -> Unit, onBack: (
     fun act(block: suspend () -> Unit) {
         busy = true; error = null
         scope.launch {
-            try { block() } catch (e: Exception) { error = e.message ?: "Something went wrong." } finally { busy = false }
+            try { block() } catch (e: Exception) { error = e.explain("Something went wrong.") } finally { busy = false }
         }
     }
 
@@ -419,7 +426,7 @@ private fun QrStep(state: AppState, adding: Boolean, onPassword: (String, String
                 if (cur.svg != null) qr = cur
             }
         } catch (e: Exception) {
-            error = e.message
+            error = e.explain("QR sign-in")
         }
     }
     H1(if (adding) "Add another account" else "Sign in with a QR code")
@@ -484,7 +491,7 @@ fun LockScreen(state: AppState, biometric: (() -> Unit)?) {
                 state.api.unlock(code)
                 state.onUnlocked()
             } catch (e: Exception) {
-                error = e.message; code = ""
+                error = e.explain("unlocking"); code = ""
             } finally { busy = false }
         }
     }

@@ -52,6 +52,9 @@ fun AppRoot(activity: MainActivity) {
             while (phase == Phase.Starting) { delay(1000); seconds++ }
         }
         val report = { app.tgdrive.engine.StartupReport.build(activity, g.engine, (phase as? Phase.Failed)?.error) }
+        // TG Drive crashed last time: say so once, and offer to send the report.
+        var crashes by remember { mutableStateOf(app.tgdrive.diag.AppLog.unseenCrashes(activity)) }
+        if (crashes.isNotEmpty()) app.tgdrive.diag.CrashNotice(crashes) { crashes = emptyList() }
         AnimatedContent(
             targetState = phase::class,
             transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(160)) },

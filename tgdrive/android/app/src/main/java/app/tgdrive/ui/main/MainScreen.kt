@@ -51,6 +51,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -137,11 +139,25 @@ fun MainScreen(activity: MainActivity, state: AppState) {
     }
     val openPlayer by activity.openPlayer.collectAsState()
 
+    // Messages at the bottom; an error stays until dismissed and offers "Details" (what exactly
+    // failed, to copy or send as a report) when it has no other action.
+    var errorDetails by remember { mutableStateOf<app.tgdrive.data.UiMessage?>(null) }
     LaunchedEffect(Unit) {
         state.messages.collect { m ->
-            val r = snackbar.showSnackbar(m.text, actionLabel = m.action, withDismissAction = m.error,
-                duration = if (m.action != null) SnackbarDuration.Long else SnackbarDuration.Short)
-            if (r == SnackbarResult.ActionPerformed) m.onAction?.invoke()
+            val details = m.error && m.action == null
+            val r = snackbar.showSnackbar(m.text, actionLabel = m.action ?: if (details) "Details" else null, withDismissAction = m.error,
+                duration = when { m.error -> SnackbarDuration.Long; m.action != null -> SnackbarDuration.Long; else -> SnackbarDuration.Short })
+            if (r == SnackbarResult.ActionPerformed) { if (details) errorDetails = m else m.onAction?.invoke() }
+        }
+    }
+    errorDetails?.let { m -> app.tgdrive.diag.ErrorDetailsDialog(m.text, m.detail) { errorDetails = null } }
+
+    // Screens, for the detailed log.
+    LaunchedEffect(top.id) {
+        if (app.tgdrive.diag.AppLog.verbose) {
+            val sc = top.screen
+            app.tgdrive.diag.AppLog.d("screen", if (sc is Screen.Viewer) "Viewer (${sc.files.size} files, #${sc.index}: ${sc.files.getOrNull(sc.index)?.name})"
+                else sc.toString().take(200))
         }
     }
 

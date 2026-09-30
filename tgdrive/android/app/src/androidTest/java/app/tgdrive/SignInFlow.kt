@@ -38,6 +38,16 @@ class SignInFlow {
 
     private fun fields(): List<UiObject2> = device.findObjects(By.clazz("android.widget.EditText"))
 
+    /** A button that may be below the fold on a small screen: scroll the page until it shows. */
+    private fun scrollTo(text: String): UiObject2? {
+        repeat(6) {
+            device.findObject(By.text(text))?.let { return it }
+            device.findObject(By.scrollable(true))?.scroll(androidx.test.uiautomator.Direction.DOWN, 0.6f)
+            Thread.sleep(300)
+        }
+        return device.findObject(By.text(text))
+    }
+
     @Test
     fun signInWithAMadeUpKeyShowsTelegramsAnswer() {
         ActivityScenario.launch(MainActivity::class.java).use {
@@ -56,7 +66,7 @@ class SignInFlow {
             keyFields[0].text = "1234567"
             keyFields[1].text = "0123456789abcdef0123456789abcdef"
             device.pressBack()   // close the keyboard
-            val cont = waitText("Continue", 5_000)
+            val cont = scrollTo("Continue")
             assertNotNull(cont)
             shot("32-api-key-filled")
             cont!!.click()
@@ -68,7 +78,7 @@ class SignInFlow {
             device.wait(Until.hasObject(By.clazz("android.widget.EditText")), 10_000)
             fields().first().text = "+15550100000"
             device.pressBack()
-            val send = waitText("Send code", 5_000)
+            val send = scrollTo("Send code")
             assertNotNull(send)
             send!!.click()
             shot("34-sending")

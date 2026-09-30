@@ -49,6 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import app.tgdrive.data.AppState
+import app.tgdrive.data.explain
 import app.tgdrive.data.ChatContext
 import app.tgdrive.data.ContextMessage
 import app.tgdrive.data.FileDetail
@@ -116,7 +117,7 @@ fun DetailsScreen(
             det = d
             if (note == null) note = d.extras.note.orEmpty()
             error = null
-        } catch (e: Exception) { error = e.message }
+        } catch (e: Exception) { error = e.explain("loading the file details") }
     }
     // Stars, tags and renames from the menu: show them here too.
     LaunchedEffect(Unit) { state.messages.collect { reload++ } }
@@ -337,7 +338,7 @@ fun ChatContextScreen(ref: FileRef, title: String, state: AppState, thumbs: Thum
             error = null
             val target = r.messages.indexOfFirst { it.target }
             if (target >= 0) list.scrollToItem(target + 1, -300)
-        } catch (e: Exception) { error = e.message }
+        } catch (e: Exception) { error = e.explain("reading the chat") }
     }
     fun more(older: Boolean) {
         val cur = ctxData ?: return
@@ -351,7 +352,7 @@ fun ChatContextScreen(ref: FileRef, title: String, state: AppState, thumbs: Thum
                 ctxData = if (older) cur.copy(messages = r.messages.filter { it.id !in have && it.id < anchor.id } + cur.messages, hasOlder = r.hasOlder)
                 else cur.copy(messages = cur.messages + r.messages.filter { it.id !in have && it.id > anchor.id }, hasNewer = r.hasNewer)
             } catch (e: Exception) {
-                state.message(e.message ?: "Couldn't load more messages.", error = true)
+                state.failed("Couldn't load more messages.", e)
             } finally { busy = false }
         }
     }

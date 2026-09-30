@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.util.Log
+import app.tgdrive.diag.AppLog
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -56,7 +56,11 @@ class EngineClient(private val context: Context) {
     }
 
     fun refresh() {
-        _state.value = checked(EngineState.read(context))
+        val next = checked(EngineState.read(context))
+        val prev = _state.value
+        if (next.phase != prev.phase || next.pid != prev.pid)
+            AppLog.i("engine-client", "service ${prev.phase} → ${next.phase} (pid ${next.pid}${next.error?.let { ", $it" } ?: ""})")
+        _state.value = next
     }
 
     /** The state file outlives a crashed engine process: a Ready or Starting state whose process is
@@ -97,7 +101,7 @@ class EngineClient(private val context: Context) {
             return
         }
         val why = exitReason(file.pid)
-        Log.w("TGDrive", "the service process ${file.pid} is gone ($why) while ${file.phase}")
+        AppLog.w("engine-client", "the service process ${file.pid} is gone ($why) while ${file.phase} at “${file.stage}”")
         if (visible && restarts < 1 && file.phase == EngineState.Phase.Ready) {
             restarts++
             EngineState.write(context, file.copy(phase = EngineState.Phase.Stopped))
@@ -109,6 +113,7 @@ class EngineClient(private val context: Context) {
         val failed = file.copy(phase = EngineState.Phase.Failed, error = if (why.isNotBlank()) "$msg\n$why" else msg)
         EngineState.write(context, failed)
         _state.value = failed
+        AppLog.e("engine-client", failed.error ?: "the service stopped")
     }
 
     /** Why Android ended the service's process, if it recorded that (Android 11+). */
@@ -149,6 +154,7 @@ class EngineClient(private val context: Context) {
     }
 
     fun start(demo: Boolean = this.demo) {
+        AppLog.i("engine-client", "start (sample data: $demo)")
         this.demo = demo
         requestedAt = System.currentTimeMillis()
         send(EngineService.ACTION_START)
@@ -175,6 +181,7 @@ class EngineClient(private val context: Context) {
 
     /** Switch between the real account(s) and the sample data (a fresh engine process either way). */
     suspend fun restart(demo: Boolean) {
+        AppLog.i("engine-client", "restart (sample data: $demo)")
         stop()
         withTimeoutOrNull(30_000) { state.first { it.phase == EngineState.Phase.Stopped || it.phase == EngineState.Phase.Failed } }
         // The old process ends itself right after saying so; give it a moment to be gone.
@@ -194,7 +201,7 @@ class EngineClient(private val context: Context) {
         } catch (e: Exception) {
             // Android 12+ refuses to start foreground services from the background; the app retries
             // when it comes back to the foreground.
-            Log.w("TGDrive", "couldn't reach the engine: $e")
+            AppLog.w("engine-client", "couldn't reach the service", e)
         }
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import app.tgdrive.data.AppState
+import app.tgdrive.diag.AppLog
 import app.tgdrive.data.FileItem
 import app.tgdrive.data.Folder
 import app.tgdrive.data.long
@@ -68,14 +69,19 @@ class Actions(val state: AppState, private val scope: CoroutineScope, private va
     fun close() { overlay = null }
 
     private fun act(done: String? = null, undo: Boolean = false, block: suspend () -> String?) {
+        // Which action (for the log): the caller's name, e.g. "star" or "moveFolder".
+        val name = Throwable().stackTrace.getOrNull(1)?.methodName?.substringBefore('$') ?: "action"
+        AppLog.d("action", name)
         scope.launch {
             try {
                 val msg = block() ?: done
                 if (msg != null) {
                     if (undo) state.message(msg, action = "Undo", onAction = { undoLast() }) else state.message(msg)
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
-                state.message(e.message ?: "That didn't work.", error = true)
+                state.failed(name, e)
             }
         }
     }

@@ -166,7 +166,7 @@ fun SearchInputScreen(
                             keyboard?.hide()
                             co.launch {
                                 runCatching { state.api.detail(aid, FileRef(f.chatId, f.msgId)).file }
-                                    .onSuccess(onOpenFile).onFailure { state.message(it.message ?: "Couldn't open that file.", error = true) }
+                                    .onSuccess(onOpenFile).onFailure { state.failed("Opening that file", it) }
                             }
                         })
                     }

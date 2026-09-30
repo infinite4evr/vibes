@@ -60,6 +60,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.tgdrive.BuildConfig
 import app.tgdrive.data.AppState
+import app.tgdrive.data.explain
 import app.tgdrive.data.JsonCodec
 import app.tgdrive.data.arr
 import app.tgdrive.data.bool
@@ -86,8 +87,10 @@ import app.tgdrive.ui.theme.TgIcons
 import app.tgdrive.ui.theme.TgShape
 import app.tgdrive.ui.theme.parseHex
 import app.tgdrive.util.Format
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -305,7 +308,7 @@ private fun Maint(state: AppState, task: String, label: String, confirm: String?
                     else -> "$label: done" + (r.str("seconds")?.let { " in ${it}s" } ?: "")
                 }, error = !ok)
             } catch (e: Exception) {
-                state.message(e.message ?: "That didn't work.", error = true)
+                state.failed("That didn't work.", e)
             } finally { busy = false }
         }
     }
@@ -438,7 +441,7 @@ private fun SearchSection(state: AppState) {
             TgButton("Clear", {
                 scope.launch {
                     runCatching { state.api.clearHistory(state.aid.value) }
-                        .onSuccess { state.message("Search history cleared") }.onFailure { state.message(it.message ?: "", error = true) }
+                        .onSuccess { state.message("Search history cleared") }.onFailure { state.failed("That", it) }
                 }
             }, small = true, icon = TgIcons.trash)
         })
@@ -595,7 +598,7 @@ private fun TelegramApi(state: AppState) {
                     busy = true
                     scope.launch {
                         try { state.api.setup(id, hash); state.message("Saved. Reconnecting…"); hash = "" }
-                        catch (e: Exception) { state.message(e.message ?: "Couldn't save that.", error = true) }
+                        catch (e: Exception) { state.failed("Couldn't save that.", e) }
                         finally { busy = false }
                     }
                 }, kind = ButtonKind.Primary, busy = busy, enabled = id.isNotBlank() && hash.length == 32)
@@ -646,7 +649,7 @@ private fun PasscodeDialog(state: AppState, set: Boolean, onClose: () -> Unit) {
                 state.refreshStatus()
                 state.message(if (remove) "Passcode removed" else "Passcode set")
                 onClose()
-            } catch (e: Exception) { error = e.message } finally { busy = false }
+            } catch (e: Exception) { error = e.explain("changing the passcode") } finally { busy = false }
         }
     }
     TgDialog(if (set) "Change passcode" else "Set a passcode", onClose, "Save", { save(false) }, busy = busy) {
@@ -728,7 +731,7 @@ private fun DataSection(state: AppState) {
                     ctx.contentResolver.openOutputStream(uri, "wt")?.use { it.write(t.toByteArray()) } ?: error("Couldn't write the file.")
                 }
                 state.message(done)
-            } catch (e: Exception) { state.message(e.message ?: "Couldn't save it.", error = true) }
+            } catch (e: Exception) { state.failed("Couldn't save it.", e) }
         }
     }
     fun read(uri: Uri?, then: suspend (String) -> Unit) {
@@ -739,7 +742,7 @@ private fun DataSection(state: AppState) {
                     ctx.contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() } ?: error("Couldn't read the file.")
                 }
                 then(t)
-            } catch (e: Exception) { state.message(e.message ?: "Couldn't import it.", error = true) }
+            } catch (e: Exception) { state.failed("Couldn't import it.", e) }
         }
     }
     val exportManifest = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) {
@@ -771,7 +774,7 @@ private fun DataSection(state: AppState) {
         "They live in a pinned file in your “${folders.driveTitle}” channel and sync to every device. TG Drive keeps the last 30 versions.") {
         Buttons {
             TgButton("Sync now", { scope.launch { runCatching { state.api.syncDrive(aid) }.onSuccess { state.message("Synced") }
-                .onFailure { state.message(it.message ?: "", error = true) } } }, icon = TgIcons.refresh, small = true)
+                .onFailure { state.failed("That", it) } } }, icon = TgIcons.refresh, small = true)
             TgButton("Export", { exportManifest.launch("tgdrive-folders.json") }, icon = TgIcons.download, small = true)
             TgButton("Import…", { importManifest.launch(arrayOf("application/json", "text/plain", "*/*")) }, icon = TgIcons.upload, small = true)
         }
@@ -792,7 +795,7 @@ private fun DataSection(state: AppState) {
             "Restore", onConfirm = {
                 scope.launch {
                     runCatching { state.api.restoreBackup(aid, id) }.onSuccess { state.loadFolders(); state.changed("restore"); state.message("Restored"); reload++ }
-                        .onFailure { state.message(it.message ?: "", error = true) }
+                        .onFailure { state.failed("That", it) }
                 }
             }, onDismiss = { restoreId = null })
     }
@@ -819,6 +822,10 @@ private fun About(state: AppState) {
     Group {
         Row2("TG Drive", "Version ${about?.str("version") ?: BuildConfig.VERSION_NAME} · app ${BuildConfig.VERSION_NAME} · meaning-based search " +
             if (about?.bool("semantic_available") == true) "available" else "not installed")
+    }
+    Group("Something not working?", "Sends a file with TG Drive's logs, crash reports and the phone's details, to whoever helps you fix it. " +
+        "It has no passwords, keys, tokens or messages. For the most detail, turn on detailed debug logging below, do the thing that fails, then send.") {
+        Buttons { app.tgdrive.diag.ReportButton(null) }
     }
     Group("CPU use", "What TG Drive's service is using the processor for right now (100% is one whole core), measured over a few seconds.") {
         Buttons {
@@ -852,12 +859,21 @@ private fun About(state: AppState) {
         }
     }
     Group("Debug logging", "Records everything in detail while it's on: every request, transfers, streaming, indexing, search, errors. It stays on this phone. " +
-        "Turn it on to catch a problem, reproduce it, then send a diagnostics file and turn it off again.") {
+        "It covers both the service and the app itself. Turn it on to catch a problem, reproduce it, then send a problem report and turn it off again.") {
         SwitchSetting(state, "debug_logging", "Detailed debug logging" + if (settings.bool("debug_logging")) " (ON)" else "")
         Divider()
         Buttons {
             TgButton("View log", { scope.launch { log = runCatching { state.api.logs(400) }.getOrElse { it.message ?: "" } } }, icon = TgIcons.document, small = true)
-            TgButton("Clear all logs", { scope.launch { runCatching { state.api.clearLogs(false) }; state.message("Logs cleared") } },
+            TgButton("App log", {
+                scope.launch { log = withContext(Dispatchers.IO) { app.tgdrive.diag.AppLog.tail(ctx) } }
+            }, icon = TgIcons.document, small = true, kind = ButtonKind.Ghost)
+            TgButton("Clear all logs", {
+                scope.launch {
+                    runCatching { state.api.clearLogs(false) }
+                    withContext(Dispatchers.IO) { app.tgdrive.diag.AppLog.clear(ctx) }
+                    state.message("Logs cleared")
+                }
+            },
                 icon = TgIcons.trash, small = true, kind = ButtonKind.Danger)
         }
     }
@@ -882,7 +898,7 @@ private fun About(state: AppState) {
                     try {
                         val r = state.api.diagnostics(false)
                         Platform.shareFiles(ctx, listOf(r.str("path").orEmpty()))
-                    } catch (e: Exception) { state.message(e.message ?: "Couldn't make the file.", error = true) }
+                    } catch (e: Exception) { state.failed("Couldn't make the file.", e) }
                     finally { diagBusy = false }
                 }
             }, icon = TgIcons.bug, small = true, busy = diagBusy)
@@ -959,5 +975,5 @@ private suspend fun remove(state: AppState, a: app.tgdrive.data.Account, keep: B
         state.api.removeAccount(a.id, keep)
         state.message("Signed out of ${a.name ?: "the account"}")
         state.bootstrap()
-    } catch (e: Exception) { state.message(e.message ?: "Couldn't sign out.", error = true) }
+    } catch (e: Exception) { state.failed("Couldn't sign out.", e) }
 }

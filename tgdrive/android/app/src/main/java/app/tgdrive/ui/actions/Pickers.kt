@@ -177,7 +177,7 @@ fun FolderPickerSheet(
                         chosen?.let { if (it !in open) open.add(it) }
                         chosen = f.id
                     } catch (e: Exception) {
-                        state.message(e.message ?: "Couldn't create the folder.", error = true)
+                        state.failed("Couldn't create the folder.", e)
                     }
                 }
             })

@@ -17,6 +17,7 @@ import coil3.request.crossfade
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import app.tgdrive.diag.AppLog
 import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
 import java.util.concurrent.TimeUnit
@@ -28,8 +29,12 @@ class TGDriveApp : Application(), SingletonImageLoader.Factory {
 
     override fun onCreate() {
         super.onCreate()
+        val engineProcess = processName().endsWith(":engine")
+        val name = if (engineProcess) "engine" else "app"
+        AppLog.init(this, name)
+        AppLog.installCrashHandler(this, name)
         // The engine process (TG Drive's Python service) needs none of the interface's objects.
-        if (processName().endsWith(":engine")) return
+        if (engineProcess) return
         EngineService.createChannels(this)
         graph = AppGraph(this)
     }

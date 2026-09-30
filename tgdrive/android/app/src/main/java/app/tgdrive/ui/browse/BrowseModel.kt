@@ -177,7 +177,7 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
             } catch (e: ApiException) {
                 if (my != gen) return@launch
                 if (e.locked) state.onLocked()
-                if (e.status != 408 || !e.message.orEmpty().contains("Superseded")) error = e.message
+                if (e.status != 408 || !e.message.orEmpty().contains("Superseded")) error = e.explain("loading ${view}")
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {

@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.tgdrive.data.AppState
+import app.tgdrive.data.explain
 import app.tgdrive.data.FileItem
 import app.tgdrive.data.Folder
 import app.tgdrive.data.long
@@ -519,7 +520,7 @@ private fun RulesDialog(f: Folder?, parentId: String?, actions: Actions, state: 
         kotlinx.coroutines.delay(350)
         val p = params()
         if (q.isBlank() && p.isEmpty()) { preview = null; previewError = null; return@LaunchedEffect }
-        try { preview = state.api.rulesPreview(state.aid.value, q, p); previewError = null } catch (e: Exception) { previewError = e.message }
+        try { preview = state.api.rulesPreview(state.aid.value, q, p); previewError = null } catch (e: Exception) { previewError = e.explain("previewing the rule") }
     }
     TgDialog(if (f != null) "Rule for “${f.name}”" else "New smart folder", { actions.close() }, if (f != null) "Save rule" else "Create", {
         val rules = buildJsonObject { put("mode", mode); put("q", q.trim()); put("params", params()) }
@@ -630,6 +631,7 @@ private fun NewMenu(actions: Actions, state: AppState, nav: Navigator, upload: (
 @Composable
 private fun AccountMenu(actions: Actions, state: AppState, nav: Navigator) {
     val c = Tg.colors
+    val (sendReport, _) = app.tgdrive.diag.rememberSendReport()
     val status by state.status.collectAsState()
     val aid by state.aid.collectAsState()
     val scope = rememberCoroutineScope()
@@ -655,6 +657,8 @@ private fun AccountMenu(actions: Actions, state: AppState, nav: Navigator) {
         if (status?.lockSet == true) SheetAction(TgIcons.lock, "Lock TG Drive", {
             close(); scope.launch { runCatching { state.api.lockNow() }; state.onLocked() }
         })
+        SheetAction(TgIcons.bug, "Report a problem", { close(); sendReport(null) },
+            subtitle = "Sends TG Drive's logs, to get a problem fixed")
         Divider(Modifier.padding(vertical = 4.dp))
         if (state.demo) SheetAction(TgIcons.telegram, "Use my Telegram account", { close(); scope.launch { state.switchMode(false) } },
             subtitle = "Leaves the sample data")

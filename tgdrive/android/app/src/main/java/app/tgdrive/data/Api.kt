@@ -1,5 +1,6 @@
 package app.tgdrive.data
 
+import app.tgdrive.diag.AppLog
 import app.tgdrive.engine.EngineState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -70,12 +71,28 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
         rb.method(method, body ?: if (needsBody) "{}".toRequestBody(jsonType) else null)
         // The answer is read off the main thread: a big one (a page of files) needs more reads from
         // the socket, which Android forbids on the main thread (NetworkOnMainThreadException).
-        return http.newCall(rb.build()).await().use { resp ->
-            withContext(Dispatchers.IO) {
-                val text = resp.body.string()
-                if (!resp.isSuccessful) throw error(resp, text)
-                text
+        val t0 = System.nanoTime()
+        fun ms() = (System.nanoTime() - t0) / 1_000_000
+        try {
+            return http.newCall(rb.build()).await().use { resp ->
+                withContext(Dispatchers.IO) {
+                    val text = resp.body.string()
+                    if (!resp.isSuccessful) {
+                        val err = error(resp, text)
+                        AppLog.w("api", "$method $path → HTTP ${resp.code} in ${ms()} ms: ${err.message}")
+                        throw err
+                    }
+                    AppLog.d("api", "$method $path${if (params.isEmpty()) "" else " $params"} → ${resp.code} in ${ms()} ms, ${text.length} bytes")
+                    text
+                }
             }
+        } catch (e: ApiException) {
+            throw e
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppLog.w("api", "$method $path failed after ${ms()} ms", e)
+            throw e
         }
     }
 
@@ -327,6 +344,6 @@ fun JsonElement.asObj(): JsonObject = this as? JsonObject ?: JsonObject(emptyMap
 
 /** What went wrong, for the screen (never blank), after logging it with its stack for diagnosis. */
 fun Throwable.explain(where: String): String {
-    android.util.Log.w("TGDrive", "$where failed", this)
+    AppLog.w("error", "$where failed", this)
     return message?.takeIf { it.isNotBlank() } ?: javaClass.simpleName.ifBlank { "Unexpected error" }
 }

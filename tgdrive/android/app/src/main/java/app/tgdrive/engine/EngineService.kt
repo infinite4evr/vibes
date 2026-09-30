@@ -22,6 +22,7 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import app.tgdrive.MainActivity
 import app.tgdrive.R
+import app.tgdrive.diag.AppLog
 import com.chaquo.python.PyException
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
@@ -71,7 +72,7 @@ class EngineService : Service() {
         val previous = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
             runCatching {
-                Log.e(TAG, "the service crashed", e)
+                AppLog.e("engine", "the service crashed", e)
                 trace("crashed: ${e.stackTraceToString().take(4000)}")
                 publish(state.copy(phase = EngineState.Phase.Failed, error = "TG Drive's service crashed: $e", pid = Process.myPid()))
             }
@@ -90,6 +91,7 @@ class EngineService : Service() {
                     val reason = intent?.getStringExtra(EXTRA_REASON) ?: "ui"
                     val on = intent?.getBooleanExtra(EXTRA_ON, true) != false
                     if (on) holds += reason else holds -= reason
+                    AppLog.d("engine", "hold $reason=$on → $holds")
                     idleSince = 0
                     if (state.phase == EngineState.Phase.Stopped) {
                         if (on) start(demo) else stopEverything()   // letting go of a stopped service: nothing to start
@@ -145,7 +147,7 @@ class EngineService : Service() {
             poll = exec.scheduleWithFixedDelay({ tick() }, 2, 3, TimeUnit.SECONDS)
             updateNotification(getString(R.string.engine_ready), null)
         } catch (e: Throwable) {
-            Log.e(TAG, "the service didn't start", e)
+            AppLog.e("engine", "the service didn't start (at “${state.stage}”)", e)
             trace("failed at “${state.stage}”: ${e.stackTraceToString().take(6000)}")
             val msg = (e as? PyException)?.message ?: e.toString()
             val last = msg.lineSequence().lastOrNull { it.isNotBlank() } ?: msg
@@ -164,6 +166,7 @@ class EngineService : Service() {
     private fun startLog() = File(filesDir, START_LOG)
 
     private fun trace(line: String) {
+        AppLog.i("engine", line.take(2000))
         runCatching { startLog().appendText("${java.time.Instant.now()} [${Process.myPid()}] $line\n") }
     }
 
@@ -187,7 +190,7 @@ class EngineService : Service() {
             else if (idleSince == 0L) idleSince = now
             else if (now - idleSince > IDLE_STOP_MS) shutdown()
         } catch (e: Throwable) {
-            Log.w(TAG, "status check failed", e)
+            AppLog.w("engine", "status check failed", e)
         }
     }
 
@@ -213,6 +216,7 @@ class EngineService : Service() {
 
     private fun shutdown() {
         if (shuttingDown) return
+        AppLog.i("engine", "stopping (holds: $holds)")
         shuttingDown = true
         poll?.cancel(false)
         if (state.phase == EngineState.Phase.Ready || state.phase == EngineState.Phase.Starting) {
@@ -220,7 +224,7 @@ class EngineService : Service() {
             try {
                 mobile().callAttr("stop", 20.0)
             } catch (e: Throwable) {
-                Log.w(TAG, "stop failed", e)
+                AppLog.w("engine", "stop failed", e)
             }
         }
         publish(EngineState(phase = EngineState.Phase.Stopped, demo = state.demo))
@@ -288,7 +292,7 @@ class EngineService : Service() {
                 }
                 dir
             } catch (e2: Exception) {
-                Log.w(TAG, "meaning model unavailable", e2)
+                AppLog.w("engine", "meaning model unavailable", e2)
                 null
             }
         }

@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.tgdrive.data.AppState
+import app.tgdrive.data.explain
 import app.tgdrive.data.bool
 import app.tgdrive.data.str
 import app.tgdrive.ui.components.TgChip
@@ -54,7 +55,7 @@ fun ProxyDialog(state: AppState, onClose: () -> Unit) {
                 state.refreshStatus()
                 onClose()
             } catch (e: Exception) {
-                error = e.message
+                error = e.explain("saving the proxy")
             } finally { busy = false }
         }
     }) {

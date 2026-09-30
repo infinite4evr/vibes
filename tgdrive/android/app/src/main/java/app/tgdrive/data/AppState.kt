@@ -1,6 +1,7 @@
 package app.tgdrive.data
 
 import android.content.Context
+import app.tgdrive.diag.AppLog
 import app.tgdrive.engine.EngineClient
 import app.tgdrive.engine.EngineState
 import kotlinx.coroutines.CoroutineScope
@@ -36,7 +37,9 @@ sealed interface Phase {
     data object Ready : Phase
 }
 
-data class UiMessage(val text: String, val error: Boolean = false, val action: String? = null, val onAction: (() -> Unit)? = null)
+/** A message at the bottom of the screen; an error can carry details (what exactly failed) to show and report. */
+data class UiMessage(val text: String, val error: Boolean = false, val action: String? = null, val onAction: (() -> Unit)? = null,
+                     val detail: String? = null)
 
 /**
  * The shared state of the interface (the desktop window's `S`): the service's status and settings,
@@ -107,6 +110,9 @@ class AppState(
         scope.launch {
             engine.state.collect { s -> onEngine(s) }
         }
+        // "Detailed debug logging" (Settings → About & diagnostics) also makes the app's own log detailed.
+        scope.launch { settings.collect { AppLog.verbose = it.bool("debug_logging") } }
+        scope.launch { phase.collect { AppLog.i("app", "now: ${it.javaClass.simpleName}${(it as? Phase.Failed)?.let { f -> " (${f.error})" } ?: ""}") } }
     }
 
     val demo: Boolean get() = engine.state.value.demo
@@ -257,7 +263,7 @@ class AppState(
                 val res = api.patchSettings(buildJsonObject { put(key, v) })
                 res["settings"]?.let { _settings.value = it.jsonObject }
             } catch (e: Exception) {
-                message(e.message ?: "Couldn't change that setting.", error = true)
+                failed("Couldn't change that setting.", e)
                 refreshStatus()
             }
         }
@@ -281,8 +287,15 @@ class AppState(
         _changes.tryEmit(what)
     }
 
-    fun message(text: String, error: Boolean = false, action: String? = null, onAction: (() -> Unit)? = null) {
-        _messages.tryEmit(UiMessage(text, error, action, onAction))
+    fun message(text: String, error: Boolean = false, action: String? = null, onAction: (() -> Unit)? = null, detail: String? = null) {
+        if (error) AppLog.w("message", text + (detail?.let { "\n$it" } ?: "")) else AppLog.d("message", text)
+        _messages.tryEmit(UiMessage(text, error, action, onAction, detail))
+    }
+
+    /** Say that something failed: the reason on screen, the full story in the log and behind "Details". */
+    fun failed(what: String, e: Throwable) {
+        val reason = e.message?.takeIf { it.isNotBlank() } ?: e.javaClass.simpleName.ifBlank { "Unexpected error" }
+        message(reason, error = true, detail = "$what failed:\n${AppLog.stack(e).take(4000)}")
     }
 
     fun onLocked() {

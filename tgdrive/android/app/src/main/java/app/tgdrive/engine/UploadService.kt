@@ -92,7 +92,7 @@ class UploadService : Service() {
                     sent++
                 } catch (e: Exception) {
                     failed++
-                    g.state.message("Couldn't upload “$name”: ${e.message}", error = true)
+                    g.state.failed("Uploading “$name”", e)
                 }
             }
             val msg = when {
@@ -103,7 +103,7 @@ class UploadService : Service() {
             g.state.changed("upload")
             withContext(Dispatchers.Main) { g.state.loadTransfers() }
         } catch (e: Exception) {
-            g.state.message(e.message ?: "Upload failed.", error = true)
+            g.state.failed("Upload failed.", e)
         } finally {
             sending.value = null
             if (pending.decrementAndGet() <= 0) {
