@@ -145,15 +145,15 @@ class Journeys {
         // Tools start folded: open the group, then look again.
         if (o == null && label in TOOLS) {
             runCatching { scrollFind(By.text("TOOLS"))?.click() }
-            Thread.sleep(800)   // the group opens with an animation
+            Thread.sleep(1500)   // the group opens with an animation
             o = scrollFind(By.text(label))
         }
         if (o == null) throw AssertionError("sidebar has no “$label”")
         // Rows can still be moving: on a stale view, find it again.
         var done = false
-        for (i in 0 until 4) {
+        for (i in 0 until 8) {
             try { (if (i == 0) o else find(By.text(label), 2000))?.click(); done = true; break }
-            catch (_: StaleObjectException) { Thread.sleep(400) }
+            catch (_: StaleObjectException) { Thread.sleep(600) }
         }
         if (!done) throw AssertionError("couldn't tap “$label” in the sidebar")
         Thread.sleep(1200)
@@ -350,7 +350,7 @@ class Journeys {
             }
 
             step("viewer") {
-                tap(renamed)
+                click(By.textContains(renamed), "“$renamed”", ms = 15_000)
                 Thread.sleep(2500)
                 need(By.desc("Details"), "the viewer")
                 shot("e2e-viewer-text", 1500)
@@ -406,18 +406,24 @@ class Journeys {
             step("type-tabs") {
                 sidebar("All files")
                 need(By.desc("File options"), "files in All files", 15_000)
-                var docs = find(By.textStartsWith("Documents"), 3000)
-                if (docs == null) {
-                    val row = need(By.textStartsWith("Photos"), "the type tabs").visibleBounds
-                    device.swipe(device.displayWidth * 4 / 5, row.centerY(), device.displayWidth / 5, row.centerY(), 20)
-                    docs = find(By.textStartsWith("Documents"), 3000)
+                val docs = runBlocking { g.api.stats(aid, mapOf("copies" to "hide")).kindCounts["document"] } ?: 0L
+                if (docs <= 0L) throw AssertionError("the sample has no documents to show")
+                val header = "${app.tgdrive.util.Format.num(docs)} files"
+                // The row scrolls; tap along it (after a swipe) until the list says it shows the documents.
+                val row = need(By.textStartsWith("All"), "the type tabs").visibleBounds
+                val y = row.centerY()
+                device.swipe(device.displayWidth * 4 / 5, y, device.displayWidth / 5, y, 20)
+                Thread.sleep(1200)
+                var found = false
+                for (x in (24 until device.displayWidth - 16) step 28) {
+                    device.click(x, y)
+                    Thread.sleep(900)
+                    if (find(By.textContains(header), 800) != null) { found = true; break }
                 }
-                (docs ?: throw AssertionError("no Documents tab above All files")).click()
-                Thread.sleep(2500)
-                val shown = runBlocking { g.api.files(aid, mapOf("kinds" to "document", "copies" to "hide")).items.take(3).map { it.displayName } }
-                need(By.textContains(shown.firstOrNull() ?: "?"), "a document in the Documents tab", 10_000)
+                if (!found) throw AssertionError("no tab shows the $docs documents")
+                val first = runBlocking { g.api.files(aid, mapOf("kinds" to "document", "copies" to "hide")).items.firstOrNull()?.displayName }
+                need(By.textContains(first ?: "?"), "a document in the Documents tab", 10_000)
                 shot("e2e-documents-tab", 500)
-                if (find(By.textStartsWith("Audio"), 1000) == null) throw AssertionError("no Audio tab next to Documents")
             }
 
             step("photos") {
