@@ -329,28 +329,28 @@ fun StorageScreen(state: AppState, onMenu: () -> Unit, onNavigate: (View) -> Uni
                 }
                 item {
                     SectionCard("By type") {
-                        Bars(r.arr("by_kind").map { it as JsonObject }, { Format.KIND_NAME[it.str("kind")] ?: it.str("kind").orEmpty() },
+                        Bars(r.arr("by_kind").filterIsInstance<JsonObject>(), { Format.KIND_NAME[it.str("kind")] ?: it.str("kind").orEmpty() },
                             { c.kind(it.str("kind")) }, { onNavigate(View.Search("type:${it.str("kind")}")) })
                     }
                 }
                 item {
                     SectionCard("By source") {
-                        Bars(r.arr("by_source").map { it as JsonObject }, { Format.CHAT_KIND_NAME[it.str("kind")] ?: it.str("kind").orEmpty() },
+                        Bars(r.arr("by_source").filterIsInstance<JsonObject>(), { Format.CHAT_KIND_NAME[it.str("kind")] ?: it.str("kind").orEmpty() },
                             { c.accent }, { onNavigate(View.Search("source:${it.str("kind")}")) })
                     }
                 }
                 item {
-                    SectionCard("By year sent") { YearBars(r.arr("by_year").map { it as JsonObject }.filter { !it.str("year").isNullOrBlank() }) }
+                    SectionCard("By year sent") { YearBars(r.arr("by_year").filterIsInstance<JsonObject>().filter { !it.str("year").isNullOrBlank() }) }
                 }
                 item {
                     SectionCard("Biggest sources") {
-                        Bars(r.arr("by_chat").take(15).map { it as JsonObject }, { it.str("title") ?: it.str("chat_id").orEmpty() },
+                        Bars(r.arr("by_chat").take(15).filterIsInstance<JsonObject>(), { it.str("title") ?: it.str("chat_id").orEmpty() },
                             { c.folder }, { onNavigate(View.Chat(it.long("chat_id"))) }, avatar = true)
                     }
                 }
                 item {
                     SectionCard("By extension") {
-                        Bars(r.arr("by_ext").take(15).map { it as JsonObject }, { o -> o.str("ext")?.takeIf { it.isNotBlank() }?.let { ".$it" } ?: "(none)" },
+                        Bars(r.arr("by_ext").take(15).filterIsInstance<JsonObject>(), { o -> o.str("ext")?.takeIf { it.isNotBlank() }?.let { ".$it" } ?: "(none)" },
                             { extColor(it.str("ext")) }, { o -> o.str("ext")?.takeIf { it.isNotBlank() }?.let { onNavigate(View.Search("ext:$it")) } })
                     }
                 }
@@ -464,8 +464,7 @@ fun DuplicatesScreen(state: AppState, actions: Actions, thumbs: ThumbSource, onM
         try {
             val r = state.api.duplicates(aid, mode, offset)
             if (offset == 0) groups.clear()
-            groups += r.arr("groups").map { g ->
-                val o = g as JsonObject
+            groups += r.arr("groups").filterIsInstance<JsonObject>().map { o ->
                 DupGroup(o.long("n"), o.long("size"), o.long("waste"),
                     JsonCodec.decodeFromJsonElement(ListSerializer(FileItem.serializer()), o.arr("files")))
             }

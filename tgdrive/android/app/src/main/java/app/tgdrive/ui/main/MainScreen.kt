@@ -201,6 +201,17 @@ fun MainScreen(activity: MainActivity, state: AppState) {
                 enter = scaleIn() + fadeIn(), exit = scaleOut() + fadeOut()) {
                 NewButton { actions.open(Overlay.NewMenu) }
             }
+            val reconnecting by state.reconnecting.collectAsState()
+            AnimatedVisibility(reconnecting, modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 64.dp),
+                enter = fadeIn() + slideInVertically { -it }, exit = fadeOut()) {
+                Row(Modifier.shadow(8.dp, RoundedCornerShape(20.dp)).clip(RoundedCornerShape(20.dp)).background(Tg.colors.panel)
+                    .border(1.dp, Tg.colors.line, RoundedCornerShape(20.dp)).padding(horizontal = 14.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    app.tgdrive.ui.components.Spinner(14.dp, stroke = 2.dp)
+                    Spacer(Modifier.width(10.dp))
+                    Text("Reconnecting to TG Drive's service…", style = Tg.type.label, color = Tg.colors.ink2)
+                }
+            }
             SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 76.dp)) { data ->
                 Snackbar(data, containerColor = Color(0xFF1D2330), contentColor = Color.White, actionColor = Color(0xFF8CC4FF),
                     dismissActionContentColor = Color(0xFFB8C0CC), shape = RoundedCornerShape(12.dp),

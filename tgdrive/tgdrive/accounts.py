@@ -520,6 +520,9 @@ class AccountManager:
     def __init__(self):
         self.accounts: dict[int, Account] = {}
         self.logins: dict[str, Login] = {}
+        # QR sign-ins that finished: kept a few minutes so the app can collect the result
+        # (finishing removes the attempt from self.logins).
+        self.done_logins: dict[str, tuple[float, "Login"]] = {}
         settings.on_change(self._on_settings)
 
     def _on_settings(self, changed: set[str]) -> None:
@@ -684,6 +687,7 @@ class AccountManager:
                 await lg.qr.wait(timeout=max(5, int(lg.qr.expires.timestamp() - time.time())))
                 lg.result = await self._finish(lg)
                 lg.qr_state = "done"
+                self.done_logins[lg.id] = (time.time(), lg)
                 return
             except asyncio.TimeoutError:
                 try:
@@ -703,7 +707,11 @@ class AccountManager:
                 return
 
     async def login_qr_status(self, login_id: str) -> dict:
-        lg = self._login(login_id)
+        for lid, (at, _) in list(self.done_logins.items()):
+            if time.time() - at > 600:
+                self.done_logins.pop(lid, None)
+        done = self.done_logins.get(login_id)
+        lg = done[1] if done else self._login(login_id)
         out = {"state": lg.qr_state, "error": lg.qr_error, "hint": lg.hint}
         if lg.qr_state == "waiting":
             out.update(self._qr_payload(lg))

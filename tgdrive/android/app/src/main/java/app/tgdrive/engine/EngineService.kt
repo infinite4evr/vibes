@@ -88,9 +88,12 @@ class EngineService : Service() {
                 ACTION_START -> start(demo)
                 ACTION_HOLD -> {
                     val reason = intent?.getStringExtra(EXTRA_REASON) ?: "ui"
-                    if (intent?.getBooleanExtra(EXTRA_ON, true) != false) holds += reason else holds -= reason
+                    val on = intent?.getBooleanExtra(EXTRA_ON, true) != false
+                    if (on) holds += reason else holds -= reason
                     idleSince = 0
-                    if (state.phase == EngineState.Phase.Stopped) start(demo)
+                    if (state.phase == EngineState.Phase.Stopped) {
+                        if (on) start(demo) else stopEverything()   // letting go of a stopped service: nothing to start
+                    }
                 }
                 ACTION_STOP -> shutdown()
             }

@@ -163,3 +163,36 @@ def test_lite_adapter_behaves_like_fastapi():
     assert c.get("/req/a/b/c.txt").json() == {"rest": "a/b/c.txt", "m": "GET"}
     r = c.get("/missing")
     assert r.status_code == 404 and r.json() == {"detail": "Not Found"}
+
+
+def test_qr_sign_in_result_can_be_collected_after_it_finishes():
+    """Finishing a QR sign-in removes the attempt; the app's next status poll must still see "done"
+    with the account (it used to get "This sign-in attempt expired")."""
+    import asyncio
+    from datetime import datetime, timedelta, timezone
+    from types import SimpleNamespace
+    from tgdrive import accounts
+
+    class Qr:
+        expires = datetime.now(timezone.utc) + timedelta(seconds=60)
+
+        async def wait(self, timeout=None):
+            return None
+
+    mgr = accounts.AccountManager.__new__(accounts.AccountManager)
+    mgr.accounts, mgr.logins, mgr.done_logins = {}, {}, {}
+    lg = SimpleNamespace(id="abc", qr=Qr(), qr_state="waiting", qr_error=None, hint="", result=None, created=0, qr_task=None)
+    mgr.logins[lg.id] = lg
+
+    async def finish(login):
+        mgr.logins.pop(login.id, None)
+        return {"id": 42, "name": "Priya"}
+
+    mgr._finish = finish
+
+    async def go():
+        await mgr._qr_wait(lg)
+        return await mgr.login_qr_status("abc")
+
+    st = asyncio.run(go())
+    assert st["state"] == "done" and st["account"]["name"] == "Priya"

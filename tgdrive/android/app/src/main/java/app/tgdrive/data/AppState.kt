@@ -54,6 +54,10 @@ class AppState(
     private val streamHttp = http.newBuilder().readTimeout(40, TimeUnit.SECONDS).build()
 
     private val _phase = MutableStateFlow<Phase>(Phase.Starting)
+
+    /** The service is starting again under an open screen (shown as a small bar, not the start screen). */
+    private val _reconnecting = MutableStateFlow(false)
+    val reconnecting: StateFlow<Boolean> = _reconnecting.asStateFlow()
     val phase: StateFlow<Phase> = _phase.asStateFlow()
 
     private val _status = MutableStateFlow<AppStatus?>(null)
@@ -115,11 +119,16 @@ class AppState(
         lastEngine = s
         when (s.phase) {
             EngineState.Phase.Ready -> if (prev?.ready != true || prev.startedAt != s.startedAt) bootstrap()
-            EngineState.Phase.Failed -> { stopLive(); _phase.value = Phase.Failed(s.error ?: "TG Drive's service didn't start.") }
+            EngineState.Phase.Failed -> { stopLive(); _reconnecting.value = false; _phase.value = Phase.Failed(s.error ?: "TG Drive's service didn't start.") }
             else -> {
                 stopLive()
-                if (!welcomed) _phase.value = Phase.Welcome
-                else if (_phase.value !is Phase.Failed) _phase.value = Phase.Starting
+                when {
+                    !welcomed -> _phase.value = Phase.Welcome
+                    // The service stopped while the app was away (it does after a minute, to save
+                    // battery) and starts again now: keep the screen as it was, just say so.
+                    _phase.value == Phase.Ready -> _reconnecting.value = true
+                    _phase.value !is Phase.Failed -> _phase.value = Phase.Starting
+                }
             }
         }
     }
@@ -172,12 +181,17 @@ class AppState(
                 }
                 if (_phase.value == Phase.Ready) startLive()
                 bootFailedSince = 0
+                if (_reconnecting.value) {
+                    _reconnecting.value = false
+                    _changes.tryEmit("reconnected")   // lists on screen load again
+                }
             } catch (e: Exception) {
                 val now = System.currentTimeMillis()
                 if (bootFailedSince == 0L) bootFailedSince = now
                 if (now - bootFailedSince > 25_000) {
                     // Never wait on a service that runs but doesn't answer: say what it answers.
                     android.util.Log.w("TGDrive", "the service doesn't answer", e)
+                    _reconnecting.value = false
                     _phase.value = Phase.Failed("TG Drive's service is running but doesn't answer: ${e.message ?: e.javaClass.simpleName}")
                     bootFailedSince = 0
                     return@launch

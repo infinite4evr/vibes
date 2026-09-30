@@ -42,7 +42,7 @@ import okio.source
 class UploadService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val queue = Channel<Job>(Channel.UNLIMITED)
-    private var pending = 0
+    private val pending = java.util.concurrent.atomic.AtomicInteger(0)
 
     private data class Job(val aid: Long, val uris: List<Uri>, val tree: Uri?, val folderId: String?, val chatId: Long?, val caption: String)
 
@@ -56,13 +56,16 @@ class UploadService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         ServiceCompat.startForeground(this, NOTIFY_ID, notification(getString(R.string.upload_preparing), null),
             if (Build.VERSION.SDK_INT >= 29) ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC else 0)
-        if (intent == null) return START_NOT_STICKY
+        if (intent == null) {
+            if (pending.get() == 0) stopSelf()
+            return START_NOT_STICKY
+        }
         val uris = buildList {
             intent.clipData?.let { cd -> for (i in 0 until cd.itemCount) cd.getItemAt(i).uri?.let(::add) }
             if (isEmpty()) intent.data?.let(::add)
         }
         val tree = intent.getStringExtra(EXTRA_TREE)?.let(Uri::parse)
-        pending++
+        pending.incrementAndGet()
         queue.trySend(Job(intent.getLongExtra(EXTRA_AID, 0), if (tree != null) emptyList() else uris, tree,
             intent.getStringExtra(EXTRA_FOLDER), intent.getLongExtra(EXTRA_CHAT, 0).takeIf { it != 0L },
             intent.getStringExtra(EXTRA_CAPTION).orEmpty()))
@@ -103,8 +106,7 @@ class UploadService : Service() {
             g.state.message(e.message ?: "Upload failed.", error = true)
         } finally {
             sending.value = null
-            pending--
-            if (pending <= 0) {
+            if (pending.decrementAndGet() <= 0) {
                 withContext(Dispatchers.Main) {
                     g.engine.hold("upload", false)
                     ServiceCompat.stopForeground(this@UploadService, ServiceCompat.STOP_FOREGROUND_REMOVE)

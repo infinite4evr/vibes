@@ -158,8 +158,10 @@ class EngineClient(private val context: Context) {
         if (reason == "ui") { visible = on; if (on) { restarts = 0; requestedAt = System.currentTimeMillis() } }
         val i = Intent(context, EngineService::class.java).setAction(EngineService.ACTION_HOLD)
             .putExtra(EngineService.EXTRA_REASON, reason).putExtra(EngineService.EXTRA_ON, on).putExtra(EngineService.EXTRA_DEMO, demo)
-        if (_state.value.ready) {
-            // Already running (a foreground service): a plain message, allowed even from the background.
+        val running = _state.value.ready || _state.value.phase == EngineState.Phase.Starting
+        if (running) {
+            // Already running (a foreground service): a plain message, allowed even from the background,
+            // also while it is still starting (else letting go would be lost and it would never stop).
             runCatching { context.startService(i) }.onFailure { if (on) send(i) }
             return
         }

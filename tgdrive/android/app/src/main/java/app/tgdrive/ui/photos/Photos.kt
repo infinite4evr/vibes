@@ -159,7 +159,7 @@ fun PhotosScreen(state: AppState, thumbs: ThumbSource, onMenu: () -> Unit, onOpe
                 repeat(4) { Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { repeat(3) { Box(Modifier.weight(1f).aspectRatio(1f).shimmer(RoundedCornerShape(2.dp))) } } }
             }
             ms.isEmpty() || total == 0L -> EmptyState(TgIcons.image, "No photos or videos here yet", "They show up as TG Drive indexes your chats.")
-            else -> Timeline(ms, cache, thumbs, SIZES.getValue(size), size == "l", ::loadMonth, onOpen, total, kind)
+            else -> Timeline(ms, cache, thumbs, SIZES[size] ?: SIZES.getValue("m"), size == "l", ::loadMonth, onOpen, total, kind)
         }
     }
     if (pickChat) ChatPickerSheet(state, "Only photos from", onDismiss = { pickChat = false }, onPick = { chat = it.id })
