@@ -425,6 +425,11 @@ class Transfers:
                 self.db.update_transfer(tid, done=live["done"])
             raise
         except Exception as exc:
+            if self.tasks.get(tid) is not asyncio.current_task():
+                # Paused or cancelled (and maybe resumed as a new task) while this one wound down:
+                # its failure must not overwrite what the transfer is now.
+                log.debug("transfer %s: error after it was paused or replaced: %s", tid, exc)
+                return
             log.warning("transfer %s failed: %s", tid, exc)
             log.debug("transfer %s traceback", tid, exc_info=exc)
             msg = str(exc) if isinstance(exc, (TransferError,)) or exc.__class__.__name__ in (
