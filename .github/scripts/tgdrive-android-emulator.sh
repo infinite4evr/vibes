@@ -48,16 +48,14 @@ echo "---- service start steps"; cat out/engine-start.log || true
 adb shell run-as app.tgdrive cat files/tgdrive/logs/tgdrive.log > out/service.log 2>/dev/null || true
 adb shell run-as app.tgdrive cat files/logs/app.log > out/app.log 2>/dev/null || true
 # A big library (100 000 files, 1 700 chats) built on the phone: TG Drive must open to its main screen
-# and stay responsive. Frame statistics and memory are kept next to the timings.
-adb shell dumpsys gfxinfo app.tgdrive reset > /dev/null 2>&1 || true
+# and stay responsive. The test keeps its timings, frame statistics and memory (taken while the app
+# still runs) next to the screenshots.
 adb shell am instrument -w -r -e class app.tgdrive.BigLibraryTest app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/big-library.txt
 grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/big-library.txt && status=1
-adb shell dumpsys gfxinfo app.tgdrive > out/big-library-frames.txt 2>&1 || true
-adb shell dumpsys meminfo app.tgdrive > out/big-library-memory-app.txt 2>&1 || true
-adb shell dumpsys meminfo app.tgdrive:engine > out/big-library-memory-engine.txt 2>&1 || true
 adb pull /sdcard/Android/data/app.tgdrive/files/Pictures/tour/. out/shots/ || true
-grep -E "Janky frames|Total frames|50th|90th|99th" out/big-library-frames.txt | head -8 || true
 cat out/shots/big-library-timings.txt 2>/dev/null || true
+grep -E "Janky frames|Total frames rendered|50th|90th|99th" out/shots/big-library-frames.txt | head -8 || true
+grep -E "TOTAL PSS|TOTAL RSS" out/shots/big-library-memory-*.txt || true
 
 adb logcat -d > out/logcat.txt || true
 grep -E "TGDrive|Journeys|BigLibrary|python|chaquopy|AndroidRuntime|FATAL|ANR in app.tgdrive" out/logcat.txt | tail -n 300 > out/logcat-app.txt || true
