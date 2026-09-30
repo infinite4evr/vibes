@@ -20,10 +20,8 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import Body, FastAPI, Request
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response, \
-    StreamingResponse
-from fastapi.staticfiles import StaticFiles
+from .webapp import Body, FastAPI, FileResponse, JSONResponse, PlainTextResponse, RedirectResponse, Request, \
+    Response, StaticFiles, StreamingResponse
 from telethon import errors, utils as tl_utils
 
 from . import config, maintenance
@@ -202,7 +200,7 @@ async def guard(request: Request, call_next):
                     secrets.compare_digest(qt, config.MEDIA_TOKEN):
                 media_only = True
             else:
-                return PlainTextResponse("TG Drive is running in the desktop app. Open it from there.", status_code=401)
+                return PlainTextResponse("TG Drive is running in its app. Open it from there.", status_code=401)
     if request.method not in ("GET", "HEAD", "OPTIONS") and path.startswith("/api/") and \
             request.headers.get("x-tgdrive") != "1":
         return JSONResponse({"error": "Missing X-TGDrive header."}, status_code=403)

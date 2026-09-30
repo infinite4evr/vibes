@@ -23,6 +23,8 @@ a third, so they keep describing it; that takes seconds even for hundreds of tho
 
 437k files: ~15 s to build, ~115 MB on disk, ~14 MB in memory, ~40 ms per query.
 """
+from __future__ import annotations
+
 import json
 import logging
 import sqlite3
@@ -31,7 +33,13 @@ import time
 from pathlib import Path
 from typing import Optional, Sequence
 
-import numpy as np
+try:
+    import numpy as np
+except Exception as _np_exc:  # compiled maths can fail to load (some Android devices): no meaning search there
+    np = None
+    _NUMPY_ERROR = f"numpy couldn't be loaded ({_np_exc.__class__.__name__}: {_np_exc})"
+else:
+    _NUMPY_ERROR = None
 
 from . import pace
 from . import textproc
@@ -110,14 +118,22 @@ class _Model:
         raise FileNotFoundError("embedding model files not found (install the 'wordllama' package)")
 
     def __init__(self):
-        from safetensors import safe_open
-        from tokenizers import Tokenizer
         tok_path, w_path = self.locate()
+        try:
+            from tokenizers import Tokenizer
+        except ImportError:   # no compiled build (Android): the pure-Python reader gives the same ids
+            from .tok import BPETokenizer as Tokenizer
         self.tok = Tokenizer.from_file(str(tok_path))
         self.tok.enable_truncation(max_length=96)
         self.tok.no_padding()
-        with safe_open(str(w_path), framework="np") as f:
-            self.emb = f.get_tensor("embedding.weight").astype(np.float32)
+        try:
+            from safetensors import safe_open
+        except ImportError:
+            from .tok import load_tensor
+            self.emb = load_tensor(str(w_path), "embedding.weight").astype(np.float32)
+        else:
+            with safe_open(str(w_path), framework="np") as f:
+                self.emb = f.get_tensor("embedding.weight").astype(np.float32)
         self.vocab = self.emb.shape[0]
         prior = np.ones(self.vocab, dtype=np.float32)
         for enc in self.tok.encode_batch(FUNCTION_WORDS + [w.capitalize() for w in FUNCTION_WORDS if w.isascii()],
@@ -130,6 +146,9 @@ class _Model:
     @classmethod
     def get(cls) -> Optional["_Model"]:
         with cls._lock:
+            if _NUMPY_ERROR and cls.error is None:
+                cls.error = _NUMPY_ERROR
+                log.warning("meaning-based search unavailable: %s", cls.error)
             if cls._inst is None and cls.error is None:
                 try:
                     cls._inst = cls()
@@ -203,8 +222,9 @@ class SemanticIndex:
         self._wake = threading.Event()
         self._thread: Optional[threading.Thread] = None
         self._dirty: set[int] = set()
-        self._open()
-        self._load_stats()
+        if np is not None:
+            self._open()
+            self._load_stats()
 
     # --------------------------------------------------------------- storage
     def _open(self) -> None:

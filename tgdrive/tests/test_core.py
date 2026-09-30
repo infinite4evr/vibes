@@ -540,7 +540,7 @@ def test_download_parallel_pause_resume_and_upload(tmp_path, fresh_settings):
 
 # --------------------------------------------------------------------- api
 def test_api(tmp_path):
-    from fastapi.testclient import TestClient
+    from starlette.testclient import TestClient
 
     from tgdrive import api, config
 

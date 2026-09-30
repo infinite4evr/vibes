@@ -150,7 +150,7 @@ def test_sync_two_way(tmp_path, fresh_settings, monkeypatch):
 
 # -------------------------------------------------------------------- dav
 def _dav_client(acc):
-    from fastapi.testclient import TestClient
+    from starlette.testclient import TestClient
     from tgdrive import api, dav
     from tgdrive.settings import settings
     api.manager.accounts = {acc.uid: acc}
@@ -359,7 +359,7 @@ def test_diagnostics_and_settings_io(tmp_path, fresh_settings):
 
 
 def test_crash_and_settings_api(tmp_path, fresh_settings):
-    from fastapi.testclient import TestClient
+    from starlette.testclient import TestClient
     from tgdrive import api
     acc, _ = make_account(tmp_path)
     run(index_all(acc))
@@ -418,7 +418,7 @@ def test_desktop_integration(tmp_path, monkeypatch):
 # ------------------------------------------------------------ 2.2: debug logging, meaning search
 def test_debug_logging_switch(tmp_path, fresh_settings, monkeypatch):
     import logging
-    from fastapi.testclient import TestClient
+    from starlette.testclient import TestClient
     from tgdrive import api, config, maintenance
     monkeypatch.setattr(config, "LOG_DIR", tmp_path / "logs")
     maintenance.setup_logging()
@@ -502,6 +502,7 @@ def test_semantic_v2_library_statistics(tmp_path, fresh_settings):
 
 
 def test_semantic_query_gets_synonyms(tmp_path, fresh_settings):
+    pytest.importorskip("numpy")   # meaning search needs numpy; without it the plan has no meaning part
     fresh_settings.data.update(search_semantic=True, search_mode="smart")
     acc, _ = make_account(tmp_path)
     run(index_all(acc))
@@ -572,7 +573,7 @@ def test_hide_duplicates(tmp_path, fresh_settings):
     assert names(copies="hide").count("Budget notes.pdf") == 1
     assert acc.db.one("SELECT COUNT(*) AS n FROM dups d JOIN files f ON f.id=d.file_id WHERE f.name='Budget notes.pdf'")["n"] == 0
     # The details list every copy, best first.
-    from fastapi.testclient import TestClient
+    from starlette.testclient import TestClient
     from tgdrive import api
     api.manager.accounts = {acc.uid: acc}
     det = TestClient(api.app, base_url="http://127.0.0.1:8765").get(f"/api/a/{acc.uid}/files/{a}/9002").json()

@@ -61,17 +61,21 @@ def strip_ext(name: Optional[str]) -> str:
 # ------------------------------------------------------------ transliteration
 try:
     from indic_transliteration import sanscript as _sanscript
-except Exception:  # optional dependency
+except Exception:  # not installed (the Android app): translit.py is a port of the same conversion
     _sanscript = None
 
 
 @lru_cache(maxsize=50_000)
 def translit(word: str) -> tuple[str, ...]:
     """Latin spellings for a Devanagari word: [full, without final schwa]."""
-    if not _sanscript or not DEVANAGARI_RE.search(word):
+    if not DEVANAGARI_RE.search(word):
         return ()
     try:
-        latin = _sanscript.transliterate(word, _sanscript.DEVANAGARI, _sanscript.HK)
+        if _sanscript:
+            latin = _sanscript.transliterate(word, _sanscript.DEVANAGARI, _sanscript.HK)
+        else:
+            from .translit import devanagari_to_hk
+            latin = devanagari_to_hk(word)
     except Exception:
         return ()
     latin = re.sub(r"[^a-z0-9]", "", latin.lower())
