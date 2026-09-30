@@ -226,7 +226,7 @@ fun FileRow(
             }
         }
         Box(Modifier.size(44.dp).clip(RoundedCornerShape(10.dp)).clickable(onClick = onMore), contentAlignment = Alignment.Center) {
-            TgIconView(TgIcons.more, tint = c.ink3, size = 20.dp)
+            TgIconView(TgIcons.more, tint = c.ink3, size = 20.dp, contentDescription = "File options")
         }
     }
 }
@@ -254,7 +254,7 @@ fun FolderTile(folder: Folder, children: Int, onClick: () -> Unit, onMore: () ->
             Text(folderSubtitle(folder, children), style = Tg.type.meta, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Box(Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).clickable(onClick = onMore), contentAlignment = Alignment.Center) {
-            TgIconView(TgIcons.more, tint = c.ink3, size = 20.dp)
+            TgIconView(TgIcons.more, tint = c.ink3, size = 20.dp, contentDescription = "Folder options")
         }
     }
 }
@@ -286,7 +286,7 @@ fun FolderCard(folder: Folder, children: Int, covers: List<String>, onClick: () 
                 Text(folderSubtitle(folder, children), style = Tg.type.meta, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Box(Modifier.size(36.dp).clip(RoundedCornerShape(9.dp)).clickable(onClick = onMore), contentAlignment = Alignment.Center) {
-                TgIconView(TgIcons.more, tint = c.ink3, size = 18.dp)
+                TgIconView(TgIcons.more, tint = c.ink3, size = 18.dp, contentDescription = "Folder options")
             }
         }
     }
