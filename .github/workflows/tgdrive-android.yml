@@ -79,17 +79,36 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Restore signing key
+      # Releases are signed with TG Drive's permanent key from the secrets, so every new APK installs
+      # as an update (android/signing/README.md). Without them the build is debug-signed: warned below.
+      - name: Signing key
         env:
-          KEYSTORE_B64: ${{ secrets.TGDRIVE_DEBUG_KEYSTORE_BASE64 || secrets.LUMACLEAN_DEBUG_KEYSTORE_BASE64 }}
-        if: env.KEYSTORE_B64 != ''
+          KEYSTORE_B64: ${{ secrets.TGDRIVE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.TGDRIVE_KEYSTORE_PASSWORD }}
         run: |
-          mkdir -p ~/.android
-          echo "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::warning::No TGDRIVE_KEYSTORE_BASE64 secret: this APK is signed with a throwaway key and won't install as an update (see tgdrive/android/signing/README.md)"
+            exit 0
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/tgdrive.p12"
+          echo "TGDRIVE_KEYSTORE=$RUNNER_TEMP/tgdrive.p12" >> "$GITHUB_ENV"
+          echo "TGDRIVE_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
       - name: Build release APK (arm64 phones and x86_64)
         run: |
           set -o pipefail
           gradle --no-daemon :app:assembleRelease -PversionCode=${{ github.run_number }} 2>&1 | tee build.log
+      # An APK signed with another key can't update the installed app: never publish one by accident.
+      - name: Check the signing key
+        run: |
+          apksigner=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
+          got=$("$apksigner" verify --print-certs app/build/outputs/apk/release/app-release.apk | sed -n 's/.*SHA-256 digest: //p' | head -1)
+          echo "Signing certificate SHA-256: $got"
+          want=$(tr -d ' \n' < signing/expected-certificate.sha256 2>/dev/null || true)
+          if [ -n "$want" ] && [ "$got" != "$want" ]; then
+            echo "::error::This APK isn't signed with TG Drive's release key ($want): it couldn't update the installed app"
+            exit 1
+          fi
+          [ -n "$want" ] || echo "::notice::Signed with $got. Put it in tgdrive/android/signing/expected-certificate.sha256 to have CI enforce it."
       - name: Build errors
         if: failure()
         run: bash ../../.github/scripts/gradle-errors.sh build.log

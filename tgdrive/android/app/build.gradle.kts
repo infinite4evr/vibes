@@ -39,18 +39,33 @@ android {
     // debuggable and debug-signed, so the emulator checks what phones actually get.
     testBuildType = (project.findProperty("testBuildType") as String?) ?: "debug"
 
+    // One permanent key for every release build, so each new APK installs as an update over the
+    // last (Android refuses an update signed with a different key). The key is never in the
+    // repository: CI gets it from the TGDRIVE_KEYSTORE_BASE64 / TGDRIVE_KEYSTORE_PASSWORD secrets
+    // (README → Signing). Without it (a local build, or CI before the secret exists) builds are
+    // signed with the debug key, and can't update an app installed from a properly signed build.
+    val releaseKey = System.getenv("TGDRIVE_KEYSTORE")?.let { file(it) }?.takeIf { it.isFile }
+    signingConfigs {
+        if (releaseKey != null) create("tgdrive") {
+            storeFile = releaseKey
+            storePassword = System.getenv("TGDRIVE_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("TGDRIVE_KEY_ALIAS") ?: "tgdrive"
+            keyPassword = System.getenv("TGDRIVE_KEY_PASSWORD") ?: System.getenv("TGDRIVE_KEYSTORE_PASSWORD")
+        }
+    }
+    val signWith = signingConfigs.findByName("tgdrive") ?: signingConfigs.getByName("debug")
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Signed with the debug key; CI restores a stable one from a secret (see README)
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signWith
         }
         create("staging") {
             initWith(getByName("release"))
             isDebuggable = true
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signWith
             proguardFiles("proguard-staging.pro")
             testProguardFiles("proguard-test.pro")
             matchingFallbacks += listOf("release")
