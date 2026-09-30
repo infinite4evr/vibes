@@ -586,7 +586,7 @@ fun IndexScreen(state: AppState, onMenu: () -> Unit, onOpenChat: (Long) -> Unit)
     val idx = account?.index
     val paused = idx?.phase == "paused"
     Column(Modifier.fillMaxSize().background(c.canvas)) {
-        PageBar("Index manager", onMenu) {
+        PageBar("Chats and indexing", onMenu) {
             IconBtn(if (paused) TgIcons.play else TgIcons.pause, { act { state.api.index(aid, if (paused) "resume" else "pause") } },
                 contentDescription = if (paused) "Resume indexing" else "Pause indexing")
             IconBtn(TgIcons.refresh, { act { state.api.index(aid, "resync"); state.message("Checking every chat for new files") } },

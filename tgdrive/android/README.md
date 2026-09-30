@@ -56,9 +56,9 @@ grid/list, albums as stacks, folders with colours, emoji and smart/auto-filing r
 rename (also with patterns), tags, notes, subjects, star, undo, send to chat, delete/hide,
 streaming video/audio/PDF/text with resume positions and playback speed, a background player with
 a queue, downloads and uploads (files or whole folders, also *Share → TG Drive* from other apps),
-Storage, Duplicates, Index manager, Activity, several accounts, sample data, proxy, app passcode,
-maintenance, folder backups, settings backup, logs, crash reports and diagnostics. Settings are
-the desktop's settings.
+Storage, Duplicates, Chats and indexing (the desktop's Index manager), Activity, several accounts,
+sample data, proxy, app passcode, maintenance, folder backups, settings backup, logs, crash reports
+and diagnostics. Settings are the desktop's settings.
 
 **Not on Android, by decision** (details in HANDOVER.md §2): folder sync with a folder on the
 device, the "Drive on this computer" WebDAV mount (and an Android Files-app equivalent), desktop

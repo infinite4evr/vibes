@@ -304,7 +304,7 @@ class Journeys : UiDriver() {
             }
 
             // Each Tools page opens with its title and content (an error screen fails the step).
-            for ((name, title) in listOf("Storage" to "Storage", "Duplicates" to "Duplicates", "Chats and indexing" to "Index manager",
+            for ((name, title) in listOf("Storage" to "Storage", "Duplicates" to "Duplicates", "Chats and indexing" to "Chats and indexing",
                     "Activity" to "Activity", "Transfers" to "Transfers")) {
                 step("page-" + name.lowercase().replace(' ', '-')) {
                     page(name)
