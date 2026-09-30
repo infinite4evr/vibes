@@ -48,6 +48,11 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
     var loading by mutableStateOf(false)
     var loadingMore by mutableStateOf(false)
     var loaded by mutableStateOf(false)
+    /** A reload the person didn't ask for (new files arrived): no spinner. */
+    var silent by mutableStateOf(false)
+        private set
+    /** New files arrived while this list was scrolled past its first page: offered, not forced. */
+    var hasNew by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
     var moreError by mutableStateOf<String?>(null)
     var stats by mutableStateOf<FileStats?>(null)
@@ -147,7 +152,9 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
         reload()
     }
 
-    fun reload(keepStats: Boolean = false) {
+    fun reload(keepStats: Boolean = false, silent: Boolean = false) {
+        this.silent = silent
+        hasNew = false
         job?.cancel()
         val my = ++gen
         next = null

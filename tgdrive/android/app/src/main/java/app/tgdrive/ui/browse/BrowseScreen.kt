@@ -53,6 +53,7 @@ import app.tgdrive.ui.components.EmptyState
 import app.tgdrive.ui.components.IconBtn
 import app.tgdrive.ui.components.SectionHeader
 import app.tgdrive.ui.components.Spinner
+import app.tgdrive.ui.components.ButtonKind
 import app.tgdrive.ui.components.TgButton
 import app.tgdrive.ui.components.TgChip
 import app.tgdrive.ui.files.FileCard
@@ -67,6 +68,7 @@ import app.tgdrive.ui.theme.TgIconView
 import app.tgdrive.ui.theme.TgIcons
 import app.tgdrive.util.Format
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 
@@ -100,7 +102,15 @@ fun BrowseScreen(
 
     LaunchedEffect(model) { if (!model.loaded && !model.loading) model.reload() }
     LaunchedEffect(model) {
-        state.changes.collectLatest { what -> if (what != "transfer" || model.view is View.Drive) model.reload(keepStats = false) }
+        state.changes.collectLatest { what ->
+            when {
+                what == "transfer" && model.view !is View.Drive -> {}
+                // New files while you're further down the list: don't pull it from under you.
+                what == "new" && model.items.size > BrowseModel.PAGE -> model.hasNew = true
+                what == "new" -> model.reload(silent = true)
+                else -> model.reload(keepStats = false)
+            }
+        }
     }
 
     val folderId = (model.view as? View.Drive)?.folderId
@@ -131,7 +141,7 @@ fun BrowseScreen(
             .collectLatest { if (model.next != null) model.loadMore() }
     }
 
-    val refreshing = model.loading && model.loaded
+    val refreshing = model.loading && model.loaded && !model.silent
     PullToRefreshBox(isRefreshing = refreshing, onRefresh = { model.reload(); state.reloadAll() }, modifier = Modifier.fillMaxSize()) {
         LazyVerticalGrid(
             columns = if (gridView) GridCells.Adaptive(minCell) else GridCells.Fixed(1),
@@ -202,6 +212,14 @@ fun BrowseScreen(
                     TgButton("Try again", { model.loadMore() }, small = true, icon = TgIcons.refresh)
                 }
             }
+        }
+        if (model.hasNew) {
+            val pillScope = androidx.compose.runtime.rememberCoroutineScope()
+            TgButton("New files · Show", {
+                model.reload()
+                pillScope.launch { grid.scrollToItem(0) }
+            }, small = true, icon = TgIcons.refresh, kind = ButtonKind.Primary,
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = 10.dp))
         }
     }
 }

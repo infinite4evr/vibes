@@ -42,6 +42,11 @@ def quiet_for(seconds: float) -> None:
     _quiet_until = time.monotonic() + seconds
 
 
+def quiet_left() -> float:
+    """Seconds left of the quiet start (0 when there is none, as on the desktop)."""
+    return max(0.0, _quiet_until - time.monotonic()) if _quiet_until else 0.0
+
+
 def mode() -> str:
     if _forced:
         return _forced

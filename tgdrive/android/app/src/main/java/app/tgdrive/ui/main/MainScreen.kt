@@ -309,7 +309,7 @@ private fun Page(
 fun TopBar(state: AppState, onMenu: () -> Unit, onBack: (() -> Unit)?, onSearch: () -> Unit, onTransfers: () -> Unit, onAccount: () -> Unit,
            searchText: String? = null, onFilters: (() -> Unit)? = null) {
     val c = Tg.colors
-    val account by state.account.collectAsState()
+    val badge by state.transferBadge.collectAsState()
     val status by state.status.collectAsState()
     val aid by state.aid.collectAsState()
     val me = status?.accounts?.firstOrNull { it.id == aid }
@@ -333,7 +333,7 @@ fun TopBar(state: AppState, onMenu: () -> Unit, onBack: (() -> Unit)?, onSearch:
             if (onFilters != null) IconBtn(TgIcons.sliders, onFilters, size = 36.dp, iconSize = 19.dp, tint = c.ink3, contentDescription = "Filters")
         }
         Spacer(Modifier.width(4.dp))
-        TransfersButton(account?.transfers?.active ?: 0, account?.transfers?.let { if (it.size > 0) it.done.toFloat() / it.size else null }, onTransfers)
+        TransfersButton(badge.first, badge.second, onTransfers)
         Box(Modifier.size(42.dp).clip(CircleShape).clickable(onClick = onAccount), contentAlignment = Alignment.Center) {
             Avatar(me?.name, 34.dp, Modifier.semantics { contentDescription = "Account" })
             val online = me?.status == "online"

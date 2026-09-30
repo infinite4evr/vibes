@@ -14,6 +14,10 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -74,6 +78,15 @@ class AppState(
 
     private val _account = MutableStateFlow<AccountStatus?>(null)
     val account: StateFlow<AccountStatus?> = _account.asStateFlow()
+
+    /**
+     * The top bar's transfers badge: active transfers and their progress. The account status comes
+     * every second while indexing; this changes only when the badge does, so the bar isn't redrawn.
+     */
+    val transferBadge: StateFlow<Pair<Int, Float?>> = _account
+        .map { a -> (a?.transfers?.active ?: 0) to a?.transfers?.let { if (it.size > 0) it.done.toFloat() / it.size else null } }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, 0 to null)
 
     private val _folders = MutableStateFlow(FoldersResponse())
     val folders: StateFlow<FoldersResponse> = _folders.asStateFlow()
@@ -308,6 +321,23 @@ class AppState(
         _changes.tryEmit(what)
     }
 
+    private var newFilesJob: Job? = null
+    private var lastNewFiles = 0L
+
+    /**
+     * New files arrived (they come one by one while a chat is indexed): lists refresh at most every
+     * [NEW_FILES_EVERY] ms, not once per file: a list reloading every second is jumpy and costs battery.
+     */
+    private fun newFilesArrived() {
+        if (newFilesJob?.isActive == true) return
+        val wait = (NEW_FILES_EVERY - (System.currentTimeMillis() - lastNewFiles)).coerceAtLeast(0)
+        newFilesJob = scope.launch {
+            delay(wait)
+            lastNewFiles = System.currentTimeMillis()
+            changed("new")
+        }
+    }
+
     fun message(text: String, error: Boolean = false, action: String? = null, onAction: (() -> Unit)? = null, detail: String? = null) {
         if (error) AppLog.w("message", text + (detail?.let { "\n$it" } ?: "")) else AppLog.d("message", text)
         _messages.tryEmit(UiMessage(text, error, action, onAction, detail))
@@ -431,8 +461,10 @@ class AppState(
                         "search_ready" -> changed("search")
                     }
                 }
-                if (newFiles) changed("new")
+                if (newFiles) newFilesArrived()
             }
         }
     }
 }
+
+private const val NEW_FILES_EVERY = 15_000L

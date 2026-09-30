@@ -268,18 +268,31 @@ class Account:
 
     # --------------------------------------------------------------- lifecycle
     def launch(self) -> None:
-        self.db.prewarm()
-        self.semantic.prewarm()
         self._runner = spawn(self._run(), f"account {self.uid} connect")
+        quiet = pace.quiet_left()
+        if quiet > 0:
+            # Phones: the first screens load first; reading the index into memory and building the
+            # search vocabulary wait for the quiet start to end (a search before that builds it itself).
+            spawn(self._warm_up(quiet), f"account {self.uid} warm up")
+        else:
+            self.db.prewarm()
+            self.semantic.prewarm()
         if not self.db.search_ready and (self._search_builder is None or self._search_builder.done()):
             self._search_builder = spawn(self._build_search(), f"account {self.uid} search build")
-        else:
+        elif quiet <= 0:
             self.search.warm_up()
         self.semantic.start()
         self.subjects.start()
         self.dupes.start()
         self.autofile.start()
         self.sync.start()
+
+    async def _warm_up(self, after: float) -> None:
+        await asyncio.sleep(after)
+        self.db.prewarm()
+        self.semantic.prewarm()
+        if self.db.search_ready:
+            self.search.warm_up()
 
     async def _build_search(self) -> None:
         """Fill the upgraded search index in the background (keeps the app usable meanwhile)."""
