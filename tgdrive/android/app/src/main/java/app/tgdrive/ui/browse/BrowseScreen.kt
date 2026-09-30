@@ -338,29 +338,33 @@ private fun Toolbar(model: BrowseModel, actions: Actions, gridView: Boolean, sta
     }
     val hide = state.setting("hide_duplicates") != "false"
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(
-            Modifier.clip(RoundedCornerShape(9.dp)).border(1.dp, c.line, RoundedCornerShape(9.dp)).background(c.panel)
-                .clickable { actions.open(Overlay.Sort(model)) }.padding(start = 12.dp, end = 8.dp).height(36.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(sortLabel, style = Tg.type.label, color = c.ink, maxLines = 1)
-            Spacer(Modifier.width(4.dp))
-            TgIconView(TgIcons.chevronDown, tint = c.ink2, size = 16.dp)
+        // Sort, copies and filters scroll sideways when they don't fit (a narrow phone, large text, a long
+        // sort name); View and More always stay on screen.
+        Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(
+                Modifier.clip(RoundedCornerShape(9.dp)).border(1.dp, c.line, RoundedCornerShape(9.dp)).background(c.panel)
+                    .clickable { actions.open(Overlay.Sort(model)) }.padding(start = 12.dp, end = 8.dp).height(36.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(sortLabel, style = Tg.type.label, color = c.ink, maxLines = 1)
+                Spacer(Modifier.width(4.dp))
+                TgIconView(TgIcons.chevronDown, tint = c.ink2, size = 16.dp)
+            }
+            IconBtn(TgIcons.copy, { state.setSetting("hide_duplicates", !hide); model.reload() }, active = hide, size = 36.dp, iconSize = 19.dp,
+                contentDescription = if (hide) "Showing one card per file (tap to show copies)" else "Showing every copy")
+            Row(
+                Modifier.clip(RoundedCornerShape(9.dp)).border(1.dp, if (model.adv.isNotEmpty()) c.accentLine else c.line, RoundedCornerShape(9.dp))
+                    .background(if (model.adv.isNotEmpty()) c.accentSoft else c.panel)
+                    .clickable { actions.open(Overlay.Filters(model)) }.padding(horizontal = 10.dp).height(36.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TgIconView(TgIcons.filter, tint = if (model.adv.isNotEmpty()) c.accent else c.ink2, size = 17.dp)
+                Spacer(Modifier.width(6.dp))
+                Text(if (model.adv.isEmpty()) "Filters" else "Filters · ${model.adv.size}", style = Tg.type.label,
+                    color = if (model.adv.isNotEmpty()) c.accent else c.ink, maxLines = 1)
+            }
         }
-        IconBtn(TgIcons.copy, { state.setSetting("hide_duplicates", !hide); model.reload() }, active = hide, size = 36.dp, iconSize = 19.dp,
-            contentDescription = if (hide) "Showing one card per file (tap to show copies)" else "Showing every copy")
-        Row(
-            Modifier.clip(RoundedCornerShape(9.dp)).border(1.dp, if (model.adv.isNotEmpty()) c.accentLine else c.line, RoundedCornerShape(9.dp))
-                .background(if (model.adv.isNotEmpty()) c.accentSoft else c.panel)
-                .clickable { actions.open(Overlay.Filters(model)) }.padding(horizontal = 10.dp).height(36.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TgIconView(TgIcons.filter, tint = if (model.adv.isNotEmpty()) c.accent else c.ink2, size = 17.dp)
-            Spacer(Modifier.width(6.dp))
-            Text(if (model.adv.isEmpty()) "Filters" else "Filters · ${model.adv.size}", style = Tg.type.label,
-                color = if (model.adv.isNotEmpty()) c.accent else c.ink)
-        }
-        Spacer(Modifier.weight(1f))
         IconBtn(if (gridView) TgIcons.grid else TgIcons.list, { actions.open(Overlay.ViewOptions(model)) }, size = 36.dp, iconSize = 20.dp,
             contentDescription = "View")
         IconBtn(TgIcons.more, { actions.open(Overlay.ListMenu(model)) }, size = 36.dp, iconSize = 20.dp, contentDescription = "More")
