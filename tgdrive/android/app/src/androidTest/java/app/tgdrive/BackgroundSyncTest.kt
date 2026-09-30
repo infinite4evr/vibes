@@ -6,9 +6,7 @@ import app.tgdrive.engine.BackgroundSync
 import app.tgdrive.engine.EngineState
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -30,12 +28,15 @@ class BackgroundSyncTest {
         // Start from a stopped service (as when the app has been closed for a while).
         engine.stop()
         withTimeoutOrNull(40_000) { engine.state.first { it.phase == EngineState.Phase.Stopped || it.phase == EngineState.Phase.Failed } }
+        withTimeoutOrNull(10_000) { while (engine.state.value.ready) kotlinx.coroutines.delay(200) }
         Thread.sleep(2000)
         val before = BackgroundSync.last(app).at
 
         BackgroundSync.syncNow(app)
-        val s = withTimeout(240_000) { engine.state.first { it.ready || it.phase == EngineState.Phase.Failed } }
-        assertEquals("the sync didn't get the service running: ${s.error}", EngineState.Phase.Ready, s.phase)
+        // The state left by an earlier run can say "failed" (the test runner force-stops the app between
+        // tests): wait for the service this sync starts.
+        val s = withTimeoutOrNull(240_000) { engine.state.first { it.ready } }
+        assertTrue("the sync didn't get the service running: ${engine.state.value.phase} ${engine.state.value.error ?: ""}", s != null)
 
         // It finishes, and says what it found.
         val until = System.currentTimeMillis() + BackgroundSync.BUDGET_MS + 60_000
