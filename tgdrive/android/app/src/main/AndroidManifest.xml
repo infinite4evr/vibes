@@ -70,6 +70,16 @@
             </intent-filter>
         </activity>
 
+        <!-- Shown instead of the app vanishing when it crashes: its own process, plain views, nothing
+             of the app's state, so it works even when that is what broke (diag/CrashActivity.kt) -->
+        <activity
+            android:name=".diag.CrashActivity"
+            android:exported="false"
+            android:process=":crash"
+            android:taskAffinity="app.tgdrive.crash"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+
         <!-- TG Drive's Python service, in its own process like on the desktop -->
         <service
             android:name=".engine.EngineService"

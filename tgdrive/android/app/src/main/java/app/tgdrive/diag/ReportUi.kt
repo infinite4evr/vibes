@@ -50,23 +50,32 @@ fun rememberSendReport(): Pair<(String?) -> Unit, Boolean> {
     return send to busy
 }
 
-/** What exactly went wrong behind an error message, to read, copy or send. */
+/** Opens a new GitHub issue about [error] (see [GitHubIssue]). */
+fun createIssue(context: android.content.Context, error: String?, detail: String? = null, prefix: String = "Android") =
+    GitHubIssue.openAsync(context, GitHubIssue.titleFor(prefix, error), error, detail)
+
+/** What exactly went wrong behind an error message, to read, copy, report as a GitHub issue or send. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun ErrorDetailsDialog(message: String, detail: String?, onClose: () -> Unit) {
     val ctx = LocalContext.current
     val (send, busy) = rememberSendReport()
     val full = message + (detail?.let { "\n\n$it" } ?: "")
-    TgDialog("What went wrong", onClose, confirm = "Send report", onConfirm = { send(full) }, dismiss = "Close", busy = busy) {
+    TgDialog("What went wrong", onClose, confirm = "Create GitHub issue", onConfirm = { createIssue(ctx, message, detail) }, dismiss = "Close") {
         Text(message, style = Tg.type.bodyStrong, color = Tg.colors.ink)
         if (detail != null) {
             Spacer(Modifier.height(10.dp))
             SelectionContainer { Text(detail, style = Tg.type.mono.copy(fontSize = 11.sp), color = Tg.colors.ink2, maxLines = 60) }
         }
         Spacer(Modifier.height(12.dp))
-        Text("“Send report” makes a file with TG Drive's logs to send to whoever helps you fix this. It has no passwords, keys or messages.",
+        Text("“Create GitHub issue” opens a new issue on TG Drive's GitHub with this error and the end of the logs; you see it " +
+            "before sending. “Send report” makes a file with all the logs. Neither has passwords, keys or messages.",
             style = Tg.type.meta, color = Tg.colors.ink3)
         Spacer(Modifier.height(8.dp))
-        TgButton("Copy", { Platform.copy(ctx, "TG Drive error", full) }, kind = ButtonKind.Ghost, small = true, icon = TgIcons.copy)
+        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+            TgButton("Send report", { send(full) }, kind = ButtonKind.Secondary, small = true, icon = TgIcons.bug, busy = busy)
+            TgButton("Copy", { Platform.copy(ctx, "TG Drive error", full) }, kind = ButtonKind.Ghost, small = true, icon = TgIcons.copy)
+        }
     }
 }
 
@@ -75,23 +84,32 @@ fun ErrorDetailsDialog(message: String, detail: String?, onClose: () -> Unit) {
 fun CrashNotice(crashes: List<File>, onClose: () -> Unit) {
     val (send, busy) = rememberSendReport()
     val first = remember(crashes) { runCatching { crashes.first().readText() }.getOrDefault("") }
-    TgDialog("TG Drive closed unexpectedly", { AppLog.markSeen(crashes); onClose() }, confirm = "Send report",
-        onConfirm = { send(first.take(3000)) ; AppLog.markSeen(crashes); onClose() }, dismiss = "Not now", busy = busy) {
-        Text("Last time, TG Drive stopped because of an error. A report was saved on this phone; sending it helps get this fixed.",
+    val ctx = LocalContext.current
+    val cause = remember(first) { first.lineSequence().drop(3).firstOrNull { it.isNotBlank() }?.trim() }
+    TgDialog("TG Drive closed unexpectedly", { AppLog.markSeen(crashes); onClose() }, confirm = "Create GitHub issue",
+        onConfirm = { createIssue(ctx, cause ?: "TG Drive closed unexpectedly", first, prefix = "Android crash"); AppLog.markSeen(crashes); onClose() },
+        dismiss = "Not now") {
+        Text("Last time, TG Drive stopped because of an error. A report was saved on this phone; reporting it helps get this fixed.",
             style = Tg.type.body, color = Tg.colors.ink2)
         Spacer(Modifier.height(10.dp))
         SelectionContainer {
             Text(first.lineSequence().take(14).joinToString("\n"), style = Tg.type.mono.copy(fontSize = 11.sp), color = Tg.colors.ink3)
         }
+        Spacer(Modifier.height(10.dp))
+        TgButton("Send report", { send(first.take(3000)) }, kind = ButtonKind.Secondary, small = true, icon = TgIcons.bug, busy = busy)
     }
 }
 
-/** A row of buttons for error screens: send the report. */
+/** The buttons for error screens: a GitHub issue about [error], and the full problem report. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun ReportButton(error: String?, small: Boolean = true) {
+    val ctx = LocalContext.current
     val (send, busy) = rememberSendReport()
-    Row {
+    androidx.compose.foundation.layout.FlowRow(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+        TgButton("Create GitHub issue", { createIssue(ctx, error ?: "A problem in TG Drive") }, small = small,
+            kind = ButtonKind.Primary, icon = TgIcons.external)
         TgButton("Send report", { send(error) }, small = small, icon = TgIcons.bug, busy = busy)
-        Spacer(Modifier.width(1.dp))
     }
 }

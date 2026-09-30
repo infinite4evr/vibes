@@ -191,9 +191,10 @@ fun BrowseScreen(
 
             when {
                 model.error != null && model.items.isEmpty() -> full("error") {
-                    val (send, _) = app.tgdrive.diag.rememberSendReport()
+                    var details by remember { mutableStateOf(false) }
                     EmptyState(TgIcons.info, "Couldn't load the files", model.error, action = "Try again", onAction = { model.reload() },
-                        secondary = "Send report", onSecondary = { send("Couldn't load ${model.view}: ${model.error}") })
+                        secondary = "Report this", onSecondary = { details = true })
+                    if (details) app.tgdrive.diag.ErrorDetailsDialog("Couldn't load ${model.view}: ${model.error}", null) { details = false }
                 }
                 !model.loaded && model.loading -> {
                     if (gridView) items(8, key = null) { SkeletonCard() }

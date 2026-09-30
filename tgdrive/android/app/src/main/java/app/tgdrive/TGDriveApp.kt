@@ -28,14 +28,28 @@ class TGDriveApp : Application(), SingletonImageLoader.Factory, androidx.work.Co
     lateinit var graph: AppGraph
         private set
 
+    /** "app" (the interface), "engine" (TG Drive's Python service) or "crash" (the crash screen). */
+    private val process: String by lazy {
+        val p = processName()
+        when {
+            p.endsWith(":engine") -> "engine"
+            p.endsWith(":crash") -> "crash"
+            else -> "app"
+        }
+    }
+
+    override fun attachBaseContext(base: android.content.Context) {
+        super.attachBaseContext(base)
+        // As early as possible: before the libraries' content providers start, so a crash anywhere
+        // (even while the app is still starting) reaches the crash screen instead of closing the app.
+        AppLog.installCrashHandler(this, process)
+    }
+
     override fun onCreate() {
         super.onCreate()
-        val engineProcess = processName().endsWith(":engine")
-        val name = if (engineProcess) "engine" else "app"
-        AppLog.init(this, name)
-        AppLog.installCrashHandler(this, name)
-        // The engine process (TG Drive's Python service) needs none of the interface's objects.
-        if (engineProcess) return
+        AppLog.init(this, process)
+        // The engine process (TG Drive's Python service) and the crash screen need none of the interface's objects.
+        if (process != "app") return
         EngineService.createChannels(this)
         graph = AppGraph(this)
         BackgroundSync.schedule(this)

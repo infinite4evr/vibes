@@ -1,6 +1,8 @@
 package app.tgdrive.diag
 
 import android.content.Context
+import kotlin.system.exitProcess
+import android.content.Intent
 import android.os.Build
 import android.os.Process
 import java.io.File
@@ -140,7 +142,7 @@ object AppLog {
     fun installCrashHandler(context: Context, name: String) {
         val previous = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, e ->
-            runCatching {
+            val file = runCatching {
                 val at = LocalDateTime.now()
                 val report = buildString {
                     appendLine("TG Drive ${versionOf(context)} crashed in its $name process on thread ${thread.name} at $at")
@@ -148,8 +150,23 @@ object AppLog {
                     appendLine()
                     append(clean(stack(e)))
                 }
-                File(dir(context), "crash-$name-${at.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))}.txt").writeText(report)
+                val f = File(dir(context), "crash-$name-${at.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS"))}.txt")
+                f.writeText(report)
                 flushNow("${at.format(time)} E crash [${thread.name}]: ${clean(stack(e))}\n")
+                f
+            }.getOrNull()
+            // The interface: show the crash screen (its own process) instead of the app vanishing, or
+            // closing again at every launch while something keeps crashing.
+            if (name == "app") {
+                val shown = runCatching {
+                    context.startActivity(Intent(context, CrashActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                        .putExtra(CrashActivity.EXTRA_REPORT, file?.path))
+                }.isSuccess
+                if (shown) {
+                    Process.killProcess(Process.myPid())
+                    exitProcess(10)
+                }
             }
             previous?.uncaughtException(thread, e)
         }

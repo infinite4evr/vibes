@@ -631,6 +631,7 @@ private fun NewMenu(actions: Actions, state: AppState, nav: Navigator, upload: (
 @Composable
 private fun AccountMenu(actions: Actions, state: AppState, nav: Navigator) {
     val c = Tg.colors
+    val ctx = LocalContext.current
     val (sendReport, _) = app.tgdrive.diag.rememberSendReport()
     val status by state.status.collectAsState()
     val aid by state.aid.collectAsState()
@@ -657,6 +658,9 @@ private fun AccountMenu(actions: Actions, state: AppState, nav: Navigator) {
         if (status?.lockSet == true) SheetAction(TgIcons.lock, "Lock TG Drive", {
             close(); scope.launch { runCatching { state.api.lockNow() }; state.onLocked() }
         })
+        SheetAction(TgIcons.external, "Create a GitHub issue", {
+            close(); app.tgdrive.diag.createIssue(ctx, "A problem in TG Drive")
+        }, subtitle = "Opens a new issue with TG Drive's recent logs; you add what went wrong")
         SheetAction(TgIcons.bug, "Report a problem", { close(); sendReport(null) },
             subtitle = "Sends TG Drive's logs, to get a problem fixed")
         Divider(Modifier.padding(vertical = 4.dp))

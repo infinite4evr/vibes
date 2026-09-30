@@ -14,8 +14,9 @@ import java.io.RandomAccessFile
  * per-launch tokens) are left out.
  */
 object StartupReport {
-    fun build(context: Context, engine: EngineClient, error: String?): String = buildString {
-        val s = engine.state.value
+    /** [engine]: null where there is none (the crash screen's own process): read from what the service saved. */
+    fun build(context: Context, engine: EngineClient?, error: String?): String = buildString {
+        val s = engine?.state?.value ?: EngineState.read(context)
         appendLine("TG Drive ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}${if (BuildConfig.DEBUG) ", debug" else ""})")
         appendLine("Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}) · ${Build.MANUFACTURER} ${Build.MODEL} · " +
             "ABIs ${Build.SUPPORTED_ABIS.joinToString()} · page size ${runCatching { Os.sysconf(OsConstants._SC_PAGESIZE) }.getOrDefault(-1)}")
@@ -27,7 +28,10 @@ object StartupReport {
         if (!error.isNullOrBlank()) { appendLine(); appendLine("Error:"); appendLine(error) }
         appendLine()
         appendLine("How the service's process ended (newest first):")
-        appendLine(engine.exitHistory())
+        appendLine(engine?.exitHistory() ?: processExitHistory(context, ":engine"))
+        appendLine()
+        appendLine("How the app's own process ended (newest first):")
+        appendLine(processExitHistory(context, "", max = 5))
         appendLine()
         appendLine("Start steps:")
         appendLine(tail(File(context.filesDir, EngineService.START_LOG), 60).ifBlank { "(none)" })

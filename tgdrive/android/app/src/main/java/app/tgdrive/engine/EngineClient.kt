@@ -127,7 +127,7 @@ class EngineClient(private val context: Context) {
             val am = context.getSystemService(ActivityManager::class.java)
             val infos = am.getHistoricalProcessExitReasons(context.packageName, 0, 10)
                 .filter { it.processName.endsWith(":engine") && (pid <= 0 || it.pid == pid) }
-            infos.firstOrNull()?.let { i -> "${reasonName(i.reason)}${i.description?.let { ": $it" } ?: ""} (status ${i.status})" }.orEmpty()
+            infos.firstOrNull()?.let { i -> "${exitReasonName(i.reason)}${i.description?.let { ": $it" } ?: ""} (status ${i.status})" }.orEmpty()
         }.getOrDefault("")
     }
 
@@ -144,30 +144,7 @@ class EngineClient(private val context: Context) {
     }
 
     /** The last few ways the service's process ended, for the details on the error screen. */
-    fun exitHistory(): String {
-        if (Build.VERSION.SDK_INT < 30) return "(needs Android 11)"
-        return runCatching {
-            val am = context.getSystemService(ActivityManager::class.java)
-            am.getHistoricalProcessExitReasons(context.packageName, 0, 8).filter { it.processName.endsWith(":engine") }.joinToString("\n") { i ->
-                "${java.time.Instant.ofEpochMilli(i.timestamp)} pid ${i.pid}: ${reasonName(i.reason)} ${i.description.orEmpty()} status ${i.status} importance ${i.importance}"
-            }.ifBlank { "(none)" }
-        }.getOrDefault("(unavailable)")
-    }
-
-    private fun reasonName(r: Int): String = when (r) {
-        ApplicationExitInfo.REASON_CRASH -> "crashed"
-        ApplicationExitInfo.REASON_CRASH_NATIVE -> "crashed in native code"
-        ApplicationExitInfo.REASON_ANR -> "stopped responding"
-        ApplicationExitInfo.REASON_LOW_MEMORY -> "ended by Android (low memory)"
-        ApplicationExitInfo.REASON_EXIT_SELF -> "ended itself"
-        ApplicationExitInfo.REASON_SIGNALED -> "killed by a signal"
-        ApplicationExitInfo.REASON_USER_REQUESTED -> "stopped by the user"
-        ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE -> "ended by Android (too much CPU or memory)"
-        ApplicationExitInfo.REASON_INITIALIZATION_FAILURE -> "failed to initialise"
-        ApplicationExitInfo.REASON_PERMISSION_CHANGE -> "ended after a permission change"
-        ApplicationExitInfo.REASON_DEPENDENCY_DIED -> "ended because something it needs died"
-        else -> "ended (reason $r)"
-    }
+    fun exitHistory(): String = processExitHistory(context, ":engine")
 
     fun start(demo: Boolean = this.demo) {
         AppLog.i("engine-client", "start (sample data: $demo)")
@@ -220,4 +197,34 @@ class EngineClient(private val context: Context) {
             AppLog.w("engine-client", "couldn't reach the service", e)
         }
     }
+}
+
+/**
+ * The last few ways one of this app's processes ended, newest first: [suffix] ":engine" for the
+ * service, "" for the interface itself (Android 11+ keeps this history).
+ */
+fun processExitHistory(context: Context, suffix: String, max: Int = 8): String {
+    if (Build.VERSION.SDK_INT < 30) return "(needs Android 11)"
+    return runCatching {
+        val am = context.getSystemService(ActivityManager::class.java)
+        val want = context.packageName + suffix
+        am.getHistoricalProcessExitReasons(context.packageName, 0, 20).filter { it.processName == want }.take(max).joinToString("\n") { i ->
+            "${java.time.Instant.ofEpochMilli(i.timestamp)} pid ${i.pid}: ${exitReasonName(i.reason)} ${i.description.orEmpty()} status ${i.status} importance ${i.importance}"
+        }.ifBlank { "(none)" }
+    }.getOrDefault("(unavailable)")
+}
+
+internal fun exitReasonName(r: Int): String = when (r) {
+    ApplicationExitInfo.REASON_CRASH -> "crashed"
+    ApplicationExitInfo.REASON_CRASH_NATIVE -> "crashed in native code"
+    ApplicationExitInfo.REASON_ANR -> "stopped responding"
+    ApplicationExitInfo.REASON_LOW_MEMORY -> "ended by Android (low memory)"
+    ApplicationExitInfo.REASON_EXIT_SELF -> "ended itself"
+    ApplicationExitInfo.REASON_SIGNALED -> "killed by a signal"
+    ApplicationExitInfo.REASON_USER_REQUESTED -> "stopped by the user"
+    ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE -> "ended by Android (too much CPU or memory)"
+    ApplicationExitInfo.REASON_INITIALIZATION_FAILURE -> "failed to initialise"
+    ApplicationExitInfo.REASON_PERMISSION_CHANGE -> "ended after a permission change"
+    ApplicationExitInfo.REASON_DEPENDENCY_DIED -> "ended because something it needs died"
+    else -> "ended (reason $r)"
 }

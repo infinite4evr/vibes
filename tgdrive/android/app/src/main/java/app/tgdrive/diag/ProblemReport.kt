@@ -32,7 +32,7 @@ import java.util.zip.ZipOutputStream
 object ProblemReport {
     private const val MAX_FILE = 6L * 1024 * 1024   // the end of each log, at most
 
-    suspend fun build(context: Context, engine: EngineClient, error: String? = null): File = withContext(Dispatchers.IO) {
+    suspend fun build(context: Context, engine: EngineClient?, error: String? = null): File = withContext(Dispatchers.IO) {
         AppLog.flushNow()
         val dir = File(context.cacheDir, "reports").apply { mkdirs() }
         dir.listFiles()?.forEach { if (System.currentTimeMillis() - it.lastModified() > 86_400_000) it.delete() }
@@ -77,7 +77,7 @@ object ProblemReport {
     }
 
     /** Make the report and open the share sheet with it. */
-    suspend fun share(context: Context, engine: EngineClient, error: String? = null) {
+    suspend fun share(context: Context, engine: EngineClient?, error: String? = null) {
         val zip = build(context, engine, error)
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.files", zip)
         val send = Intent(Intent.ACTION_SEND)
