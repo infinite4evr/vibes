@@ -114,6 +114,7 @@ fun ViewerScreen(
     var zoomed by remember { mutableStateOf(false) }
     var slideshow by remember { mutableStateOf(false) }
     val settings by state.settings.collectAsState()
+    val pagerScope = rememberCoroutineScope()
     val current = files.getOrNull(pager.currentPage)
     // Starred / renamed while the viewer is open.
     var overrides by remember { mutableStateOf<Map<String, FileItem>>(emptyMap()) }
@@ -134,7 +135,11 @@ fun ViewerScreen(
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 when {
                     f.kind == "photo" || f.isImage -> ZoomableImage(f, state, thumbs, onZoom = { zoomed = it }, onTap = { chrome = !chrome })
-                    f.kind in setOf("video", "round", "gif") -> if (active) VideoPage(f, state, onTap = { chrome = !chrome }) else PosterPage(f, thumbs)
+                    f.kind in setOf("video", "round", "gif") -> if (active) VideoPage(f, state, onTap = { chrome = !chrome }, onEnded = {
+                        // Settings → Streaming → Play the next file automatically.
+                        val next = (page + 1 until files.size).firstOrNull { files[it].kind in setOf("video", "round") }
+                        if (settings.str("autoplay_next") != "false" && next != null) pagerScope.launch { pager.animateScrollToPage(next) }
+                    }) else PosterPage(f, thumbs)
                     f.kind in setOf("audio", "voice") -> AudioPage(f, state, thumbs, active)
                     f.isPdf -> if (active) PdfPage(f, state) else PosterPage(f, thumbs)
                     f.isText && f.size < 8 * 1024 * 1024 -> if (active) TextPage(f, state) else PosterPage(f, thumbs)
@@ -238,10 +243,11 @@ private fun ZoomableImage(f: FileItem, state: AppState, thumbs: ThumbSource, onZ
 
 // ---------------------------------------------------------------------- video
 @Composable
-private fun VideoPage(f: FileItem, state: AppState, onTap: () -> Unit) {
+private fun VideoPage(f: FileItem, state: AppState, onTap: () -> Unit, onEnded: () -> Unit) {
     val ctx = LocalContext.current
     val aid = state.aid.value
-    val scope = rememberCoroutineScope()
+    // Saving where it stopped must outlive this page (it runs as the page goes away).
+    val scope = ctx.graph.scope
     val player = remember(f.key) {
         ExoPlayer.Builder(ctx).setSeekBackIncrementMs(10_000).setSeekForwardIncrementMs(10_000).build().apply {
             setMediaItem(MediaItem.fromUri(state.api.streamUrl(aid, f)))
@@ -255,6 +261,10 @@ private fun VideoPage(f: FileItem, state: AppState, onTap: () -> Unit) {
     DisposableEffect(player) {
         PlayerController.get(ctx).pauseForVideo()
         val l = object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_ENDED && f.kind != "gif") onEnded()
+            }
+
             override fun onPlayerError(e: androidx.media3.common.PlaybackException) {
                 error = if (e.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED ||
                     e.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_DECODER_INIT_FAILED)

@@ -62,6 +62,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.tgdrive.MainActivity
@@ -302,7 +304,7 @@ fun TopBar(state: AppState, onMenu: () -> Unit, onBack: (() -> Unit)?, onSearch:
         Spacer(Modifier.width(4.dp))
         TransfersButton(account?.transfers?.active ?: 0, account?.transfers?.let { if (it.size > 0) it.done.toFloat() / it.size else null }, onTransfers)
         Box(Modifier.size(42.dp).clip(CircleShape).clickable(onClick = onAccount), contentAlignment = Alignment.Center) {
-            Avatar(me?.name, 34.dp)
+            Avatar(me?.name, 34.dp, Modifier.semantics { contentDescription = "Account" })
             val online = me?.status == "online"
             Box(Modifier.align(Alignment.BottomEnd).padding(3.dp).size(10.dp).clip(CircleShape).background(c.panel).padding(2.dp)
                 .clip(CircleShape).background(if (online) c.ok else c.warn))
@@ -323,7 +325,7 @@ private fun TransfersButton(active: Int, progress: Float?, onClick: () -> Unit) 
                     topLeft = Offset.Zero, size = Size(size.width, size.height))
             }
         }
-        TgIconView(TgIcons.transfers, tint = if (active > 0) c.accent else c.ink2, size = 21.dp)
+        TgIconView(TgIcons.transfers, tint = if (active > 0) c.accent else c.ink2, size = 21.dp, contentDescription = "Transfers")
     }
 }
 

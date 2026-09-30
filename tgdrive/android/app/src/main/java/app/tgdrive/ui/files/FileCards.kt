@@ -167,7 +167,7 @@ fun SelectMark(on: Boolean, modifier: Modifier = Modifier) {
 private fun MoreButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(modifier.size(34.dp).clip(RoundedCornerShape(9.dp)).clickable(onClick = onClick), contentAlignment = Alignment.Center) {
         Box(Modifier.size(28.dp).clip(RoundedCornerShape(8.dp)).background(Color(0xE6FFFFFF)), contentAlignment = Alignment.Center) {
-            TgIconView(TgIcons.more, tint = Color(0xFF333344), size = 17.dp)
+            TgIconView(TgIcons.more, tint = Color(0xFF333344), size = 17.dp, contentDescription = "File options")
         }
     }
 }
