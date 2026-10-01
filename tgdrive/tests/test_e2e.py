@@ -667,6 +667,34 @@ def test_settings_save_and_search(app):
     expect(p.locator("#setBody h2", has_text="Appearance")).to_be_visible()
 
 
+def test_remove_types_no_longer_indexed(app):
+    """Settings → Indexing: a type turned off shows how many of its files are still in the index, with
+    a button that removes them (after asking); turned back on, nothing is left to remove."""
+    p = app.open("#settings/indexing").page
+    aid = app.aid()
+    expect(p.locator("#unindexedTypes")).to_be_hidden()
+    gifs = app.api(f"/api/a/{aid}/files?kinds=gif&limit=200")["items"]
+    assert gifs, "the demo has no GIFs"
+    box = p.locator("[data-kind-toggle='gif']")
+    try:
+        box.uncheck()
+        expect(p.locator("#unindexedTypes")).to_be_visible(timeout=8000)
+        expect(p.locator("#unindexedTypes p")).to_contain_text("gif")
+        p.locator("[data-remove-unindexed]").click()
+        expect(p.locator(".dialog h2", has_text="from the index")).to_be_visible()
+        p.locator(".dialog [data-submit]").click()
+        app.toast("Removed")
+        expect(p.locator("#unindexedTypes")).to_be_hidden(timeout=8000)
+        assert app.api(f"/api/a/{aid}/files?kinds=gif&limit=5")["items"] == []
+        assert app.api(f"/api/a/{aid}/files?kinds=photo&limit=5")["items"], "other types must stay"
+    finally:
+        box.check()
+        app.settle(400)
+    assert "gif" in app.api("/api/settings")["index_kinds"]
+    expect(p.locator("#unindexedTypes")).to_be_hidden()
+    assert not app.problems, app.problems
+
+
 def test_add_account_qr_failure_has_a_way_forward(app):
     p = app.open().page
     p.locator("#accountBtn").click()
