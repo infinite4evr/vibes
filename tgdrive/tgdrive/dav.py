@@ -30,8 +30,7 @@ from typing import Optional
 from urllib.parse import quote, unquote, urlsplit
 from xml.sax.saxutils import escape
 
-from fastapi import APIRouter, Request
-from fastapi.responses import FileResponse, HTMLResponse, Response, StreamingResponse
+from .webapp import APIRouter, FileResponse, HTMLResponse, Request, Response, StreamingResponse
 
 from .tasks import spawn
 from .settings import settings

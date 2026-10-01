@@ -15,7 +15,7 @@ os.environ.setdefault("TGDRIVE_DATA", tempfile.mkdtemp(prefix="tgdrive-demo-"))
 
 from telethon.tl import types  # noqa: E402
 
-from tests.fake import CH, doc_msg, make_account, sample_world  # noqa: E402
+from tests.fake import CH, audio_attr, doc_msg, make_account, sample_world  # noqa: E402
 from tgdrive import api  # noqa: E402
 from tgdrive.settings import settings  # noqa: E402
 
@@ -23,8 +23,8 @@ from tgdrive.settings import settings  # noqa: E402
 def fake_jpeg(seed: int, w=320, h=240) -> bytes:
     try:
         from PIL import Image, ImageDraw
-    except ImportError:
-        return b""
+    except ImportError:   # the Android app has no Pillow: the same kind of picture, as a PNG
+        return fake_png(seed, w, h)
     rnd = random.Random(seed)
     palette = [(70, 120, 150), (190, 140, 90), (90, 150, 110), (160, 90, 110), (120, 110, 170), (200, 170, 120)]
     base = rnd.choice(palette)
@@ -40,13 +40,27 @@ def fake_jpeg(seed: int, w=320, h=240) -> bytes:
     return buf.getvalue()
 
 
+def demo_wav(seconds: int = 12, rate: int = 8000) -> bytes:
+    """A real, playable recording (a soft two-note tone, 16-bit mono WAV): the other sample songs are
+    made-up bytes, and the phone's player tests need one that actually plays."""
+    import math
+    import struct
+    frames = bytearray()
+    for i in range(seconds * rate):
+        f = 440.0 if (i // rate) % 2 == 0 else 660.0
+        frames += struct.pack("<h", int(6000 * math.sin(2 * math.pi * f * i / rate)))
+    header = b"RIFF" + struct.pack("<I", 36 + len(frames)) + b"WAVE" + b"fmt " + struct.pack(
+        "<IHHIIHH", 16, 1, 1, rate, rate * 2, 2, 16) + b"data" + struct.pack("<I", len(frames))
+    return header + bytes(frames)
+
+
 def demo_pdf() -> bytes:
     """A real multi-page PDF with selectable text, for the PDF reader."""
     try:
         from reportlab.lib.pagesizes import A4
         from reportlab.pdfgen import canvas
     except ImportError:
-        return b""
+        return simple_pdf()
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     w, h = A4
@@ -77,6 +91,72 @@ def demo_pdf() -> bytes:
     return buf.getvalue()
 
 
+PDF_BODY = ("Article 14 guarantees equality before the law and the equal protection of the laws within the territory "
+            "of India. Article 15 prohibits discrimination on grounds of religion, race, caste, sex or place of birth. "
+            "Article 16 provides equality of opportunity in matters of public employment. Article 17 abolishes "
+            "untouchability and forbids its practice in any form. Article 19 protects six freedoms of citizens.")
+
+
+def fake_png(seed: int, w: int = 320, h: int = 240) -> bytes:
+    """fake_jpeg's picture (a colour and a few soft blobs) without Pillow: rows of spans, zlib, PNG chunks."""
+    import struct
+    import zlib
+    rnd = random.Random(seed)
+    palette = [(70, 120, 150), (190, 140, 90), (90, 150, 110), (160, 90, 110), (120, 110, 170), (200, 170, 120)]
+    base = rnd.choice(palette)
+    blobs = []
+    for _ in range(6):
+        c = bytes(min(255, max(0, v + rnd.randint(-60, 60))) for v in base)
+        x, y = rnd.randint(-40, w), rnd.randint(-40, h)
+        r = rnd.randint(30, 160) * max(1.0, w / 320)
+        blobs.append((x + r, y + r / 2, r, r / 2, c))   # centre, radii (as PIL's ellipse box [x, y, x+2r, y+r])
+    rows = []
+    for yy in range(h):
+        row = bytearray(bytes(base) * w)
+        for cx, cy, rx, ry, c in blobs:
+            dy = (yy + 0.5 - cy) / ry
+            if abs(dy) >= 1:
+                continue
+            half = rx * (1 - dy * dy) ** 0.5
+            a, b = max(0, int(cx - half)), min(w, int(cx + half))
+            if a < b:
+                row[a * 3:b * 3] = c * (b - a)
+        rows.append(b"\0" + bytes(row))
+
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(b"".join(rows), 6)) + chunk(b"IEND", b""))
+
+
+def simple_pdf(pages: int = 12) -> bytes:
+    """demo_pdf's document without reportlab: A4 pages of Helvetica text, written by hand."""
+    import textwrap
+    objs = ["<< /Type /Catalog /Pages 2 0 R >>", None, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>"]
+    kids = []
+    for p in range(1, pages + 1):
+        lines = textwrap.wrap((PDF_BODY + " ") * 3, 88)[:36]
+        esc = lambda t: t.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+        text = [f"BT /F2 20 Tf 60 762 Td (Fundamental Rights - Part {p}) Tj ET", "BT /F1 12 Tf 60 722 Td 18 TL"]
+        text += [f"({esc(t)}) '" for t in lines] + ["ET", f"BT /F1 9 Tf 278 40 Td (Page {p}) Tj ET"]
+        stream = "\n".join(text).encode("latin-1")
+        objs.append(f"<< /Length {len(stream)} >>\nstream\n" + stream.decode("latin-1") + "\nendstream")
+        objs.append(f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents {len(objs)} 0 R "
+                    "/Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> >>")
+        kids.append(f"{len(objs)} 0 R")
+    objs[1] = f"<< /Type /Pages /Kids [{' '.join(kids)}] /Count {pages} >>"
+    out, offsets = bytearray(b"%PDF-1.4\n"), []
+    for i, o in enumerate(objs, 1):
+        offsets.append(len(out))
+        out += f"{i} 0 obj\n{o}\nendobj\n".encode("latin-1")
+    xref = len(out)
+    out += f"xref\n0 {len(objs) + 1}\n0000000000 65535 f \n".encode()
+    out += "".join(f"{o:010d} 00000 n \n" for o in offsets).encode()
+    out += f"trailer\n<< /Size {len(objs) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode()
+    return bytes(out)
+
+
 EXTRA = [
     ("Economy_TestSeries_2023.pdf", "application/pdf"), ("Mock Test Series Polity.pdf", "application/pdf"),
     ("Previous Year Questions Polity 2011-2024.pdf", "application/pdf"), ("PYQ Economy 2024.pdf", "application/pdf"),
@@ -104,6 +184,11 @@ async def setup(tmp: Path):
                     world[0][cid][0].date, caption="Chapter 7 notes with PYQs")
         client.content[m.media.document.id] = pdf
         client.chats[cid].append(m)
+    wav = demo_wav()
+    m = doc_msg(cid, 6001, "Morning raga (sample recording).wav", "audio/x-wav", len(wav), world[0][cid][0].date,
+                attrs=[audio_attr(12, title="Morning raga", performer="TG Drive sample")], caption="A sample that really plays")
+    client.content[m.media.document.id] = wav
+    client.chats[cid].append(m)
     for msgs in client.chats.values():  # full-size photos for the viewer
         for m in msgs:
             if isinstance(m.media, types.MessageMediaPhoto):
@@ -165,10 +250,12 @@ async def setup(tmp: Path):
     return acc
 
 
-def main():
-    tmp = Path(tempfile.mkdtemp())
-    settings.data.update(api_id=1, api_hash="0" * 32, search_semantic=True, download_dir=str(tmp / "Downloads"))
-    acc = asyncio.run(setup(tmp))
+def prepare(tmp: Path, download_dir: str = "", loop: asyncio.AbstractEventLoop = None):
+    """Build the made-up account and make it the server's only account (desktop demo and the Android
+    app's "Try it with sample data")."""
+    settings.data.update(api_id=1, api_hash="0" * 32, search_semantic=True,
+                         download_dir=download_dir or str(tmp / "Downloads"))
+    acc = (loop.run_until_complete(setup(tmp)) if loop else asyncio.run(setup(tmp)))
     api.manager.accounts = {acc.uid: acc}
 
     async def noop():
@@ -184,6 +271,11 @@ def main():
     api.manager.shutdown = noop
     acc.indexer.phase = "indexing"
     acc.indexer.current_title = "Physics Lectures"
+    return acc
+
+
+def main():
+    prepare(Path(tempfile.mkdtemp()))
     import run
     port = int(os.environ.get("DEMO_PORT", "8766"))
     server, socks = run.make_server(port=port, media_port=port + 1, fallback=False)

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <external-path name="downloads" path="Download/"/>
+    <!-- A download folder chosen elsewhere on the phone's storage (links are only ever granted per file) -->
+    <external-path name="storage" path="."/>
+    <external-files-path name="own_downloads" path="Download/"/>
+    <cache-path name="cache" path="."/>
+    <files-path name="files" path="tgdrive/"/>
+</paths>

@@ -10,6 +10,7 @@ Personal tools, in independent projects:
 | [`pc-command-center/`](pc-command-center/README.md) | **PC Command Center** (GTK app) and **pc** (terminal app) for managing a whole Ubuntu computer (v2.2.4) |
 | [`ubuntu-setup/`](ubuntu-setup/README.md) | Ubuntu cleanup and Catppuccin dev-environment setup; also installs PC Command Center |
 | [`tgdrive/`](tgdrive/README.md) | **TG Drive**: every file in your Telegram, browsed, searched, streamed and organised like Google Drive (desktop app, AppImage) |
+| [`tgdrive/android/`](tgdrive/android/README.md) | **TG Drive for Android**: the same service running on the phone (Python via Chaquopy) with a native Compose interface, built and released as an APK by CI. Handover notes: [`HANDOVER.md`](tgdrive/android/HANDOVER.md) |
 
 `commands/RESUME.md` says where the study tools stand and how to run every test.
 `todo.txt`, the feature requests the study tools were built against, is kept
@@ -36,7 +37,7 @@ The PDF steps (`md-to-pdf`, `recall-sheet`, `notes`, `notes-recall`) also need
 **LumaClean:** download the APK from the latest `lumaclean-v…` release.
 
 **TG Drive:** `bash tgdrive/start.sh` (or `--install` to add it to the
-applications menu).
+applications menu). On Android, download the APK from the latest `tgdrive-android-v…` release.
 
 ## Tests
 
@@ -46,10 +47,12 @@ applications menu).
 | pc-command-center | `cd pc-command-center && pip install -e '.[dev]' && pytest` |
 | lumaclean | built by CI only (`gradle :app:assembleRelease` with Android SDK 37) |
 | tgdrive | `cd tgdrive && pip install -r requirements.txt pytest httpx && python -m pytest tests` (the browser test `tests/test_e2e.py` also needs `playwright`) |
+| tgdrive/android | built and tested by CI (APK, service tests with the Android package set, emulator tests and screenshots) |
 
 CI: [`ci.yml`](.github/workflows/ci.yml) runs the study-tool checks,
 [`pc-command-center.yml`](.github/workflows/pc-command-center.yml) the PC Command
 Center tests, shell syntax and a GTK smoke test, and
 [`lumaclean-apk.yml`](.github/workflows/lumaclean-apk.yml) builds and releases the
 LumaClean APK, and [`tgdrive.yml`](.github/workflows/tgdrive.yml) runs the TG Drive tests and an end-to-end
-test of its interface in Chromium.
+test of its interface in Chromium, and [`tgdrive-android.yml`](.github/workflows/tgdrive-android.yml) builds,
+tests and releases the TG Drive Android APK.

@@ -268,18 +268,31 @@ class Account:
 
     # --------------------------------------------------------------- lifecycle
     def launch(self) -> None:
-        self.db.prewarm()
-        self.semantic.prewarm()
         self._runner = spawn(self._run(), f"account {self.uid} connect")
+        quiet = pace.quiet_left()
+        if quiet > 0:
+            # Phones: the first screens load first; reading the index into memory and building the
+            # search vocabulary wait for the quiet start to end (a search before that builds it itself).
+            spawn(self._warm_up(quiet), f"account {self.uid} warm up")
+        else:
+            self.db.prewarm()
+            self.semantic.prewarm()
         if not self.db.search_ready and (self._search_builder is None or self._search_builder.done()):
             self._search_builder = spawn(self._build_search(), f"account {self.uid} search build")
-        else:
+        elif quiet <= 0:
             self.search.warm_up()
         self.semantic.start()
         self.subjects.start()
         self.dupes.start()
         self.autofile.start()
         self.sync.start()
+
+    async def _warm_up(self, after: float) -> None:
+        await asyncio.sleep(after)
+        self.db.prewarm()
+        self.semantic.prewarm()
+        if self.db.search_ready:
+            self.search.warm_up()
 
     async def _build_search(self) -> None:
         """Fill the upgraded search index in the background (keeps the app usable meanwhile)."""
@@ -520,6 +533,10 @@ class AccountManager:
     def __init__(self):
         self.accounts: dict[int, Account] = {}
         self.logins: dict[str, Login] = {}
+        # QR sign-ins that finished: kept a few minutes so the app can collect the result
+        # (finishing removes the attempt from self.logins).
+        self.done_logins: dict[str, tuple[float, "Login"]] = {}
+        self._index_kinds = set(settings.get("index_kinds") or [])
         settings.on_change(self._on_settings)
 
     def _on_settings(self, changed: set[str]) -> None:
@@ -546,6 +563,16 @@ class AccountManager:
         if "index_paused" in changed:
             for acc in self.accounts.values():
                 acc.indexer.pause() if settings.get("index_paused") else acc.indexer.resume()
+        if "index_kinds" in changed:
+            kinds = set(settings.get("index_kinds") or [])
+            added, self._index_kinds = kinds - self._index_kinds, kinds
+            if added:
+                # Types turned on: scan again with every Telegram filter that finds them (photos sent as
+                # files come with the documents), for what was skipped or removed while they were off.
+                from .indexer import FILTER_KINDS
+                filters = [f for f, ks in FILTER_KINDS.items() if ks & added]
+                for acc in self.accounts.values():
+                    acc.db.rescan_filters(filters)
         if changed & {"index_kinds", "index_skip_kinds_of_chat"}:
             for acc in self.accounts.values():
                 acc.indexer.poke()
@@ -667,7 +694,19 @@ class AccountManager:
         self._require_api()
         lg = Login()
         await self._connect_for_login(lg)
-        lg.qr = await lg.client.qr_login()
+        try:
+            lg.qr = await lg.client.qr_login()
+        except errors.ApiIdInvalidError:
+            await _disconnect_quietly(lg.client)
+            raise AccountError("Telegram rejected the API ID / hash. Check them at my.telegram.org.")
+        except errors.FloodWaitError as exc:
+            await _disconnect_quietly(lg.client)
+            raise AccountError(f"Too many sign-in attempts. Telegram asks to wait {exc.seconds // 60 + 1} minutes.")
+        except errors.BadRequestError as exc:
+            # Telegram answers a QR request with a wrong app key as a bare BAD_REQUEST.
+            await _disconnect_quietly(lg.client)
+            raise AccountError("Telegram rejected the QR sign-in (" + (exc.message or "BAD_REQUEST") + "). Check the API ID / "
+                               "hash at my.telegram.org, or sign in with your phone number.")
         self.logins[lg.id] = lg
         lg.qr_task = spawn(self._qr_wait(lg), "QR sign-in")
         return {"login_id": lg.id, **self._qr_payload(lg)}
@@ -684,6 +723,7 @@ class AccountManager:
                 await lg.qr.wait(timeout=max(5, int(lg.qr.expires.timestamp() - time.time())))
                 lg.result = await self._finish(lg)
                 lg.qr_state = "done"
+                self.done_logins[lg.id] = (time.time(), lg)
                 return
             except asyncio.TimeoutError:
                 try:
@@ -703,7 +743,11 @@ class AccountManager:
                 return
 
     async def login_qr_status(self, login_id: str) -> dict:
-        lg = self._login(login_id)
+        for lid, (at, _) in list(self.done_logins.items()):
+            if time.time() - at > 600:
+                self.done_logins.pop(lid, None)
+        done = self.done_logins.get(login_id)
+        lg = done[1] if done else self._login(login_id)
         out = {"state": lg.qr_state, "error": lg.qr_error, "hint": lg.hint}
         if lg.qr_state == "waiting":
             out.update(self._qr_payload(lg))

@@ -1,0 +1,301 @@
+"""The pieces that let the server run inside the Android app (where FastAPI, rapidfuzz, cryptg and
+friends have no builds) must behave exactly like what they stand in for."""
+import os
+import random
+import string
+
+import pytest
+
+# ------------------------------------------------------------------ native AES
+
+
+def _pyaes_ige(data: bytes, key: bytes, iv: bytes, encrypt: bool) -> bytes:
+    import pyaes
+    aes = pyaes.AES(key)
+    iv1, iv2 = iv[:16], iv[16:]
+    out = bytearray()
+    for i in range(0, len(data), 16):
+        block = data[i:i + 16]
+        if encrypt:
+            c = bytes(a ^ b for a, b in zip(aes.encrypt([x ^ y for x, y in zip(block, iv1)]), iv2))
+            iv1, iv2 = c, block
+        else:
+            p = bytes(a ^ b for a, b in zip(aes.decrypt([x ^ y for x, y in zip(block, iv2)]), iv1))
+            iv1, iv2 = block, p
+            c = p
+        out += c
+    return bytes(out)
+
+
+def test_openssl_ige_matches_reference():
+    from tgdrive import fastcrypto
+    lib = fastcrypto.load_libcrypto()
+    if lib is None:
+        pytest.skip("no libcrypto on this system")
+    ige = fastcrypto.IGE(lib)
+    rnd = random.Random(1)
+    for n in (16, 32, 160, 4096):
+        data, key, iv = rnd.randbytes(n), rnd.randbytes(32), rnd.randbytes(32)
+        enc = ige.encrypt(data, key, iv)
+        assert enc == _pyaes_ige(data, key, iv, True)
+        assert ige.decrypt(enc, key, iv) == data
+        assert _pyaes_ige(enc, key, iv, False) == data
+
+
+def test_openssl_ctr_matches_pyaes_across_uneven_chunks():
+    import pyaes
+    from tgdrive import fastcrypto
+    lib = fastcrypto.load_libcrypto()
+    if lib is None:
+        pytest.skip("no libcrypto on this system")
+    ctr_cls = fastcrypto._ctr_class(lib)
+    rnd = random.Random(2)
+    key, iv = rnd.randbytes(32), rnd.randbytes(16)
+    ref = pyaes.AESModeOfOperationCTR(key)
+    ref._counter._counter = list(iv)
+    mine = ctr_cls(key, iv)
+    for n in (1, 15, 16, 17, 100, 1000, 0, 4096, 3):
+        chunk = rnd.randbytes(n)
+        assert mine.encrypt(chunk) == ref.encrypt(chunk)
+
+
+def test_install_makes_telethon_use_native_code():
+    from tgdrive import fastcrypto
+    if fastcrypto.load_libcrypto() is None:
+        pytest.skip("no libcrypto on this system")
+    used = fastcrypto.install()
+    assert used in ("cryptg", "openssl")
+    from telethon.crypto import AES, AESModeCTR
+    key, iv = os.urandom(32), os.urandom(32)
+    data = os.urandom(1024)
+    assert AES.decrypt_ige(AES.encrypt_ige(data, key, iv), key, iv) == data
+    c1, c2 = AESModeCTR(key, iv[:16]), AESModeCTR(key, iv[:16])
+    assert c2.decrypt(c1.encrypt(data)) == data
+
+
+# ------------------------------------------------------------ typo correction
+def _vocab(n=6000):
+    rnd = random.Random(5)
+    base = "series polity economy history geography notes lecture quantum mechanics physics current affairs " \
+           "environment ethics answer writing mains prelims syllabus magazine monthly".split()
+    out = set(base)
+    while len(out) < n:
+        w = rnd.choice(base)
+        op = rnd.random()
+        if op < 0.5:
+            w = "".join(rnd.choice(string.ascii_lowercase) for _ in range(rnd.randint(3, 12)))
+        else:
+            i = rnd.randrange(len(w))
+            w = w[:i] + rnd.choice(string.ascii_lowercase) + w[i + 1:]
+        out.add(w)
+    return sorted(out)
+
+
+def test_fuzzy_numpy_matches_plain_osa():
+    from tgdrive import fuzzy
+    terms = _vocab()
+    m = fuzzy.Matcher(terms)
+    for q in ("seires", "polty", "economi", "histroy", "mechanisc", "lectrue", "zzzzqq", "notes", "abcd"):
+        for k in (1, 2):
+            want = sorted(((i, d) for i, t in enumerate(m.terms) for d in (fuzzy.osa(q, t, k),) if d is not None),
+                          key=lambda h: (h[1], h[0]))[:40]
+            assert m.within(q, k) == [(m.terms[i], d) for i, d in want], (q, k)
+
+
+def test_fuzzy_agrees_with_rapidfuzz():
+    rf = pytest.importorskip("rapidfuzz")
+    from rapidfuzz import distance, process
+    from tgdrive import fuzzy
+    terms = _vocab()
+    m = fuzzy.Matcher(terms)
+    for q in ("seires", "polty", "economi", "histroy", "mechanisc", "lectrue", "sylabus", "magzine"):
+        for k in (1, 2):
+            want = {(t, d) for t, d, _ in process.extract(q, terms, scorer=distance.DamerauLevenshtein.distance,
+                                                          score_cutoff=k, limit=None)}
+            got = set(m.within(q, k, limit=10_000))
+            assert got == want, (q, k, want ^ got)
+    assert rf
+
+
+def test_fuzzy_without_numpy(monkeypatch):
+    from tgdrive import fuzzy
+    monkeypatch.setattr(fuzzy, "np", None)
+    m = fuzzy.Matcher(["series", "serious", "polity", "policy"])
+    assert m.within("seires", 2) == [("series", 1)]
+    assert m.within("seriou", 2) == [("serious", 1), ("series", 2)]
+    assert [t for t, _ in m.within("polty", 1)] == ["polity"]
+
+
+# --------------------------------------------------------------- web adapter
+def test_lite_adapter_behaves_like_fastapi():
+    from starlette.testclient import TestClient
+    from tgdrive._lite import Body, FastAPI, Request
+    from typing import Optional
+
+    app = FastAPI()
+
+    @app.get("/n/{a}/{b}")
+    async def nums(a: int, b: str, q: Optional[int] = None, flag: bool = False):
+        return {"a": a, "b": b, "q": q, "flag": flag}
+
+    @app.post("/body")
+    async def body(body: dict = Body(...)):
+        return body
+
+    @app.post("/opt")
+    async def opt(body: dict = Body(default={})):
+        body["seen"] = True
+        return body
+
+    @app.get("/req/{rest:path}")
+    def sync(rest: str, request: Request):
+        return {"rest": rest, "m": request.method}
+
+    c = TestClient(app)
+    assert c.get("/n/-100123/x?q=-5&flag=yes").json() == {"a": -100123, "b": "x", "q": -5, "flag": True}
+    assert c.get("/n/1.5/x").status_code == 422
+    assert c.get("/n/1/x?q=abc").status_code == 422
+    assert c.post("/body", json={"k": 1}).json() == {"k": 1}
+    assert c.post("/body").status_code == 422
+    assert c.post("/body", json=[1, 2]).status_code == 422
+    assert c.post("/opt").json() == {"seen": True}
+    assert c.post("/opt").json() == {"seen": True}   # the default is copied, not shared between requests
+    assert c.get("/req/a/b/c.txt").json() == {"rest": "a/b/c.txt", "m": "GET"}
+    r = c.get("/missing")
+    assert r.status_code == 404 and r.json() == {"detail": "Not Found"}
+
+
+def test_qr_sign_in_result_can_be_collected_after_it_finishes():
+    """Finishing a QR sign-in removes the attempt; the app's next status poll must still see "done"
+    with the account (it used to get "This sign-in attempt expired")."""
+    import asyncio
+    from datetime import datetime, timedelta, timezone
+    from types import SimpleNamespace
+    from tgdrive import accounts
+
+    class Qr:
+        expires = datetime.now(timezone.utc) + timedelta(seconds=60)
+
+        async def wait(self, timeout=None):
+            return None
+
+    mgr = accounts.AccountManager.__new__(accounts.AccountManager)
+    mgr.accounts, mgr.logins, mgr.done_logins = {}, {}, {}
+    lg = SimpleNamespace(id="abc", qr=Qr(), qr_state="waiting", qr_error=None, hint="", result=None, created=0, qr_task=None)
+    mgr.logins[lg.id] = lg
+
+    async def finish(login):
+        mgr.logins.pop(login.id, None)
+        return {"id": 42, "name": "Priya"}
+
+    mgr._finish = finish
+
+    async def go():
+        await mgr._qr_wait(lg)
+        return await mgr.login_qr_status("abc")
+
+    st = asyncio.run(go())
+    assert st["state"] == "done" and st["account"]["name"] == "Priya"
+
+
+def test_background_sync_holds_the_cpu_jobs_until_the_app_opens():
+    """A service started by the background sync pauses the heavy jobs; opening the app resumes them."""
+    from tgdrive import mobile, pace
+    try:
+        mobile.set_background(True)
+        assert pace.mode() == "paused"
+        assert pace.rest_for(1.0) == 0.0        # the indexer doesn't rest: the sync ends sooner
+        mobile.set_background(False)
+        from tgdrive.settings import settings
+        assert pace.mode() == (settings.get("background_work") or "gentle")
+    finally:
+        pace.force(None)
+
+
+def test_quiet_start_holds_the_heavy_jobs_then_lets_go():
+    """Phones: for a while after starting, the CPU jobs and the index warm-up wait (the first screens load first)."""
+    import time as _time
+    from tgdrive import pace
+    from tgdrive.settings import settings
+    try:
+        pace.quiet_for(0.3)
+        assert pace.mode() == "paused" and 0 < pace.quiet_left() <= 0.3
+        _time.sleep(0.35)
+        assert pace.quiet_left() == 0.0
+        assert pace.mode() == (settings.get("background_work") or "gentle")
+    finally:
+        pace.quiet_for(0)
+
+
+def test_sample_data_on_the_phone_is_not_indexing_forever(tmp_path):
+    """No indexer runs on sample data: the phone must show it finished (a background sync waits for idle)."""
+    from tgdrive import api, mobile
+    saved = dict(api.manager.accounts)
+    try:
+        mobile._prepare_demo(tmp_path, str(tmp_path / "Downloads"))
+        acc = next(iter(api.manager.accounts.values()))
+        assert acc.indexer.phase == "idle"
+    finally:
+        api.manager.accounts = saved
+
+
+def test_qr_sign_in_with_a_wrong_app_key_says_what_to_do(monkeypatch):
+    """Telegram answers a QR request made with a wrong API ID as a bare BAD_REQUEST: the app must
+    say what that means (it showed "Telegram refused: BAD_REQUEST")."""
+    import asyncio
+    import pytest
+    from telethon import errors as tg_errors
+    from tgdrive import accounts
+
+    class Client:
+        async def qr_login(self):
+            raise tg_errors.BadRequestError(None, "BAD_REQUEST")
+
+        async def disconnect(self):
+            return None
+
+    mgr = accounts.AccountManager.__new__(accounts.AccountManager)
+    mgr.accounts, mgr.logins, mgr.done_logins = {}, {}, {}
+    mgr._require_api = lambda: None
+
+    async def connect(lg):
+        lg.client = Client()
+
+    mgr._connect_for_login = connect
+
+    class Login:
+        id = "qr1"
+        client = None
+
+    monkeypatch.setattr(accounts, "Login", Login)
+    with pytest.raises(accounts.AccountError) as e:
+        asyncio.run(mgr.login_qr_start())
+    assert "rejected the QR sign-in" in str(e.value) and "my.telegram.org" in str(e.value)
+    assert not mgr.logins
+
+
+def test_a_busy_database_is_a_retryable_answer_not_a_crash():
+    """"database is locked" (a long background write on a slow phone) must come back as 503 busy,
+    which the app retries, not as "Something went wrong (OperationalError)"."""
+    import asyncio
+    import json
+    import sqlite3
+    from types import SimpleNamespace
+    from tgdrive import api
+    req = SimpleNamespace(method="POST", url=SimpleNamespace(path="/api/a/1/files/star"))
+    r = asyncio.run(api.database_error(req, sqlite3.OperationalError("database is locked")))
+    assert r.status_code == 503 and json.loads(r.body)["busy"] is True
+
+
+def test_background_work_steps_aside_while_someone_waits():
+    """A request someone is waiting on makes background batches pause (never longer than MAX_YIELD)."""
+    import time as _time
+    from tgdrive import pace
+    pace.foreground()
+    t = _time.monotonic()
+    pace.rest(0.0)
+    waited = _time.monotonic() - t
+    assert pace.FOREGROUND_HOLD * 0.5 <= waited <= pace.FOREGROUND_HOLD + 0.3
+    t = _time.monotonic()
+    pace.rest(0.0)      # nothing waiting now: straight on
+    assert _time.monotonic() - t < 0.05

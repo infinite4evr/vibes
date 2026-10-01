@@ -15,18 +15,17 @@ import json
 import logging
 import re
 import secrets
+import sqlite3
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import Body, FastAPI, Request
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response, \
-    StreamingResponse
-from fastapi.staticfiles import StaticFiles
+from .webapp import Body, FastAPI, FileResponse, JSONResponse, PlainTextResponse, RedirectResponse, Request, \
+    Response, StaticFiles, StreamingResponse
 from telethon import errors, utils as tl_utils
 
-from . import config, maintenance
+from . import config, maintenance, pace
 from .accounts import Account, AccountError, AccountManager, events, open_path
 from .db import QueryTimeout
 from .drive import DriveError
@@ -57,7 +56,9 @@ async def lifespan(app: FastAPI):
         settings.on_change(_apply_autostart)
     if not settings.get("autostart"):
         _apply_autostart({"autostart"})   # a login entry left from an older version: remove it
+    t0 = time.monotonic()
     await manager.startup()
+    log.info("accounts opened in %.2f s", time.monotonic() - t0)
     yield
     RUNTIME["stopping"] = True
     t0 = time.monotonic()
@@ -122,6 +123,18 @@ async def flood_error(_: Request, exc: errors.FloodWaitError):
 @app.exception_handler(errors.RPCError)
 async def rpc_error(_: Request, exc: errors.RPCError):
     return JSONResponse({"error": f"Telegram refused: {exc.message or exc.__class__.__name__}"}, status_code=400)
+
+
+@app.exception_handler(sqlite3.OperationalError)
+async def database_error(request: Request, exc: sqlite3.OperationalError):
+    """The index is busy (a long background write holds it past the wait, most often on phones):
+    nothing was changed, so say so plainly and let the app try again, instead of a crash message."""
+    text = str(exc).lower()
+    if "locked" in text or "busy" in text:
+        log.warning("%s %s: the database was busy (%s)", request.method, request.url.path, exc)
+        return JSONResponse({"error": "TG Drive is busy saving its index. Try again in a moment.", "busy": True},
+                            status_code=503, headers={"Retry-After": "1"})
+    return await unexpected_error(request, exc)
 
 
 @app.exception_handler(Exception)
@@ -202,7 +215,7 @@ async def guard(request: Request, call_next):
                     secrets.compare_digest(qt, config.MEDIA_TOKEN):
                 media_only = True
             else:
-                return PlainTextResponse("TG Drive is running in the desktop app. Open it from there.", status_code=401)
+                return PlainTextResponse("TG Drive is running in its app. Open it from there.", status_code=401)
     if request.method not in ("GET", "HEAD", "OPTIONS") and path.startswith("/api/") and \
             request.headers.get("x-tgdrive") != "1":
         return JSONResponse({"error": "Missing X-TGDrive header."}, status_code=403)
@@ -213,6 +226,7 @@ async def guard(request: Request, call_next):
         RUNTIME["client_seen"] = time.monotonic()   # a TG Drive page is open (browser mode stops without one)
     if path.startswith("/api/") and not _BACKGROUND.match(path) and request.headers.get("x-tgdrive-bg") != "1":
         maintenance.app_lock.touch()   # only what the person does counts as activity (not polling)
+        pace.foreground()              # and background jobs step aside while it's answered
     t0 = time.perf_counter()
     try:
         response = await call_next(request)
@@ -1315,7 +1329,8 @@ app.include_router(_dav)
 
 
 # ------------------------------------------------------------------------ web
-app.mount("/static", StaticFiles(directory=str(WEB)), name="static")
+if WEB.is_dir():   # the Android app has its own interface and ships without the web one
+    app.mount("/static", StaticFiles(directory=str(WEB)), name="static")
 
 
 @app.get("/")

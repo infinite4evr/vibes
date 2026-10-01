@@ -210,7 +210,7 @@ def test_unsaved_folder_changes_survive_a_restart(tmp_path):
 
 # ------------------------------------------------------------------- app lock
 def test_polling_does_not_keep_the_app_unlocked(tmp_path, fresh_settings):
-    from fastapi.testclient import TestClient
+    from starlette.testclient import TestClient
 
     from tgdrive import api, maintenance
     acc, _ = make_account(tmp_path)
@@ -502,7 +502,7 @@ def test_sync_names_of_same_named_files_stay_put(tmp_path, monkeypatch):
 
 # ------------------------------------------------------------- disk space
 def test_upload_endpoints_refuse_when_the_disk_is_full_and_leave_nothing(tmp_path, fresh_settings, monkeypatch):
-    from fastapi.testclient import TestClient
+    from starlette.testclient import TestClient
 
     from tgdrive import api, dav, transfers
     from tgdrive.settings import settings

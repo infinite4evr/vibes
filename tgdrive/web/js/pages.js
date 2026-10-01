@@ -335,8 +335,9 @@ const SECTION_HTML = {
     <div class="set-block"><strong>Cache</strong><p id="streamUsage">…</p><button class="btn" data-maint="clear_stream_cache">${icon('trash')}Clear stream cache</button></div>
     <div class="set-block"><strong>Other players</strong><p>Any video or audio can be opened in VLC or mpv: in the viewer, copy the stream link; for a whole folder, use the folder menu → Playlist for VLC / mpv.</p></div>`,
   indexing: (s) => `<h2>Indexing</h2>
-    <div class="set-block"><strong>File types to index</strong><p>Turning a type off stops indexing it; files already indexed stay until you re-index the chat.</p>
-      <div class="checks">${['photo', 'video', 'document', 'audio', 'voice', 'round', 'gif'].map((k) => `<label><input type="checkbox" data-kind-toggle="${k}" ${(s.index_kinds || []).includes(k) ? 'checked' : ''}>${esc(KIND_NAME[k])}</label>`).join('')}</div></div>
+    <div class="set-block"><strong>File types to index</strong><p>Turning a type off stops indexing it; files already indexed stay until you remove them below. Turning one back on finds its files again.</p>
+      <div class="checks">${['photo', 'video', 'document', 'audio', 'voice', 'round', 'gif'].map((k) => `<label><input type="checkbox" data-kind-toggle="${k}" ${(s.index_kinds || []).includes(k) ? 'checked' : ''}>${esc(KIND_NAME[k])}</label>`).join('')}</div>
+      <div id="unindexedTypes" hidden><p class="subtle"></p><button class="btn" data-remove-unindexed>${icon('trash')}Remove types no longer indexed</button></div></div>
     <div class="set-block"><strong>Skip these kinds of chats</strong><p>Useful if private chats or bots are full of files you don't need in TG Drive.</p>
       <div class="checks">${[['user', 'Private chats'], ['bot', 'Bots'], ['group', 'Basic groups'], ['supergroup', 'Groups'], ['channel', 'Channels']].map(([k, l]) => `<label><input type="checkbox" data-skip-toggle="${k}" ${(s.index_skip_kinds_of_chat || []).includes(k) ? 'checked' : ''}>${l}</label>`).join('')}</div></div>
     ${row('Pause indexing', 'Stops fetching history. Live updates keep coming in.', sw('index_paused', s))}
@@ -432,7 +433,20 @@ const SECTION_HTML = {
   },
 };
 
+/** Files of types no longer indexed (Settings → Indexing): how many, with the button that removes them. */
+async function showUnindexedTypes(body) {
+  const box = $('#unindexedTypes', body);
+  if (!box) return;
+  const r = await api(A('/maintenance/unindexed_types'), { method: 'POST' }).catch(() => null);
+  box.hidden = !r || !r.files;
+  if (r && r.files) {
+    box.dataset.n = r.files;
+    $('p', box).textContent = `Still in the index: ${r.kinds.map((k) => `${fmtNum(k.n)} ${(KIND_NAME[k.kind] || k.kind).toLowerCase()}`).join(', ')} (${fmtSize(r.bytes)}).`;
+  }
+}
+
 const SECTION_AFTER = {
+  indexing: (body) => showUnindexedTypes(body),
   appearance: (body) => {
     const w = $('[data-sidebarw]', body);
     w?.addEventListener('input', () => {
@@ -488,7 +502,8 @@ page().addEventListener('change', async (e) => {
   }
   if (t.dataset.kindToggle) {
     const kinds = $$('[data-kind-toggle]', page()).filter((x) => x.checked).map((x) => x.dataset.kindToggle);
-    saveSetting('index_kinds', kinds);
+    await saveSetting('index_kinds', kinds);
+    showUnindexedTypes(page());
   }
   if (t.dataset.skipToggle) {
     const kinds = $$('[data-skip-toggle]', page()).filter((x) => x.checked).map((x) => x.dataset.skipToggle);
@@ -567,6 +582,19 @@ page().addEventListener('click', async (e) => {
       await sb.loadChats();
       renderIdxTable();
     } catch (err) { fail(err); }
+    return;
+  }
+  if (d.removeUnindexed !== undefined) {
+    const box = $('#unindexedTypes', page());
+    if (!await confirmDialog(`Remove ${plural(Number(box?.dataset.n || 0), 'file')} from the index?`,
+      'They are the types you no longer index. Nothing changes in Telegram, and your folders, stars, tags and notes for them are kept: turn a type back on and its files come back, in their folders.', 'Remove', true)) return;
+    t.disabled = true;
+    try {
+      const r = await api(A('/maintenance/remove_unindexed_types'), { method: 'POST' });
+      toast(`Removed ${fmtNum(r.removed)} files from the index`);
+      import('./sidebar.js').then((m) => m.loadChats());   // the chats' file counts
+      showUnindexedTypes(page());
+    } catch (err) { fail(err); } finally { t.disabled = false; }
     return;
   }
   if (d.maint) {

@@ -21,6 +21,10 @@ If it doesn't start, install FUSE (`sudo apt install fuse3`, `sudo dnf install f
 
 **Upgrading from 0.1 / 1.x.** On first start TG Drive finds data from the old zip version (in `~/tgdrive/data`, `~/Downloads/tgdrive/data` and similar) and offers to import your signed-in accounts and index, so you don't have to sign in or re-index. Running from the old folder keeps using its `data/` folder directly.
 
+## On Android
+
+TG Drive for Android runs this same service on the phone, with a native interface after the desktop design: download the APK from the latest `tgdrive-android-v…` release. See [android/README.md](android/README.md); to continue developing it, [android/HANDOVER.md](android/HANDOVER.md).
+
 ## First start
 
 1. TG Drive asks for a Telegram app key: sign in at [my.telegram.org/apps](https://my.telegram.org/apps), create an app (any name, platform Desktop) and paste the **api_id** and **api_hash**. They stay on this computer.

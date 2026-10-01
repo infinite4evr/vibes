@@ -16,8 +16,7 @@ import time
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, Body, Request
-from fastapi.responses import JSONResponse, PlainTextResponse
+from .webapp import APIRouter, Body, JSONResponse, PlainTextResponse, Request
 from telethon import utils as tl_utils
 from telethon.tl import types
 
@@ -432,7 +431,7 @@ async def debug_log(lines: int = 400, which: str = "debug"):
 
 @router.get("/api/logs/download")
 async def download_log(which: str = "debug"):
-    from fastapi.responses import FileResponse
+    from .webapp import FileResponse
     from . import maintenance
     p = maintenance.debug_log_path() if which == "debug" else maintenance.log_path()
     if not p.exists():

@@ -25,7 +25,48 @@ GENTLE_REST = 3.0      # rest this many times as long as the work took
 MAX_REST = 30.0
 
 
+_forced: Optional[str] = None
+_quiet_until = 0.0
+_foreground_until = 0.0
+FOREGROUND_HOLD = 0.6   # after a request someone is waiting on, background work steps aside this long
+MAX_YIELD = 10.0        # but never waits more than this per batch (it must still get done)
+
+
+def foreground() -> None:
+    """Someone is waiting on an answer (a list, a search, a picture): background jobs pause between
+    their batches for a moment, so they don't compete with it for Python (one thread runs at a time)."""
+    global _foreground_until
+    _foreground_until = time.monotonic() + FOREGROUND_HOLD
+
+
+def _yield_left(start: float) -> float:
+    now = time.monotonic()
+    return 0.0 if now - start >= MAX_YIELD else max(0.0, _foreground_until - now)
+
+
+def force(m: Optional[str]) -> None:
+    """Override the setting for this run (Android's background sync holds the CPU jobs: "paused"
+    while nobody is looking, so a sync wakes the phone briefly; None goes back to the setting)."""
+    global _forced
+    _forced = m if m in MODES else None
+
+
+def quiet_for(seconds: float) -> None:
+    """Hold the CPU jobs for the first moments after starting (phones: the first screens load first)."""
+    global _quiet_until
+    _quiet_until = time.monotonic() + seconds
+
+
+def quiet_left() -> float:
+    """Seconds left of the quiet start (0 when there is none, as on the desktop)."""
+    return max(0.0, _quiet_until - time.monotonic()) if _quiet_until else 0.0
+
+
 def mode() -> str:
+    if _forced:
+        return _forced
+    if _quiet_until and time.monotonic() < _quiet_until:
+        return "paused"
     from .settings import settings
     m = settings.get("background_work") or "gentle"
     return m if m in MODES else "gentle"
@@ -50,6 +91,9 @@ def rest(elapsed: float, stop: Optional[threading.Event] = None) -> None:
     wait = rest_for(elapsed)
     if wait:
         stop.wait(wait) if stop is not None else time.sleep(wait)
+    start = time.monotonic()
+    while (left := _yield_left(start)) > 0 and not (stop is not None and stop.is_set()):
+        stop.wait(min(left, 0.25)) if stop is not None else time.sleep(min(left, 0.25))
 
 
 def wait_while_paused(stop: Optional[threading.Event] = None, state_cb=None) -> None:
@@ -64,5 +108,8 @@ async def arest(elapsed: float) -> None:
     wait = rest_for(elapsed)
     if wait:
         await asyncio.sleep(wait)
+    start = time.monotonic()
+    while (left := _yield_left(start)) > 0:
+        await asyncio.sleep(min(left, 0.25))
     while mode() == "paused":
         await asyncio.sleep(5)

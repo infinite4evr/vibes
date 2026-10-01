@@ -461,6 +461,62 @@ def test_streaming_ranges_and_cache(tmp_path):
     run(go())
 
 
+def test_download_resumed_while_its_last_save_still_runs(tmp_path, fresh_settings, monkeypatch):
+    """Pausing cancels a download while a worker thread may still be saving its .part.map; the
+    cancelled download then saves once more. The two saves must not collide (they did: same temp
+    file, "No such file or directory", and the download ended in an error)."""
+    import threading
+    from tgdrive import transfers as tr
+    real_fsync, real_replace = tr.os.fsync, tr.os.replace
+    started = threading.Event()
+    both = threading.Barrier(2, timeout=1.5)
+    calls = []
+
+    def fsync(fd):
+        calls.append(fd)
+        if len(calls) <= 2:          # the first save, and the one the cancelled download makes
+            started.set()
+            try:
+                both.wait()          # …run together (or one after the other, when they take turns)
+            except threading.BrokenBarrierError:
+                pass
+        real_fsync(fd)
+
+    def replace(src, dst):
+        if str(dst).endswith(".part.map"):
+            time.sleep(0.05)         # a slow disk: the window where the other save overwrites .tmp
+        real_replace(src, dst)
+
+    monkeypatch.setattr(tr.os, "fsync", fsync)
+    monkeypatch.setattr(tr.os, "replace", replace)
+
+    async def go():
+        acc, client = make_account(tmp_path)
+        await index_all(acc)
+        cid, mid = -CH - 101, 1
+        payload = _big_payload(acc, client)
+        tid = acc.transfers.add_download(cid, mid)
+        for _ in range(500):
+            await asyncio.sleep(0.01)
+            if started.is_set():
+                break
+        assert started.is_set(), "the download never saved its map"
+        acc.transfers.pause(tid)
+        await asyncio.sleep(0.3)
+        acc.transfers.resume(tid)
+        for _ in range(800):
+            await asyncio.sleep(0.01)
+            if acc.db.get_transfer(tid)["status"] in ("done", "error"):
+                break
+        await asyncio.sleep(0.3)
+        t = acc.db.get_transfer(tid)
+        assert t["status"] == "done", t
+        assert Path(t["path"]).read_bytes() == payload
+        acc.db.close()
+
+    run(go())
+
+
 def test_download_parallel_pause_resume_and_upload(tmp_path, fresh_settings):
     async def go():
         acc, client = make_account(tmp_path)
@@ -540,7 +596,7 @@ def test_download_parallel_pause_resume_and_upload(tmp_path, fresh_settings):
 
 # --------------------------------------------------------------------- api
 def test_api(tmp_path):
-    from fastapi.testclient import TestClient
+    from starlette.testclient import TestClient
 
     from tgdrive import api, config
 
@@ -602,6 +658,7 @@ def test_api(tmp_path):
     assert "chats" in c.get(f"/api/a/{acc.uid}/suggest", params={"q": "phys"}).json()
     assert c.get(f"/api/a/{acc.uid}/storage").json()["total"]["n"] > 0
     assert "groups" in c.get(f"/api/a/{acc.uid}/duplicates").json()
+    assert "groups" in c.get(f"/api/a/{acc.uid}/duplicates", params={"mode": "similar"}).json()
     csv_body = c.get(f"/api/a/{acc.uid}/export.csv", params={"q": "type:video"}).text
     assert csv_body.count("\n") == 11
     # Security: foreign Host, missing header, token.
@@ -694,3 +751,61 @@ def test_semantic_related_results(tmp_path):
     assert "Environment and Ecology notes.pdf" in related
     assert "Cricket world cup photos.zip" not in related
     acc.db.close()
+
+
+def test_remove_types_no_longer_indexed(tmp_path, fresh_settings):
+    """Settings → Indexing types narrowed to documents: the photos, videos … already indexed stay until
+    "Remove types no longer indexed" removes them. Folders and stars are kept, documents untouched, and
+    the indexer scans photos and videos again if they are turned back on."""
+    from tgdrive import maintenance
+    from tgdrive.accounts import AccountManager
+    from tgdrive.settings import settings
+
+    async def go():
+        acc, client = make_account(tmp_path)
+        manager = AccountManager()   # follows the settings, as in the app
+        manager.accounts[acc.uid] = acc
+        await index_all(acc)
+        db = acc.db
+        before = {r["kind"]: r["n"] for r in db.q("SELECT kind, COUNT(*) AS n FROM files GROUP BY kind")}
+        assert before.get("document") and before.get("photo")
+        photo = db.one("SELECT chat_id, msg_id FROM files WHERE kind='photo' LIMIT 1")
+        folder = await acc.drive.create_folder("Keep me", None)
+        await acc.drive.place([(photo["chat_id"], photo["msg_id"])], folder["id"])
+        assert db.one("SELECT COUNT(*) AS n FROM index_progress WHERE filter='media'")["n"] > 0
+
+        settings.update({"index_kinds": ["document"]})
+        found = await maintenance.run_task(acc, "unindexed_types")
+        gone = sum(n for k, n in before.items() if k != "document")
+        assert found["files"] == gone and found["bytes"] > 0
+        assert {r["kind"] for r in found["kinds"]} == {k for k in before if k != "document"}
+
+        res = await maintenance.run_task(acc, "remove_unindexed_types")
+        assert res["ok"] and res["removed"] == gone
+        after = {r["kind"]: r["n"] for r in db.q("SELECT kind, COUNT(*) AS n FROM files GROUP BY kind")}
+        assert after == {"document": before["document"]}
+        # Stats, the chats' counts and search follow; nothing left to remove.
+        assert db.totals()["files"] == before["document"]
+        assert sum(c["file_count"] for c in db.q("SELECT file_count FROM chats")) == before["document"]
+        assert (await maintenance.run_task(acc, "unindexed_types"))["files"] == 0
+        assert all(f["kind"] == "document" for f in await search(acc))
+        # The folder placement stays (the photo comes back into it if photos are indexed again) …
+        assert db.one("SELECT folder_id FROM placements WHERE chat_id=? AND msg_id=?",
+                      (photo["chat_id"], photo["msg_id"]))["folder_id"] == folder["id"]
+        assert any(a["detail"].startswith(f"Removed {gone} files") for a in db.q("SELECT detail FROM activity"))
+        assert not db.chats_needing_index()
+
+        # Photos and videos back on: the chats are indexed again (also photos sent as files, which come
+        # with the documents), and the photo is back in its folder.
+        settings.update({"index_kinds": ["document", "photo", "video"]})
+        assert db.chats_needing_index()
+        for chat in db.chats_needing_index():
+            await acc.indexer.index_chat(db.get_chat(chat["id"]))
+        assert db.one("SELECT COUNT(*) AS n FROM files WHERE kind='photo'")["n"] == before["photo"]
+        assert db.one("SELECT COUNT(*) AS n FROM files WHERE kind='video'")["n"] == before.get("video", 0)
+        assert db.one("SELECT p.folder_id FROM files f JOIN placements p ON p.chat_id=f.chat_id AND "
+                      "p.msg_id=f.msg_id WHERE f.chat_id=? AND f.msg_id=?",
+                      (photo["chat_id"], photo["msg_id"]))["folder_id"] == folder["id"]
+        db.close()
+
+    run(go())

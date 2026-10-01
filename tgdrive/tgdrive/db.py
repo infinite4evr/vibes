@@ -693,6 +693,15 @@ class Database:
                    (chat_id,))
         self.refresh_file_count(chat_id)
 
+    def rescan_filters(self, filters: list[str]) -> None:
+        """Scan these Telegram filters again from the start in every indexed chat (file types were turned
+        on: what was skipped while they were off, or removed from the index, is found again)."""
+        if not filters:
+            return
+        with self.tx():
+            self.x(f"DELETE FROM index_progress WHERE filter IN ({','.join('?' * len(filters))})", filters)
+            self.x("UPDATE chats SET index_state='pending' WHERE excluded=0 AND index_state NOT IN ('gone', 'pending')")
+
     # --------------------------------------------------------------- progress
     def get_progress(self, chat_id: int, filt: str, conn: Optional[sqlite3.Connection] = None) -> dict:
         sql, args = "SELECT * FROM index_progress WHERE chat_id=? AND filter=?", (chat_id, filt)

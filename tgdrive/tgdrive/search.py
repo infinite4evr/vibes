@@ -21,15 +21,19 @@ import base64
 import hashlib
 import json
 import logging
+import os
 import re
 import threading
 import time
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Optional
 
-import numpy as np
+try:
+    import numpy as np
+except Exception:  # no meaning search without numpy (see semantic.py)
+    np = None
 
-from . import query, textproc
+from . import fuzzy, query, textproc
 from .db import Reader
 
 if TYPE_CHECKING:
@@ -44,8 +48,10 @@ except Exception:  # pragma: no cover
     _STEM = None
 
 try:
+    if os.environ.get("TGDRIVE_NO_RAPIDFUZZ"):
+        raise ImportError("disabled")
     from rapidfuzz import distance as _rf_distance, process as _rf_process
-except Exception:  # pragma: no cover
+except Exception:  # not installed (the Android app): fuzzy.py gives the same answers
     _rf_process = None
 
 WEIGHTS = "10.0, 12.0, 2.0, 1.2, 1.0, 5.0"  # name, alias, caption, chat_title, sender_name, keywords
@@ -87,6 +93,7 @@ class Vocab:
     def __init__(self):
         self.terms: list[str] = []
         self.freq: dict[str, int] = {}
+        self.matcher: Optional[fuzzy.Matcher] = None
         self.built = 0.0
         self.building = False
         self.lock = threading.Lock()
@@ -106,22 +113,26 @@ class Vocab:
                              ).fetchall()
             freq = {t: d for t, d in rows if not t.isdigit()}
             terms = [t for t in freq if len(t) >= 3]
-            self.freq, self.terms, self.built = freq, terms, time.time()
+            matcher = None if _rf_process else fuzzy.Matcher(terms)
+            self.freq, self.terms, self.matcher, self.built = freq, terms, matcher, time.time()
             log.info("search vocabulary: %d terms", len(terms))
         finally:
             self.building = False
 
     def corrections(self, word: str, limit: int = 3) -> list[str]:
         """Likely intended spellings (stems) for a word that is rare or absent in the index."""
-        if not _rf_process or not self.terms or len(word) < 4 or word.isdigit() or not word.isascii():
+        if not (_rf_process or self.matcher) or not self.terms or len(word) < 4 or word.isdigit() or not word.isascii():
             return []
         s = stem(word)
         own = self.freq.get(s, 0)
         max_d = 1 if len(s) <= 5 else 2
-        cands = _rf_process.extract(s, self.terms, scorer=_rf_distance.DamerauLevenshtein.distance,
-                                    score_cutoff=max_d, limit=40)
+        if _rf_process:
+            cands = [(t, d) for t, d, _ in _rf_process.extract(
+                s, self.terms, scorer=_rf_distance.DamerauLevenshtein.distance, score_cutoff=max_d, limit=40)]
+        else:
+            cands = self.matcher.within(s, max_d, limit=40)
         best = []
-        for term, dist, _ in cands:
+        for term, dist in cands:
             if term == s or term.startswith(s) or s.startswith(term):
                 continue
             f = self.freq.get(term, 0)
@@ -186,7 +197,7 @@ class SearchEngine:
     def semantic_enabled(self) -> bool:
         from .settings import settings
         sem = getattr(self.acc, "semantic", None)
-        return bool(sem and settings.get("search_semantic", True) and sem.enabled)
+        return bool(np is not None and sem and settings.get("search_semantic", True) and sem.enabled)
 
     # ------------------------------------------------------------- plan
     def plan(self, f: dict) -> Optional[TextPlan]:

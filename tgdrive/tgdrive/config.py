@@ -69,6 +69,8 @@ RESYNC_INTERVAL = int(os.environ.get("TGDRIVE_RESYNC", "1800"))
 
 
 def default_download_dir() -> Path:
+    if os.environ.get("TGDRIVE_DOWNLOADS"):   # the Android app passes the phone's Download folder
+        return Path(os.environ["TGDRIVE_DOWNLOADS"])
     d = None
     user_dirs = _xdg("XDG_CONFIG_HOME", ".config") / "user-dirs.dirs"
     try:

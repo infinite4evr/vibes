@@ -20,7 +20,7 @@ def fresh_settings(tmp_path):
     st.settings.data.update(search_semantic=False, download_dir=str(tmp_path / "Downloads"), notifications=True,
                             verify_deleted=False)
     st.settings.listeners = [fn for fn in st.settings.listeners if not getattr(fn, "__self__", None)
-                             or type(fn.__self__).__name__ not in ("Transfers",)]
+                             or type(fn.__self__).__name__ not in ("Transfers", "AccountManager")]
     yield st.settings
 
 
