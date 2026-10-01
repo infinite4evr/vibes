@@ -106,7 +106,10 @@ jobs:
           b64="$RUNNER_TEMP/tgdrive.b64"
           # The base64 as any tool writes it: wrapped lines (also Windows line ends), spaces, the
           # -----BEGIN/END----- lines of Windows' certutil, URL-safe letters, missing padding.
-          printf '%s' "$KEYSTORE_B64" | tr -d '\r' | grep -v -- '-----' | tr -d ' \n\t' | tr '_-' '/+' > "$b64"
+          # Also a data:…;base64, prefix, quotes or other stray characters from copying: anything outside
+          # the base64 alphabet is dropped (the keystore check below catches a value that was really damaged).
+          printf '%s' "$KEYSTORE_B64" | tr -d '\r' | grep -v -- '-----' | sed 's/^.*;base64,//' | tr '_-' '/+' \
+            | tr -cd 'A-Za-z0-9+/' > "$b64"
           pad=$(( (4 - $(wc -c < "$b64") % 4) % 4 ))
           [ "$pad" -eq 0 ] || printf '%*s' "$pad" '' | tr ' ' '=' >> "$b64"
           if ! base64 -d "$b64" > "$ks" 2>/dev/null || [ ! -s "$ks" ]; then
