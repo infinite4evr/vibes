@@ -90,6 +90,18 @@ jobs:
             echo "::warning::No TGDRIVE_KEYSTORE_BASE64 secret: this APK is signed with a throwaway key and won't install as an update (see tgdrive/android/signing/README.md)"
             exit 0
           fi
+          # A secret that can't be used: say why (without showing it), and build with a throwaway key,
+          # so there is still an APK to test (it won't install over one signed with the real key).
+          unusable() {
+            echo "::error::Signing key: $1 This APK is signed with a throwaway key instead. See tgdrive/android/signing/README.md."
+            exit 0
+          }
+          n=${#KEYSTORE_B64}
+          case "$KEYSTORE_B64" in
+            /*|~*|[A-Za-z]:\\*|*.p12|*.jks|*.keystore)
+              unusable "TGDRIVE_KEYSTORE_BASE64 looks like a file path ($n characters); it must hold the file's contents, base64-encoded.";;
+          esac
+          [ "$n" -ge 1000 ] || unusable "TGDRIVE_KEYSTORE_BASE64 is $n characters long, far too short for a keystore (about 3 000–5 000 characters of base64). Was the password pasted there?"
           ks="$RUNNER_TEMP/tgdrive.p12"
           b64="$RUNNER_TEMP/tgdrive.b64"
           # The base64 as any tool writes it: wrapped lines (also Windows line ends), spaces, the
@@ -98,18 +110,19 @@ jobs:
           pad=$(( (4 - $(wc -c < "$b64") % 4) % 4 ))
           [ "$pad" -eq 0 ] || printf '%*s' "$pad" '' | tr ' ' '=' >> "$b64"
           if ! base64 -d "$b64" > "$ks" 2>/dev/null || [ ! -s "$ks" ]; then
-            echo "::error::TGDRIVE_KEYSTORE_BASE64 isn't the keystore file in base64. Make it again with the command in tgdrive/android/signing/README.md and paste the whole output."
-            exit 1
+            unusable "TGDRIVE_KEYSTORE_BASE64 isn't base64 text ($n characters). Encode the .p12 file and paste the whole output."
           fi
           rm -f "$b64"
           if ! list=$(keytool -list -v -keystore "$ks" -storepass "$KEYSTORE_PASSWORD" 2>&1); then
-            echo "::error::The keystore in TGDRIVE_KEYSTORE_BASE64 doesn't open with TGDRIVE_KEYSTORE_PASSWORD ($(echo "$list" | grep -i -m1 'error\|exception' | cut -c1-200)). Check the password, or that the secret holds the .p12 file."
-            exit 1
+            if echo "$list" | grep -qi "password"; then
+              unusable "the keystore doesn't open with TGDRIVE_KEYSTORE_PASSWORD (wrong password)."
+            fi
+            unusable "TGDRIVE_KEYSTORE_BASE64 decodes to something that isn't a keystore ($(echo "$list" | grep -i -m1 'error\|exception' | cut -c1-120)). Encode the .p12 file made by keytool."
           fi
           alias=$(echo "$list" | sed -n 's/^Alias name: //p')
           if ! echo "$alias" | grep -qx tgdrive; then
             first=$(echo "$alias" | head -1)
-            [ -n "$first" ] || { echo "::error::The keystore has no key in it."; exit 1; }
+            [ -n "$first" ] || unusable "the keystore has no key in it."
             echo "::notice::The keystore's key is called “$first” (not “tgdrive”): signing with it."
             echo "TGDRIVE_KEY_ALIAS=$first" >> "$GITHUB_ENV"
           fi

@@ -31,12 +31,16 @@ The key is **not** in the repository. CI reads it from two repository secrets:
 The first APK built after this still needs one uninstall and reinstall, because older builds
 were signed with throwaway keys. Every build after that installs as an update.
 
-## If the *Signing key* step fails
+## If the *Signing key* step reports a problem
 
-It says why:
-- "isn't the keystore file in base64": the secret holds something else (a path, the password, part
-  of the text). Encode the `.p12` again and paste the whole output.
-- "doesn't open with TGDRIVE_KEYSTORE_PASSWORD": the password secret doesn't match the keystore.
+The build still finishes, signed with a throwaway key (so there's an APK to test), and the step
+says what's wrong with the secrets without showing them:
+- "looks like a file path" or "far too short for a keystore": `TGDRIVE_KEYSTORE_BASE64` must hold
+  the **contents** of the `.p12` file, base64-encoded (3 000 to 5 000 characters), not its path or
+  the password.
+- "isn't base64 text" or "decodes to something that isn't a keystore": encode the `.p12` file again
+  (step 2) and paste the whole output.
+- "wrong password": `TGDRIVE_KEYSTORE_PASSWORD` doesn't match the keystore.
 - A key that isn't called `tgdrive` is fine: CI uses the keystore's first key and says so.
 
 ## The certificate check
