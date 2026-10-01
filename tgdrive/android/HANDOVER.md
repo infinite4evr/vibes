@@ -131,6 +131,15 @@ a home-screen widget, a notification when new files arrive.
   was paused or replaced never writes its error over the transfer's status. The regression test
   `test_download_resumed_while_its_last_save_still_runs` forces the overlap (it failed 3 of 3
   runs before the fix).
+- **File types no longer indexed** (Settings → Indexing): turning a type off only stops indexing it.
+  "Remove types no longer indexed" shows how many of those files are still in the index and removes
+  them, in batches of 2 000 on the writer thread (`maintenance.remove_unindexed_types`; tasks
+  `unindexed_types` / `remove_unindexed_types` of `POST /api/a/{aid}/maintenance/{task}`, on desktop
+  and Android). Nothing changes in Telegram, and placements (folders, stars, tags, notes) are kept.
+  Turning a type on resets the progress of every Telegram filter that finds it
+  (`AccountManager._on_settings` → `Database.rescan_filters`; photos sent as files come with the
+  *document* filter) and marks the chats pending, so its files come back, into their folders. That
+  also covers what was posted while the type was off, which used to be missed until a full re-index.
 - **Busy index:** SQLite "database is locked/busy" (a long background write, mostly on slow phones)
   answers 503 `{"busy": true}` instead of a crash message. The app retries reads up to 3 times;
   writes say "TG Drive is busy saving its index. Try again in a moment."

@@ -5,9 +5,12 @@ import app.tgdrive.data.FileItem
 import app.tgdrive.data.Folder
 import app.tgdrive.data.JsonCodec
 import app.tgdrive.data.arr
+import app.tgdrive.data.asObj
+import app.tgdrive.data.long
 import app.tgdrive.data.str
 import app.tgdrive.engine.EngineState
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -246,6 +249,19 @@ fun main(args: Array<String>): Unit = runBlocking {
     chats.firstOrNull()?.let { c -> check("topics") { api.topics(aid, c.id) } }
     check("maintenance stats") { api.maintenance(aid, "stats") }
     check("maintenance integrity") { api.maintenance(aid, "integrity") }
+    check("types no longer indexed: count, remove, turn back on") {
+        val all = listOf("photo", "video", "document", "audio", "voice", "round", "gif")
+        api.patchSettings(buildJsonObject { put("index_kinds", JsonArray((all - "gif").map { JsonPrimitive(it) })) })
+        try {
+            val found = api.maintenance(aid, "unindexed_types").asObj()
+            expect(found.long("files") > 0 && found.arr("kinds").isNotEmpty(), "GIFs counted: $found")
+            val removed = api.maintenance(aid, "remove_unindexed_types").asObj()
+            expect(removed.long("removed") == found.long("files"), "all of them removed: $removed")
+            expect(api.maintenance(aid, "unindexed_types").asObj().long("files") == 0L, "none left")
+        } finally {
+            api.patchSettings(buildJsonObject { put("index_kinds", JsonArray(all.map { JsonPrimitive(it) })) })
+        }
+    }
     check("backups") { api.backups(aid) }
     check("syncDrive") { api.syncDrive(aid) }
     check("exportManifest + import (merge)") { val m = api.exportManifest(aid); api.importManifest(aid, JsonCodec.parseToJsonElement(m), "merge") }

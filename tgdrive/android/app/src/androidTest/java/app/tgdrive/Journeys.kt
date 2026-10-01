@@ -85,6 +85,10 @@ class Journeys : UiDriver() {
     private suspend fun file(q: String, name: String): FileItem? =
         g.api.files(aid, mapOf("q" to q, "limit" to "50", "copies" to "hide")).items.firstOrNull { it.name == name || it.displayName == name }
 
+    /** Settings → Indexing → File types to index, as the app has it. */
+    private fun indexKinds(): List<String> = (g.state.settings.value["index_kinds"] as? kotlinx.serialization.json.JsonArray)
+        ?.mapNotNull { (it as? kotlinx.serialization.json.JsonPrimitive)?.content }.orEmpty()
+
     /** [uri] shared to TG Drive from another app (the share sheet's ACTION_SEND). */
     private fun share(uri: android.net.Uri) {
         app.startActivity(android.content.Intent(android.content.Intent.ACTION_SEND)
@@ -498,6 +502,36 @@ class Journeys : UiDriver() {
                 } finally {
                     device.executeShellCommand("settings put system font_scale 1.0")
                     Thread.sleep(2000)
+                }
+                home()
+            }
+
+            // Settings → Indexing: GIFs turned off still sit in the index; "Remove types no longer indexed"
+            // takes them out (after asking), and the other types stay.
+            step("remove-types-no-longer-indexed") {
+                val all = listOf("photo", "video", "document", "audio", "voice", "round", "gif")
+                val gifs = runBlocking { g.api.files(aid, mapOf("kinds" to "gif", "limit" to "200")).items.size }
+                if (gifs == 0) throw AssertionError("the sample has no GIFs")
+                try {
+                    open("settings/indexing")
+                    click(By.text("GIF"), "the GIF type")
+                    eventually("GIFs are no longer indexed") { "gif" !in indexKinds() }
+                    scrollTo(By.text("Remove types no longer indexed"), "Remove types no longer indexed")
+                    need(By.textContains("gif"), "how many GIFs are still in the index")
+                    shot("e2e-unindexed-types", 300)
+                    click(By.text("Remove types no longer indexed"), "Remove types no longer indexed")
+                    need(By.textContains("from the index?"), "the confirmation", 8000)
+                    tap("Remove")
+                    eventually("the GIFs left the index", 30_000) {
+                        g.api.files(aid, mapOf("kinds" to "gif", "limit" to "5")).items.isEmpty()
+                    }
+                    eventually("the other types stay") { g.api.files(aid, mapOf("kinds" to "photo", "limit" to "5")).items.isNotEmpty() }
+                    eventually("nothing left to remove", 15_000) { find(By.text("Remove types no longer indexed"), 300) == null }
+                } finally {
+                    if (indexKinds().toSet() != all.toSet())
+                        runBlocking { withContext(Dispatchers.Main) {
+                            g.state.setSetting("index_kinds", kotlinx.serialization.json.JsonArray(all.map { kotlinx.serialization.json.JsonPrimitive(it) }))
+                        } }
                 }
                 home()
             }

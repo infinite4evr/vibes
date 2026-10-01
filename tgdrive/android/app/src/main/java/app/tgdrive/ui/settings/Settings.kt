@@ -518,6 +518,54 @@ private fun Streaming(state: AppState) {
     }
 }
 
+/**
+ * Files of the types no longer indexed: how many are still in the index, and a button that removes
+ * them (nothing changes in Telegram; folders, stars, tags and notes are kept for when a type comes back).
+ * Shows only when there is something to remove.
+ */
+@Composable
+private fun UnindexedTypes(state: AppState, kinds: List<String>) {
+    val scope = rememberCoroutineScope()
+    var found by remember { mutableStateOf<JsonObject?>(null) }
+    var reload by remember { mutableIntStateOf(0) }
+    var asking by remember { mutableStateOf(false) }
+    var busy by remember { mutableStateOf(false) }
+    LaunchedEffect(kinds, reload) {
+        delay(700)   // a type just turned off: its setting is saved first
+        found = runCatching { state.api.maintenance(state.aid.value, "unindexed_types") as? JsonObject }.getOrNull()
+    }
+    val f = found ?: return
+    val files = f.long("files")
+    if (files <= 0) return
+    val what = f.arr("kinds").mapNotNull { it as? JsonObject }.joinToString(", ") {
+        val k = it.str("kind").orEmpty()
+        "${Format.num(it.long("n"))} ${(Format.KIND_NAME[k] ?: k).lowercase()}"
+    }
+    Divider()
+    Row2("Types no longer indexed", "Still in the index: $what (${Format.size(f.long("bytes"))}).", below = {
+        TgButton("Remove types no longer indexed", { asking = true }, small = true, icon = TgIcons.trash, busy = busy)
+    })
+    if (asking) ConfirmDialog("Remove ${Format.num(files)} ${if (files == 1L) "file" else "files"} from the index?",
+        "They are the types you no longer index. Nothing changes in Telegram, and your folders, stars, tags and notes " +
+            "for them are kept: turn a type back on and its files come back, in their folders.",
+        "Remove", danger = true, onDismiss = { asking = false }, onConfirm = {
+            busy = true
+            scope.launch {
+                try {
+                    val r = state.api.maintenance(state.aid.value, "remove_unindexed_types") as? JsonObject ?: JsonObject(emptyMap())
+                    state.message("Removed ${Format.num(r.long("removed"))} files from the index")
+                    state.loadChats()        // the chats' file counts
+                    state.changed("index")   // lists on screen
+                } catch (e: Exception) {
+                    state.failed("Couldn't remove them.", e)
+                } finally {
+                    busy = false
+                    reload++
+                }
+            }
+        })
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun Indexing(state: AppState) {
@@ -525,7 +573,8 @@ private fun Indexing(state: AppState) {
     val kinds = (settings["index_kinds"] as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.contentOrNull }.orEmpty()
     val skip = (settings["index_skip_kinds_of_chat"] as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.contentOrNull }.orEmpty()
     Group {
-        Row2("File types to index", "Turning a type off stops indexing it; files already indexed stay until you re-index the chat.", below = {
+        Row2("File types to index", "Turning a type off stops indexing it; files already indexed stay until you remove them below. " +
+            "Turning one back on finds its files again.", below = {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 listOf("photo", "video", "document", "audio", "voice", "round", "gif").forEach { k ->
                     val on = k in kinds
@@ -535,6 +584,7 @@ private fun Indexing(state: AppState) {
                 }
             }
         })
+        UnindexedTypes(state, kinds)
         Divider()
         Row2("Skip these kinds of chats", "Useful if private chats or bots are full of files you don't need in TG Drive.", below = {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
