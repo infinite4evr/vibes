@@ -116,6 +116,14 @@ jobs:
             unusable "TGDRIVE_KEYSTORE_BASE64 isn't base64 text ($n characters). Encode the .p12 file and paste the whole output."
           fi
           rm -f "$b64"
+          # A password pasted with a line end or spaces around it: try it without them too.
+          if ! keytool -list -keystore "$ks" -storepass "$KEYSTORE_PASSWORD" > /dev/null 2>&1; then
+            trimmed=$(printf '%s' "$KEYSTORE_PASSWORD" | tr -d '\r\n' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+            if [ "$trimmed" != "$KEYSTORE_PASSWORD" ] && keytool -list -keystore "$ks" -storepass "$trimmed" > /dev/null 2>&1; then
+              echo "::notice::TGDRIVE_KEYSTORE_PASSWORD has spaces or a line end around it: using it without them."
+              KEYSTORE_PASSWORD=$trimmed
+            fi
+          fi
           if ! list=$(keytool -list -v -keystore "$ks" -storepass "$KEYSTORE_PASSWORD" 2>&1); then
             if echo "$list" | grep -qi "password"; then
               unusable "the keystore doesn't open with TGDRIVE_KEYSTORE_PASSWORD (wrong password)."
