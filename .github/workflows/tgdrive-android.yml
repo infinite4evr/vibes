@@ -90,8 +90,30 @@ jobs:
             echo "::warning::No TGDRIVE_KEYSTORE_BASE64 secret: this APK is signed with a throwaway key and won't install as an update (see tgdrive/android/signing/README.md)"
             exit 0
           fi
-          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/tgdrive.p12"
-          echo "TGDRIVE_KEYSTORE=$RUNNER_TEMP/tgdrive.p12" >> "$GITHUB_ENV"
+          ks="$RUNNER_TEMP/tgdrive.p12"
+          b64="$RUNNER_TEMP/tgdrive.b64"
+          # The base64 as any tool writes it: wrapped lines (also Windows line ends), spaces, the
+          # -----BEGIN/END----- lines of Windows' certutil, URL-safe letters, missing padding.
+          printf '%s' "$KEYSTORE_B64" | tr -d '\r' | grep -v -- '-----' | tr -d ' \n\t' | tr '_-' '/+' > "$b64"
+          pad=$(( (4 - $(wc -c < "$b64") % 4) % 4 ))
+          [ "$pad" -eq 0 ] || printf '%*s' "$pad" '' | tr ' ' '=' >> "$b64"
+          if ! base64 -d "$b64" > "$ks" 2>/dev/null || [ ! -s "$ks" ]; then
+            echo "::error::TGDRIVE_KEYSTORE_BASE64 isn't the keystore file in base64. Make it again with the command in tgdrive/android/signing/README.md and paste the whole output."
+            exit 1
+          fi
+          rm -f "$b64"
+          if ! list=$(keytool -list -v -keystore "$ks" -storepass "$KEYSTORE_PASSWORD" 2>&1); then
+            echo "::error::The keystore in TGDRIVE_KEYSTORE_BASE64 doesn't open with TGDRIVE_KEYSTORE_PASSWORD ($(echo "$list" | grep -i -m1 'error\|exception' | cut -c1-200)). Check the password, or that the secret holds the .p12 file."
+            exit 1
+          fi
+          alias=$(echo "$list" | sed -n 's/^Alias name: //p')
+          if ! echo "$alias" | grep -qx tgdrive; then
+            first=$(echo "$alias" | head -1)
+            [ -n "$first" ] || { echo "::error::The keystore has no key in it."; exit 1; }
+            echo "::notice::The keystore's key is called “$first” (not “tgdrive”): signing with it."
+            echo "TGDRIVE_KEY_ALIAS=$first" >> "$GITHUB_ENV"
+          fi
+          echo "TGDRIVE_KEYSTORE=$ks" >> "$GITHUB_ENV"
           echo "TGDRIVE_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
       - name: Build release APK (arm64 phones and x86_64)
         run: |
