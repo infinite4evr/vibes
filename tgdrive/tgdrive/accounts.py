@@ -536,6 +536,7 @@ class AccountManager:
         # QR sign-ins that finished: kept a few minutes so the app can collect the result
         # (finishing removes the attempt from self.logins).
         self.done_logins: dict[str, tuple[float, "Login"]] = {}
+        self._index_kinds = set(settings.get("index_kinds") or [])
         settings.on_change(self._on_settings)
 
     def _on_settings(self, changed: set[str]) -> None:
@@ -562,6 +563,16 @@ class AccountManager:
         if "index_paused" in changed:
             for acc in self.accounts.values():
                 acc.indexer.pause() if settings.get("index_paused") else acc.indexer.resume()
+        if "index_kinds" in changed:
+            kinds = set(settings.get("index_kinds") or [])
+            added, self._index_kinds = kinds - self._index_kinds, kinds
+            if added:
+                # Types turned on: scan again with every Telegram filter that finds them (photos sent as
+                # files come with the documents), for what was skipped or removed while they were off.
+                from .indexer import FILTER_KINDS
+                filters = [f for f, ks in FILTER_KINDS.items() if ks & added]
+                for acc in self.accounts.values():
+                    acc.db.rescan_filters(filters)
         if changed & {"index_kinds", "index_skip_kinds_of_chat"}:
             for acc in self.accounts.values():
                 acc.indexer.poke()

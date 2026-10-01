@@ -12,7 +12,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
-from . import config
+from . import config, pace
 from .tasks import spawn
 from .db import Reader
 from .settings import settings
@@ -254,6 +254,64 @@ async def duplicates(acc: "Account", mode: str = "exact", offset: int = 0, limit
     return await acc.db.read.run(job, timeout=90)
 
 
+# ------------------------------------------------- types no longer indexed
+REMOVE_BATCH = 2000
+
+
+def _unindexed_kinds() -> list[str]:
+    from .extract import KINDS
+    keep = set(settings.get("index_kinds") or [])
+    return [k for k in KINDS if k not in keep]
+
+
+async def unindexed_types(acc: "Account") -> dict:
+    """Files of types that Settings → Indexing no longer indexes (they stay until removed here)."""
+    kinds = _unindexed_kinds()
+    if not kinds:
+        return {"kinds": [], "files": 0, "bytes": 0}
+    marks = ",".join("?" * len(kinds))
+
+    def job(r: Reader) -> list[dict]:
+        return [dict(row) for row in r.conn.execute(
+            f"SELECT kind, SUM(n) AS n, SUM(bytes) AS bytes FROM stats WHERE kind IN ({marks}) "
+            f"GROUP BY kind HAVING SUM(n) > 0 ORDER BY SUM(n) DESC", kinds)]
+    rows = await acc.db.read.run(job)
+    return {"kinds": rows, "files": sum(r["n"] or 0 for r in rows), "bytes": sum(r["bytes"] or 0 for r in rows)}
+
+
+async def remove_unindexed_types(acc: "Account") -> dict:
+    """Remove the index entries of every file whose type is no longer indexed: nothing on Telegram changes.
+
+    Folders, stars, tags and notes (placements) are kept: they come back with the files if the type is
+    indexed again (turning a type on scans for it again: Accounts._on_settings).
+    """
+    kinds = _unindexed_kinds()
+    t0 = time.time()
+    if not kinds:
+        return {"ok": True, "removed": 0, "kinds": [], "seconds": 0.0}
+    marks = ",".join("?" * len(kinds))
+    db = acc.db
+    ids = await db.read.run(lambda r: [row[0] for row in r.conn.execute(
+        f"SELECT id FROM files WHERE kind IN ({marks})", kinds)], timeout=600)
+
+    def delete(conn, batch: list[int]) -> None:
+        conn.execute(f"DELETE FROM files WHERE id IN ({','.join('?' * len(batch))})", batch)
+
+    # In small transactions on the writer thread: indexing and the app's own writes go on in between.
+    for i in range(0, len(ids), REMOVE_BATCH):
+        b0 = time.perf_counter()
+        await db.write(delete, ids[i:i + REMOVE_BATCH])
+        await pace.arest(time.perf_counter() - b0)
+
+    def finish(conn) -> None:
+        conn.execute("UPDATE chats SET file_count=COALESCE((SELECT SUM(n) FROM stats s WHERE s.chat_id=chats.id),0),"
+                     " total_bytes=COALESCE((SELECT SUM(bytes) FROM stats s WHERE s.chat_id=chats.id),0)")
+    await db.write(finish)
+    db.log_activity("index", f"Removed {len(ids)} files of types no longer indexed ({', '.join(kinds)})")
+    log.info("removed %s files of types no longer indexed (%s) in %.1f s", len(ids), ", ".join(kinds), time.time() - t0)
+    return {"ok": True, "removed": len(ids), "kinds": kinds, "seconds": round(time.time() - t0, 1)}
+
+
 # -------------------------------------------------------------- maintenance
 async def run_task(acc: "Account", task: str) -> dict:
     db = acc.db
@@ -301,6 +359,10 @@ async def run_task(acc: "Account", task: str) -> dict:
         return {"removed": acc.thumbs.clear()}
     elif task == "clear_stream_cache":
         return {"removed": acc.streamer.clear_cache()}
+    elif task == "unindexed_types":
+        return await unindexed_types(acc)
+    elif task == "remove_unindexed_types":
+        return await remove_unindexed_types(acc)
     elif task == "stats":
         def job(r: Reader):
             r.conn.execute("DELETE FROM stats")

@@ -751,3 +751,61 @@ def test_semantic_related_results(tmp_path):
     assert "Environment and Ecology notes.pdf" in related
     assert "Cricket world cup photos.zip" not in related
     acc.db.close()
+
+
+def test_remove_types_no_longer_indexed(tmp_path, fresh_settings):
+    """Settings → Indexing types narrowed to documents: the photos, videos … already indexed stay until
+    "Remove types no longer indexed" removes them. Folders and stars are kept, documents untouched, and
+    the indexer scans photos and videos again if they are turned back on."""
+    from tgdrive import maintenance
+    from tgdrive.accounts import AccountManager
+    from tgdrive.settings import settings
+
+    async def go():
+        acc, client = make_account(tmp_path)
+        manager = AccountManager()   # follows the settings, as in the app
+        manager.accounts[acc.uid] = acc
+        await index_all(acc)
+        db = acc.db
+        before = {r["kind"]: r["n"] for r in db.q("SELECT kind, COUNT(*) AS n FROM files GROUP BY kind")}
+        assert before.get("document") and before.get("photo")
+        photo = db.one("SELECT chat_id, msg_id FROM files WHERE kind='photo' LIMIT 1")
+        folder = await acc.drive.create_folder("Keep me", None)
+        await acc.drive.place([(photo["chat_id"], photo["msg_id"])], folder["id"])
+        assert db.one("SELECT COUNT(*) AS n FROM index_progress WHERE filter='media'")["n"] > 0
+
+        settings.update({"index_kinds": ["document"]})
+        found = await maintenance.run_task(acc, "unindexed_types")
+        gone = sum(n for k, n in before.items() if k != "document")
+        assert found["files"] == gone and found["bytes"] > 0
+        assert {r["kind"] for r in found["kinds"]} == {k for k in before if k != "document"}
+
+        res = await maintenance.run_task(acc, "remove_unindexed_types")
+        assert res["ok"] and res["removed"] == gone
+        after = {r["kind"]: r["n"] for r in db.q("SELECT kind, COUNT(*) AS n FROM files GROUP BY kind")}
+        assert after == {"document": before["document"]}
+        # Stats, the chats' counts and search follow; nothing left to remove.
+        assert db.totals()["files"] == before["document"]
+        assert sum(c["file_count"] for c in db.q("SELECT file_count FROM chats")) == before["document"]
+        assert (await maintenance.run_task(acc, "unindexed_types"))["files"] == 0
+        assert all(f["kind"] == "document" for f in await search(acc))
+        # The folder placement stays (the photo comes back into it if photos are indexed again) …
+        assert db.one("SELECT folder_id FROM placements WHERE chat_id=? AND msg_id=?",
+                      (photo["chat_id"], photo["msg_id"]))["folder_id"] == folder["id"]
+        assert any(a["detail"].startswith(f"Removed {gone} files") for a in db.q("SELECT detail FROM activity"))
+        assert not db.chats_needing_index()
+
+        # Photos and videos back on: the chats are indexed again (also photos sent as files, which come
+        # with the documents), and the photo is back in its folder.
+        settings.update({"index_kinds": ["document", "photo", "video"]})
+        assert db.chats_needing_index()
+        for chat in db.chats_needing_index():
+            await acc.indexer.index_chat(db.get_chat(chat["id"]))
+        assert db.one("SELECT COUNT(*) AS n FROM files WHERE kind='photo'")["n"] == before["photo"]
+        assert db.one("SELECT COUNT(*) AS n FROM files WHERE kind='video'")["n"] == before.get("video", 0)
+        assert db.one("SELECT p.folder_id FROM files f JOIN placements p ON p.chat_id=f.chat_id AND "
+                      "p.msg_id=f.msg_id WHERE f.chat_id=? AND f.msg_id=?",
+                      (photo["chat_id"], photo["msg_id"]))["folder_id"] == folder["id"]
+        db.close()
+
+    run(go())
