@@ -145,6 +145,13 @@ class EngineService : Service() {
     // ------------------------------------------------------------------ lifecycle
     private fun start(demo: Boolean, background: Boolean = false) {
         if (state.phase == EngineState.Phase.Ready || state.phase == EngineState.Phase.Starting) return
+        if (shuttingDown) {
+            // This process ends in a moment (Python can't start again in it): starting now would be cut off
+            // half-way and look like a crash. The app's watchdog, or Android re-creating a bound service,
+            // starts a fresh process instead.
+            AppLog.i("engine", "start asked while stopping: left to a fresh process")
+            return
+        }
         startLog().delete()
         stage(EngineState(phase = EngineState.Phase.Starting, demo = demo, pid = Process.myPid()), "Preparing")
         try {
