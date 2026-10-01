@@ -264,7 +264,8 @@ secret didn't exist. Android refuses an update signed with a different key, so e
 an uninstall. Now:
 - CI signs with the key in the repository secrets `TGDRIVE_KEYSTORE_BASE64` (a PKCS12 keystore,
   alias `tgdrive`, base64) and `TGDRIVE_KEYSTORE_PASSWORD`. Setup is in `signing/README.md`.
-  **The owner has to add these once.** Until then CI warns and signs with a throwaway key.
+  They are set (October 2026). If they become unusable, the *Signing key* step says why and the build
+  falls back to a throwaway key; the certificate check then refuses to publish it.
 - The key is never committed; a private key in git was rejected as a credential leak. Don't
   generate one in a session either. The owner makes it on their machine and keeps a backup.
 - After the first build with the secret, put the certificate's SHA-256 (printed by the *Check the
@@ -308,7 +309,10 @@ Also fixed in the last batch:
   manager", the desktop's name; the sidebar and the owner call it *Chats and indexing*.
 
 Open items:
-1. **Signing secret**: the owner adds it (§7). Then fill in `expected-certificate.sha256`.
+1. **Signing: done (October 2026).** The secrets are set, release `tgdrive-android-v2.4.0-43` was the
+   first APK signed with the permanent key, and `signing/expected-certificate.sha256` holds its
+   certificate, so CI refuses any other key. The owner uninstalls once and installs build 43 (or later);
+   every build after that updates in place.
 2. **Black screen at ~100 000 files** on the owner's phone: see above, needs the owner's
    confirmation or a report.
 3. **Slow start on the owner's phone** (Samsung SM-M336BU, Android 16): waiting for a problem
