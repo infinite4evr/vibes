@@ -60,13 +60,25 @@ class TGDriveApp : Application(), SingletonImageLoader.Factory, androidx.work.Co
         get() = androidx.work.Configuration.Builder().setDefaultProcessName(packageName).build()
 
     override fun newImageLoader(context: PlatformContext): ImageLoader = ImageLoader.Builder(context)
-        .components { add(OkHttpNetworkFetcherFactory(callFactory = { graph.mediaHttp })) }
+        .components {
+            add(OkHttpNetworkFetcherFactory(callFactory = { graph.mediaHttp }))
+            add(stableThumbKeys)
+        }
         .memoryCache { MemoryCache.Builder().maxSizePercent(context, 0.2).build() }
         // Thumbnails are cached by TG Drive's service already; a small disk cache still makes
         // scrolling back instant after the service restarts.
         .diskCache { DiskCache.Builder().directory(cacheDir.resolve("images").toOkioPath()).maxSizeBytes(128L * 1024 * 1024).build() }
         .crossfade(180)
         .build()
+
+    /** Thumbnails are cached under their path, not their URL (see [app.tgdrive.data.Api.cacheKey]). */
+    private val stableThumbKeys = object : coil3.intercept.Interceptor {
+        override suspend fun intercept(chain: coil3.intercept.Interceptor.Chain): coil3.request.ImageResult {
+            val req = chain.request
+            val key = (req.data as? String)?.let { graph.api.cacheKey(it) } ?: return chain.proceed()
+            return chain.withRequest(req.newBuilder().memoryCacheKey("$key#${chain.size}").diskCacheKey(key).build()).proceed()
+        }
+    }
 
     private fun processName(): String = if (Build.VERSION.SDK_INT >= 28) getProcessName() else
         runCatching { java.io.File("/proc/${Process.myPid()}/cmdline").readText().trim('\u0000') }.getOrDefault(packageName)

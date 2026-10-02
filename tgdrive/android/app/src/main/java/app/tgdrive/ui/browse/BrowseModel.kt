@@ -12,6 +12,7 @@ import app.tgdrive.data.FileItem
 import app.tgdrive.data.FileRef
 import app.tgdrive.data.FileStats
 import app.tgdrive.data.Folder
+import app.tgdrive.data.StartupCache
 import app.tgdrive.data.explain
 import app.tgdrive.data.str
 import app.tgdrive.ui.nav.View
@@ -169,12 +170,26 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
             items.clear(); loading = false; loaded = true
             return
         }
+        val cacheKey = StartupCache.key(aid, p)
+        if (!state.engine.state.value.ready) {
+            // The service is still starting (the app opened onto the saved screen): show this list as
+            // it was last time, if it was kept; the "reconnected" change loads it for real.
+            if (record) recorded = false
+            state.cache.page(cacheKey)?.let { c ->
+                items.clear()
+                items.addAll(c.items)
+                loaded = true
+                loading = false
+            }
+            return
+        }
         job = scope.launch {
             try {
                 val page = state.api.files(aid, p)
                 if (my != gen) return@launch
                 items.clear()
                 items.addAll(page.items)
+                state.cache.putPage(cacheKey, page.items, page.next)
                 next = page.next
                 corrected = page.corrected
                 words = page.words
