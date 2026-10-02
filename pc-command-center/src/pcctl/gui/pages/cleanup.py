@@ -272,7 +272,7 @@ class CleanupPage(Page):
         if selectable(j):
             self.checked[j.id] = {i.key for i in j.items} if on else set()
             self._sync = True
-            for key, icb in self.item_checks.get(j.id, {}).items():
+            for _key, icb in self.item_checks.get(j.id, {}).items():
                 icb.set_active(on)
             self._sync = False
         else:

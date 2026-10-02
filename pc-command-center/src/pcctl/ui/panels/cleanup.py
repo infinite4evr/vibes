@@ -3,7 +3,7 @@ from __future__ import annotations
 from rich.text import Text
 from textual import on, work
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.containers import Horizontal, VerticalScroll
 from textual.widgets import Button, Label, LoadingIndicator, SelectionList, Static
 from textual.widgets.selection_list import Selection
 

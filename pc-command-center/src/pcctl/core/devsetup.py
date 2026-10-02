@@ -123,7 +123,7 @@ def path_report(path: str, session_path: str = "", tools: list[str] | None = Non
     if versions:
         todo = [(t, p) for t, ps in found.items() for p in ps]
         with ThreadPoolExecutor(max_workers=8) as ex:
-            for (t, p), v in zip(todo, ex.map(lambda tp: tool_version(tp[1], tp[0], path), todo)):
+            for (_t, p), v in zip(todo, ex.map(lambda tp: tool_version(tp[1], tp[0], path), todo)):
                 vers[p] = v
     tool_rows = [{"name": t, "copies": [{"path": p, "shown": tilde(p), "version": vers.get(p, ""), "wins": i == 0,
                                           "real": os.path.realpath(p)} for i, p in enumerate(ps)]} for t, ps in found.items()]

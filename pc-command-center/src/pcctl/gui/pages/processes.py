@@ -12,7 +12,7 @@ from gi.repository import Gtk
 from ...core import system
 from ...core.fmt import human
 from ...core.run import Step
-from ..util import button, flow, hbox, label, open_path, vbox
+from ..util import button, flow, label, open_path, vbox
 from ..widgets import Column, DataTable, MiniBar, card
 from .base import Page
 

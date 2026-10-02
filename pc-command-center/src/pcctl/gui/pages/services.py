@@ -11,7 +11,7 @@ from gi.repository import Adw, GLib, Gtk
 from ...core import services
 from ...core.fmt import ago, duration, human
 from ...core.run import Step, out
-from ..util import button, clear, esc, flow, hbox, label, open_in_terminal, pill, spacer, status_icon, vbox
+from ..util import button, clear, esc, flow, hbox, label, open_in_terminal, pill, status_icon, vbox
 from ..widgets import Column, DataTable
 from .base import Page, action_row, banner, group, tabs
 

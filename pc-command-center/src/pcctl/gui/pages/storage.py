@@ -11,7 +11,7 @@ from gi.repository import Adw, Gtk
 from ...core import drives, dupes, storage, system
 from ...core.fmt import ago, human
 from ...core.run import HOME, Step, has
-from ..util import button, clear, esc, flow, hbox, idle, label, open_path, pill, spacer, status_icon, vbox
+from ..util import button, clear, esc, flow, hbox, idle, label, open_path, pill, status_icon, vbox
 from ..widgets import Column, DataTable, HBars, MiniBar, Treemap, card
 from .base import Page, action_row, banner, boxed_list, group, tabs
 

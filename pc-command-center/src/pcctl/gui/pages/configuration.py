@@ -6,7 +6,7 @@ import time
 from gi.repository import Gtk
 
 from ...core import config_audit, configuration
-from ..util import button, clear, flow, hbox, label, pill, vbox
+from ..util import button, clear, flow, label, pill, vbox
 from .base import Page, action_row, group, tabs
 
 

@@ -4,6 +4,7 @@ and update settings."""
 from __future__ import annotations
 
 import time
+from pathlib import Path
 
 from gi.repository import Adw, Gtk
 
@@ -13,7 +14,7 @@ from ...core.packages import APT_ENV
 from ...core.run import Step, has, out
 from .. import prefs, theme
 from ..dialogs import ask_text
-from ..util import button, clear, esc, flow, hbox, label, launch, open_in_terminal, pill, spacer, status_icon, vbox
+from ..util import button, clear, esc, flow, hbox, label, launch, open_in_terminal, pill, status_icon, vbox
 from ..widgets import Column, DataTable, card
 from .base import Page, action_row, banner, boxed_list, group, set_switch_quiet, stat, switch_row, tabs
 
@@ -385,8 +386,8 @@ class UpdatesPage(Page):
         extra = [s for s in srcs if not s["official"]]
         og = group("Ubuntu", "Ubuntu's own repositories.")
         for s in official:
-            og.add(action_row(s["name"], " · ".join(s["suites"]) + ("" if s["enabled"] else "  (off)"), prefix=status_icon("ok" if s["enabled"] else "info"),
-                              *[button("View", css="flat", on_click=lambda ss=s: self.text(ss["file"], open(ss["file"], errors="replace").read()))]))
+            og.add(action_row(s["name"], " · ".join(s["suites"]) + ("" if s["enabled"] else "  (off)"), button("View", css="flat", on_click=lambda ss=s: self.text(ss["file"], Path(ss["file"]).read_text(errors="replace"))),
+                              prefix=status_icon("ok" if s["enabled"] else "info")))
         self.sources_box.append(og)
         eg = group("Extra sources and PPAs", "Added by you or by app installers (Docker, VS Code, Chrome…). Turn off a source that "
                    "causes update errors instead of deleting it.",

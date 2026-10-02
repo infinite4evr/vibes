@@ -6,7 +6,6 @@ change by itself; UI/CLI callers can present the optional Step list for confirma
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-import time
 
 import psutil
 

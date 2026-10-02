@@ -188,7 +188,8 @@ End-Date: 2026-09-21  06:12:10
 
 def test_dupes(tmp_path):
     from pcctl.core import dupes
-    a = tmp_path / "a"; a.mkdir()
+    a = tmp_path / "a"
+    a.mkdir()
     data = b"x" * (2 * 1024 * 1024)
     (a / "one.bin").write_bytes(data)
     (a / "two.bin").write_bytes(data)

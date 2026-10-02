@@ -388,7 +388,7 @@ def empty_things(roots: list[Path], limit: int = 2000) -> dict:
     for root in roots:
         if not root.is_dir():
             continue
-        for cur, dirs, files in os.walk(root, topdown=False):
+        for cur, _dirs, files in os.walk(root, topdown=False):
             base = os.path.basename(cur)
             if any(part in SKIP_TYPES_DIRS for part in Path(cur).parts) or base.startswith("."):
                 continue

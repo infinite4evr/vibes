@@ -13,7 +13,7 @@ from textual.containers import Horizontal
 from textual.widgets import Button, Input, Label, Switch
 
 from ...core import system
-from ...core.fmt import C, duration, human, level_color
+from ...core.fmt import duration, human, level_color
 from ...core.run import Step
 from ..widgets import Btn, Panel, SearchInput, SortTable, muted, plain
 

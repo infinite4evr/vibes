@@ -3,8 +3,8 @@ from __future__ import annotations
 from rich.text import Text
 from textual import on, work
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical, VerticalScroll
-from textual.widgets import Button, Digits, Label, LoadingIndicator, Static
+from textual.containers import Horizontal, VerticalScroll
+from textual.widgets import Button, Digits, LoadingIndicator, Static
 
 from ...core import security
 from ...core.fmt import C

@@ -53,7 +53,7 @@ def backend() -> dict:
         if has(cmd):
             return {"cmd": cmd, "unit": unit, "name": name}
     listed = out(["systemctl", "--user", "list-unit-files", "--no-legend", *[u for _c, u, _n in BACKENDS]], timeout=5)
-    for cmd, unit, name in BACKENDS:
+    for _cmd, unit, name in BACKENDS:
         if unit in listed:
             return {"cmd": "", "unit": unit, "name": name}
     return {"cmd": "", "unit": "", "name": ""}
