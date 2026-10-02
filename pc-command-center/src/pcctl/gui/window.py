@@ -126,7 +126,7 @@ class _UnavailablePage(Gtk.Box):
         body.append(detail)
         copy = Gtk.Button(label="Copy diagnostic details")
         copy.connect("clicked", lambda *_: (self.get_clipboard().set(self._trace), win.toast("Diagnostic details copied.")))
-        report = Gtk.Button(label="Report on GitHub")
+        report = Gtk.Button(label="Create GitHub issue")
         report.add_css_class("suggested-action")
         report.set_halign(Gtk.Align.START)
 
@@ -710,6 +710,11 @@ class MainWindow(Adw.ApplicationWindow):
             self.toast("Refreshing…", 1)
 
     def toast(self, text: str, timeout: int = 3) -> None:
+        from .errors import is_error_text, report_text
+        if is_error_text(text):
+            page = self.pages.get(self.current)
+            report_text(text, where=f"Page: {getattr(page, 'TITLE', '') or self.current or 'PC Command Center'}")
+            return
         t = Adw.Toast(title=esc(text))
         t.set_timeout(timeout)
         self.toasts.add_toast(t)

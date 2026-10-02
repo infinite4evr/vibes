@@ -242,6 +242,7 @@ class TaskScreen(Dialog):
     async def run_all(self) -> None:
         log = self.query_one(RichLog)
         ok_all = True
+        failed: list[str] = []
         for i, s in enumerate(self.steps):
             w = self.query_one(f"#st{i}", Static)
             w.update(Text("◐ " + s.title, style=f"bold {C['mauve']}"))
@@ -254,6 +255,7 @@ class TaskScreen(Dialog):
                 w.update(Text(f"– {s.title} (skipped, exit {code})", style=C["overlay1"]))
             else:
                 ok_all = False
+                failed.append(s.title)
                 w.update(Text(f"✗ {s.title} (exit {code})", style=C["red"]))
                 if s.root and code == 1 and not sudo_ready():
                     log.write(Text("Admin rights expired - run it again and enter your password.", style=C["peach"]))
@@ -264,11 +266,80 @@ class TaskScreen(Dialog):
         btn = self.query_one("#close", Button)
         btn.label, btn.disabled = "Close", False
         btn.focus()
+        if not ok_all:
+            # The error dialog, with "Create GitHub issue", over the output.
+            tail = "\n".join(line.text for line in log.lines[-40:])
+            self.app.show_error(
+                f"Action failed: {self.t}\n" + (f"Failed step: {', '.join(failed)}\n" if failed else "") + f"\nLast output:\n{tail}",
+                where=f"pc (terminal app): {self.t}",
+                context="Commands:\n" + "\n".join(f"  {s.display()}" for s in self.steps))
 
     @on(Button.Pressed, "#close")
     def action_close(self) -> None:
         if self.done:
             self.dismiss(self.success)
+
+
+class ErrorScreen(Dialog):
+    """Every error in the terminal app: what went wrong, and "Create GitHub issue" (a pre-filled,
+    redacted issue opened in the browser; the link is also shown, for terminals without one)."""
+
+    DEFAULT_CSS = """
+    ErrorScreen > Vertical { border: round $error; }
+    ErrorScreen .d-title { color: $error; }
+    ErrorScreen #err-msg { margin-bottom: 1; }
+    ErrorScreen #err-more { color: $text-muted; margin-bottom: 1; }
+    ErrorScreen #err-repeats { color: $text-muted; }
+    """
+
+    def __init__(self, error: str, where: str = "pc (terminal app)", context: str = ""):
+        super().__init__()
+        from ..core import bugreport
+        self.rep = bugreport.Report(error, where, context)
+        self.count = 1
+
+    def compose(self) -> ComposeResult:
+        from ..core import bugreport
+        with Vertical():
+            yield Label("Something went wrong", classes="d-title")
+            yield Static(Text(bugreport.summary(self.rep.error), style="bold"), id="err-msg")
+            yield Static("“Create GitHub issue” opens a pre-filled issue in your browser; you can read and edit everything "
+                         "before you submit. Names, your home folder, network addresses and secrets are already removed.",
+                         id="err-more", markup=False)
+            yield Static("", id="err-repeats")
+            with Horizontal(classes="d-buttons"):
+                yield Button("Create GitHub issue", id="issue", variant="primary")
+                yield Button("Copy details", id="copy")
+                yield Button("Close", id="close")
+
+    def on_mount(self) -> None:
+        self.query_one("#issue", Button).focus()
+
+    def add_repeat(self) -> None:
+        self.count += 1
+        self.query_one("#err-repeats", Static).update(f"Happened {self.count} times.")
+
+    @on(Button.Pressed, "#issue")
+    def _issue(self) -> None:
+        import webbrowser
+        url = self.rep.url()
+        try:
+            opened = webbrowser.open(url)
+        except Exception:  # noqa: BLE001 - no browser
+            opened = False
+        if not opened:
+            self.app.copy_to_clipboard(url)
+            self.app.push_screen(TextScreen("Create GitHub issue", "No browser could be opened; the link was copied. "
+                                            f"Open it in a browser:\n\n{url}"))
+
+    @on(Button.Pressed, "#copy")
+    def _copy(self) -> None:
+        self.app.copy_to_clipboard(self.rep.full_text())
+        self.query_one("#err-repeats", Static).update("Copied.")
+
+    @on(Button.Pressed, "#close")
+    def _close(self) -> None:
+        self.dismiss(None)
 
 
 class TextScreen(Dialog):

@@ -132,6 +132,23 @@ class PcApp(App):
         self.badges: dict[str, int] = {}
         self.current: str = ""
 
+    def notify(self, message, *, title: str = "", severity: str = "information", timeout: float | None = None,
+               markup: bool = True) -> None:
+        # Every error, however small, opens the error dialog with "Create GitHub issue" instead of a toast.
+        from ..core.bugreport import is_error_text
+        if severity == "error" or is_error_text(message):
+            self.show_error(str(message), where=f"pc (terminal app){f': {self.current}' if self.current else ''}")
+            return
+        super().notify(message, title=title, severity=severity, timeout=timeout, markup=markup)
+
+    def show_error(self, error: str, where: str = "pc (terminal app)", context: str = "") -> None:
+        from .widgets import ErrorScreen
+        top = self.screen
+        if isinstance(top, ErrorScreen):   # one dialog at a time: repeats are counted in it
+            top.add_repeat()
+            return
+        self.push_screen(ErrorScreen(error, where, context))
+
     def compose(self) -> ComposeResult:
         with Horizontal(id="topbar"):
             yield Label(" pc ", id="brand")
