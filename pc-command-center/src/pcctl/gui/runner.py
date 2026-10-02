@@ -100,7 +100,10 @@ def build_root_batch(steps: list[Step], start: int = 0, end: int | None = None, 
         if cancel_path:
             # A critical root command must be allowed to finish, but a cancellation
             # request must stop the batch before the next root command begins.
-            lines.append(f'[ "$(cat {shlex.quote(cancel_path)} 2>/dev/null)" = 1 ] && exit 130')
+            # An `if`, not `[ ... ] && exit`: a false test as the script's last command
+            # would make a fully successful batch exit 1 and be reported as failed.
+            lines.append(f'if [ "$(cat {shlex.quote(cancel_path)} 2>/dev/null)" = 1 ]; then exit 130; fi')
+    lines.append("exit 0")
     return "\n".join(lines) + "\n"
 
 

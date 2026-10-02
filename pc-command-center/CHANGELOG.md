@@ -7,6 +7,10 @@
 - CI runs for the first time: the workflow moved to the repository root as `.github/workflows/pc-command-center.yml`.
 - Fixed an out-of-date test for the uv install fallback. Tests: 219 passed, 2 GTK screenshot tests skipped without a display.
 
+## 2.2.6 — every admin action was reported as failed
+
+- **Actions that need your password always "failed" on their last step** (GitHub issues 12, 13, 14: *Update everything*, *Check for updates*, *Clean up*). The commands themselves ran and succeeded. The private admin batch ends each step with a Stop check written as `[ "$(cat flag)" = 1 ] && exit 130`. When Stop was not pressed, that test is false and was the script's last command, so the batch exited 1. The runner then marked the final step failed and showed the error dialog. The check is now an `if … fi`, and the script ends with `exit 0`. New tests run a batch with the Stop flag both clear and set.
+
 ## 2.2.5 — production pass (verified on real Ubuntu 26.04 + GTK 4/libadwaita 1.9)
 
 Earlier releases could only be checked on a build host without GTK. This pass ran the desktop app, every one of its 55 tabs, the terminal UI and every CLI command on real hardware, and fixed what that exposed.
