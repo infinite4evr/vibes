@@ -75,7 +75,9 @@ class TGDriveApp : Application(), SingletonImageLoader.Factory, androidx.work.Co
     private val stableThumbKeys = object : coil3.intercept.Interceptor {
         override suspend fun intercept(chain: coil3.intercept.Interceptor.Chain): coil3.request.ImageResult {
             val req = chain.request
-            val key = (req.data as? String)?.let { graph.api.cacheKey(it) } ?: return chain.proceed()
+            val path = (req.data as? String)?.let { graph.api.cacheKey(it) } ?: return chain.proceed()
+            // The sample data's account ids aren't Telegram's: never mix their thumbnails.
+            val key = if (graph.engine.demo) "demo$path" else path
             return chain.withRequest(req.newBuilder().memoryCacheKey("$key#${chain.size}").diskCacheKey(key).build()).proceed()
         }
     }

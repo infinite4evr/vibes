@@ -336,8 +336,7 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
      * every time the service starts (with the port in it, nothing cached outlived a restart).
      * Null for anything else (streams carry a token; they keep their full URL).
      */
-    fun cacheKey(url: String): String? =
-        THUMB.matchEntire(url)?.groupValues?.get(1)?.let { if (engine().demo) "demo$it" else it }
+    fun cacheKey(url: String): String? = THUMB.matchEntire(url)?.groupValues?.get(1)
     fun docThumbUrl(aid: Long, chatId: Long, msgId: Long): String = mediaUrl("${a(aid)}/docthumb/$chatId/$msgId")
 
     /** A stream the app's own player uses (full access token). */
