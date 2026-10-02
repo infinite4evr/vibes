@@ -621,10 +621,23 @@ class Database:
 
     # ------------------------------------------------------------------ chats
     def upsert_chat(self, chat: dict) -> None:
-        cols = CHAT_COLS + [c for c in CHAT_EXTRA if c in chat]
-        vals = [chat.get(c) for c in cols]
-        extra_set = "".join(f", {c}=excluded.{c}" for c in CHAT_EXTRA if c in chat)
-        self.x(
+        with self.wlock:
+            self._upsert_chat(self.conn, chat)
+
+    def sync_chats(self, c: sqlite3.Connection, rows: list[dict], started: int) -> None:
+        """For [write]: the account's whole chat list, saved in one transaction on the writer thread.
+        It ran on the event loop and, waiting there for the write lock, froze the service for 10 s on
+        a phone (GitHub issue 10)."""
+        for row in rows:
+            self._upsert_chat(c, row)
+        c.execute("UPDATE chats SET index_state='gone' WHERE updated_at < ?", (started,))
+
+    @staticmethod
+    def _upsert_chat(c: sqlite3.Connection, chat: dict) -> None:
+        cols = CHAT_COLS + [col for col in CHAT_EXTRA if col in chat]
+        vals = [chat.get(col) for col in cols]
+        extra_set = "".join(f", {col}=excluded.{col}" for col in CHAT_EXTRA if col in chat)
+        c.execute(
             f"""INSERT INTO chats({','.join(cols)}, updated_at) VALUES({','.join('?' * len(cols))}, ?)
                 ON CONFLICT(id) DO UPDATE SET
                   title=excluded.title, kind=excluded.kind, username=excluded.username,
@@ -633,11 +646,11 @@ class Database:
                   latest_msg_id=MAX(chats.latest_msg_id, excluded.latest_msg_id),
                   index_state=CASE chats.index_state WHEN 'gone' THEN 'pending' ELSE chats.index_state END,
                   updated_at=excluded.updated_at{extra_set}""",
-            vals + [now()],
+            tuple(vals + [now()]),
         )
         # Keep the denormalised chat title on files in sync after a rename.
-        self.x("UPDATE files SET chat_title=? WHERE chat_id=? AND chat_title IS NOT ?",
-               (chat["title"], chat["id"], chat["title"]))
+        c.execute("UPDATE files SET chat_title=? WHERE chat_id=? AND chat_title IS NOT ?",
+                  (chat["title"], chat["id"], chat["title"]))
 
     def get_chat(self, chat_id: int) -> Optional[dict]:
         return self.one("SELECT * FROM chats WHERE id=?", (chat_id,))

@@ -55,7 +55,16 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
     val token: String get() = engine().token
 
     // ------------------------------------------------------------------ plumbing
+    /**
+     * While the service isn't running (it is starting, restarting or was stopped) its port is 0,
+     * which OkHttp refuses with an IllegalArgumentException. A screen asking for a thumbnail or
+     * stream URL as it draws then crashed the app ("Invalid URL port: 0"). A request gets an
+     * [ApiException] its caller already handles; a media URL is [NOT_RUNNING], which simply fails
+     * to load until the screen asks again with the service up.
+     */
     private fun url(path: String, params: Map<String, Any?> = emptyMap(), media: Boolean = false): HttpUrl {
+        val port = engine().port
+        if (port !in 1..65535) throw ApiException(503, "TG Drive's service isn't running yet.", busy = true)
         val b = ((if (media) mediaBase else base) + path).toHttpUrl().newBuilder()
         for ((k, v) in params) if (v != null && v != "") b.addQueryParameter(k, v.toString())
         return b.build()
@@ -309,25 +318,34 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
     suspend fun timeline(aid: Long, params: Map<String, String>): Timeline = get("${a(aid)}/timeline", Timeline.serializer(), params)
 
     // ------------------------------------------------------------------ media URLs
+    // Built while screens draw, so they must never throw: see [url].
+    private fun mediaUrl(path: String, params: Map<String, Any?> = emptyMap()): String =
+        try { url(path, params, media = true).toString() } catch (_: ApiException) { NOT_RUNNING }
+
     fun thumbUrl(aid: Long, chatId: Long, msgId: Long, v: String = "s"): String =
-        url("${a(aid)}/thumb/$chatId/$msgId", mapOf("v" to v), media = true).toString()
-    fun docThumbUrl(aid: Long, chatId: Long, msgId: Long): String = url("${a(aid)}/docthumb/$chatId/$msgId", media = true).toString()
+        mediaUrl("${a(aid)}/thumb/$chatId/$msgId", mapOf("v" to v))
+    fun docThumbUrl(aid: Long, chatId: Long, msgId: Long): String = mediaUrl("${a(aid)}/docthumb/$chatId/$msgId")
 
     /** A stream the app's own player uses (full access token). */
     fun streamUrl(aid: Long, f: FileItem, download: Boolean = false): String =
-        url("${a(aid)}/stream/${f.chatId}/${f.msgId}/${encodeName(f.name.ifEmpty { "file" })}",
-            mapOf("t" to token, "dl" to if (download) 1 else null), media = true).toString()
+        mediaUrl("${a(aid)}/stream/${f.chatId}/${f.msgId}/${encodeName(f.name.ifEmpty { "file" })}",
+            mapOf("t" to token, "dl" to if (download) 1 else null))
 
     /** A stream for other apps (VLC, MX Player …): the media token only plays this kind of URL. */
     fun externalStreamUrl(aid: Long, f: FileItem): String =
-        url("${a(aid)}/stream/${f.chatId}/${f.msgId}/${encodeName(f.name.ifEmpty { "file" })}",
-            mapOf("t" to engine().mediaToken), media = true).toString()
+        mediaUrl("${a(aid)}/stream/${f.chatId}/${f.msgId}/${encodeName(f.name.ifEmpty { "file" })}",
+            mapOf("t" to engine().mediaToken))
 
     suspend fun saveDocThumb(aid: Long, ref: FileRef, png: ByteArray) =
         raw("PUT", "${a(aid)}/docthumb/${ref.chatId}/${ref.msgId}", body = png.toRequestBody("image/jpeg".toMediaType()))
     suspend fun docThumbFailed(aid: Long, ref: FileRef) = raw("POST", "${a(aid)}/docthumb/${ref.chatId}/${ref.msgId}/failed")
 
     private fun encodeName(n: String) = java.net.URLEncoder.encode(n, "UTF-8").replace("+", "%20")
+
+    companion object {
+        /** A valid URL nothing listens on (connection refused at once), carrying no secret. */
+        const val NOT_RUNNING = "http://127.0.0.1:1/not-running"
+    }
 }
 
 /** Decodes `{"<key>": …}` to the value under key. */

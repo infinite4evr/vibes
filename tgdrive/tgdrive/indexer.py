@@ -246,10 +246,7 @@ class Indexer:
             if row["kind"] == "saved":
                 row["title"] = "Saved Messages"
             rows.append(row)
-        with self.db.tx():
-            for row in rows:
-                self.db.upsert_chat(row)
-            self.db.x("UPDATE chats SET index_state='gone' WHERE updated_at < ?", (started,))
+        await self.db.write(self.db.sync_chats, rows, started)
         self.acc._dialogs_loaded = True
         self.last_sync = time.time()
         forums = [row["id"] for row in rows if row.get("is_forum")]
