@@ -112,7 +112,7 @@ def accels_in(value: str) -> list[str]:
 def find_conflicts(binding: str, settings: dict[tuple[str, str], str], custom: list[Shortcut], skip_path: str = "") -> list[str]:
     """Names of other shortcuts already using this key combination."""
     res = []
-    for (schema, key), value in settings.items():
+    for (_schema, key), value in settings.items():
         if key == "custom-keybindings":
             continue
         if any(same_accel(binding, a) for a in accels_in(value)):

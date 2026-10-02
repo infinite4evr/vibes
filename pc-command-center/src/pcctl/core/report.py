@@ -102,7 +102,9 @@ def _net() -> list[dict]:
 
 _MAC = re.compile(r"\b([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}\b")
 _IPV4 = re.compile(r"\b(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\b")
-_IPV6 = re.compile(r"\b(?:[0-9a-fA-F]{1,4}:){2,7}[0-9a-fA-F]{1,4}\b")
+# Full 8-group form, or any compressed form containing "::". Must not match clock times like 08:37:12.
+_IPV6 = re.compile(r"(?<![0-9A-Za-z:])(?:(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}"
+                   r"|(?:[0-9a-fA-F]{1,4}:){0,7}:(?::?[0-9a-fA-F]{1,4}){0,7})(?![0-9A-Za-z:])")
 
 
 def redact(text: str, host: str = "", user: str = "") -> str:
@@ -120,7 +122,7 @@ def redact(text: str, host: str = "", user: str = "") -> str:
             return m.group(0)
         return f"{a}.{b}.x.x" if a in (10, 192, 172) else "x.x.x.x"
     text = _IPV4.sub(ip, text)
-    return _IPV6.sub("xxxx::xxxx", text)
+    return _IPV6.sub(lambda m: "xxxx::xxxx" if m.group(0).strip(":") else m.group(0), text)
 
 
 # ---------------------------------------------------------------- rendering

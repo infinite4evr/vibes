@@ -46,6 +46,13 @@ def bg(fn: Callable[[], Any], done: Callable[[Any], None] | None = None, error: 
                 except Exception:  # noqa: BLE001
                     pass
             err = e  # `e` is cleared when the except block ends; keep our own reference for the callback
+            trace = traceback.format_exc()
+
+            def show_report() -> bool:
+                from .errors import report_text
+                report_text(trace, f"Background task failed: {pretty}")
+                return False
+            GLib.idle_add(show_report)
             if error:
                 GLib.idle_add(lambda: (error(err), False)[1])
             return

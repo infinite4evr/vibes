@@ -7,12 +7,12 @@ from rich.text import Text
 from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal
-from textual.widgets import Button, Label, Static, TabbedContent, TabPane
+from textual.widgets import Button, Static, TabbedContent, TabPane
 
 from ...core import network as net
-from ...core.fmt import C, human, rate
+from ...core.fmt import C, rate
 from ...core.run import Step, has, py_step
-from ..widgets import Btn, Card, ChoiceScreen, InputScreen, Panel, SortTable, kv, muted, plain
+from ..widgets import Btn, Card, InputScreen, Panel, SortTable, kv, muted, plain
 
 
 class NetworkPanel(Panel):

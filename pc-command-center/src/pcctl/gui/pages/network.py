@@ -13,7 +13,7 @@ from ...core import network, security
 from ...core.fmt import human, rate
 from ...core.run import Step, has, out, sh
 from ..dialogs import ask_text
-from ..util import button, clear, flow, hbox, idle, label, launch, pill, spacer, vbox
+from ..util import button, clear, flow, hbox, idle, label, launch, pill, vbox
 from ..widgets import Column, DataTable, LineGraph, MiniBar, card
 from .base import Page, action_row, banner, boxed_list, group, stat, switch_row, tabs
 

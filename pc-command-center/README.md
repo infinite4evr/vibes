@@ -5,7 +5,7 @@ A control center for your whole Ubuntu computer, in two forms that share one eng
 - **PC Command Center**, a native desktop app (GTK 4 + libadwaita). It has a clean, neutral look with GNOME's accent colour, or Catppuccin if you prefer (Preferences → Colours). Light and dark follow GNOME's switch. Open it from the dock or app grid, or run `pc-gui`.
 - **pc**, the same thing in the terminal. Type `pc`.
 
-Version 2.2 (currently 2.2.4; see [`CHANGELOG.md`](CHANGELOG.md)) builds on the original feature audit and adds safety hardening, diagnostics, background-task control and desktop-shell polish while retaining the broad feature set that filled about 110 gaps found in a feature audit against Stacer, BleachBit, Czkawka, Mission Center, Resources, Cockpit, Warehouse, Flatseal, Timeshift, GRUB Customizer, Windows Task Manager, Microsoft PC Manager, CleanMyMac and others. The full list is in [`docs/FEATURE-AUDIT.md`](docs/FEATURE-AUDIT.md). For how it all fits together, start with [`AI-HANDOVER.md`](AI-HANDOVER.md).
+Version 2.2 (currently 2.2.5; see [`CHANGELOG.md`](CHANGELOG.md)) builds on the original feature audit and adds safety hardening, diagnostics, background-task control and desktop-shell polish while retaining the broad feature set that filled about 110 gaps found in a feature audit against Stacer, BleachBit, Czkawka, Mission Center, Resources, Cockpit, Warehouse, Flatseal, Timeshift, GRUB Customizer, Windows Task Manager, Microsoft PC Manager, CleanMyMac and others. The full list is in [`docs/FEATURE-AUDIT.md`](docs/FEATURE-AUDIT.md). For how it all fits together, start with [`AI-HANDOVER.md`](AI-HANDOVER.md).
 
 ## The desktop app
 
@@ -79,6 +79,10 @@ Settings: `~/.config/pc/config.json` (`theme`, `icons`: auto/nerd/plain, `projec
 It also offers the weekly checkup and background alerts. `bash ../ubuntu-setup/setup.sh app` updates just the desktop app. The app can also update itself from this folder: Maintenance → Setup → This app.
 
 Run from source: `PYTHONPATH=src /usr/bin/python3 -m pcctl.gui`. Tests: `python3 -m pip install -e '.[dev]' && python3 -m pytest` (the project config adds `src` automatically). CI runs them from `.github/workflows/pc-command-center.yml` at the root of the `vibes` repository. The GUI smoke test opens every page in light and dark; it needs a display and runs only when one is available.
+
+## When something goes wrong
+
+Any error in the desktop app opens a small dialog with **Report on GitHub**. It opens a pre-filled issue with the redacted error, recent app log and versions, which you review before submitting; it also offers **Copy details** and **Save full log**. Failed actions have the same button, and `pc` / the terminal app print a report link if they crash. See [`SECURITY.md`](SECURITY.md) for exactly what is included and removed.
 
 ## Personal-file safety
 

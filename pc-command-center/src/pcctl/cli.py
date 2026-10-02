@@ -634,6 +634,26 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         print()
         return 130
+    except Exception as exc:  # noqa: BLE001 - last resort: explain, log and offer a report instead of a bare traceback
+        import traceback
+        traceback.print_exc()
+        offer_bug_report(exc, f"pc {a.cmd}")
+        return 1
+
+
+def offer_bug_report(exc: BaseException, where: str) -> None:
+    """After a crash: save it to the error log and print a pre-filled GitHub issue link."""
+    try:
+        from .core import bugreport
+        from .core.state import append_private
+        import time
+        rep = bugreport.from_exception(exc, where)
+        append_private(bugreport.ERRORS_LOG, time.strftime("== %Y-%m-%d %H:%M:%S ==\n") + rep.error + "\n")
+        print(f"\n{rgb('red')}pc hit an unexpected error.{R} It was saved to ~/.local/state/pc/gui-errors.log.\n"
+              f"Report it on GitHub (opens a pre-filled issue; names, paths and addresses are removed):\n  {rep.url()}",
+              file=sys.stderr)
+    except Exception:  # noqa: BLE001 - never crash while reporting a crash
+        pass
 
 
 if __name__ == "__main__":

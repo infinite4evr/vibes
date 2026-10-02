@@ -96,4 +96,5 @@ def test_page_header_actions_can_wrap_on_compact_windows() -> None:
     source = (PAGES / "base.py").read_text(encoding="utf-8")
     assert 'css="page-header-flow"' in source
     assert "row = hbox(t, acts, spacing=12)" not in source
-    assert "notify::width" in source and "_adapt_page_spacing" in source
+    # GTK 4 has no "width" property; spacing must follow real allocations.
+    assert "def do_size_allocate" in source and "_adapt_page_spacing" in source

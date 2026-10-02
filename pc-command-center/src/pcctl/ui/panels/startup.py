@@ -6,7 +6,7 @@ from rich.text import Text
 from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Button, Label, Static
+from textual.widgets import Button, Static
 
 from ...core import services, system
 from ...core.fmt import C

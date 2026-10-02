@@ -106,7 +106,10 @@ class TaskDialog(Adw.Dialog):
         self.bg_btn.connect("clicked", lambda *_: self.set_visible(False))
         self.stop_btn = button("Stop", css="pill")
         self.stop_btn.connect("clicked", lambda *_: self.runner.cancel())
-        body.append(hbox(self.result, spacer(), self.bg_btn, self.stop_btn, self.close_btn))
+        self.report_btn = button("Report on GitHub", icon="mail-send-symbolic", css="pill",
+                                 tooltip="Open a pre-filled GitHub issue with the (redacted) output", on_click=self._report)
+        self.report_btn.set_visible(False)
+        body.append(hbox(self.result, spacer(), self.report_btn, self.bg_btn, self.stop_btn, self.close_btn))
         tv.set_content(body)
         self.set_child(tv)
         self.set_can_close(False)
@@ -192,6 +195,7 @@ class TaskDialog(Adw.Dialog):
         self.stop_btn.set_visible(False)
         self.set_can_close(True)
         self.close_btn.grab_focus()
+        self.report_btn.set_visible(not ok and not self.runner.cancelled)
         self._notify(ok, note)
         try:
             import time as _t
@@ -202,6 +206,16 @@ class TaskDialog(Adw.Dialog):
         except Exception:  # noqa: BLE001 - history is best effort
             pass
         return False
+
+    def _report(self) -> None:
+        from ..core import bugreport
+        from .errors import open_uri
+        failed = [s.title for (img, _lb, _sp), s in zip(self.step_rows, self.steps) if img.get_icon_name() == "dialog-error-symbolic"]
+        error = (f"Action failed: {self.get_title()}\n" + (f"Failed step: {', '.join(failed)}\n" if failed else "")
+                 + (f"Result: {self.result.get_text()}\n" if self.result.get_text() else "")
+                 + "\nLast output:\n" + "\n".join(self._all_lines[-80:]))
+        context = "Commands:\n" + "\n".join(f"  {s.display()}" for s in self.steps)
+        open_uri(self, bugreport.Report(error, f"Action: {self.get_title()}", context).url())
 
     def _notify(self, ok: bool, note: str) -> None:
         """A desktop notification when a task finishes while you're in another window."""

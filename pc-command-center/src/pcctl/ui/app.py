@@ -14,7 +14,6 @@ from textual.containers import Horizontal, Vertical
 from textual.widgets import ContentSwitcher, Footer, Label, OptionList, Static
 from textual.widgets.option_list import Option
 
-from .. import __version__
 from ..core import maint, network, packages, security, system
 from ..core.fmt import C, duration
 from ..core.run import Step
@@ -269,4 +268,9 @@ class PcApp(App):
 
 
 def run(start: str = "overview") -> None:
-    PcApp(start).run()
+    app = PcApp(start)
+    app.run()
+    exc = getattr(app, "_exception", None)
+    if exc is not None:  # Textual already printed the traceback after restoring the terminal
+        from ..cli import offer_bug_report
+        offer_bug_report(exc, "Terminal app")

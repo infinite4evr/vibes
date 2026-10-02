@@ -7,6 +7,25 @@
 - CI runs for the first time: the workflow moved to the repository root as `.github/workflows/pc-command-center.yml`.
 - Fixed an out-of-date test for the uv install fallback. Tests: 219 passed, 2 GTK screenshot tests skipped without a display.
 
+## 2.2.5 — production pass (verified on real Ubuntu 26.04 + GTK 4/libadwaita 1.9)
+
+Earlier releases could only be checked on a build host without GTK. This pass ran the desktop app, every one of its 55 tabs, the terminal UI and every CLI command on real hardware, and fixed what that exposed.
+
+- **New: report any error on GitHub.** Every unexpected error now opens a small "Something went wrong" dialog instead of a toast or a silent log line. This covers crashes in UI callbacks, background-task failures, live-refresh failures, pages that fail to load and failures in other threads. The dialog has **Report on GitHub** (a pre-filled issue on `infinite4evr/vibes` with the redacted error, last day's error log, debug log tail and app/OS/GTK versions), **Copy details** and **Save full log** (private 0600 file in Downloads). Repeats of the same error fold into the open dialog instead of stacking. Failed actions (not user-cancelled) get a **Report on GitHub** button. `pc` and the terminal app print the same link if they crash. The link trims the log to fit GitHub's URL limit while always keeping the end of the traceback (`core/bugreport.py`, `gui/errors.py`).
+- **Share-mode redaction no longer erased timestamps.** The report's IPv6 pattern matched any `08:37:12` clock time (and only half-masked real IPv6 addresses). It now matches only full or `::`-compressed IPv6.
+- **Network page crashed on open.** `NetworkPage.connect()` (the Wi-Fi "Connect" handler) shadowed `GObject.connect`, so building the page raised `TypeError` and the sidebar showed the "could not be loaded" fallback. Renamed to `connect_wifi`; a test now rejects any GUI class that overrides GObject's signal API.
+- **The responsive layout never ran.** Window/sidebar clamping, compact header search and page margins were wired to `notify::width`, a property GTK 4 widgets don't have. They now react to real size allocations (deferred to idle so they never re-enter layout).
+- **Wi-Fi passwords were visible to other users.** Joining a network ran `nmcli dev wifi connect … password <psk>`, exposing the password in `/proc/<pid>/cmdline` (and, in the terminal UI, in run/audit output). New `network.wifi_connect()` creates the profile without a secret and supplies it through a private 0600 `passwd-file` that is deleted afterwards; a failed join removes the half-made profile. WPA3-only networks use SAE; enterprise/WEP networks point to Ubuntu Settings.
+- **`pc network-check` always said the router doesn't answer.** It pinged the display string `"192.168.1.1 (wlp0s20f3)"`. Sub-millisecond replies are no longer treated as "no reply" either.
+- **"Why is my PC slow?" always claimed updates were installing.** The idle `unattended-upgrade-shutdown --wait-for-signal` helper was counted as an upgrade in progress.
+- **Two sets of window controls.** Both header bars drew minimise/maximise/close; the sidebar header no longer does (the content header shows start-side controls only while the sidebar is hidden), which also stops the app name being truncated.
+- **Cut-off tab labels** ("History & …", "Wi-Fi & D…") — tabs now switch to icon-over-label based on the real label lengths.
+- Missing `lightbulb-symbolic` icon (Advisor) replaced with a stock icon; a test checks every symbolic icon exists in Ubuntu's themes.
+- Screenshot/test runs no longer read or overwrite the user's saved window state (they opened maximised and ignored `--width/--height`).
+- Doctor's junk line no longer says "Only X" for what is a quick partial probe; unknown battery cycle counts say "Not reported" instead of "?".
+- GUI smoke test now covers the Configuration page; Ruff is clean (`B905` intentionally ignored).
+- Validation on Ubuntu 26.04.1 (Python 3.14, GTK 4 / libadwaita 1.9): `pytest` 265 passed, 0 skipped (GTK screenshot tests included); `ruff check` clean. All 17 pages and every tab were driven at 1320×860 and 780×540 with no errors, the terminal app ran through all 14 panels at 140×45 and 90×30, and every read-only `pc` subcommand was run on real hardware.
+
 ## 2.2.4 — compact-window shell/layout hotfix
 
 - Fixed the remaining compact/fractional-scale shell problem visible on 1366x768-class laptops: the sidebar could still consume too much usable width and page/header controls could be crowded out.

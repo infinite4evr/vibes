@@ -97,9 +97,11 @@ class Page(Gtk.Box):
     def _tick(self) -> bool:
         try:
             self.tick()
-        except Exception:  # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
             import traceback
             traceback.print_exc()
+            from ..errors import report_exception
+            report_exception(e, f"{self.TITLE} page: live refresh")
         return True
 
     # -- helpers

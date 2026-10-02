@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-import time
 
 from gi.repository import Adw, GLib, Gtk
 
 from ..core import maint, power, tasks, watch
 from ..core.fmt import ago
-from .util import button, clear, hbox, label, pill, spacer, vbox
+from .util import button, clear, label, pill, vbox
 
 
 class TaskCenterDialog(Adw.Dialog):

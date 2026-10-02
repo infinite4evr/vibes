@@ -39,11 +39,19 @@ def _install_crash_guard() -> None:
         text = "".join(traceback.format_exception(exc_type, exc, tb))
         sys.__stderr__.write(text)
         log_error(text)
-        app = Gio.Application.get_default()
-        win = app.props.active_window if app else None
-        if win is not None and hasattr(win, "toast"):
-            GLib.idle_add(lambda: (win.toast(f"Something went wrong: {exc}. Details are in ~/.local/state/pc/gui-errors.log", 6), False)[1])
+        try:
+            from .errors import report_text
+            report_text(text, "Unexpected error")
+        except Exception:  # noqa: BLE001 - never let the reporter hide the original error
+            pass
     sys.excepthook = hook
+
+    def thread_hook(args) -> None:
+        if args.exc_type is SystemExit:
+            return
+        hook(args.exc_type, args.exc_value, args.exc_traceback)
+    import threading
+    threading.excepthook = thread_hook
 
 
 class App(Adw.Application):

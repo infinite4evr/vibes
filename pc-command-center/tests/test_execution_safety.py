@@ -1,7 +1,5 @@
-import os
+import pytest
 import subprocess
-import tempfile
-from pathlib import Path
 
 from pcctl.core import debug, tasks
 from pcctl.core.run import Step
@@ -68,7 +66,8 @@ def test_cleanup_does_not_follow_symlinked_parent(tmp_path, monkeypatch):
 
     home = tmp_path / "home"
     outside = tmp_path / "outside"
-    home.mkdir(); outside.mkdir()
+    home.mkdir()
+    outside.mkdir()
     victim = outside / "keep.txt"
     victim.write_text("important")
     (home / "cache-link").symlink_to(outside, target_is_directory=True)
@@ -84,7 +83,8 @@ def test_cleanup_can_unlink_symlink_without_touching_target(tmp_path, monkeypatc
 
     home = tmp_path / "home"
     outside = tmp_path / "outside"
-    home.mkdir(); outside.mkdir()
+    home.mkdir()
+    outside.mkdir()
     victim = outside / "keep.txt"
     victim.write_text("important")
     link = home / "link"
@@ -97,11 +97,11 @@ def test_cleanup_can_unlink_symlink_without_touching_target(tmp_path, monkeypatc
 
 
 def test_restore_rejects_archive_symlink(tmp_path, monkeypatch):
-    import io
     import tarfile
     from pcctl.core import maint
 
-    home = tmp_path / "home"; home.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
     backups = tmp_path / "backups"
     monkeypatch.setattr(maint, "HOME", home)
     monkeypatch.setattr(maint, "BACKUP_DIR", backups)
@@ -115,7 +115,7 @@ def test_restore_rejects_archive_symlink(tmp_path, monkeypatch):
     step = maint.restore_settings_steps(str(archive))[0]
     try:
         step._func()  # type: ignore[attr-defined]
-        assert False, "symlink member should be rejected"
+        pytest.fail("symlink member should be rejected")
     except ValueError as exc:
         assert "Unsupported file type" in str(exc)
 
@@ -125,8 +125,10 @@ def test_restore_rejects_preexisting_symlink_parent(tmp_path, monkeypatch):
     import tarfile
     from pcctl.core import maint
 
-    home = tmp_path / "home"; home.mkdir()
-    outside = tmp_path / "outside"; outside.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
     (home / ".config").symlink_to(outside, target_is_directory=True)
     monkeypatch.setattr(maint, "HOME", home)
     monkeypatch.setattr(maint, "BACKUP_DIR", tmp_path / "backups")
@@ -140,7 +142,7 @@ def test_restore_rejects_preexisting_symlink_parent(tmp_path, monkeypatch):
     step = maint.restore_settings_steps(str(archive))[0]
     try:
         step._func()  # type: ignore[attr-defined]
-        assert False, "symlinked restore parent should be rejected"
+        pytest.fail("symlinked restore parent should be rejected")
     except ValueError as exc:
         assert "symlink" in str(exc).lower()
     assert not (outside / "tool/settings.txt").exists()
@@ -192,7 +194,8 @@ def test_duplicate_confirmation_hashes_entire_small_file(tmp_path):
 def test_duplicate_max_files_is_global(tmp_path):
     from pcctl.core.dupes import find_duplicates
     for d in range(3):
-        folder = tmp_path / str(d); folder.mkdir()
+        folder = tmp_path / str(d)
+        folder.mkdir()
         for i in range(4):
             (folder / f"{i}.bin").write_bytes((f"{d}-{i}".encode()) * 100)
     # Contract test: traversal must return normally with a tiny global cap.
@@ -217,7 +220,8 @@ def test_cli_required_step_failure_stops_following_step(tmp_path):
 
 
 def test_root_batch_preserves_step_cwd(tmp_path):
-    here = tmp_path / "cwd"; here.mkdir()
+    here = tmp_path / "cwd"
+    here.mkdir()
     out = tmp_path / "pwd.txt"
     steps = [Step("pwd", ["bash", "-c", f"pwd > {out}"], root=True, cwd=str(here))]
     p = subprocess.run(["bash"], input=build_root_batch(steps), text=True, capture_output=True)

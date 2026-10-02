@@ -125,10 +125,20 @@ class _UnavailablePage(Gtk.Box):
         detail = label(f"{type(exc).__name__}: {exc}", ["dim", "mono"], wrap=True, selectable=True)
         body.append(detail)
         copy = Gtk.Button(label="Copy diagnostic details")
-        copy.set_halign(Gtk.Align.START)
         copy.connect("clicked", lambda *_: (self.get_clipboard().set(self._trace), win.toast("Diagnostic details copied.")))
-        body.append(copy)
+        report = Gtk.Button(label="Report on GitHub")
+        report.add_css_class("suggested-action")
+        report.set_halign(Gtk.Align.START)
+
+        def send(*_a) -> None:
+            from ..core import bugreport
+            from .errors import open_uri
+            open_uri(self, bugreport.Report(trace, f"{self.TITLE} page could not be loaded").url())
+        report.connect("clicked", send)
+        body.append(hbox(report, copy))
         self.append(scrolled(body, 900))
+        from .errors import report_text
+        report_text(trace, f"{self.TITLE} page could not be loaded")
 
     def activate(self) -> None:
         return
@@ -359,7 +369,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.sidebar_revealer.set_transition_type(Gtk.RevealerTransitionType.NONE if not ms else Gtk.RevealerTransitionType.CROSSFADE)
 
     def do_size_allocate(self, width: int, height: int, baseline: int) -> None:
-        # GTK 4 widgets have no "width" property, so notify::width never fires;
+        # GTK 4 widgets have no "width" property to watch for changes;
         # react to real allocations instead and defer the layout change to idle.
         Adw.ApplicationWindow.do_size_allocate(self, width, height, baseline)
         if width != self._shell_width:

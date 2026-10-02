@@ -12,7 +12,7 @@ from ...core import dev, devsetup, maint, network, security
 from ...core.desktop import run_quiet
 from ...core.fmt import ago, duration, human
 from ...core.run import HOME, Step, has, which
-from ..util import (button, clear, esc, flow, hbox, label, launch, open_in_terminal, open_path, pill, spacer, status_icon,
+from ..util import (button, clear, esc, flow, hbox, label, launch, open_in_terminal, open_path, pill, status_icon,
                     vbox)
 from ..widgets import Column, DataTable, card
 from .base import Page, action_row, banner, group, switch_row, tabs

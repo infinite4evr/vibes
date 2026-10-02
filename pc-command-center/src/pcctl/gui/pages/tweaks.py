@@ -10,7 +10,7 @@ from gi.repository import Adw, GLib, Graphene, Gtk
 from ...core import desktop, extensions, shortcuts, tweaks
 from ...core.run import Step
 from ..dialogs import ChoiceDialog, ask_text
-from ..util import button, clear, esc, flow, hbox, label, launch, pill, spacer, status_icon, vbox
+from ..util import button, clear, esc, flow, hbox, label, launch, pill, status_icon, vbox
 from ..widgets import card
 from .. import theme
 from .base import Page, action_row, banner, group, switch_row, tabs

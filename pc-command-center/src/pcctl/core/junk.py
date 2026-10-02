@@ -627,7 +627,7 @@ def scan_projects(days: int = 30, max_depth: int = 6) -> dict[str, list[Item]]:
             depth = len(Path(cur).parts) - base_depth
             last = None
 
-            def idle() -> float:
+            def idle(cur: str = cur) -> float:
                 nonlocal last
                 if last is None:
                     last = storage.latest_mtime(cur, skip={"node_modules", ".git", "target", ".venv", "venv"} | set(BUILD_DIRS))

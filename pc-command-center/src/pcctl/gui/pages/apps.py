@@ -12,7 +12,7 @@ from ...core import appmgr, packages
 from ...core.fmt import ago, human
 from ...core.run import HOME, out, read
 from ..dialogs import ChoiceDialog, PickDialog
-from ..util import button, clear, flow, hbox, label, launch, pill, spacer, vbox
+from ..util import button, clear, flow, hbox, label, launch, pill, vbox
 from ..widgets import Column, DataTable, card
 from .base import Page, action_row, banner, boxed_list, group, stat, switch_row, tabs
 

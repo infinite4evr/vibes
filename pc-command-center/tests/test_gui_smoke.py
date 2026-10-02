@@ -15,7 +15,7 @@ import pytest
 
 SRC = Path(__file__).resolve().parents[1] / "src"
 PAGES = ["dashboard", "cleanup", "updates", "apps", "startup", "processes", "storage", "network", "power", "logs", "services",
-         "security", "privacy", "tweaks", "dev", "maintenance"]
+         "security", "privacy", "tweaks", "dev", "maintenance", "configuration"]
 CHECK = "import gi; gi.require_version('Gtk', '4.0'); gi.require_version('Adw', '1'); from gi.repository import Gtk, Adw"
 
 

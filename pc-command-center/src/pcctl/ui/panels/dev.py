@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import os
 import subprocess
-import time
 
 from rich.text import Text
 from textual import on, work
@@ -15,7 +14,7 @@ from ...core import dev, maint
 from ...core import network as net
 from ...core.fmt import C, ago, duration, human
 from ...core.run import HOME, Step, has, which
-from ..widgets import Btn, ChoiceScreen, Panel, SortTable, muted, plain
+from ..widgets import Btn, Panel, SortTable, muted, plain
 
 
 class DevPanel(Panel):
