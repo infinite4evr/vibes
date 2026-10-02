@@ -322,8 +322,21 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
     private fun mediaUrl(path: String, params: Map<String, Any?> = emptyMap()): String =
         try { url(path, params, media = true).toString() } catch (_: ApiException) { NOT_RUNNING }
 
+    /**
+     * While the service isn't running, a thumbnail's URL is one nothing listens on but with the same
+     * [cacheKey]: a thumbnail seen before still shows from the image cache (the saved screen at start).
+     */
     fun thumbUrl(aid: Long, chatId: Long, msgId: Long, v: String = "s"): String =
-        mediaUrl("${a(aid)}/thumb/$chatId/$msgId", mapOf("v" to v))
+        mediaUrl("${a(aid)}/thumb/$chatId/$msgId", mapOf("v" to v)).let {
+            if (it == NOT_RUNNING) "http://127.0.0.1:1${a(aid)}/thumb/$chatId/$msgId?v=$v" else it
+        }
+
+    /**
+     * The image caches' key for a thumbnail: its path, without the service's port, which changes
+     * every time the service starts (with the port in it, nothing cached outlived a restart).
+     * Null for anything else (streams carry a token; they keep their full URL).
+     */
+    fun cacheKey(url: String): String? = THUMB.matchEntire(url)?.groupValues?.get(1)
     fun docThumbUrl(aid: Long, chatId: Long, msgId: Long): String = mediaUrl("${a(aid)}/docthumb/$chatId/$msgId")
 
     /** A stream the app's own player uses (full access token). */
@@ -345,6 +358,7 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
     companion object {
         /** A valid URL nothing listens on (connection refused at once), carrying no secret. */
         const val NOT_RUNNING = "http://127.0.0.1:1/not-running"
+        private val THUMB = Regex("""^http://127\.0\.0\.1:\d+(/api/a/-?\d+/(?:doc)?thumb/-?\d+/\d+(?:\?[vr]=[^&]*)?)$""")
     }
 }
 

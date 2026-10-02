@@ -60,6 +60,9 @@ class AppState(
     private val prefs = context.getSharedPreferences("app", Context.MODE_PRIVATE)
     private val streamHttp = http.newBuilder().readTimeout(40, TimeUnit.SECONDS).build()
 
+    /** The last screen's data, shown at once on the next start while the service starts (see [StartupCache]). */
+    val cache = StartupCache(context, scope)
+
     private val _phase = MutableStateFlow<Phase>(Phase.Starting)
 
     /** The service is starting again under an open screen (shown as a small bar, not the start screen). */
@@ -129,6 +132,7 @@ class AppState(
         scope.launch {
             engine.state.collect { s -> onEngine(s) }
         }
+        scope.launch { cache.load()?.let { showCached(it) } }
         // Load everything (and follow live updates) only once someone is looking.
         scope.launch {
             androidx.lifecycle.ProcessLifecycleOwner.get().lifecycle.currentStateFlow.collect {
@@ -198,6 +202,30 @@ class AppState(
         engine.restart(demo)
     }
 
+    /**
+     * Open straight onto what the main screen showed last time, instead of the start screen, while
+     * the service starts: the "Connecting" bar says so, and [bootstrap] replaces it all once the
+     * service answers. Only when nothing newer is known yet and nothing has to come first (the
+     * first-run choice, a passcode, signing in).
+     */
+    private fun showCached(c: StartupCache.Snapshot) {
+        if (_phase.value != Phase.Starting || !welcomed || c.demo != engine.demo) return
+        val st = c.status
+        if (st.locked || st.lockSet || !st.apiConfigured || st.accounts.none { it.id == c.aid }) return
+        AppLog.i("app", "showing the saved screen while the service starts (${c.pages.size} list(s))")
+        _status.value = st
+        _settings.value = st.settings
+        _aid.value = c.aid
+        _account.value = c.account
+        _folders.value = c.folders
+        _chats.value = c.chats
+        _filters.value = c.filters
+        _tags.value = c.tags
+        _subjects.value = c.subjects
+        _reconnecting.value = true
+        _phase.value = Phase.Ready
+    }
+
     // ------------------------------------------------------------------ bootstrap
     fun bootstrap() {
         scope.launch {
@@ -209,12 +237,16 @@ class AppState(
                     "${st.accounts.size} account(s), key ${if (st.apiConfigured) "set" else "missing"}")
                 _status.value = st
                 _settings.value = st.settings
+                // Kept for the next start only while no passcode guards the files.
+                val cacheable = !st.locked && !st.lockSet && st.apiConfigured && st.accounts.isNotEmpty()
+                if (!cacheable) cache.clear()
                 _phase.value = when {
                     st.locked -> Phase.Locked
                     !st.apiConfigured -> Phase.NeedsApiKey
                     st.accounts.isEmpty() -> Phase.NeedsLogin
                     else -> {
                         val chosen = st.accounts.firstOrNull { it.id == _aid.value } ?: st.accounts.first()
+                        cache.start(st, chosen.id, engine.demo)
                         selectAccount(chosen.id, announce = false)
                         Phase.Ready
                     }
@@ -249,6 +281,7 @@ class AppState(
             _account.value = null
             _folders.value = FoldersResponse()
             _chats.value = emptyList()
+            _status.value?.let { if (cache.snapshot != null) cache.start(it, id, engine.demo) }
         }
         reloadAll()
         if (announce) { startLive(); _changes.tryEmit("account") }
@@ -260,19 +293,27 @@ class AppState(
         scope.launch { loadTags() }
         scope.launch { loadSubjects() }
         scope.launch { loadTransfers() }
-        scope.launch { runCatching { _account.value = api.accountStatus(_aid.value) } }
+        scope.launch { runCatching { api.accountStatus(_aid.value).let { a -> _account.value = a; cache.update { it.copy(account = a) } } } }
     }
 
-    suspend fun loadFolders() = safely { _folders.value = api.folders(_aid.value) }
+    suspend fun loadFolders() = safely {
+        _folders.value = api.folders(_aid.value)
+        cache.update { it.copy(folders = _folders.value) }
+    }
     suspend fun loadChats() = safely {
         _chats.value = api.chats(_aid.value)
         _filters.value = api.dialogFilters(_aid.value)
+        cache.update { it.copy(chats = _chats.value, filters = _filters.value) }
     }
-    suspend fun loadTags() = safely { _tags.value = api.tags(_aid.value) }
+    suspend fun loadTags() = safely {
+        _tags.value = api.tags(_aid.value)
+        cache.update { it.copy(tags = _tags.value) }
+    }
     suspend fun loadSubjects() = safely {
         val obj = api.subjects(_aid.value)
         val list = obj["subjects"]?.let { JsonCodec.decodeFromJsonElement(kotlinx.serialization.builtins.ListSerializer(Subject.serializer()), it) }
         _subjects.value = if (obj.bool("enabled", true)) list.orEmpty() else emptyList()
+        cache.update { it.copy(subjects = _subjects.value) }
     }
     suspend fun loadTransfers() = safely { _transfers.value = api.transfers(_aid.value) }
 
@@ -280,6 +321,7 @@ class AppState(
         val st = api.status()
         _status.value = st
         _settings.value = st.settings
+        if (st.lockSet || st.locked) cache.clear() else cache.update { it.copy(status = st.copy(mediaToken = "")) }
     }
 
     /** Change settings (shared with the desktop app's Settings), applied at once. */
@@ -296,6 +338,7 @@ class AppState(
             try {
                 val res = api.patchSettings(buildJsonObject { put(key, v) })
                 res["settings"]?.let { _settings.value = it.jsonObject }
+                cache.update { it.copy(status = it.status.copy(settings = _settings.value)) }
             } catch (e: Exception) {
                 failed("Couldn't change that setting.", e)
                 refreshStatus()
@@ -350,6 +393,7 @@ class AppState(
     }
 
     fun onLocked() {
+        cache.clear()
         _phase.value = Phase.Locked
         stopLive()
     }

@@ -108,6 +108,8 @@ fun BrowseScreen(
                 // New files while you're further down the list: don't pull it from under you.
                 what == "new" && model.items.size > BrowseModel.PAGE -> model.hasNew = true
                 what == "new" -> model.reload(silent = true)
+                // The service is up (the list showed what was saved, or waited for it): refresh in place.
+                what == "reconnected" -> model.reload(silent = model.loaded)
                 else -> model.reload(keepStats = false)
             }
         }

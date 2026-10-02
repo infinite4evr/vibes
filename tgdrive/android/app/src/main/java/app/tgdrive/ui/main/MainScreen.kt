@@ -104,6 +104,8 @@ import app.tgdrive.ui.viewer.ChatContextScreen
 import app.tgdrive.ui.viewer.DetailsScreen
 import app.tgdrive.ui.viewer.MiniPlayer
 import app.tgdrive.ui.viewer.ViewerScreen
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /** Everything once TG Drive is ready: sidebar, top bar, the current page, and what floats over it. */
@@ -244,7 +246,7 @@ fun MainScreen(activity: MainActivity, state: AppState) {
                     verticalAlignment = Alignment.CenterVertically) {
                     app.tgdrive.ui.components.Spinner(14.dp, stroke = 2.dp)
                     Spacer(Modifier.width(10.dp))
-                    Text("Reconnecting to TG Drive's service…", style = Tg.type.label, color = Tg.colors.ink2)
+                    Text("Connecting to TG Drive's service…", style = Tg.type.label, color = Tg.colors.ink2)
                 }
             }
             SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 76.dp)) { data ->
@@ -435,8 +437,10 @@ private fun rememberThumbs(state: AppState): ThumbSource {
     val aid by state.aid.collectAsState()
     val settings by state.settings.collectAsState()
     val pdf = settings["pdf_card_previews"]?.toString() != "false"
+    // A new port (the service started): new URLs, so thumbnails that couldn't load before load now.
+    val port by remember(state) { state.engine.state.map { it.port to it.mediaPort }.distinctUntilChanged() }.collectAsState(state.engine.state.value.let { it.port to it.mediaPort })
     val ctx = LocalContext.current
-    return remember(aid, pdf) {
+    return remember(aid, pdf, port) {
         val pdfs = app.tgdrive.ui.viewer.PdfThumbs.get(ctx.applicationContext)
         object : ThumbSource {
             override fun thumb(f: FileItem, big: Boolean): String = state.api.thumbUrl(aid, f.chatId, f.msgId, if (big) "b" else "s")

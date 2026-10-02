@@ -410,10 +410,15 @@ class Journeys : UiDriver() {
                     g.api.files(aid, mapOf("kinds" to "video", "copies" to "hide", "limit" to "5")).items.firstOrNull()?.displayName
                 } ?: throw AssertionError("the sample has no videos")
                 search(name.substringBeforeLast('.').take(24))
-                openFile(name.take(18), "the video") { find(By.desc("Details"), 300) != null }
+                // The viewer opens, and its error opens the error dialog by itself (which then covers it).
+                openFile(name.take(18), "the video") {
+                    find(By.desc("Details"), 300) != null || find(By.text("What went wrong"), 300) != null
+                }
                 need(By.textContains("this video"), "the video error message", 30_000)
-                need(By.desc("Details"), "the viewer, still open")
+                need(By.text("Create GitHub issue"), "the error dialog's GitHub issue button")
                 shot("e2e-video-error", 300)
+                tap("Close")
+                need(By.desc("Details"), "the viewer, still open")
                 back()
             }
 
@@ -577,7 +582,7 @@ class Journeys : UiDriver() {
                 runBlocking { withContext(Dispatchers.Main) {
                     g.state.failed(PLANTED, IllegalStateException("$PLANTED (planted by the test)"))
                 } }
-                tap("Details")
+                // An error opens its dialog by itself (no "Details" to tap first).
                 need(By.text("What went wrong"), "the error details")
                 need(By.textContains("IllegalStateException"), "the error's stack in the details")
                 shot("e2e-error-details", 500)
@@ -601,7 +606,7 @@ class Journeys : UiDriver() {
                 runBlocking { withContext(Dispatchers.Main) {
                     g.state.failed(PLANTED, IllegalStateException("$PLANTED for the GitHub issue"))
                 } }
-                tap("Details")
+                // An error opens its dialog by itself (no "Details" to tap first).
                 need(By.text("What went wrong"), "the error details")
                 val canBrowse = app.packageManager.resolveActivity(
                     android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com")), 0) != null
