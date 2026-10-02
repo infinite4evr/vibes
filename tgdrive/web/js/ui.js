@@ -1,10 +1,16 @@
 // UI building blocks: toasts (with actions), menus, context menus, dialogs, pickers.
 import { $, $$, S, A, api, esc, icon, plural, fmtNum, CHAT_KIND_NAME, hue, initials, busy } from './core.js';
+import { reportError, reportException } from './report.js';
 
 /* ----------------------------------------------------------------- toasts */
 export function toast(msg, opts = {}) {
-  const { err = false, action, onAction, ms } = typeof opts === 'boolean' ? { err: opts } : opts;
+  const { err = false, action, onAction, ms, detail } = typeof opts === 'boolean' ? { err: opts } : opts;
   const el = document.createElement('div');
+  if (err) {
+    // Every error, however small, opens the error dialog (with "Create GitHub issue") instead of a toast.
+    reportError(msg, { detail, action, onAction });
+    return el;   // never shown; callers may still dismiss it
+  }
   el.className = `toast${err ? ' err' : ''}`;
   el.setAttribute('role', err ? 'alert' : 'status');
   el.innerHTML = `<span class="toast-ic">${icon(err ? 'info' : 'check')}</span><span>${esc(msg)}</span>${action ? `<button class="toast-act">${esc(action)}</button>` : ''}`;
@@ -19,7 +25,7 @@ export function dismissToast(el) {
   el.classList.add('leaving');
   setTimeout(() => el.remove(), 200);
 }
-export const fail = (e) => { if (e?.name !== 'AbortError' && e?.status !== 423) toast(e?.message || String(e), { err: true }); };
+export const fail = (e) => reportException(e);
 
 /* -------------------------------------------------------------- clipboard */
 // Copy text and say whether it worked. Falls back to the older copy command where the clipboard API is

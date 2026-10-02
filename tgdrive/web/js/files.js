@@ -8,6 +8,7 @@ import { contextMenu, childrenOf, folderPath, descendantIds, toast, fail } from 
 import { VGrid } from './vgrid.js';
 import { activeColumns, cellHtml, headHtml, applyTemplate, columnsDialog } from './columns.js';
 import * as actions from './actions.js';
+import { reportOnce, reportExceptionOnce } from './report.js';
 
 export * from './actions.js';
 export { waveHtml };
@@ -207,6 +208,7 @@ function showLoadError(e) {
     el.setAttribute('role', 'alert');
     $('#loadingMore').after(el);
   }
+  reportExceptionOnce(e, { message: "Couldn't load more files" });
   el.innerHTML = `<span>${icon('info')}Couldn't load more files: ${esc(e.message || String(e))}</span><button class="btn sm" data-act="load-more">${icon('refresh')}Try again</button>`;
 }
 export function retryLoadMore() {
@@ -491,7 +493,10 @@ export function renderEmpty(error, why) {
   const indexing = S.status && !['idle', 'paused'].includes(S.status.index.phase);
   const fo = v.type === 'drive' && v.folderId ? S.folderById.get(v.folderId) : null;
   if (error && why === 'query') html = `<h2>Check the search</h2><p>${esc(error)}</p>`;
-  else if (error) html = `<h2>Couldn't load files</h2><p>${esc(error)}</p><button class="btn" data-act="retry">${icon('refresh')}Try again</button>`;
+  else if (error) {
+    reportOnce(`Couldn't load files: ${error}`, { detail: `View: ${location.hash}` });
+    html = `<h2>Couldn't load files</h2><p>${esc(error)}</p><button class="btn" data-act="retry">${icon('refresh')}Try again</button>`;
+  }
   else if (v.type === 'drive' && !v.folderId && !childrenOf(null).length) {
     html = `<h2>Your Drive is empty</h2><p>Create folders and put any file from any chat into them, or upload files. TG Drive keeps them in a private channel called “${esc(S.driveTitle)}”.</p>
       <button class="btn primary" data-act="new-folder">${icon('folderPlus')}New folder</button> <button class="btn" data-act="upload">${icon('upload')}Upload files</button>`;

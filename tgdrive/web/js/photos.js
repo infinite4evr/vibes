@@ -2,6 +2,7 @@
 // Only the months on screen are loaded, so it stays fast with 100,000+ pictures.
 import { $, $$, S, A, api, esc, icon, qs, fmtDur, fmtNum, key, thumbs, thumbUrl, inlineSrc, bus, pref, clamp, plural, copiesParam, busy } from './core.js';
 import { fail, toast, contextMenu, chatPicker } from './ui.js';
+import { reportOnce, reportExceptionOnce } from './report.js';
 
 const SIZES = { s: 112, m: 164, l: 236 };
 let P = null;
@@ -68,6 +69,7 @@ async function loadMonths() {
     render();
   } catch (e) {
     if (!P || !$('#phCanvas') || JSON.stringify(filters()) !== want) return;
+    reportExceptionOnce(e, { message: "Couldn't load your photos" });
     $('#phCanvas').innerHTML = `<div class="empty page-error">${icon('info')}<h2>Couldn't load your photos</h2><p>${esc(e.message || String(e))}</p>
       <button class="btn" data-ph-reload>${icon('refresh')}Try again</button></div>`;
   }

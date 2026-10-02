@@ -592,6 +592,14 @@ window.addEventListener('unhandledrejection', (e) => {
   if (!r || r.name === 'AbortError' || r instanceof Error === false || r.status !== undefined) return;
   reportError(r.message || String(r), r.stack, 'promise');
 });
+// A crash report from the service also opens the error dialog (with "Create GitHub issue"), once per report.
+const crashShown = new Set();
+async function crashDialog(rep) {
+  let text = '';
+  try { text = await api(`/api/crashes/${encodeURIComponent(rep.id)}`); } catch { /* the summary is enough */ }
+  const { reportError } = await import('./report.js');
+  reportError(rep.summary || `TG Drive ran into a problem (${rep.kind})`, { title: 'TG Drive ran into a problem', detail: typeof text === 'string' ? text : '' });
+}
 async function checkCrashes() {
   try {
     const r = await api('/api/crashes');
@@ -600,9 +608,10 @@ async function checkCrashes() {
     if (!r.unseen || !newest) { if (el) el.remove(); return; }
     const box = el || Object.assign(document.createElement('div'), { id: 'crashNotice', className: 'crash-notice' });
     box.innerHTML = `${icon('bug')}<div class="grow"><strong>TG Drive ran into a problem${r.unseen > 1 ? ` (${r.unseen} times)` : ''}</strong><small>${esc(newest.summary || newest.kind)}</small></div>
-      <button class="btn sm" data-crash="view">View report</button><button class="btn sm" data-crash="bundle">Create diagnostics file</button><button class="icon-btn tiny" data-crash="dismiss" aria-label="Dismiss">${icon('close')}</button>`;
+      <button class="btn sm primary" data-crash="issue">Create GitHub issue</button><button class="btn sm" data-crash="view">View report</button><button class="btn sm" data-crash="bundle">Create diagnostics file</button><button class="icon-btn tiny" data-crash="dismiss" aria-label="Dismiss">${icon('close')}</button>`;
     box.dataset.id = newest.id;
     if (!el) $('#main').prepend(box);
+    if (!crashShown.has(newest.id)) { crashShown.add(newest.id); crashDialog(newest); }
   } catch { /* ignore */ }
 }
 document.addEventListener('click', async (e) => {
@@ -611,6 +620,7 @@ document.addEventListener('click', async (e) => {
   const act = b.dataset.crash;
   if (act === 'dismiss') { await api('/api/crashes/seen', { method: 'POST' }).catch(() => {}); $('#crashNotice')?.remove(); }
   if (act === 'view') { await api('/api/crashes/seen', { method: 'POST' }).catch(() => {}); $('#crashNotice')?.remove(); go('#settings/about'); }
+  if (act === 'issue') { const id = $('#crashNotice')?.dataset.id; if (id) crashDialog({ id, summary: $('#crashNotice small')?.textContent }); }
   if (act === 'bundle') { const m = await import('./pages.js'); m.diagnosticsDialog(); }
 });
 

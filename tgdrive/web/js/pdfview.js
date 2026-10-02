@@ -1,6 +1,7 @@
 // PDF preview: pages stream from Telegram as you scroll (pdf.js range requests). Zoom, fit to width,
 // jump to a page. Text can be selected and copied. Nothing is stored about the file.
 import { $, $$, A, esc, icon, debounce, clamp } from './core.js';
+import { reportOnce, reportExceptionOnce } from './report.js';
 
 const VENDOR = '/static/vendor/pdfjs/';
 let lib = null;
@@ -85,6 +86,7 @@ export async function openPdf(f, stage, bar) {
     setScale('fit');
   } catch (e) {
     if (!R || R.f !== f) return;
+    reportExceptionOnce(e, { message: `Couldn't open the PDF “${f.name}”` });
     el.querySelector('.pdf-pages').innerHTML = `<div class="v-fallback"><p>This PDF couldn't be opened here (${esc(e.message || e)}).</p>
       <button class="btn" data-v="open">${icon('external')}Open with default app</button><button class="btn" data-v="download">${icon('download')}Download</button></div>`;
   }
@@ -199,6 +201,7 @@ async function renderPage(n) {
       // Usually the connection to Telegram: say so on the page, with a way to try again (scrolling back to
       // the page tries again too).
       console.warn('pdf page', n, e);
+      reportExceptionOnce(e, { message: `Couldn't load page ${n} of the PDF “${R.f?.name || ''}”` });
       p.el.classList.add('failed');
       p.el.insertAdjacentHTML('beforeend', `<div class="pdf-fail"><p>Couldn't load page ${n}</p><button class="btn sm" data-pdf-retry="${n}">${icon('refresh')}Try again</button></div>`);
     }

@@ -30,7 +30,7 @@ H = {"X-TGDrive": "1"}
 # Console messages that are expected in these tests: resources we made fail on purpose, and media that the
 # demo's made-up files can't decode.
 EXPECTED = re.compile(r"Failed to load resource|net::ERR_|MEDIA_ERR|NotSupportedError|no supported source|"
-                      r"pdf page|Refused to|favicon|The play\(\) request was interrupted|DEMUXER_ERROR")
+                      r"pdf page|Refused to|favicon|bug in the window|The play\(\) request was interrupted|DEMUXER_ERROR")
 
 
 def _free_port() -> int:
@@ -128,7 +128,28 @@ class App:
         return self.page.evaluate("window.tgdrive.S.aid")
 
     def toast(self, text, timeout=8000):
-        expect(self.page.locator("#toasts .toast", has_text=text).first).to_be_visible(timeout=timeout)
+        """A message: a toast, or for an error the error dialog (closed again here)."""
+        dlg = self.page.locator(".error-dialog", has_text=text)
+        expect(self.page.locator("#toasts .toast", has_text=text).or_(dlg).first).to_be_visible(timeout=timeout)
+        if dlg.count():
+            self.close_error_dialogs()
+
+    def error_dialog(self, text, timeout=15000):
+        """The "What went wrong" dialog for `text`, with its "Create GitHub issue" button; closed after."""
+        dlg = self.page.locator(".error-dialog", has_text=text).first
+        expect(dlg).to_be_visible(timeout=timeout)
+        expect(dlg.get_by_role("button", name="Create GitHub issue")).to_be_visible()
+        self.close_error_dialogs()
+
+    def close_error_dialogs(self):
+        for _ in range(20):
+            dlg = self.page.locator(".backdrop:not(.leaving) .error-dialog")
+            if not dlg.count():
+                self.page.wait_for_timeout(300)   # the next waiting error opens a moment after one closes
+                if not dlg.count():
+                    return
+            dlg.first.locator(".d-foot .btn", has_text="Close").click()
+            self.page.wait_for_timeout(250)
 
     def shot(self, name):
         SHOTS.mkdir(parents=True, exist_ok=True)
@@ -289,6 +310,7 @@ def test_later_page_failure_offers_try_again(app):
     app.open("#all")
     p.locator("#content").evaluate("el => el.scrollTo(0, el.scrollHeight)")
     expect(p.locator("#loadMoreError")).to_contain_text("Couldn't load more files", timeout=15000)
+    app.error_dialog("Couldn't load more files")
     before = p.locator("#grid [data-key]").count()
     p.locator("#loadMoreError [data-act='load-more']").click()
     expect(p.locator("#loadMoreError")).to_have_count(0, timeout=15000)
@@ -424,6 +446,7 @@ def test_text_file_shows_and_errors_have_a_way_out(app):
     p.locator("#grid [data-key]").first.dblclick()
     expect(p.locator(".v-textbox")).to_contain_text("Telegram didn't answer", timeout=15000)
     assert "PRELIMS" not in p.locator(".v-textbox").inner_text()
+    app.error_dialog("Telegram didn't answer")
     p.unroute("**/stream/**")
     p.locator("[data-v='retrytext']").click()
     expect(p.locator(".v-text")).to_contain_text("PRELIMS SYLLABUS", timeout=15000)
@@ -444,6 +467,7 @@ def test_photo_viewer_and_slideshow(app):
     p.route(re.compile(r".*/(stream|thumb)/.*"), handle)
     p.locator(".ph-cell[data-ph]:not(:has(.ph-dur))").nth(1).click()
     expect(p.locator(".viewer [data-v='retryimg']")).to_be_visible(timeout=15000)
+    app.error_dialog("This picture couldn't be shown")
     fail["on"] = False
     p.locator(".viewer [data-v='retryimg']").click()
     expect(p.locator(".viewer .v-img.loaded")).to_be_visible(timeout=20000)
@@ -510,18 +534,24 @@ def test_mini_player_speed_and_skipping(app):
     p = app.open("#search/Track").page
     # Start the background player from the viewer, on the search results (songs).
     p.locator("#grid [data-key]").first.dblclick()
+    app.settle(800)
+    app.close_error_dialogs()   # the demo's made-up songs can't be decoded by the browser: that is reported
     p.locator(".viewer [data-v='background']").click()
     expect(p.locator(".viewer")).to_have_count(0)
     mp = p.locator("#miniPlayer")
     expect(mp).to_be_visible()
     expect(mp.locator(".mp-seek")).to_be_disabled()
+    # Unplayable tracks are skipped (then it stops after three in a row) instead of silently stopping, and
+    # each one is reported in the error dialog.
+    app.error_dialog("skipping to the next one")
+    app.close_error_dialogs()
     sp = mp.locator(".mp-speed")
     expect(sp).to_have_text("1×")
     sp.click()
     expect(sp).to_have_text("1.25×")
-    # Unplayable tracks are skipped (then it stops after three in a row) instead of silently stopping.
-    app.toast("skipping to the next one", timeout=15000)
+    app.close_error_dialogs()
     mp.locator("[data-mp='speed']").click()
+    app.close_error_dialogs()
     mp.locator("[data-mp='close']").click()
     expect(mp).to_be_hidden()
 
@@ -535,6 +565,7 @@ def test_storage_error_then_retry(app):
     app.open("#storage")
     expect(p.locator(".page-error")).to_contain_text("disk busy", timeout=10000)
     expect(p.locator(".page-loading")).to_have_count(0)
+    app.error_dialog("disk busy")
     state["fail"] = False
     p.locator("[data-storage-retry]").click()
     expect(p.locator(".kpis")).to_be_visible(timeout=15000)
@@ -612,6 +643,7 @@ def test_upload_can_be_cancelled_and_retried(app, tmp_path):
     expect(row.locator(".t-sub.err")).to_contain_text("disk full", timeout=10000)
     expect(row.locator("[data-t='resume']")).to_be_visible()
     # Retry goes straight to TG Drive (re-sending an intercepted upload body isn't reliable in Playwright).
+    app.close_error_dialogs()   # "couldn't be uploaded: disk full" (checked in the row above)
     p.unroute("**/api/a/*/upload?*")
     row.locator("[data-t='resume']").click()
     expect(p.locator("#drawer .t-row.done", has_text="slow.bin")).to_be_visible(timeout=30000)
@@ -706,3 +738,22 @@ def test_add_account_qr_failure_has_a_way_forward(app):
     expect(p.locator("#login input[name='phone']")).to_be_visible()
     p.locator("#cancelLogin").click()
     expect(p.locator("#app")).to_be_visible()
+
+
+# ------------------------------------------------------------------ errors: "Create GitHub issue"
+def test_every_error_opens_dialog_with_github_issue(app):
+    p = app.open("#all").page
+    p.evaluate("""() => { window.__opened = []; window.open = (u) => { window.__opened.push(u); return {}; }; }""")
+    # A failed action (an error toast before) and an error in the page itself, both while the first is open.
+    p.evaluate("""async () => { const ui = await import(document.querySelector('script[type=module]').src.replace('app.js', 'ui.js')); ui.toast('Something small failed', { err: true });
+                                ui.fail(new Error('Second problem')); }""")
+    p.evaluate("window.dispatchEvent(new ErrorEvent('error', { message: 'bug in the window', error: new Error('bug in the window') }))")
+    dlg = p.locator(".error-dialog", has_text="Something small failed")
+    expect(dlg).to_be_visible(timeout=8000)
+    dlg.get_by_role("button", name="Create GitHub issue").click()
+    p.wait_for_function("window.__opened.length > 0", timeout=10000)
+    url = p.evaluate("window.__opened[0]")
+    assert url.startswith("https://github.com/infinite4evr/vibes/issues/new?labels=bug&title=TG%20Drive%3A%20Something%20small%20failed")
+    assert "What%20happened" in url and "System" in url and len(url) <= 7600
+    app.close_error_dialogs()   # closes the two that waited their turn as well
+    assert p.locator(".error-dialog").count() == 0
