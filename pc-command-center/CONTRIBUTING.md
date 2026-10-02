@@ -12,7 +12,7 @@ ruff check src tests                  # configured in pyproject.toml; 52 finding
 bash -n ../ubuntu-setup/setup.sh ../ubuntu-setup/lib/*.sh data/pc-admin
 ```
 
-These are the same checks as `.github/workflows/pc-command-center.yml` at the root of the `vibes` repository (plus ruff), which runs on every push that touches `pc-command-center/` or `ubuntu-setup/`.
+These are the same checks as `.github/workflows/pc-command-center.yml` at the root of the `vibes` repository (plus ruff), called by `ci.yml`: on every push to `main`, and on other branches when they change `pc-command-center/` or `ubuntu-setup/` (Python 3.10 and 3.13 there; every version on `main`).
 
 ## Safety rules
 

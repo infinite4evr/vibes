@@ -311,6 +311,7 @@ private fun VideoPage(f: FileItem, state: AppState, onTap: () -> Unit, onEnded: 
             Column(Modifier.padding(24.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xE61D2330)).padding(18.dp),
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(msg, style = Tg.type.body, color = Color.White)
+                app.tgdrive.diag.AutoErrorDialog("$msg (“${f.displayName}”, ${f.mime})")
                 Spacer(Modifier.height(12.dp))
                 TgButton("Open in another player", {
                     Platform.openStream(ctx, state.api.externalStreamUrl(aid, f), f.mime, f.displayName)
@@ -420,6 +421,8 @@ private fun PdfPage(f: FileItem, state: AppState) {
             }
             r.isFailure -> Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) {
                 Text("Couldn't open this PDF: ${r.exceptionOrNull()?.message ?: "unknown error"}", style = Tg.type.body, color = Color.White)
+                app.tgdrive.diag.AutoErrorDialog("Couldn't open the PDF “${f.displayName}”: ${r.exceptionOrNull()?.message ?: "unknown error"}",
+                    r.exceptionOrNull()?.let { app.tgdrive.diag.AppLog.stack(it).take(4000) })
                 Spacer(Modifier.height(12.dp))
                 TgButton("Try again", { attempt++ }, kind = ButtonKind.Primary, icon = TgIcons.refresh)
             }
@@ -486,6 +489,8 @@ private fun TextPage(f: FileItem, state: AppState) {
             }
             r.isFailure -> Column(Modifier.align(Alignment.Center).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Couldn't load the text: ${r.exceptionOrNull()?.message}", style = Tg.type.body, color = Tg.colors.ink2)
+                app.tgdrive.diag.AutoErrorDialog("Couldn't load the text of “${f.displayName}”: ${r.exceptionOrNull()?.message}",
+                    r.exceptionOrNull()?.let { app.tgdrive.diag.AppLog.stack(it).take(4000) })
                 Spacer(Modifier.height(10.dp))
                 TgButton("Try again", { attempt++ }, kind = ButtonKind.Primary, icon = TgIcons.refresh)
             }

@@ -2,6 +2,7 @@
 // replies and neighbouring files — read live from Telegram, in the side panel.
 import { $, S, A, api, esc, icon, fmtDate, fmtSize, key, inlineSrc, thumbUrl, bus, extColor } from './core.js';
 import { fail } from './ui.js';
+import { reportOnce, reportExceptionOnce } from './report.js';
 
 let C = null;
 
@@ -39,6 +40,7 @@ async function load(before, after, mode, anchor) {
     // Earlier or later messages: keep what is already shown and say what went wrong.
     if (mode !== 'center') { fail(e); return; }
     const body = $('.ctx-body');
+    reportExceptionOnce(e, { message: "Couldn't read the chat around this file" });
     if (body) {
       body.innerHTML = `<div class="empty page-error">${icon('info')}<h2>Couldn't read this chat</h2><p>${esc(e.message)}</p>
         <p class="help">Telegram needs to be connected to read the messages around a file.</p><button class="btn" data-ctx="retry">${icon('refresh')}Try again</button></div>`;

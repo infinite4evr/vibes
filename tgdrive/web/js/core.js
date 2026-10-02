@@ -331,7 +331,7 @@ export async function api(path, opts = {}) {
     busy.end(token);
     if (e.name === 'AbortError') { bus.emit('api', { method: init.method, path, aborted: true, ms: performance.now() - t0 }); throw e; }
     bus.emit('api', { method: init.method, path, status: 0, ms: performance.now() - t0, error: String(e) });
-    throw new ApiError("Can't reach TG Drive. If you closed the app, open it again.", 0);
+    throw Object.assign(new ApiError("Can't reach TG Drive. If you closed the app, open it again.", 0), { path: `${init.method} ${bare}` });
   }
   if (opts.raw) { busy.end(token); bus.emit('api', { method: init.method, path, status: res.status, ms: performance.now() - t0 }); return res; }
   let data = null;
@@ -340,7 +340,7 @@ export async function api(path, opts = {}) {
   bus.emit('api', { method: init.method, path, status: res.status, ms: performance.now() - t0, body: opts.body,
     error: res.ok ? undefined : (data && data.error) || `HTTP ${res.status}` });
   if (res.status === 423) { bus.emit('locked'); throw new ApiError('TG Drive is locked.', 423, data); }
-  if (!res.ok) throw new ApiError((data && data.error) || `TG Drive answered ${res.status}.`, res.status, data);
+  if (!res.ok) throw Object.assign(new ApiError((data && data.error) || `TG Drive answered ${res.status}.`, res.status, data), { path: `${init.method} ${bare}` });
   return data;
 }
 

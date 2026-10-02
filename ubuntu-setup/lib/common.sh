@@ -21,9 +21,60 @@ chmod 700 "$STATE_DIR" 2>/dev/null || true
 title() { printf '\n%s%s━━ %s ━━%s\n' "$C_BOLD" "$C_MAUVE" "$*" "$C_RESET"; }
 info()  { printf '  %s•%s %s\n' "$C_BLUE" "$C_RESET" "$*"; }
 ok()    { printf '  %s✓%s %s\n' "$C_GREEN" "$C_RESET" "$*"; }
-warn()  { printf '  %s!%s %s\n' "$C_YELLOW" "$C_RESET" "$*"; }
-err()   { printf '  %s✗%s %s\n' "$C_RED" "$C_RESET" "$*" >&2; }
+warn()  {
+  printf '  %s!%s %s\n' "$C_YELLOW" "$C_RESET" "$*"
+  # A warning that something failed is an error too: offer to report it.
+  if [[ $* =~ ^(Couldn\'t|Could\ not|Can\'t|Cannot|Failed)|[Ff]ailed ]]; then report_issue "$*"; fi
+}
+err()   { printf '  %s✗%s %s\n' "$C_RED" "$C_RESET" "$*" >&2; report_issue "$*"; }
 dim()   { printf '    %s%s%s\n' "$C_DIM" "$*" "$C_RESET"; }
+
+# ------------------------------------------------------------------ "Create GitHub issue"
+# Every error, however small, opens a prompt showing it with "Create GitHub issue": a pre-filled issue
+# (the error, the end of this run's log, the system; names, paths, addresses and secrets removed) that
+# opens in the browser to read and edit before submitting. On the desktop it is a dialog (zenity), in a
+# plain terminal a prompt; without a terminal to ask in, the link is printed. Each error is offered once.
+SETUP_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPORTED_ERRORS=()
+REPORTING=0
+
+open_url() {
+  if [[ -n ${DISPLAY:-}${WAYLAND_DISPLAY:-} ]] && have xdg-open; then
+    (xdg-open "$1" >/dev/null 2>&1 &)
+    printf '  %s•%s Opened the new issue in your browser.\n' "$C_BLUE" "$C_RESET"
+  else
+    printf '  Open this link in a browser to create the issue:\n  %s\n' "$1"
+  fi
+}
+
+report_issue() {
+  local msg=$1 url seen reply
+  [[ $REPORTING == 1 ]] && return 0
+  for seen in "${REPORTED_ERRORS[@]}"; do [[ $seen == "$msg" ]] && return 0; done
+  REPORTED_ERRORS+=("$msg")
+  have python3 || return 0
+  REPORTING=1
+  url=$(python3 "$SETUP_LIB_DIR/report_issue.py" "${msg:0:100}" "$msg" "${LOG_FILE:-}" 2>/dev/null)
+  if [[ -z $url ]]; then REPORTING=0; return 0; fi
+  if [[ -n ${DISPLAY:-}${WAYLAND_DISPLAY:-} ]] && have zenity && [[ ${ASSUME_YES:-0} != 1 ]]; then
+    local text=${msg//&/&amp;}; text=${text//</&lt;}; text=${text//>/&gt;}
+    if zenity --question --title="ubuntu-setup: something went wrong" --width=520 --ok-label="Create GitHub issue" \
+         --cancel-label="Close" --text="<b>$text</b>\n\nCreate GitHub issue opens a pre-filled issue in your browser; you see everything before sending. Names, your home folder, addresses and secrets are removed." 2>/dev/null; then
+      open_url "$url"
+    fi
+  elif [[ ${ASSUME_YES:-0} != 1 ]] && { : </dev/tty; } 2>/dev/null; then
+    printf '\n  %s┌─ Something went wrong ─────────────────────────────────────────%s\n' "$C_RED" "$C_RESET"
+    printf '  %s│%s %s\n' "$C_RED" "$C_RESET" "$msg"
+    printf '  %s│%s %sCreate GitHub issue opens a pre-filled issue (names, paths and secrets removed).%s\n' "$C_RED" "$C_RESET" "$C_DIM" "$C_RESET"
+    printf '  %s└────────────────────────────────────────────────────────────────%s\n' "$C_RED" "$C_RESET"
+    read -r -p "  ${C_PEACH}?${C_RESET} Create GitHub issue? [y/N] " reply </dev/tty || reply=""
+    [[ $reply =~ ^[Yy] ]] && open_url "$url"
+  else
+    printf '  Report it on GitHub (pre-filled issue): %s\n' "$url"
+  fi
+  REPORTING=0
+  return 0
+}
 
 # ask "Question" y|n  -> exit status 0 means yes. Default answer is used on Enter.
 ask() {

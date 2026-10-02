@@ -127,7 +127,8 @@ class Page(Gtk.Box):
         name = getattr(fn, "__name__", "work").replace("_", " ")
         if name == "<lambda>":
             name = "background refresh"
-        bg(fn, done, error=lambda e: self.toast(f"Error: {e}"), title=f"{self.TITLE}: {name}")
+        from ..errors import report_exception
+        bg(fn, done, error=lambda e: report_exception(e, where=f"{self.TITLE}: {name}"), title=f"{self.TITLE}: {name}")
 
     def toast(self, text: str, timeout: int = 3) -> None:
         self.win.toast(text, timeout)

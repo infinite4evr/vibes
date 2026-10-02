@@ -106,7 +106,7 @@ class TaskDialog(Adw.Dialog):
         self.bg_btn.connect("clicked", lambda *_: self.set_visible(False))
         self.stop_btn = button("Stop", css="pill")
         self.stop_btn.connect("clicked", lambda *_: self.runner.cancel())
-        self.report_btn = button("Report on GitHub", icon="mail-send-symbolic", css="pill",
+        self.report_btn = button("Create GitHub issue", icon="mail-send-symbolic", css="pill",
                                  tooltip="Open a pre-filled GitHub issue with the (redacted) output", on_click=self._report)
         self.report_btn.set_visible(False)
         body.append(hbox(self.result, spacer(), self.report_btn, self.bg_btn, self.stop_btn, self.close_btn))
@@ -250,6 +250,10 @@ def run_steps(parent: Gtk.Widget, title: str, steps: list[Step], explain: str = 
 
 
 def toast(parent: Gtk.Widget, text: str, timeout: int = 3) -> None:
+    from .errors import is_error_text, report_text
+    if is_error_text(text):
+        report_text(text, where="PC Command Center")
+        return
     root = parent.get_root() if parent else None
     overlay = getattr(root, "toasts", None)
     if overlay is not None:

@@ -235,3 +235,23 @@ def test_step_audit_metadata_defaults_are_backward_compatible():
     assert step.mutates is None
     assert step.config_key == ""
     assert step.timeout is None
+
+
+def test_root_batch_with_cancel_flag_succeeds_when_not_cancelled(tmp_path):
+    # Regression: the trailing cancel check made every successful admin batch exit 1,
+    # so the last step was reported as failed (GitHub issues 12, 13, 14).
+    flag = tmp_path / "cancel.flag"
+    flag.write_text("0\n")
+    steps = [Step("first", ["bash", "-c", "exit 0"]), Step("last", ["bash", "-c", "exit 0"])]
+    p = subprocess.run(["bash"], input=build_root_batch(steps, cancel_path=str(flag)), text=True, capture_output=True)
+    assert p.returncode == 0, p.stdout + p.stderr
+    assert "::pc-rc 1 0" in p.stdout
+
+
+def test_root_batch_with_cancel_flag_stops_before_next_step(tmp_path):
+    flag = tmp_path / "cancel.flag"
+    flag.write_text("1\n")
+    steps = [Step("first", ["bash", "-c", "exit 0"]), Step("must not run", ["bash", "-c", "exit 0"])]
+    p = subprocess.run(["bash"], input=build_root_batch(steps, cancel_path=str(flag)), text=True, capture_output=True)
+    assert p.returncode == 130
+    assert "::pc-step 1" not in p.stdout

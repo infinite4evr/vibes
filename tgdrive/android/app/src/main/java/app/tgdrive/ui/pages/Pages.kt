@@ -117,7 +117,8 @@ fun PageIntro(text: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun PageError(message: String?, onRetry: () -> Unit) {
-    var details by remember { mutableStateOf(false) }
+    // The error dialog (with "Create GitHub issue") opens by itself, once per error.
+    var details by remember(message) { mutableStateOf(true) }
     EmptyState(TgIcons.info, "Couldn't load this", message ?: "TG Drive isn't responding.", action = "Try again", onAction = onRetry,
         secondary = "Report this", onSecondary = { details = true })
     if (details) app.tgdrive.diag.ErrorDetailsDialog("Couldn't load this page: ${message ?: "TG Drive isn't responding."}", null) { details = false }

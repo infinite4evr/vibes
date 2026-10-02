@@ -26,6 +26,16 @@ ERRORS_LOG = Path.home() / ".local/state/pc/gui-errors.log"
 MAX_URL = 7600
 
 
+# Messages that say something failed. The apps show these in their error dialog (with "Create GitHub
+# issue") instead of a passing notification: every problem, however small, can be reported.
+_ERROR_TEXT = re.compile(r"^\s*(error\b|couldn['’]t\b|could not\b|can['’]t\b|cannot\b|failed\b|unable to\b)"
+                         r"|\b(failed|not installed|permission denied|refused|timed out)\b", re.I)
+
+
+def is_error_text(text: object) -> bool:
+    return bool(_ERROR_TEXT.search(str(text or "")))
+
+
 def scrub(text: object) -> str:
     """Secrets, home folder, user and machine names, MAC/IP addresses: nothing that identifies the person."""
     from .report import redact

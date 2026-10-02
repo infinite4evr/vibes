@@ -402,6 +402,27 @@ async def crashes_clear():
     return {"removed": diagnostics.clear_crashes()}
 
 
+@router.post("/api/issue-context")
+async def issue_context(body: dict = Body(default={})):
+    """For "Create GitHub issue" in the window's error dialog: the error texts and the end of the log,
+    with secrets, numbers, e-mail addresses and chat/file names removed, and what the app runs on."""
+    def build() -> dict:
+        from . import maintenance
+        texts = [diagnostics.redact(str(t or "")[:20000], [], False) for t in (body.get("texts") or [])[:4]]
+        tail = ""
+        try:
+            with open(maintenance.log_path(), "rb") as f:
+                f.seek(0, 2)
+                f.seek(max(0, f.tell() - 16384))
+                tail = "\n".join(f.read().decode("utf-8", "replace").splitlines()[1:][-40:])
+        except OSError:
+            pass
+        info = diagnostics.system_info()
+        env = {k: info.get(k) for k in ("tgdrive", "python", "platform", "desktop", "session", "packaged", "appimage")}
+        return {"texts": texts, "log": diagnostics.redact(tail, [], False), "env": env}
+    return await asyncio.get_running_loop().run_in_executor(None, build)
+
+
 @router.post("/api/crash")
 async def crash_from_page(body: dict = Body(...)):
     """Errors in the web page (sent by the page itself, a few per session at most)."""

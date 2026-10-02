@@ -17,6 +17,7 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
 from ..core import bugreport, debug  # noqa: E402
+from ..core.bugreport import is_error_text  # noqa: E402,F401 - used by the toasts
 from .util import button, hbox, label, spacer, vbox  # noqa: E402
 
 REPEAT_WINDOW = 120  # seconds: the same error again within this time doesn't open another dialog
@@ -114,7 +115,7 @@ class ErrorDialog(Adw.Dialog):
         exp.set_child(sw)
         body.append(exp)
 
-        report = button("Report on GitHub", icon="mail-send-symbolic", css=["suggested-action", "pill"], on_click=self._report)
+        report = button("Create GitHub issue", icon="mail-send-symbolic", css=["suggested-action", "pill"], on_click=self._report)
         copy = button("Copy details", icon="edit-copy-symbolic", css="pill", on_click=self._copy)
         save = button("Save full log", icon="document-save-symbolic", css="pill", on_click=self._save)
         close = button("Close", css="pill", on_click=self._close)

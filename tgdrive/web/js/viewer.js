@@ -2,6 +2,7 @@
 import { $, S, A, api, esc, icon, fmtSize, fmtDur, fmtDate, STREAMABLE, TEXT_EXT, streamUrl, externalStreamUrl, thumbUrl, inlineSrc, bridge, callBridge, key, bus, extColor, pref } from './core.js';
 import { toast, fail, copyText } from './ui.js';
 import { doDownload, openInTelegram, doOpenLocal, setSelected, refreshCard } from './files.js';
+import { reportOnce, reportExceptionOnce } from './report.js';
 
 let cur = null;   // { list, i, el }
 
@@ -225,6 +226,9 @@ function render() {
       if (code === 4 || code === 3) {
         video.hidden = true;
         cur.el.querySelector('.v-fallback').hidden = false;
+        if (!(bridge.ready && S.settings.native_player_auto !== false)) {
+          reportOnce(`This window can't play the video “${f.name || ''}” (${video.error?.message || `code ${code}`}).`, { detail: `File: ${f.mime || ''} ${f.size || ''} bytes` });
+        }
         if (bridge.ready && S.settings.native_player_auto !== false) playNative(f);
       } else if (code) toast(`Playback stopped: ${video.error?.message || 'network error'}. Telegram may be slow; try again.`, { err: true });
     });
@@ -244,6 +248,7 @@ function render() {
       stage.classList.remove('is-buffering');
       const wrap = cur?.el.querySelector('.v-imgwrap');
       if (!wrap || cur.list[cur.i] !== f) return;
+      reportOnce(`This picture couldn't be shown (“${f.name || ''}”).`, { detail: `File: ${f.kind} ${f.mime || ''} ${f.size || ''} bytes` });
       wrap.outerHTML = `<div class="v-fallback"><p>This picture couldn't be shown. Telegram may be slow, or the file isn't a picture the window can display.</p>
         <button class="btn primary" data-v="retryimg">${icon('refresh')}Try again</button><button class="btn" data-v="open">${icon('external')}Open with default app</button><button class="btn" data-v="download">${icon('download')}Download</button></div>`;
     });
@@ -305,6 +310,7 @@ async function loadText(f, box) {
       : t || '(This file is empty.)';
   } catch (e) {
     if (!cur || cur.list[cur.i] !== f || !box.isConnected) return;
+    reportExceptionOnce(e, { message: `Couldn't load the text of “${f.name || ''}”` });
     box.innerHTML = `<div class="v-fallback"><p>Couldn't load this file: ${esc(e.message || String(e))}</p>
       <button class="btn primary" data-v="retrytext">${icon('refresh')}Try again</button><button class="btn" data-v="download">${icon('download')}Download</button></div>`;
   }

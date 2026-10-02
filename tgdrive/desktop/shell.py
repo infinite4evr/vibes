@@ -85,6 +85,74 @@ def open_external(url: QUrl) -> None:
         QDesktopServices.openUrl(url)
 
 
+ISSUE_REPO = "infinite4evr/vibes"
+
+
+def issue_url(title: str, what: str, detail: str = "", log_path=None) -> str:
+    """A new GitHub issue about an error, filled in with it, the end of the log and the system; secrets,
+    numbers and names removed (tgdrive.diagnostics.redact). Shortened to fit in a link."""
+    import platform
+    from urllib.parse import quote
+    try:
+        from tgdrive import config, diagnostics
+
+        def clean(t: str) -> str:
+            return diagnostics.redact(t, [], False)
+        version = config.VERSION
+    except Exception:
+        def clean(t: str) -> str:
+            return t
+        version = "?"
+    tail = ""
+    if log_path:
+        try:
+            with open(log_path, "rb") as fh:
+                fh.seek(max(0, fh.seek(0, 2) - 8000))
+                tail = "\n".join(fh.read().decode("utf-8", "replace").splitlines()[1:][-40:])
+        except OSError:
+            pass
+
+    def fence(t: str) -> str:
+        return "```text\n" + clean(t).replace("```", "'''").strip() + "\n```"
+    base = (f"https://github.com/{ISSUE_REPO}/issues/new?labels=bug"
+            f"&title={quote(clean(f'TG Drive: {title}')[:110])}&body=")
+    log_lines = tail.splitlines()
+    while True:
+        body = "\n".join([
+            "**Where:** TG Drive desktop app", "", "### What happened", "", clean(what), "",
+            *(["### Details", "", fence(detail), ""] if detail.strip() else []),
+            *(["### Log (end)", "", fence("\n".join(log_lines)), ""] if log_lines else []),
+            "### System", "", "| | |", "|---|---|", f"| TG Drive | {version} |",
+            f"| Python | {platform.python_version()} |", f"| Platform | {platform.platform()} |",
+            f"| Desktop | {os.environ.get('XDG_CURRENT_DESKTOP', '?')} ({os.environ.get('XDG_SESSION_TYPE', '?')}) |", "",
+            "<sub>Created from TG Drive's error dialog. Secrets, numbers, e-mail addresses and chat/file names "
+            "were removed before this text was shown to you.</sub>"])
+        url = base + quote(body)
+        if len(url) <= 7600:
+            return url
+        if len(log_lines) > 3:
+            log_lines = log_lines[1:]
+        elif len(detail) > 200:
+            detail = detail[: int(len(detail) * 0.8)]
+        else:
+            return url[:7600]
+
+
+def error_box(parent, title: str, text: str, detail: str = "", log_path=None) -> None:
+    """Every error the desktop shell shows: the error, its details and "Create GitHub issue"."""
+    box = QMessageBox(parent)
+    box.setIcon(QMessageBox.Icon.Critical)
+    box.setWindowTitle(title)
+    box.setText(text)
+    if detail:
+        box.setDetailedText(detail)
+    issue = box.addButton("Create GitHub issue", QMessageBox.ButtonRole.ActionRole)
+    box.addButton(QMessageBox.StandardButton.Close)
+    box.exec()
+    if box.clickedButton() is issue:
+        open_external(QUrl(issue_url(title, text, detail, log_path)))
+
+
 class ExternalPage(QWebEnginePage):
     """Target for window.open / target=_blank: hands the URL to the desktop, then disappears."""
 
@@ -294,8 +362,9 @@ class Shell:
         if not self.start_server():
             if splash:
                 splash.close()
-            QMessageBox.critical(None, "TG Drive couldn't start",
-                                 f"The TG Drive service didn't start. Details are in the log:\n{self.log_path}")
+            error_box(None, "TG Drive couldn't start",
+                      f"The TG Drive service didn't start. Details are in the log:\n{self.log_path}",
+                      log_path=self._service_log())
             return 1
         self.build_window()
         self.build_tray()
@@ -484,9 +553,10 @@ class Shell:
         now = time.time()
         self.restarts = [t for t in self.restarts if now - t < 300] + [now]
         if len(self.restarts) > 3:
-            QMessageBox.critical(self.win, "TG Drive stopped",
-                                 "TG Drive's service keeps stopping. Details are in Settings → About & diagnostics "
-                                 f"(crash reports) and in the log:\n{self.log_path}")
+            error_box(self.win, "TG Drive stopped",
+                      "TG Drive's service keeps stopping. Details are in Settings → About & diagnostics "
+                      f"(crash reports) and in the log:\n{self.log_path}",
+                      detail=f"Its last output:\n{tail.strip()}", log_path=self._service_log())
             self.proc = None
             return
         old = (self.port, self.media)
@@ -950,6 +1020,19 @@ class Shell:
 
 def run(app: QApplication, args, log_path) -> None:
     shell = Shell(app, args, log_path)
+    # An error in the window's own code (a Qt callback) is shown with "Create GitHub issue" instead of
+    # ending the app (PyQt aborts on an exception escaping a slot without a hook).
+    shown = {"n": 0}
+
+    def hook(kind, exc, tb):
+        import traceback
+        text = "".join(traceback.format_exception(kind, exc, tb))
+        log.error("unexpected error in the desktop window:\n%s", text)
+        if shown["n"] < 5 and QApplication.instance() is not None:
+            shown["n"] += 1
+            error_box(getattr(shell, "win", None), "TG Drive ran into a problem", f"{kind.__name__}: {exc}",
+                      detail=text, log_path=log_path)
+    sys.excepthook = hook
     code = shell.start()
     # run pending deleteLater() calls (the page) before Python tears everything down
     app.sendPostedEvents(None, QEvent.Type.DeferredDelete.value)

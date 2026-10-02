@@ -145,11 +145,14 @@ class EngineService : Service() {
     // ------------------------------------------------------------------ lifecycle
     private fun start(demo: Boolean, background: Boolean = false) {
         if (state.phase == EngineState.Phase.Ready || state.phase == EngineState.Phase.Starting) return
-        if (shuttingDown) {
+        if (shuttingDown || processEnding) {
             // This process ends in a moment (Python can't start again in it): starting now would be cut off
             // half-way and look like a crash. The app's watchdog, or Android re-creating a bound service,
-            // starts a fresh process instead.
+            // starts a fresh process instead. [processEnding] covers a *new* instance of this service that
+            // Android created in the same, dying process (the app asked for it again right after a stop,
+            // e.g. Android 15's data-sync time limit): it was SIGKILLed half-started (GitHub issue 10).
             AppLog.i("engine", "start asked while stopping: left to a fresh process")
+            if (processEnding && !shuttingDown) stopSelf()
             return
         }
         startLog().delete()
@@ -261,6 +264,7 @@ class EngineService : Service() {
         if (shuttingDown) return
         AppLog.i("engine", "stopping (holds: $holds)")
         shuttingDown = true
+        processEnding = true
         poll?.cancel(false)
         if (state.phase == EngineState.Phase.Ready || state.phase == EngineState.Phase.Starting) {
             updateNotification(getString(R.string.engine_stopping), null)
@@ -275,6 +279,7 @@ class EngineService : Service() {
     }
 
     private fun stopEverything() {
+        processEnding = true
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         stopSelf()
         // Python keeps threads and state for the life of the process: end it so the next start is clean.
@@ -388,6 +393,9 @@ class EngineService : Service() {
 
     companion object {
         private const val TAG = "TGDriveEngine"
+        /** This process is being ended (Python stopped or failed; a kill is scheduled). Process-wide, unlike
+         *  [shuttingDown]: Android may create a new EngineService in the same process before the kill. */
+        @Volatile private var processEnding = false
         const val ACTION_START = "app.tgdrive.engine.START"
         const val ACTION_HOLD = "app.tgdrive.engine.HOLD"
         const val ACTION_STOP = "app.tgdrive.engine.STOP"

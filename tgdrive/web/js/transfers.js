@@ -1,6 +1,7 @@
 // Transfers panel and uploads.
 import { $, S, A, api, esc, icon, fmtSize, fmtEta, plural, bus, bridge, callBridge, qs, debounce } from './core.js';
 import { toast, dismissToast, fail, confirmDialog, chatPicker, promptDialog, dialog, folderPicker } from './ui.js';
+import { reportOnce } from './report.js';
 
 const openWhenDone = new Set();
 bus.on('open-when-done', (id) => openWhenDone.add(id));
@@ -25,6 +26,10 @@ export async function loadTransfers() {
     S.transfers = r.transfers;
     S.tsummary = r.summary;
     for (const t of r.transfers) {
+      if (t.status === 'error' && prev.get(t.id) !== 'error') {
+        reportOnce(`${t.kind === 'upload' ? 'Upload' : 'Download'} of “${t.name || ''}” failed: ${t.error || 'unknown error'}`,
+          { detail: `Transfer ${t.id}: ${t.kind || ''} ${t.size || ''} bytes`, action: 'Retry', onAction: () => api(A(`/transfers/${t.id}/resume`), { method: 'POST' }).then(loadTransfers).catch(fail) });
+      }
       if (t.status === 'done' && prev.get(t.id) && prev.get(t.id) !== 'done' && openWhenDone.has(t.id)) {
         openWhenDone.delete(t.id);
         api(A(`/transfers/${t.id}/open`), { method: 'POST' }).catch(fail);

@@ -171,8 +171,10 @@ Maven Central sometimes answers 429 in cloud sessions; `contract/settings.gradle
 `ps aux | grep "python boot.py" | grep -v grep | awk '{print $2}' | xargs -r kill`. Don't use
 `pkill -f`: it matches your own shell.
 
-**CI** (`.github/workflows/tgdrive-android.yml`, about 90 minutes; each push cancels the previous
-run of the same branch):
+**CI** (`.github/workflows/tgdrive-android.yml`, called by `ci.yml`; about 90 minutes; each push cancels
+the previous run of the same branch). On `main` all three jobs run; on other branches it runs only when
+the branch changed the Android app or the Python service, and the emulator job only when it changed
+the Android app (`tgdrive/android/**`):
 1. *Service tests (Android package set)*: pytest plus the contract harness plus the Telegram check.
 2. *Build APK*: the release APK (arm64-v8a + x86_64), signed (§7), with its certificate checked.
    It's published as a GitHub release `tgdrive-android-v<version>-<run>`, a pre-release off `main`.

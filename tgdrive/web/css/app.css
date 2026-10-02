@@ -1728,3 +1728,9 @@ html.page-hidden *, html.page-hidden *::before, html.page-hidden *::after { anim
 .picker label.is-disabled { color: var(--ink-3); cursor: default; }
 .picker label.is-disabled:hover { background: none; }
 .picker label.is-disabled small { margin-left: auto; font-size: calc(11.5px * var(--fs)); }
+
+/* "What went wrong" dialog (report.js) */
+.error-dialog .err-msg { overflow-wrap: anywhere; margin: 0 0 6px; }
+.error-dialog .err-count:empty { display: none; }
+.error-dialog details { margin-top: 10px; }
+.error-dialog .err-detail { max-height: 260px; margin-top: 8px; }

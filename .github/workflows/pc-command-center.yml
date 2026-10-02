@@ -1,17 +1,19 @@
 name: PC Command Center
 
 on:
-  push:
-    paths:
-      - "pc-command-center/**"
-      - "ubuntu-setup/**"
-      - ".github/workflows/pc-command-center.yml"
-  pull_request:
-    paths:
-      - "pc-command-center/**"
-      - "ubuntu-setup/**"
-      - ".github/workflows/pc-command-center.yml"
+  # Called by ci.yml: on main (and when run by hand) with full: true, everything; on other branches
+  # only when this app changed, with the quicker set (see ci.yml).
+  workflow_call:
+    inputs:
+      full:
+        type: boolean
+        default: true
+  # Or run just this app by hand (Actions → this workflow → Run workflow): everything.
   workflow_dispatch:
+    inputs:
+      full:
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -19,10 +21,12 @@ permissions:
 jobs:
   python:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13']
+        # Every supported Python on main; on other branches the oldest and the newest.
+        python-version: ${{ fromJSON(inputs.full && '["3.10", "3.11", "3.12", "3.13"]' || '["3.10", "3.13"]') }}
     defaults:
       run:
         working-directory: pc-command-center
@@ -43,6 +47,7 @@ jobs:
 
   gtk-smoke:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Install Ubuntu GTK/libadwaita runtime

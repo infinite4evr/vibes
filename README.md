@@ -49,7 +49,10 @@ applications menu). On Android, download the APK from the latest `tgdrive-androi
 | tgdrive | `cd tgdrive && pip install -r requirements.txt pytest httpx && python -m pytest tests` (the browser test `tests/test_e2e.py` also needs `playwright`) |
 | tgdrive/android | built and tested by CI (APK, service tests with the Android package set, emulator tests and screenshots) |
 
-CI: [`ci.yml`](.github/workflows/ci.yml) runs the study-tool checks,
+CI: [`ci.yml`](.github/workflows/ci.yml) is the entry point. On `main` (or run by hand) it runs every
+app's checks in full; on any other branch only those of the apps the branch changed compared with
+`main`, with fewer Python versions, and the Android emulator only when the Android app changed. The
+apps' own workflows: [`commands.yml`](.github/workflows/commands.yml) runs the study-tool checks,
 [`pc-command-center.yml`](.github/workflows/pc-command-center.yml) the PC Command
 Center tests, shell syntax and a GTK smoke test, and
 [`lumaclean-apk.yml`](.github/workflows/lumaclean-apk.yml) builds and releases the

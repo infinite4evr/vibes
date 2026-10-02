@@ -1,6 +1,7 @@
 // Full-page tools: Storage, Duplicates, Index manager, Activity, Settings.
 import { $, $$, S, A, api, esc, icon, fmtSize, fmtNum, fmtDate, plural, relTime, CHAT_KIND_NAME, KIND_NAME, SOURCES, bus, key, bridge, callBridge, qs, extColor, M } from './core.js';
 import { toast, fail, confirmDialog, dialog, promptDialog, chatAvatar, saveDownload, copyText } from './ui.js';
+import { reportOnce, reportExceptionOnce } from './report.js';
 
 const page = () => $('#pageView');
 const head = (title, sub = '', right = '') => `<div class="page-head"><div><h1>${esc(title)}</h1>${sub ? `<p>${sub}</p>` : ''}</div><div class="page-right">${right}</div></div>`;
@@ -100,6 +101,7 @@ async function loadDupes(btn = null) {
 
 // A page whose data couldn't be loaded: what went wrong and a way to try again (never a loader left spinning).
 function pageError(e, retryAttr) {
+  reportExceptionOnce(e, { message: `Couldn't load ${location.hash || 'this page'}` });
   return `<div class="empty page-error">${icon('info')}<h2>Couldn't load this</h2><p>${esc(e?.message || String(e))}</p>
     <button class="btn" ${retryAttr}>${icon('refresh')}Try again</button></div>`;
 }

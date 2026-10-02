@@ -1,0 +1,88 @@
+name: Study tools (commands)
+
+on:
+  # Called by ci.yml: on main (and when run by hand) with full: true, everything; on other branches
+  # only when this app changed, with the quicker set (see ci.yml).
+  workflow_call:
+    inputs:
+      full:
+        type: boolean
+        default: true
+  # Or run just this app by hand (Actions → this workflow → Run workflow): everything.
+  workflow_dispatch:
+    inputs:
+      full:
+        type: boolean
+        default: true
+
+jobs:
+  syntax:
+    name: Syntax checks (bash, python, node)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check every command's entry file by its shebang
+        working-directory: commands
+        run: |
+          fail=0
+          for f in install.sh env.sh */*; do
+            [ -f "$f" ] || continue
+            case "$(head -n1 "$f")" in
+              *bash*)    bash -n "$f"              || { echo "::error file=commands/$f::bash syntax"; fail=1; } ;;
+              *python3*) python3 -m py_compile "$f" || { echo "::error file=commands/$f::python syntax"; fail=1; } ;;
+              *node*)    node --check "$f"         || { echo "::error file=commands/$f::node syntax"; fail=1; } ;;
+              *) continue ;;
+            esac
+            echo "ok  $f"
+          done
+          exit $fail
+      - name: Compile the stackhl package and tests
+        run: python3 -m compileall -q commands/stack-highlights/stackhl commands/stack-highlights/tests
+
+  stack-highlights:
+    name: stack-highlights (units, golden, archive)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: commands/stack-highlights/requirements.txt
+      - run: python3 -m pip install -r commands/stack-highlights/requirements.txt
+      - name: Unit tests + golden files
+        run: make -C commands/stack-highlights quick
+      - name: Development archive (required files, 500-page suite, checksums)
+        run: python3 commands/stack-highlights/dev/verify_package.py
+
+  pdf-safety:
+    name: PDF step (md-to-pdf, recall-sheet, notes-recall)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: commands/stack-highlights/requirements.txt
+      - run: python3 -m pip install -r commands/stack-highlights/requirements.txt
+      - name: Install pandoc and XeLaTeX
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+            pandoc texlive-xetex texlive-fonts-recommended lmodern fonts-noto-core
+      - name: make pdf-safety
+        # the suite passes with SKIP when a tool is missing; here that is a failure
+        run: |
+          make -C commands/stack-highlights pdf-safety 2>&1 | tee pdf-safety.log
+          test "${PIPESTATUS[0]}" -eq 0
+          ! grep -q '^SKIP' pdf-safety.log

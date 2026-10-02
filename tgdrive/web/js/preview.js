@@ -2,6 +2,7 @@
 // PDF, the start of a text file. Starts the moment a file is clicked; switching files stops the old one.
 import { S, esc, icon, fmtSize, fmtDur, TEXT_EXT, STREAMABLE, streamUrl, thumbUrl, inlineSrc, extColor, bridge, key, waveHtml, displayName } from './core.js';
 import { canPlayInline, savePosition, wireBuffering } from './viewer.js';
+import { reportOnce, reportExceptionOnce } from './report.js';
 
 export const isPdf = (f) => (f.ext || '').toLowerCase() === 'pdf' || f.mime === 'application/pdf';
 export const isText = (f) => TEXT_EXT.has((f.ext || '').toLowerCase()) && f.size < 3 * 1024 * 1024;
@@ -52,6 +53,7 @@ export function mountPreview(host, f, { onOpen } = {}) {
   const lq = f.inline ? `<img class="pv-lq" src="${inlineSrc(f.inline)}" alt="" aria-hidden="true">` : '';
   const done = () => el.classList.remove('is-loading');
   const failed = (msg) => {
+    reportOnce(`${msg.split('.')[0]} (“${f.name || ''}”).`, { title: 'A preview didn\'t load', detail: `File: ${f.kind} ${f.mime || ''} ${f.size || ''} bytes` });
     el.classList.remove('is-loading');
     el.classList.add('is-failed');
     const note = el.querySelector('.pv-note');
