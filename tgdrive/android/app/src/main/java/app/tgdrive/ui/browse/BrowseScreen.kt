@@ -191,7 +191,8 @@ fun BrowseScreen(
 
             when {
                 model.error != null && model.items.isEmpty() -> full("error") {
-                    var details by remember { mutableStateOf(false) }
+                    // The error dialog (with "Create GitHub issue") opens by itself, once per error.
+                    var details by remember(model.error) { mutableStateOf(true) }
                     EmptyState(TgIcons.info, "Couldn't load the files", model.error, action = "Try again", onAction = { model.reload() },
                         secondary = "Report this", onSecondary = { details = true })
                     if (details) app.tgdrive.diag.ErrorDetailsDialog("Couldn't load ${model.view}: ${model.error}", null) { details = false }
@@ -209,6 +210,7 @@ fun BrowseScreen(
             if (moreErr != null) full("more-error") {
                 Column(Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Couldn't load more files: $moreErr", style = Tg.type.meta, color = c.ink2)
+                    app.tgdrive.diag.AutoErrorDialog("Couldn't load more files in ${model.view}: $moreErr")
                     Spacer(Modifier.height(8.dp))
                     TgButton("Try again", { model.loadMore() }, small = true, icon = TgIcons.refresh)
                 }

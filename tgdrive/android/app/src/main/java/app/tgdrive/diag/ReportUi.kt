@@ -57,7 +57,7 @@ fun createIssue(context: android.content.Context, error: String?, detail: String
 /** What exactly went wrong behind an error message, to read, copy, report as a GitHub issue or send. */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-fun ErrorDetailsDialog(message: String, detail: String?, onClose: () -> Unit) {
+fun ErrorDetailsDialog(message: String, detail: String?, action: String? = null, onAction: (() -> Unit)? = null, onClose: () -> Unit) {
     val ctx = LocalContext.current
     val (send, busy) = rememberSendReport()
     val full = message + (detail?.let { "\n\n$it" } ?: "")
@@ -70,6 +70,7 @@ fun ErrorDetailsDialog(message: String, detail: String?, onClose: () -> Unit) {
         Spacer(Modifier.height(8.dp))
         // The actions before the (long) stack, so they're on screen without scrolling.
         androidx.compose.foundation.layout.FlowRow(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+            if (action != null && onAction != null) TgButton(action, { onClose(); onAction() }, kind = ButtonKind.Secondary, small = true)
             TgButton("Send report", { send(full) }, kind = ButtonKind.Secondary, small = true, icon = TgIcons.bug, busy = busy)
             TgButton("Copy", { Platform.copy(ctx, "TG Drive error", full) }, kind = ButtonKind.Ghost, small = true, icon = TgIcons.copy)
         }
@@ -78,6 +79,17 @@ fun ErrorDetailsDialog(message: String, detail: String?, onClose: () -> Unit) {
             SelectionContainer { Text(detail, style = Tg.type.mono.copy(fontSize = 11.sp), color = Tg.colors.ink2, maxLines = 60) }
         }
     }
+}
+
+/**
+ * An error shown on a screen (a PDF that didn't open, a video that won't play …) also opens the error
+ * dialog, with "Create GitHub issue", by itself: once per distinct error, closable.
+ */
+@Composable
+fun AutoErrorDialog(message: String?, detail: String? = null) {
+    if (message.isNullOrBlank()) return
+    var open by remember(message, detail) { mutableStateOf(true) }
+    if (open) ErrorDetailsDialog(message, detail) { open = false }
 }
 
 /** After a crash: say so on the next start and offer to send the report (once per crash). */

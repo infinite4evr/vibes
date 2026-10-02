@@ -57,6 +57,10 @@ class PlayerService : MediaSessionService() {
             }
 
             override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                // Said in the app's error dialog (with "Create GitHub issue") when it is open.
+                val title = player.currentMediaItem?.mediaMetadata?.title ?: "a track"
+                graph.state.message("Couldn't play $title: ${error.errorCodeName.removePrefix("ERROR_CODE_").lowercase().replace('_', ' ')}",
+                    error = true, detail = app.tgdrive.diag.AppLog.stack(error).take(4000))
                 // Skip a track that can't be played instead of stopping (desktop 2.4 behaviour).
                 if (player.hasNextMediaItem()) {
                     player.seekToNextMediaItem()

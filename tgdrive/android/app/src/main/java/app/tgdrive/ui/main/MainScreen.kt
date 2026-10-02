@@ -140,18 +140,24 @@ fun MainScreen(activity: MainActivity, state: AppState) {
     }
     val openPlayer by activity.openPlayer.collectAsState()
 
-    // Messages at the bottom; an error stays until dismissed and offers "Details" (what exactly
-    // failed, to copy or send as a report) when it has no other action.
-    var errorDetails by remember { mutableStateOf<app.tgdrive.data.UiMessage?>(null) }
+    // Messages at the bottom. Every error, however small, opens the error dialog instead (what exactly
+    // failed, with "Create GitHub issue", its own action such as "Retry", copy and send report); errors
+    // arriving while one is open wait their turn, and a repeat of one already waiting isn't queued again.
+    val errorQueue = remember { androidx.compose.runtime.mutableStateListOf<app.tgdrive.data.UiMessage>() }
     LaunchedEffect(Unit) {
         state.messages.collect { m ->
-            val details = m.error && m.action == null
-            val r = snackbar.showSnackbar(m.text, actionLabel = m.action ?: if (details) "Details" else null, withDismissAction = m.error,
-                duration = when { m.error -> SnackbarDuration.Long; m.action != null -> SnackbarDuration.Long; else -> SnackbarDuration.Short })
-            if (r == SnackbarResult.ActionPerformed) { if (details) errorDetails = m else m.onAction?.invoke() }
+            if (m.error) {
+                if (errorQueue.none { it.text == m.text && it.detail == m.detail }) errorQueue += m
+                return@collect
+            }
+            val r = snackbar.showSnackbar(m.text, actionLabel = m.action, withDismissAction = false,
+                duration = if (m.action != null) SnackbarDuration.Long else SnackbarDuration.Short)
+            if (r == SnackbarResult.ActionPerformed) m.onAction?.invoke()
         }
     }
-    errorDetails?.let { m -> app.tgdrive.diag.ErrorDetailsDialog(m.text, m.detail) { errorDetails = null } }
+    errorQueue.firstOrNull()?.let { m ->
+        app.tgdrive.diag.ErrorDetailsDialog(m.text, m.detail, action = m.action, onAction = m.onAction) { errorQueue.removeAt(0) }
+    }
 
     // Screens, for the detailed log.
     LaunchedEffect(top.id) {
