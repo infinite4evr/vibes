@@ -969,7 +969,7 @@ CI performs:
 - pytest,
 - shell syntax validation.
 
-**Where CI runs:** `.github/workflows/pc-command-center.yml` at the root of the `vibes` repository, with `working-directory: pc-command-center`. It runs on pushes and pull requests that touch `pc-command-center/` or `ubuntu-setup/`.
+**Where CI runs:** `.github/workflows/pc-command-center.yml` at the root of the `vibes` repository, with `working-directory: pc-command-center`. It is called by `ci.yml`: on every push to `main` (Python 3.10–3.13), and on other branches when they change `pc-command-center/` or `ubuntu-setup/` (Python 3.10 and 3.13).
 
 A separate GTK smoke job installs:
 

@@ -1,15 +1,27 @@
 name: TG Drive Android
 
 on:
-  push:
-    paths:
-      - "tgdrive/**"
-      - ".github/workflows/tgdrive-android.yml"
+  # Called by ci.yml: on main (and when run by hand) with full: true, everything; on other branches
+  # only when this app changed, with the quicker set (see ci.yml).
+  workflow_call:
+    inputs:
+      full:
+        type: boolean
+        default: true
+      emulator:
+        description: "Run the emulator job (the slowest, about an hour)"
+        type: boolean
+        default: true
+  # Or run just this app by hand (Actions → this workflow → Run workflow): everything.
   workflow_dispatch:
-
-concurrency:
-  group: tgdrive-android-${{ github.ref }}
-  cancel-in-progress: true
+    inputs:
+      full:
+        type: boolean
+        default: true
+      emulator:
+        description: "Run the emulator job (the slowest, about an hour)"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -188,6 +200,9 @@ jobs:
   # and every screen is photographed for review.
   emulator:
     name: Emulator tests and screenshots
+    # On other branches only when the Android app itself changed (ci.yml); the service's own changes
+    # are covered there by the service tests and the APK build.
+    if: inputs.full || inputs.emulator
     runs-on: ubuntu-latest
     timeout-minutes: 100
     defaults:

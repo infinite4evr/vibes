@@ -1,79 +1,150 @@
 name: CI
 
+# One entry point for every app's checks.
+#
+#   main (and "Run workflow" by hand): every app, every test, full Python matrices, the Android
+#   emulator: the whole repository is verified on each change that lands there.
+#
+#   any other branch: only the apps whose files the branch changed (compared with main), with the
+#   quicker set: the oldest and newest Python instead of all of them, and the Android emulator only
+#   when the Android app itself changed. A newer push to the same branch cancels the older run.
+#
+# Each app's jobs live in its own reusable workflow (commands.yml, pc-command-center.yml, tgdrive.yml,
+# tgdrive-android.yml, lumaclean-apk.yml). Pull requests come from these same branches, whose pushes
+# are already checked, so they don't run everything a second time.
+
 on:
   push:
-  pull_request:
   workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Branches: only the newest push matters. main: every commit is checked to the end.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
 
 jobs:
-  syntax:
-    name: Syntax checks (bash, python, node)
+  changes:
+    name: What changed
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      full: ${{ steps.mode.outputs.full }}
+      commands: ${{ steps.mode.outputs.full == 'true' || steps.filter.outputs.commands == 'true' }}
+      pc: ${{ steps.mode.outputs.full == 'true' || steps.filter.outputs.pc == 'true' }}
+      tgdrive: ${{ steps.mode.outputs.full == 'true' || steps.filter.outputs.tgdrive == 'true' }}
+      android: ${{ steps.mode.outputs.full == 'true' || steps.filter.outputs.android == 'true' }}
+      android_app: ${{ steps.mode.outputs.full == 'true' || steps.filter.outputs.android_app == 'true' }}
+      lumaclean: ${{ steps.mode.outputs.full == 'true' || steps.filter.outputs.lumaclean == 'true' }}
     steps:
+      - id: mode
+        run: echo "full=${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+        if: steps.mode.outputs.full != 'true'
         with:
-          python-version: "3.11"
-      - uses: actions/setup-node@v4
+          fetch-depth: 0
+      # Files this branch changed compared with main (all of its commits, not only the last push).
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: steps.mode.outputs.full != 'true'
         with:
-          node-version: "22"
-      - name: Check every command's entry file by its shebang
-        working-directory: commands
+          base: main
+          filters: |
+            ci: &ci
+              - ".github/workflows/ci.yml"
+            commands:
+              - *ci
+              - "commands/**"
+              - ".github/workflows/commands.yml"
+            pc:
+              - *ci
+              - "pc-command-center/**"
+              - "ubuntu-setup/**"
+              - ".github/workflows/pc-command-center.yml"
+            tgdrive:
+              - *ci
+              - "tgdrive/**"
+              - ".github/workflows/tgdrive.yml"
+            # What the phone app is built from: the Android project and the Python service it bundles
+            # (not the desktop window, its web interface or the AppImage packaging).
+            android:
+              - *ci
+              - "tgdrive/android/**"
+              - "tgdrive/tgdrive/**"
+              - "tgdrive/tests/**"
+              - "tgdrive/run.py"
+              - ".github/workflows/tgdrive-android.yml"
+              - ".github/scripts/**"
+            android_app:
+              - "tgdrive/android/**"
+              - ".github/scripts/tgdrive-android-emulator.sh"
+              - ".github/workflows/tgdrive-android.yml"
+            lumaclean:
+              - *ci
+              - "lumaclean/**"
+              - ".github/workflows/lumaclean-apk.yml"
+      - name: Summary
         run: |
-          fail=0
-          for f in install.sh env.sh */*; do
-            [ -f "$f" ] || continue
-            case "$(head -n1 "$f")" in
-              *bash*)    bash -n "$f"              || { echo "::error file=commands/$f::bash syntax"; fail=1; } ;;
-              *python3*) python3 -m py_compile "$f" || { echo "::error file=commands/$f::python syntax"; fail=1; } ;;
-              *node*)    node --check "$f"         || { echo "::error file=commands/$f::node syntax"; fail=1; } ;;
-              *) continue ;;
-            esac
-            echo "ok  $f"
-          done
-          exit $fail
-      - name: Compile the stackhl package and tests
-        run: python3 -m compileall -q commands/stack-highlights/stackhl commands/stack-highlights/tests
+          {
+            echo "### What CI runs for this push"
+            if [ "${{ steps.mode.outputs.full }}" = true ]; then
+              echo "Everything (main, or run by hand)."
+            else
+              echo "| App | Runs |"
+              echo "|---|---|"
+              echo "| Study tools (commands) | ${{ steps.filter.outputs.commands }} |"
+              echo "| PC Command Center + ubuntu-setup | ${{ steps.filter.outputs.pc }} |"
+              echo "| TG Drive (desktop) | ${{ steps.filter.outputs.tgdrive }} |"
+              echo "| TG Drive Android | ${{ steps.filter.outputs.android }} (emulator: ${{ steps.filter.outputs.android_app }}) |"
+              echo "| LumaClean | ${{ steps.filter.outputs.lumaclean }} |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
-  stack-highlights:
-    name: stack-highlights (units, golden, archive)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: commands/stack-highlights/requirements.txt
-      - run: python3 -m pip install -r commands/stack-highlights/requirements.txt
-      - name: Unit tests + golden files
-        run: make -C commands/stack-highlights quick
-      - name: Development archive (required files, 500-page suite, checksums)
-        run: python3 commands/stack-highlights/dev/verify_package.py
+  commands:
+    name: Study tools
+    needs: changes
+    if: needs.changes.outputs.commands == 'true'
+    uses: ./.github/workflows/commands.yml
+    with:
+      full: ${{ needs.changes.outputs.full == 'true' }}
 
-  pdf-safety:
-    name: PDF step (md-to-pdf, recall-sheet, notes-recall)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: commands/stack-highlights/requirements.txt
-      - run: python3 -m pip install -r commands/stack-highlights/requirements.txt
-      - name: Install pandoc and XeLaTeX
-        run: |
-          sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
-            pandoc texlive-xetex texlive-fonts-recommended lmodern fonts-noto-core
-      - name: make pdf-safety
-        # the suite passes with SKIP when a tool is missing; here that is a failure
-        run: |
-          make -C commands/stack-highlights pdf-safety 2>&1 | tee pdf-safety.log
-          test "${PIPESTATUS[0]}" -eq 0
-          ! grep -q '^SKIP' pdf-safety.log
+  pc-command-center:
+    name: PC Command Center
+    needs: changes
+    if: needs.changes.outputs.pc == 'true'
+    uses: ./.github/workflows/pc-command-center.yml
+    with:
+      full: ${{ needs.changes.outputs.full == 'true' }}
+
+  tgdrive:
+    name: TG Drive
+    needs: changes
+    if: needs.changes.outputs.tgdrive == 'true'
+    uses: ./.github/workflows/tgdrive.yml
+    with:
+      full: ${{ needs.changes.outputs.full == 'true' }}
+
+  tgdrive-android:
+    name: TG Drive Android
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    permissions:
+      contents: write   # publishes the APK as a release and the emulator screenshots to a branch
+    uses: ./.github/workflows/tgdrive-android.yml
+    secrets: inherit
+    with:
+      full: ${{ needs.changes.outputs.full == 'true' }}
+      emulator: ${{ needs.changes.outputs.android_app == 'true' }}
+
+  lumaclean:
+    name: LumaClean
+    needs: changes
+    if: needs.changes.outputs.lumaclean == 'true'
+    permissions:
+      contents: write   # publishes the APK as a release
+    uses: ./.github/workflows/lumaclean-apk.yml
+    secrets: inherit
+    with:
+      full: ${{ needs.changes.outputs.full == 'true' }}
