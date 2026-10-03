@@ -218,6 +218,12 @@ class Indexer:
                         if fresh and not fresh["excluded"]:
                             await self.index_chat(fresh)
                 self.phase, self.current_title, self.current_chat, self.error = "idle", None, None, None
+                try:
+                    from .offline import store
+                    store(self.acc).sync_folders()
+                except Exception as exc:   # offline copies must never stop indexing; Recovery shows why
+                    log.warning("offline folder sync failed: %s", exc, exc_info=True)
+                    self.acc._offline_error = f"Couldn't update pinned folders: {exc}"
                 for part in ("autofile", "subjects"):
                     obj = getattr(self.acc, part, None)
                     if obj is not None:

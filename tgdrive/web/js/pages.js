@@ -10,7 +10,7 @@ export function renderPage(type, arg) {
   // Settings sections switch in place; other pages show a loader until their data is in.
   const pv = page();
   if (type !== 'settings' || !pv.querySelector('.settings')) pv.innerHTML = '<div class="page-loading big">Loading…</div>';
-  ({ storage, duplicates, index: indexManager, activity, settings: settingsPage })[type]?.(arg);
+  ({ offline, storage, duplicates, index: indexManager, activity, settings: settingsPage })[type]?.(arg);
 }
 
 /* ---------------------------------------------------------------- storage */
@@ -392,10 +392,14 @@ const SECTION_HTML = {
   },
   data: async () => {
     const about = await api('/api/about').catch(() => ({ data: {} }));
+    const location = await api('/api/data-location').catch(() => ({}));
     const backups = await api(A('/drive/backups')).catch(() => ({ backups: [] }));
     const legacy = await api('/api/legacy').catch(() => ({ candidates: [] }));
     return `<h2>Data & maintenance</h2>
     ${row('Data folder', `${fmtSize(about.data?.bytes || 0)} in total.`, `<code class="path" title="${esc(about.data?.path || '')}">&lrm;${esc(about.data?.path || '')}&lrm;</code>`)}
+    <div class="set-block"><strong>Portable data folder</strong><p>Settings, API credentials, Telegram sessions and app-owned files are stored here. Keep this folder private. Reuse it after reinstalling to restore your setup.</p>
+      <p>${location.pending ? `Next start: ${esc(location.pending)}` : 'Changes apply after you quit and reopen TG Drive.'}</p>
+      <button class="btn" data-data-folder>Choose data folder…</button></div>
     <div class="set-block"><strong>Index</strong><p>Tidy up or check the index. Nothing here touches Telegram.</p>
       <div class="btn-row"><button class="btn" data-maint="optimize">Optimize</button><button class="btn" data-maint="integrity">Check integrity</button>
       <button class="btn" data-maint="vacuum">Compact (VACUUM)</button><button class="btn" data-maint="stats">Recount statistics</button>
@@ -613,6 +617,12 @@ page().addEventListener('click', async (e) => {
     try { await api(A('/history'), { method: 'DELETE' }); toast('Search history cleared'); } catch (err) { fail(err); }
     return;
   }
+  if (d.dataFolder !== undefined) {
+    const path = bridge.ready ? await callBridge('pickFolder') : await promptDialog('TG Drive data folder', 'Choose an empty folder to copy the current data, or an existing TG Drive folder to reuse it.', '', 'Use folder');
+    if (!path) return;
+    try { await api('/api/data-location', {method:'POST',body:{path}}); toast('Data folder selected. Quit and reopen TG Drive to apply.'); settingsPage('data'); } catch(err) { fail(err); }
+    return;
+  }
   if (d.pickDir !== undefined) {
     const p = await callBridge('pickFolder');
     if (p) { $('[data-set="download_dir"]', page()).value = p; saveSetting('download_dir', p); }
@@ -804,3 +814,44 @@ async function lockDialog() {
   if (r) { toast('Passcode saved'); settingsPage('security'); }
 }
 export { settingsPage, M };
+
+/* Offline files and recoverable work, backed by durable account records. */
+async function offline() {
+  const aid = S.aid;
+  try {
+    const r = await api(A('/recovery'));
+    if (S.view.type !== 'offline' || S.aid !== aid) return;
+    const o = r.offline;
+    page().innerHTML = head('Offline & recovery', 'Pinned copies stay on this device until you remove them. Cache cleanup does not remove them.',
+      '<button class="btn" data-offline-refresh>Refresh</button>') + `
+      <section class="set-block"><h2>Storage and data limits</h2>
+      <p>${fmtSize(o.ready_bytes)} ready · ${fmtSize(o.reserved_bytes)} reserved · ${fmtSize(o.automatic_today_bytes)} automatic downloads reserved today.</p>
+      ${[['offline_limit_mb','Offline files per account'],['automatic_download_daily_mb','Automatic downloads per day, per account'],['thumb_cache_mb','Thumbnail cache per account'],['stream_cache_mb','Streaming cache per account']].map(([k,label]) =>
+        `<label style="display:block;margin:10px 0">${label} (MB) <input type="number" min="${k==='thumb_cache_mb'?1:0}" max="200000" data-budget="${k}" value="${Number(S.settings[k]||0)}"></label>`).join('')}
+      <button class="btn" data-budget-save>Save limits</button>
+      <p>Manual pins and retries use data immediately. The daily limit applies to new automatic downloads from pinned folders. Removing a folder pin stops future additions; existing copies stay.</p></section>
+      <section class="set-block"><h2>Recovery</h2>${r.issues.length ? r.issues.map(i => `<div class="setting-row"><div><strong>${esc(i.title)}</strong><p>${esc(i.detail)}</p></div><button class="btn" data-recover-kind="${esc(i.kind)}" data-recover-id="${esc(i.id)}">Retry</button></div>`).join('') : '<p>No pending recovery actions.</p>'}</section>
+      <section class="set-block"><h2>Pinned folders</h2>${o.folders.map(f => `<p>${esc(S.folderById.get(f.id)?.name || f.id)} <button class="btn" data-unpin-folder="${esc(f.id)}">Stop automatic downloads</button></p>`).join('') || '<p>No folders pinned.</p>'}</section>
+      <section class="set-block"><h2>Offline files</h2><p>Use “Keep available offline” in a file or folder menu to add copies.</p>
+      ${o.items.map(f => `<div class="setting-row"><div><strong>${esc(f.name)}</strong><p>${esc(f.status)} · ${fmtSize(f.done)} / ${fmtSize(f.size)} ${esc(f.error || '')}</p></div><div>
+        ${f.status === 'ready' ? `<a class="btn" data-save="${esc(f.name)}" href="${A(`/offline/${f.chat_id}/${f.msg_id}/file`)}">Open copy</a>` : ''}
+        <button class="btn" data-unpin-file="${f.chat_id}/${f.msg_id}">Remove offline copy</button></div></div>`).join('')}</section>`;
+  } catch(e) { if (S.view.type === 'offline') page().innerHTML = head('Offline & recovery') + pageError(e,'data-offline-refresh'); }
+}
+page().addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const d = b.dataset;
+  if (!('offlineRefresh' in d || 'budgetSave' in d || 'unpinFile' in d || 'unpinFolder' in d || 'recoverKind' in d)) return;
+  try {
+    b.disabled = true;
+    if ('budgetSave' in d) {
+      const body = Object.fromEntries($$('[data-budget]',page()).map(x => [x.dataset.budget, Number(x.value)]));
+      if (Object.values(body).some(v => !Number.isInteger(v) || v < 0 || v > 200000)) throw Error('Enter whole MB values from 0 to 200000.');
+      await api('/api/settings',{method:'PATCH',body}); Object.assign(S.settings,body); toast('Limits saved');
+    }
+    if (d.recoverKind) await api(A(`/recovery/${encodeURIComponent(d.recoverKind)}/${encodeURIComponent(d.recoverId)}`),{method:'POST'});
+    if (d.unpinFile && await confirmDialog('Remove offline copy?', 'The original remains in Telegram.', 'Remove copy')) await api(A(`/offline/${d.unpinFile}`),{method:'DELETE'});
+    if (d.unpinFolder) await api(A(`/offline/folders/${encodeURIComponent(d.unpinFolder)}`),{method:'DELETE'});
+    await offline();
+  } catch(e) { fail(e); } finally { b.disabled = false; }
+});

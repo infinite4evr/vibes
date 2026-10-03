@@ -1,5 +1,6 @@
 package app.tgdrive
 
+import app.tgdrive.storage.DataLocation
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.By
@@ -31,6 +32,8 @@ class SignInFlow : UiDriver() {
 
     @Test
     fun signInWithAMadeUpKeyShowsTelegramsAnswer() {
+        // pm clear deliberately retains the portable profile; this journey needs its own fresh one.
+        DataLocation.select(app, java.io.File(android.os.Environment.getExternalStorageDirectory(), "TGDrive-Test-signin-${java.util.UUID.randomUUID()}"))
         ActivityScenario.launch(MainActivity::class.java).use {
             need(By.textContains("Sign in with Telegram"), "the welcome screen", 30_000)
             shot("30-welcome", 800)

@@ -64,6 +64,10 @@ DEFAULTS: dict[str, Any] = {
     "upload_as_media": False,
     "keep_structure": True,
     # Streaming
+    "offline_limit_mb": 4096,
+    "automatic_download_daily_mb": 1024,
+    "thumb_cache_mb": 256,
+    "upload_staging_limit_mb": 4096,
     "stream_cache_mb": 2048,
     "stream_prefetch": 4,
     "external_player": "",         # command, e.g. "vlc" or "mpv --force-window"; empty = first one found
@@ -123,6 +127,8 @@ LIST_COLUMNS = {"name", "chat", "folder", "date", "size", "kind", "ext", "durati
 RANGES = {
     "sidebar_width": (180, 560),
     "parallel_transfers": (1, 10), "upload_workers": (1, 8), "download_workers": (1, 8),
+    "offline_limit_mb": (0, 200_000), "automatic_download_daily_mb": (0, 200_000),
+    "thumb_cache_mb": (1, 200_000), "upload_staging_limit_mb": (1, 200_000),
     "stream_cache_mb": (0, 200_000), "stream_prefetch": (0, 16), "index_wait": (0.0, 10.0),
     "resync_minutes": (5, 1440), "verify_per_hour": (0, 200_000), "proxy_port": (1, 65535),
     "lock_after_minutes": (0, 1440), "api_id": (0, 2**31),

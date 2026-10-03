@@ -216,6 +216,8 @@ private fun FileMenu(f: FileItem, actions: Actions, state: AppState, nav: Naviga
             SheetAction(TgIcons.info, "Details", { close(); nav.push(Screen.Details(f.ref)) })
             SheetAction(TgIcons.external, "Open with another app", { close(); actions.openWithApp(f) },
                 subtitle = if (playable) "Streams to VLC, MX Player …" else "Downloads it first")
+            SheetAction(TgIcons.download, "Keep available offline", { actions.pinOffline(listOf(f)); close() },
+                subtitle = "A copy on this phone, kept until you remove it")
             SheetAction(TgIcons.edit, "Rename…", { then(Overlay.Rename(f)) })
             SheetAction(TgIcons.note, "Note…", { then(Overlay.Note(f, "")) })
             SheetAction(TgIcons.book, "Subject…", { then(Overlay.SetSubject(listOf(f))) })
@@ -277,6 +279,7 @@ private fun SelectionMenu(files: List<FileItem>, actions: Actions, state: AppSta
             actions.model?.let { m ->
                 if (m.selected.size < m.items.size) SheetAction(TgIcons.check, "Select all ${Format.num(m.items.size)} shown", { m.selectAll(); close() })
             }
+            SheetAction(TgIcons.download, "Keep available offline", { actions.pinOffline(files); done() })
             SheetAction(TgIcons.download, "Download ${Format.plural(files.size, "file")}", { actions.download(files); done() })
             SheetAction(TgIcons.stack, "Download as .zip", { actions.download(files, zip = true); done() })
             SheetAction(TgIcons.move, "Move to folder…", { actions.open(Overlay.Move(files)) })
@@ -420,6 +423,7 @@ private fun FolderMenu(f: Folder, actions: Actions, state: AppState, nav: Naviga
             SheetAction(TgIcons.move, "Move to…", { actions.open(Overlay.FolderMove(f)) })
             if (!f.smart) {
                 Divider(Modifier.padding(vertical = 4.dp))
+                SheetAction(TgIcons.download, "Keep folder offline", { actions.pinFolderOffline(f); close() })
                 SheetAction(TgIcons.download, "Download folder", { actions.open(Overlay.FolderDownload(f)) })
             }
             Divider(Modifier.padding(vertical = 4.dp))

@@ -47,7 +47,11 @@ class FileOps(
         var bytes = 0L
         val binned = ArrayList<BinItem>()
         val removed = ArrayList<String>()
-        paths.forEachIndexed { i, path ->
+        // Recycling journals the whole batch in one write before anything moves, and settles it in one
+        // write after (also on cancellation): two writes, however many files.
+        val planned = if (toBin) bin.reserve(paths.map { it to sizeOf(File(it)) }) else emptyMap()
+        val moved = HashSet<String>()
+        try { paths.forEachIndexed { i, path ->
             ctx.ensureActive()
             val f = File(path)
             progress.report(i / paths.size.toFloat(), f.name)
@@ -55,9 +59,10 @@ class FileOps(
                 removed += path
                 return@forEachIndexed
             }
-            val size = sizeOf(f)
+            val item = planned[path]
+            val size = item?.size ?: sizeOf(f)
             val ok = if (toBin) {
-                bin.moveIn(path, size)?.also { binned += it } != null
+                item != null && bin.moveReserved(item).also { if (it) { binned += item; moved += item.id } }
             } else {
                 if (f.isDirectory) f.deleteRecursively() else f.delete()
             }
@@ -67,10 +72,21 @@ class FileOps(
                 removed += path
             } else failed++
         }
-        bin.record(binned)
-        index.removePaths(removed)
-        notifyMedia(removed)
+        } finally {
+            if (toBin) bin.settle(planned.values.filter { it.id !in moved }.map { it.id })
+            // Keep the visible index correct even on cancellation.
+            index.removePaths(removed)
+            notifyMedia(removed)
+        }
         return OpResult(done, failed, bytes, binned.map { it.id })
+    }
+
+    /** Partial copies left in [dir] by a copy the app was killed during (named only by this class). */
+    private fun removeStaleParts(dir: File) {
+        val hourAgo = System.currentTimeMillis() - 60 * 60 * 1000
+        dir.listFiles()?.forEach { f ->
+            if (STAGING.matches(f.name) && f.lastModified() < hourAgo) f.deleteRecursively()
+        }
     }
 
     fun restore(ids: Collection<String>): Int {
@@ -112,6 +128,7 @@ class FileOps(
                 throw IOException("Can't put a folder inside itself")
             }
         }
+        removeStaleParts(dest)
         val totalBytes = sources.sumOf { sizeOf(it) }.coerceAtLeast(1)
         var copied = 0L
         var done = 0
@@ -121,45 +138,61 @@ class FileOps(
         val verb = if (move) "Moving" else "Copying"
 
         fun copyFile(src: File, target: File) {
-            FileInputStream(src).use { input ->
-                FileOutputStream(target).use { output ->
-                    val buf = ByteArray(256 * 1024)
-                    while (true) {
-                        val n = input.read(buf)
-                        if (n < 0) break
-                        output.write(buf, 0, n)
-                        copied += n
-                        progress.report(copied / totalBytes.toFloat(), "$verb ${src.name} · ${copied.formatBytes()}")
+            val expected = src.length()
+            val modified = src.lastModified()
+            val tmp = File(target.parentFile, ".${target.name}.${java.util.UUID.randomUUID()}.part")
+            try {
+                FileInputStream(src).use { input ->
+                    FileOutputStream(tmp).use { output ->
+                        val buf = ByteArray(256 * 1024)
+                        while (true) {
+                            ctx.ensureActive()
+                            val n = input.read(buf)
+                            if (n < 0) break
+                            output.write(buf, 0, n)
+                            copied += n
+                            progress.report(copied / totalBytes.toFloat(), "$verb ${src.name} · ${copied.formatBytes()}")
+                        }
+                        output.fd.sync()
                     }
                 }
-            }
-            target.setLastModified(src.lastModified())
+                ctx.ensureActive()
+                if (tmp.length() != expected || src.length() != expected || src.lastModified() != modified)
+                    throw IOException("Source changed while copying ${src.name}; original kept")
+                tmp.setLastModified(modified)
+                java.nio.file.Files.move(tmp.toPath(), target.toPath()) // fails if a new destination appeared
+            } finally { tmp.delete() }
         }
 
         suspend fun copyTree(src: File, target: File) {
             ctx.ensureActive()
             if (src.isDirectory) {
                 if (!target.exists() && !target.mkdirs()) throw IOException("Couldn't create ${target.name}")
-                src.listFiles()?.forEach { copyTree(it, File(target, it.name)) }
+                val children = src.listFiles() ?: throw IOException("Cannot read ${src.name}; original kept")
+                children.forEach { copyTree(it, File(target, it.name)) }
             } else copyFile(src, target)
         }
 
         for (src in sources) {
             ctx.ensureActive()
             val target = uniqueFile(dest, src.name)
+            val staging = File(dest, ".${src.name}.${java.util.UUID.randomUUID()}.part")
             val ok = runCatching {
                 if (move && src.renameTo(target)) {
                     copied += sizeOf(target)
                     true
                 } else {
-                    copyTree(src, target)
+                    copyTree(src, staging)
+                    ctx.ensureActive()
+                    java.nio.file.Files.move(staging.toPath(), target.toPath())
                     if (move) src.deleteRecursively() else true
                 }
             }.getOrElse { e ->
                 if (e is kotlinx.coroutines.CancellationException) {
-                    target.deleteRecursively()
+                    staging.deleteRecursively()
                     throw e
                 }
+                staging.deleteRecursively()
                 false
             }
             if (ok) {
@@ -202,3 +235,6 @@ class FileOps(
         return Intent.createChooser(send, "Share")
     }
 }
+
+/** ".name.<uuid>.part": the temporary name a file or folder copy has until it is complete. */
+private val STAGING = Regex("""^\..+\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.part$""")

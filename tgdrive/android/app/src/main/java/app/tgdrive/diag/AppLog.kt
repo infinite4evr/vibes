@@ -31,7 +31,7 @@ object AppLog {
     /** Detailed debug logging: requests, screens and actions, not only problems. */
     @Volatile var verbose = false
 
-    fun dir(context: Context): File = File(context.filesDir, "logs").apply { mkdirs() }
+    fun dir(context: Context): File = app.tgdrive.storage.DataLocation.logs(context)
 
     /** Start logging for this process into logs/<name>.log (a background thread writes). */
     @Synchronized

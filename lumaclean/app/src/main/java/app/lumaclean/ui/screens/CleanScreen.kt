@@ -189,9 +189,18 @@ fun CleanScreen() {
     }
 
     if (confirm) {
+        // A cleanup can cover thousands of items: explain the first ones (biggest first) and count the rest,
+        // with each item's reason looked up once rather than by searching every group per item.
+        val preview = remember(chosen, report) {
+            val reason = HashMap<String, String>()
+            report?.groups?.forEach { g -> g.items.forEach { reason.putIfAbsent(it.path, g.kind.description) } }
+            val shown = chosen.sortedByDescending { it.size }.take(PREVIEW_ITEMS)
+            shown.joinToString("\n\n") { item -> "${item.name} (${item.size.formatBytes()})\n${item.path}\nWhy: ${item.note ?: reason[item.path] ?: "Selected cleanup item"}" } +
+                if (chosen.size > shown.size) "\n\n…and ${(chosen.size - shown.size).formatCount()} more (${(chosenBytes - shown.sumOf { it.size }).formatBytes()})." else ""
+        }
         ConfirmDialog(
             title = "Clean ${chosenBytes.formatBytes()}?",
-            text = "${chosen.size.formatCount()} items will be deleted for good. Apps rebuild caches and thumbnails when they need them.",
+            text = "${chosen.size.formatCount()} items will be deleted for good. This cannot be undone.\n\n" + preview,
             confirmLabel = "Clean",
             destructive = false,
             onConfirm = { c.cleanJunk(chosen) },
@@ -318,7 +327,7 @@ private fun JunkGroupCard(
             group.items.take(limit).forEach { item ->
                 ItemRow(
                     title = item.name.ifBlank { item.path },
-                    subtitle = listOfNotNull(item.note, item.path.substringBeforeLast('/').substringAfter("/0/")).joinToString(" · "),
+                    subtitle = listOfNotNull("Why: ${item.note ?: group.kind.description}", if(item.safe) "Suggested cleanup; review before deleting" else "Personal file: review required", item.path.substringBeforeLast('/').substringAfter("/0/")).joinToString(" · "),
                     leading = { Checkbox(checked = item.path in selected, onCheckedChange = { onToggle(item) }) },
                     trailing = { Text(item.size.formatBytes(), style = MaterialTheme.typography.labelMedium) },
                     onClick = { onToggle(item) },
@@ -333,3 +342,6 @@ private fun JunkGroupCard(
         }
     }
 }
+
+/** Items listed one by one in the cleanup confirmation; the rest are counted. */
+private const val PREVIEW_ITEMS = 50

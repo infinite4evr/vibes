@@ -72,6 +72,10 @@ jobs:
     name: Build APK
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    outputs:
+      apk: ${{ steps.apk.outputs.name }}
+      tag: ${{ steps.apk.outputs.tag }}
+      sha: ${{ steps.apk.outputs.sha }}
     defaults:
       run:
         working-directory: tgdrive/android
@@ -184,17 +188,6 @@ jobs:
         with:
           name: ${{ steps.apk.outputs.name }}
           path: tgdrive/android/${{ steps.apk.outputs.name }}
-      - name: Publish GitHub release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.apk.outputs.tag }}
-          target_commitish: ${{ github.sha }}
-          name: TG Drive for Android ${{ steps.apk.outputs.tag }}
-          prerelease: ${{ github.ref != 'refs/heads/main' }}
-          body: |
-            TG Drive for Android, built from `${{ steps.apk.outputs.sha }}` on `${{ github.ref_name }}`.
-            Download the `.apk` below and open it on your phone (allow installs from unknown sources). Android 8.0 or newer, 64-bit.
-          files: tgdrive/android/${{ steps.apk.outputs.name }}
 
   # The app on an emulator with the sample account: the Python service must start and answer,
   # and every screen is photographed for review.
@@ -278,3 +271,33 @@ jobs:
           path: |
             tgdrive/android/out/
           if-no-files-found: ignore
+
+  # The APK built above is released only once everything that checks it has passed: the service tests,
+  # and the emulator journeys whenever they were asked for (failed, cancelled or skipped-when-requested
+  # all hold the release back).
+  publish:
+    name: Publish GitHub release
+    needs: [build, service-android-mode, emulator]
+    if: >-
+      always() &&
+      needs.build.result == 'success' &&
+      needs.service-android-mode.result == 'success' &&
+      (needs.emulator.result == 'success' || (needs.emulator.result == 'skipped' && !inputs.full && !inputs.emulator))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.apk }}
+          path: verified-apk
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: TG Drive for Android ${{ needs.build.outputs.tag }}
+          prerelease: ${{ github.ref != 'refs/heads/main' }}
+          body: |
+            TG Drive for Android, built from `${{ needs.build.outputs.sha }}` on `${{ github.ref_name }}`.
+            Download the `.apk` below and open it on your phone (allow installs from unknown sources). Android 8.0 or newer, 64-bit.
+          files: verified-apk/${{ needs.build.outputs.apk }}

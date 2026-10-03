@@ -1,5 +1,6 @@
 package app.tgdrive
 
+import app.tgdrive.storage.DataLocation
 import android.app.ActivityManager
 import android.util.Log
 import androidx.test.core.app.ActivityScenario
@@ -56,7 +57,7 @@ class BigLibraryTest : UiDriver() {
 
     /** The library, written where TG Drive keeps its data: 100 000 files, signed-in account 424242. */
     private fun buildLibrary(files: Int) {
-        val data = File(app.filesDir, "tgdrive").apply { deleteRecursively(); mkdirs() }
+        val data = DataLocation.service(app).apply { deleteRecursively(); mkdirs() }
         val account = File(data, "accounts/424242").apply { mkdirs() }
         File(account, "session.session").writeBytes(ByteArray(0))
         File(data, "settings.json").writeText("""{"api_id": 1234567, "api_hash": "0123456789abcdef0123456789abcdef"}""")

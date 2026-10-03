@@ -34,10 +34,11 @@ object StartupReport {
         appendLine(processExitHistory(context, "", max = 5))
         appendLine()
         appendLine("Start steps:")
-        appendLine(tail(File(context.filesDir, EngineService.START_LOG), 60).ifBlank { "(none)" })
+        appendLine(tail(File(app.tgdrive.storage.DataLocation.logs(context), EngineService.START_LOG), 60).ifBlank { "(none)" })
         appendLine()
         appendLine("Service log (end):")
-        appendLine(tail(File(context.filesDir, "tgdrive/logs/tgdrive.log"), 80).ifBlank { "(none)" })
+        val service=app.tgdrive.storage.DataLocation.root(context)?.resolve("service") ?: File(context.filesDir,"tgdrive")
+        appendLine(tail(File(service, "logs/tgdrive.log"), 80).ifBlank { "(none)" })
     }
 
     /** The last `lines` lines of a file, reading only its end. */

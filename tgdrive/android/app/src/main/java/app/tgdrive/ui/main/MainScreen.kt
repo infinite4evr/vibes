@@ -274,6 +274,7 @@ fun screenNamed(name: String): Screen? = when (name.substringBefore('/')) {
     "recent" -> Screen.Browse(View.Recent)
     "photos" -> Screen.Photos
     "transfers" -> Screen.Transfers
+    "offline" -> Screen.Offline
     "storage" -> Screen.Storage
     "duplicates" -> Screen.Duplicates
     "index" -> Screen.Index
@@ -283,7 +284,7 @@ fun screenNamed(name: String): Screen? = when (name.substringBefore('/')) {
     else -> null
 }
 
-private val ROOTS = setOf(Screen.Photos, Screen.Transfers, Screen.Storage, Screen.Duplicates, Screen.Index, Screen.Activity, Screen.Accounts)
+private val ROOTS = setOf(Screen.Offline, Screen.Photos, Screen.Transfers, Screen.Storage, Screen.Duplicates, Screen.Index, Screen.Activity, Screen.Accounts)
 
 private fun currentFolder(s: Screen, state: AppState): String? {
     val v = (s as? Screen.Browse)?.view as? View.Drive ?: return null
@@ -326,6 +327,7 @@ private fun Page(
         }, onOpenFile = { f -> nav.replace(Screen.Viewer(listOf(f), 0)) }, onNavigate = { v -> nav.replace(Screen.Browse(v)) })
         Screen.Transfers -> TransfersScreen(state, onMenu = onMenu, onBack = back)
         Screen.Photos -> PhotosScreen(state, thumbs, onMenu = onMenu, onOpen = onOpen)
+        Screen.Offline -> app.tgdrive.ui.pages.OfflineScreen(state, onMenu, back)
         Screen.Storage -> StorageScreen(state, onMenu = onMenu, onNavigate = { onGo(Screen.Browse(it)) }, onOpen = onOpen)
         Screen.Duplicates -> DuplicatesScreen(state, actions, thumbs, onMenu = onMenu, onOpen = onOpen)
         Screen.Index -> IndexScreen(state, onMenu = onMenu, onOpenChat = { onGo(Screen.Browse(View.Chat(it))) })

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Compress
 import androidx.compose.material.icons.rounded.DeleteSweep
 import androidx.compose.material.icons.rounded.Forum
+import androidx.compose.material.icons.rounded.LinkOff
 import androidx.compose.material.icons.rounded.PhotoLibrary
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.RestoreFromTrash
@@ -415,6 +416,14 @@ fun RecycleBinScreen() {
                     onPrimary = { confirmDelete = true },
                     onClear = { selected = emptySet() },
                     actions = {
+                        if (chosen.any { !c.bin.available(it) }) IconButton(onClick = {
+                            val ids = chosen.map { it.id }
+                            c.operations.run("Removing records") {
+                                val n = c.bin.forget(ids)
+                                selected = emptySet()
+                                UiMessage(if (n > 0) "$n records of missing files removed" else "Their storage isn't available: records kept until it's back")
+                            }
+                        }) { Icon(Icons.Rounded.LinkOff, "Remove records of missing files") }
                         IconButton(onClick = {
                             c.restore(chosen.map { it.id })
                             selected = emptySet()
@@ -431,7 +440,7 @@ fun RecycleBinScreen() {
             }
             item {
                 Text(
-                    "Items are deleted for good after ${settings.recycleDays} days. Tap to select, then restore or delete.",
+                    "Items on available storage expire after ${settings.recycleDays} days. Disconnected storage records are kept; reconnect the card before restoring.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -441,7 +450,7 @@ fun RecycleBinScreen() {
                 val isSel = b.id in selected
                 ItemRow(
                     title = b.name,
-                    subtitle = "Deleted ${b.deletedAt.relativeTime()} · from ${b.originalPath.substringBeforeLast('/').substringAfter("/0/")}",
+                    subtitle = (if (!c.bin.available(b)) "Storage unavailable — reconnect the card or restore file access. Record kept. · " else "") + "Deleted ${b.deletedAt.relativeTime()} · from ${b.originalPath.substringBeforeLast('/').substringAfter("/0/")}",
                     leading = { FileThumb(b.binPath, b.isDir) },
                     trailing = { Text(b.size.formatBytes(), style = MaterialTheme.typography.labelLarge) },
                     selected = isSel,

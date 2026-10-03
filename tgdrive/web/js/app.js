@@ -15,7 +15,7 @@ import { newFolder } from './folders.js';
 import { applySidebar, initSidebar, toggleSidebar } from './layout.js';
 import { applyDebug, setDebug, debugOn, viewLog } from './debuglog.js';
 
-const PAGES = new Set(['storage', 'duplicates', 'index', 'activity', 'settings', 'photos', 'sync']);
+const PAGES = new Set(['offline', 'storage', 'duplicates', 'index', 'activity', 'settings', 'photos', 'sync']);
 const EMBED = new URLSearchParams(location.search).has('embed');
 document.documentElement.classList.toggle('embed', EMBED);
 // Other windows and the split-view pane: tell each other when folders or files changed.

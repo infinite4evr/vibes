@@ -80,7 +80,7 @@ def _sqlite_core(ctypes):
 
 def start(options: str) -> str:
     """Start the service. `options` is JSON:
-        data_dir       where accounts, the index and caches live (app-private storage)
+        data_dir       where accounts, the index and caches live (the selected persistent folder)
         download_dir   where downloads go
         model_dir      the meaning model (tokenizer JSON + weights), shipped in the app
         fts5_library   path or name of the FTS5 SQLite extension
@@ -97,6 +97,9 @@ def start(options: str) -> str:
         data_dir = Path(opts["data_dir"])
         data_dir.mkdir(parents=True, exist_ok=True)
         os.environ["TGDRIVE_DATA"] = str(data_dir)
+        os.environ["TGDRIVE_ANDROID"] = "1"
+        from .data_location import rebase_owned_paths
+        rebase_owned_paths(data_dir, portable_android=True)
         os.environ["TGDRIVE_PACKAGED"] = "1"
         os.environ["TGDRIVE_TOKEN"] = opts["token"]
         os.environ["TGDRIVE_MEDIA_TOKEN"] = opts["media_token"]

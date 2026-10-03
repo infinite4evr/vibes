@@ -39,16 +39,19 @@ class StartupCache(context: Context, private val scope: CoroutineScope) {
         val pages: Map<String, Page> = emptyMap(),
     )
 
-    private val file = File(context.noBackupFilesDir, "startup-cache.json")
+    private val file = File(app.tgdrive.storage.DataLocation.state(context), "startup-cache.json")
     private var saveJob: Job? = null
+    private val diskLock = Any()
+    @Volatile private var generation = 0L
 
     /** The snapshot as it stands (read from disk by [load], then kept current by [update]). */
     var snapshot: Snapshot? = null
         private set
 
     suspend fun load(): Snapshot? {
-        val s = withContext(Dispatchers.IO) {
-            if (!file.exists()) return@withContext null
+        val revision = generation
+        val s = withContext(Dispatchers.IO) { synchronized(diskLock) {
+            if (!file.exists()) return@synchronized null
             try {
                 JsonCodec.decodeFromString(Snapshot.serializer(), file.readText())
             } catch (e: Exception) {
@@ -56,9 +59,11 @@ class StartupCache(context: Context, private val scope: CoroutineScope) {
                 file.delete()
                 null
             }
-        }
-        // Anything saved meanwhile (the service answered first) is newer than the file.
-        if (snapshot == null) snapshot = s
+        } }
+        // A clear or a newer snapshot must never be undone by an earlier disk read.
+        if (revision != generation || snapshot != null) return null
+        if (s?.status?.let { it.locked || it.lockSet } == true) { clear(); return null }
+        snapshot = s
         return s
     }
 
@@ -71,6 +76,8 @@ class StartupCache(context: Context, private val scope: CoroutineScope) {
 
     /** A fresh snapshot for [status]'s account; the old one is kept when it is for the same account and mode. */
     fun start(status: AppStatus, aid: Long, demo: Boolean) {
+        if (status.lockSet || status.locked || !status.apiConfigured || status.accounts.none { it.id == aid }) { clear(); return }
+        generation++
         val st = status.copy(mediaToken = "")
         val old = snapshot
         snapshot = if (old != null && old.aid == aid && old.demo == demo) old.copy(status = st) else Snapshot(demo, aid, st)
@@ -79,8 +86,12 @@ class StartupCache(context: Context, private val scope: CoroutineScope) {
 
     fun clear() {
         snapshot = null
+        val revision = ++generation
         saveJob?.cancel()
-        scope.launch(Dispatchers.IO) { file.delete() }
+        saveJob = null
+        scope.launch(Dispatchers.IO) { synchronized(diskLock) {
+            if (revision == generation) { file.delete(); File(file.parentFile, "${file.name}.tmp").delete() }
+        } }
     }
 
     fun page(key: String): Page? = snapshot?.pages?.get(key)
@@ -99,11 +110,17 @@ class StartupCache(context: Context, private val scope: CoroutineScope) {
         saveJob = scope.launch {
             delay(SAVE_AFTER_MS)
             val s = snapshot ?: return@launch
+            val revision = generation
             withContext(Dispatchers.IO) {
                 try {
-                    val tmp = File(file.parentFile, "${file.name}.tmp")
-                    tmp.writeText(JsonCodec.encodeToString(Snapshot.serializer(), s))
-                    tmp.renameTo(file)
+                    val text = JsonCodec.encodeToString(Snapshot.serializer(), s)
+                    synchronized(diskLock) {
+                        if (revision == generation) {
+                            val tmp = File(file.parentFile, "${file.name}.tmp")
+                            tmp.writeText(text)
+                            check(tmp.renameTo(file)) { "Could not commit startup cache" }
+                        }
+                    }
                 } catch (e: Exception) {
                     AppLog.w("startup-cache", "couldn't save the screen", e)
                 }
@@ -117,6 +134,6 @@ class StartupCache(context: Context, private val scope: CoroutineScope) {
 
         /** The key of a list's first page: the account and its parameters, in a fixed order. */
         fun key(aid: Long, params: Map<String, String>): String =
-            "$aid?" + params.filterKeys { it != "record" && it != "limit" }.toSortedMap().entries.joinToString("&") { "${it.key}=${it.value}" }
+            "$aid?" + params.filterKeys { it != "record" && it != "limit" }.toSortedMap().entries.joinToString("&") { "${java.net.URLEncoder.encode(it.key, "UTF-8")}=${java.net.URLEncoder.encode(it.value, "UTF-8")}" }
     }
 }

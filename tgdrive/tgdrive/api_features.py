@@ -8,6 +8,7 @@ file stays readable; both share the same app, security middleware and helpers.
 from __future__ import annotations
 
 import asyncio
+import os
 import json
 import logging
 import shutil
@@ -577,3 +578,91 @@ async def paths_check(paths: str):
         except OSError:
             continue
     return {"items": out}
+
+# Offline copies are independent of the evictable media caches.
+@router.get("/api/a/{aid}/offline")
+async def offline_status(aid: int):
+    from .offline import store
+    return store(acc(aid)).summary()
+
+
+@router.post("/api/a/{aid}/offline")
+async def offline_pin(aid: int, body: dict = Body(...)):
+    from .offline import store
+    return store(acc(aid)).pin(items_arg(body), folder_id=body.get("folder_id"))
+
+
+@router.post("/api/a/{aid}/offline/retry")
+async def offline_retry(aid: int):
+    from .offline import store
+    a = acc(aid)
+    a._offline_error = ""
+    return store(a).refresh()
+
+
+@router.delete("/api/a/{aid}/offline/folders/{fid}")
+async def offline_unpin_folder(aid: int, fid: str):
+    from .offline import store
+    s = store(acc(aid))
+    s.db.x("DELETE FROM offline_folders WHERE id=?", (fid,))
+    return s.summary()  # existing files stay until explicitly removed
+
+
+@router.delete("/api/a/{aid}/offline/{cid}/{mid}")
+async def offline_unpin(aid: int, cid: int, mid: int):
+    from .offline import store
+    return store(acc(aid)).unpin(cid, mid)
+
+
+@router.get("/api/a/{aid}/offline/{cid}/{mid}/file")
+async def offline_file(aid: int, cid: int, mid: int):
+    from .offline import store
+    from .webapp import FileResponse
+    p = store(acc(aid)).file(cid,mid)
+    return FileResponse(p, filename=p.name)
+
+
+@router.get("/api/a/{aid}/recovery")
+async def recovery_status(aid: int):
+    from .offline import recovery
+    return recovery(acc(aid))
+
+
+@router.post("/api/a/{aid}/recovery/{kind}/{key}")
+async def recovery_retry(aid: int, kind: str, key: str):
+    from .offline import store, recovery
+    a = acc(aid)
+    if kind == "transfer":
+        if not key.isdigit():
+            raise AccountError("Unknown transfer")
+        a.transfers.resume(int(key))
+    elif kind == "offline":
+        a._offline_error = ""
+        store(a).sync_folders()
+        store(a).refresh()
+    elif kind == "index":
+        a.indexer.resume()
+        a.indexer.poke()
+    elif kind == "drive":
+        a.drive._dirty = True
+        await a.drive.flush_now()
+    else:
+        raise AccountError("Unknown recovery action")
+    return recovery(a)
+
+
+@router.get("/api/data-location")
+async def data_location_status():
+    from .data_location import default_dir, _read
+    return {"path":str(config.DATA_DIR), "default":str(default_dir()), "pending":_read().get("pending"),
+            "mobile":bool(os.environ.get("TGDRIVE_ANDROID"))}
+
+@router.post("/api/data-location")
+async def data_location_select(body: dict = Body(...)):
+    from .data_location import schedule
+    if os.environ.get("TGDRIVE_ANDROID"):
+        raise AccountError("Choose the data folder in This phone settings.")
+    path=body.get("path")
+    if not isinstance(path,str) or not path.strip():raise AccountError("Choose a data folder.")
+    try:return schedule(path,config.DATA_DIR)
+    except (ValueError,OSError,RuntimeError) as exc:raise AccountError(str(exc))

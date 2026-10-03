@@ -38,6 +38,8 @@ class Thumbs:
         self.acc = account
         self.dir = account.dir / "thumbs"
         self.dir.mkdir(exist_ok=True)
+        self._cache_bytes: Optional[int] = None   # estimate between full scans (see trim)
+        self._scanned = 0.0
         self.sem = asyncio.Semaphore(8)
         self.inflight: dict[str, asyncio.Future] = {}
         self.backoff_until = 0.0
@@ -66,6 +68,7 @@ class Thumbs:
         tmp.write_bytes(data)
         tmp.replace(p)
         Path(str(p) + ".none").unlink(missing_ok=True)
+        self.trim(p)
 
     def doc_failed(self, chat_id: int, msg_id: int) -> None:
         Path(str(self._path(chat_id, msg_id, "pdf")) + ".none").touch()
@@ -91,6 +94,7 @@ class Thumbs:
         t0 = time.perf_counter()
         try:
             result = await asyncio.wait_for(self._fetch(chat_id, msg_id, variant, path), TIMEOUT)
+            await asyncio.to_thread(self.trim, result)
             fut.set_result(result)
             log.debug("preview %s:%s/%s %s in %.0f ms", chat_id, msg_id, variant, "fetched" if result else "none",
                       (time.perf_counter() - t0) * 1000)
@@ -158,6 +162,34 @@ class Thumbs:
         tmp.write_bytes(b"".join(chunks))
         tmp.replace(path)
         return path
+
+    def trim(self, keep=None) -> None:
+        """Keep the cache near its target size. The folder is scanned only when the running estimate
+        says it may be over, or every few minutes: never once per thumbnail."""
+        from .settings import settings
+        limit = int(settings.get("thumb_cache_mb")) * 1024 * 1024
+        now = time.monotonic()
+        if self._cache_bytes is not None:
+            try:
+                self._cache_bytes += keep.stat().st_size if keep else 0
+            except OSError:
+                pass
+            if self._cache_bytes <= limit and now - self._scanned < 300:
+                return
+        files = []
+        for p in self.dir.rglob("*"):
+            try:
+                if p.is_file() and not p.name.endswith(".tmp"):
+                    st = p.stat(); files.append((st.st_mtime, st.st_size, p))
+            except OSError:
+                continue
+        total = sum(size for _, size, _ in files)
+        for _, size, p in sorted(files):
+            if total <= limit: break
+            if p == keep: continue  # current response must remain readable
+            try: p.unlink(missing_ok=True); total -= size
+            except OSError: pass
+        self._cache_bytes, self._scanned = total, now
 
     def usage(self) -> dict:
         n = size = 0

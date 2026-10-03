@@ -211,6 +211,7 @@ export function fileMenuItems(files) {
     one ? { label: STREAMABLE.has(one.kind) ? 'Play' : 'Preview', icon: STREAMABLE.has(one.kind) ? 'play' : 'eye', kbd: 'Enter', onClick: () => openFile(one) } : null,
     one ? { label: 'Open with default app', icon: 'external', onClick: () => doOpenLocal(one) } : null,
     pics.length > 1 ? { label: `Slideshow (${pics.length} pictures)`, icon: 'slides', onClick: () => import('./viewer.js').then((m) => m.slideshow(pics)) } : null,
+    { label: 'Keep available offline', icon: 'download', onClick: async () => { try { await api(A('/offline'), {method:'POST', body:{items}}); toast('Offline copies queued'); } catch(e) { fail(e); } } },
     { label: files.length > 1 ? `Download ${files.length} files` : 'Download', icon: 'download', kbd: 'D', onClick: () => doDownload(items) },
     files.length > 1 ? { label: 'Download as .zip', icon: 'download', onClick: () => doDownload(items, { zip: true, name: viewTitle() }) } : null,
     '-',

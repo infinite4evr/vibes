@@ -333,6 +333,7 @@ export function folderMenu(anchor, id) {
     },
     { label: 'Sync with a folder on this computer…', icon: 'sync', onClick: () => import('./sync.js').then((m) => m.addPairDialog(id)) },
     '-',
+    f.kind !== 'smart' ? { label: 'Keep folder offline', icon: 'download', onClick: async () => { try { await api(A('/offline'), {method:'POST', body:{folder_id:f.id}}); toast('Folder pinned for offline access'); } catch(e) { fail(e); } } } : null,
     f.kind !== 'smart' ? { label: 'Download folder', icon: 'download', onClick: () => downloadFolder(f, false) } : null,
     f.kind !== 'smart' ? { label: 'Download as .zip', icon: 'download', onClick: () => downloadFolder(f, true) } : null,
     { label: 'Playlist for VLC / mpv', icon: 'play', onClick: () => saveDownload(A(`/playlist.m3u?${qs(f.kind === 'smart' && rules ? { ...rules.params, q: rules.q } : { folder_id: id, folder_tree: 1 })}`), `${f.name}.m3u`) },

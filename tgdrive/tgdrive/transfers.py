@@ -203,11 +203,14 @@ class Transfers:
         f = self.db.get_file(chat_id, msg_id)
         if not f:
             raise TransferError("That file isn't in the index.")
-        existing = self.db.one(
-            "SELECT id FROM transfers WHERE direction='down' AND chat_id=? AND msg_id=? "
-            "AND status IN ('queued','running','paused')", (chat_id, msg_id))
-        if existing:
-            return existing["id"]
+        # The same file already on its way to the same place. An offline copy being fetched is not a
+        # download the person asked for: theirs still goes to their download folder.
+        for existing in self.db.q(
+                "SELECT id, path FROM transfers WHERE direction='down' AND chat_id=? AND msg_id=? "
+                "AND status IN ('queued','running','paused') ORDER BY id", (chat_id, msg_id)):
+            offline = bool(existing["path"]) and Path(existing["path"]).is_relative_to(self.acc.dir / "offline")
+            if existing["path"] == exact_path or (exact_path is None and not offline):
+                return existing["id"]
         name = f["alias"] or f["name"]
         if exact_path:  # folder sync: this exact file (an existing one is replaced when the download finishes)
             target = Path(exact_path)
@@ -333,6 +336,8 @@ class Transfers:
 
     def remove(self, tid: int, delete_file: bool = False) -> None:
         t = self._get(tid)
+        if delete_file and t["path"] and Path(t["path"]).is_relative_to(self.acc.dir / "offline"):
+            raise TransferError("Remove this pinned copy from Offline & recovery first.")
         self._cancel_task(tid)
         self._cleanup_partial(t)
         if delete_file and t["direction"] == "down" and t["status"] == "done" and t["path"]:

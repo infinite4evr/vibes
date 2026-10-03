@@ -155,6 +155,10 @@ class EngineService : Service() {
             if (processEnding && !shuttingDown) stopSelf()
             return
         }
+        if (!app.tgdrive.storage.DataLocation.ready(this)) {
+            publish(state.copy(phase=EngineState.Phase.Failed,error="Choose an available data folder from TG Drive’s startup screen.")); stopSelf(); return
+        }
+        app.tgdrive.storage.DataLocation.prepare(this)
         startLog().delete()
         stage(EngineState(phase = EngineState.Phase.Starting, demo = demo, pid = Process.myPid()), "Preparing")
         try {
@@ -167,7 +171,7 @@ class EngineService : Service() {
             stage(state, "Unpacking the meaning model")
             val model = modelDir()
             val opts = buildJsonObject {
-                put("data_dir", File(filesDir, "tgdrive").absolutePath)
+                put("data_dir", app.tgdrive.storage.DataLocation.service(this@EngineService).absolutePath)
                 put("download_dir", downloadDir().absolutePath)
                 put("model_dir", model?.absolutePath ?: "")
                 put("fts5_library", "libtgfts5.so")
@@ -209,7 +213,7 @@ class EngineService : Service() {
         publish(s.copy(stage = what, updatedAt = System.currentTimeMillis()))
     }
 
-    private fun startLog() = File(filesDir, START_LOG)
+    private fun startLog() = File(app.tgdrive.storage.DataLocation.logs(this), START_LOG)
 
     private fun trace(line: String) {
         AppLog.i("engine", line.take(2000))
@@ -300,9 +304,9 @@ class EngineService : Service() {
         val allowed = Build.VERSION.SDK_INT >= 30 ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
         if (allowed && writable(pub)) return pub
-        val own = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: filesDir, "TG Drive")
-        own.mkdirs()
-        return own
+        // No access to Download/ (it can't happen with the data folder's storage permission, but never fail):
+        // the selected data folder, which survives reinstalling too.
+        return File(app.tgdrive.storage.DataLocation.root(this) ?: filesDir, "downloads").apply { mkdirs() }
     }
 
     private fun writable(dir: File): Boolean = try {
@@ -317,7 +321,7 @@ class EngineService : Service() {
 
     /** The meaning-search model ships as assets; Python needs real files, copied once per version. */
     private fun modelDir(): File? {
-        val dir = File(filesDir, "model")
+        val dir = File(app.tgdrive.storage.DataLocation.root(this), "android/model")
         return try {
             val names = assets.list("model")?.toList().orEmpty()
             if (names.isEmpty()) return null

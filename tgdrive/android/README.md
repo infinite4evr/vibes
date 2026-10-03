@@ -1,3 +1,5 @@
+> Persistent data folders, migration, startup recovery and new test coverage: see [UPDATE_NOTES.md](../../UPDATE_NOTES.md) and [TEST_RESULTS.md](../../TEST_RESULTS.md).
+
 # TG Drive for Android
 
 The TG Drive desktop app on a phone: the same service (Telegram, index, smart search, streaming,

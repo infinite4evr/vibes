@@ -26,38 +26,35 @@ import java.util.zip.ZipOutputStream
  *   service/             the Python service's logs (tgdrive.log, and tgdrive-debug.log when detailed
  *                        logging is on) and its crash reports
  *
- * No passwords, API hashes, tokens or messages: the logs never contain them (tokens are removed
- * from URLs as they are written). File and chat names can appear in the logs.
+ * Free-form text is omitted by default. The optional detailed version can include file names,
+ * chat names and search terms; common secret patterns are scrubbed, but users must review it
+ * before sharing because arbitrary third-party error text cannot be exhaustively classified.
  */
 object ProblemReport {
     private const val MAX_FILE = 6L * 1024 * 1024   // the end of each log, at most
 
-    suspend fun build(context: Context, engine: EngineClient?, error: String? = null): File = withContext(Dispatchers.IO) {
+    suspend fun build(context: Context, engine: EngineClient?, error: String? = null, includeNames: Boolean = false): File = withContext(Dispatchers.IO) {
         AppLog.flushNow()
         val dir = File(context.cacheDir, "reports").apply { mkdirs() }
         dir.listFiles()?.forEach { if (System.currentTimeMillis() - it.lastModified() > 86_400_000) it.delete() }
         val stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
-        val zip = File(dir, "tgdrive-report-$stamp.zip")
+        val zip = File(dir, "tgdrive-report-$stamp-${java.util.UUID.randomUUID()}.zip")
         ZipOutputStream(zip.outputStream().buffered()).use { out ->
             fun text(name: String, body: String) {
-                out.putNextEntry(ZipEntry(name)); out.write(body.toByteArray()); out.closeEntry()
+                out.putNextEntry(ZipEntry(name)); out.write((if (name == "report.txt" && !includeNames) body else ReportPrivacy.clean(body, includeNames)).toByteArray()); out.closeEntry()
             }
             fun file(name: String, f: File) {
                 if (!f.isFile) return
-                out.putNextEntry(ZipEntry(name))
-                RandomAccessFile(f, "r").use { raf ->
-                    val start = (raf.length() - MAX_FILE).coerceAtLeast(0)
-                    raf.seek(start)
-                    val buf = ByteArray(64 * 1024)
-                    while (true) {
-                        val n = raf.read(buf)
-                        if (n <= 0) break
-                        out.write(buf, 0, n)
-                    }
+                val body = RandomAccessFile(f,"r").use { raf ->
+                    raf.seek((raf.length()-MAX_FILE).coerceAtLeast(0))
+                    val bytes=ByteArray((raf.length()-raf.filePointer).toInt()); raf.readFully(bytes)
+                    String(bytes, Charsets.UTF_8)
                 }
-                out.closeEntry()
+                text(name, body)
             }
-            text("report.txt", StartupReport.build(context, engine, error))
+            text("report.txt", if (includeNames) StartupReport.build(context, engine, error) else
+                "TG Drive ${app.tgdrive.BuildConfig.VERSION_NAME}\nAndroid ${android.os.Build.VERSION.SDK_INT}\n" +
+                "Service: ${engine?.state?.value?.phase}\nPersonal text omitted. Log timestamps, severity and code locations retained.\n")
             val logs = AppLog.dir(context)
             logs.listFiles().orEmpty().sortedBy { it.name }.forEach { f ->
                 when {
@@ -66,8 +63,8 @@ object ProblemReport {
                     else -> file("app/${f.name}", f)
                 }
             }
-            file("engine/${EngineService.START_LOG}", File(context.filesDir, EngineService.START_LOG))
-            val service = File(context.filesDir, "tgdrive")
+            file("engine/${EngineService.START_LOG}", File(app.tgdrive.storage.DataLocation.logs(context), EngineService.START_LOG))
+            val service = app.tgdrive.storage.DataLocation.root(context)?.let { File(it,"service") } ?: File(context.filesDir,"tgdrive")
             File(service, "logs").listFiles().orEmpty().sortedBy { it.name }.forEach { file("service/${it.name}", it) }
             File(service, "crashes").listFiles().orEmpty().filter { it.name.endsWith(".txt") }
                 .sortedByDescending { it.lastModified() }.take(30).forEach { file("service/crashes/${it.name}", it) }
@@ -78,7 +75,10 @@ object ProblemReport {
 
     /** Make the report and open the share sheet with it. */
     suspend fun share(context: Context, engine: EngineClient?, error: String? = null) {
-        val zip = build(context, engine, error)
+        ReportPreview.show(context, engine, error)
+    }
+
+    fun shareFile(context: Context, zip: File) {
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.files", zip)
         val send = Intent(Intent.ACTION_SEND)
             .setType("application/zip")

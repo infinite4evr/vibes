@@ -64,6 +64,7 @@ export function renderNav() {
   $('#navMid').innerHTML = saved + tg + subjects + tags;
   const toolsOpen = isOpen('tools', true);
   $('#navTools').innerHTML = `${sectionH('tools', 'Tools', true)}${!toolsOpen ? '' : `
+    ${item('#offline', 'download', 'Offline & recovery', 0, active('offline'))}
     ${item('#storage', 'chart', 'Storage', 0, active('storage'))}
     ${item('#duplicates', 'dupes', 'Duplicates', 0, active('duplicates'))}
     ${item('#index', 'database', 'Index manager', 0, active('index'))}

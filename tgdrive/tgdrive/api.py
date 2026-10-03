@@ -1214,23 +1214,50 @@ async def start_downloads(aid: int, body: dict = Body(...)):
 async def upload(aid: int, request: Request, name: str, folder_id: Optional[str] = None, rel: str = "",
                  caption: str = "", chat_id: Optional[int] = None):
     a = acc(aid)
+    from .offline import store
+    store(a)  # additive receipt table
+    key = request.headers.get("x-upload-id", "") or request.query_params.get("upload_id", "")
+    if key and not re.fullmatch(r"[a-zA-Z0-9-]{1,100}", key):
+        raise TransferError("Invalid upload receipt")
+    if key:   # the phone retries a handoff the service already took: answer without a second copy
+        done = a.db.one("SELECT tid FROM upload_receipts WHERE key=?", (key,))
+        if done:
+            return {"id": done["tid"], "recovered": True}
     a.require_online()
     a.drive.require_files_folder(folder_id or None)   # before reading the file, not after
     tmp = a.transfers.new_upload_path()
     try:
-        length = int(request.headers.get("content-length") or 0)
+        length = max(0, int(request.headers.get("content-length") or 0))
     except ValueError:
         length = 0
     ensure_space(tmp, length, f"“{name}”")
     try:
+        # Bodies stream in parallel; only the receipt check and the queueing below are one step.
+        written = checked = 0
         with open(tmp, "wb") as fh:
             async for chunk in request.stream():
                 fh.write(chunk)
+                written += len(chunk)
+                if written - checked >= 64 * 1024 * 1024:   # a body longer than announced, or a disk filling up
+                    checked = written
+                    ensure_space(tmp, 0, f"“{name}”")
         fid = folder_id or None
         parts = [p for p in rel.split("/")[:-1] if p.strip()]
         if parts:
             fid = await a.drive.ensure_path(fid, parts)
-        return {"id": a.transfers.add_upload(tmp, name, fid, caption=caption, target_chat=chat_id)}
+        # No await from here on: a concurrent retry of the same handoff can't slip in between.
+        if key:
+            done = a.db.one("SELECT tid FROM upload_receipts WHERE key=?", (key,))
+            if done:
+                Path(tmp).unlink(missing_ok=True)
+                return {"id": done["tid"], "recovered": True}
+        with a.db.tx():
+            tid = a.transfers.add_upload(tmp, name, fid, caption=caption, target_chat=chat_id)
+            if key:
+                a.db.x("INSERT INTO upload_receipts(key,tid) VALUES(?,?)", (key, tid))
+                # Retries come within minutes; the newest receipts are plenty.
+                a.db.x("DELETE FROM upload_receipts WHERE rowid <= (SELECT MAX(rowid) FROM upload_receipts) - 2000")
+        return {"id": tid}
     except BaseException:   # also a closed connection or a cancelled request: never leave the copy behind
         Path(tmp).unlink(missing_ok=True)
         raise

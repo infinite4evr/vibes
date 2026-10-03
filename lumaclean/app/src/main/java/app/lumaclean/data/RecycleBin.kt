@@ -44,18 +44,45 @@ class RecycleBin(context: Context, private val dirName: String) {
 
     /** Moves one path into the bin. Returns null when it can't (then nothing changed). */
     fun moveIn(path: String, size: Long): BinItem? {
-        val src = File(path)
-        if (!src.exists()) return null
-        val id = "${System.currentTimeMillis()}-${Random.nextInt(1_000_000)}"
-        val dest = File(binDirFor(path), id)
-        if (!src.renameTo(dest)) return null
-        return BinItem(id, path, dest.absolutePath, size, System.currentTimeMillis(), dest.isDirectory)
+        val item = reserve(listOf(path to size))[path] ?: return null
+        val ok = moveReserved(item)
+        settle(if (ok) emptyList() else listOf(item.id))
+        return item.takeIf { ok }
+    }
+
+    /**
+     * Records where each of [entries] (path to size) is about to go, in one write, BEFORE any bytes
+     * move: a kill or cancellation part-way can't orphan a moved file. Move each with [moveReserved],
+     * then [settle] the ones that didn't move (another single write).
+     */
+    @Synchronized
+    fun reserve(entries: List<Pair<String, Long>>): Map<String, BinItem> {
+        val now = System.currentTimeMillis()
+        val planned = entries.mapIndexedNotNull { i, (path, size) ->
+            val src = File(path)
+            if (!src.exists()) return@mapIndexedNotNull null
+            val id = "$now-$i-${Random.nextInt(1_000_000)}"
+            path to BinItem(id, path, File(binDirFor(path), id).absolutePath, size, now, src.isDirectory)
+        }.toMap()
+        if (planned.isNotEmpty()) update(planned.values.toList() + _items.value)
+        return planned
+    }
+
+    /** Moves a reserved item's bytes into the bin (no journal write; see [reserve]). */
+    fun moveReserved(item: BinItem): Boolean = File(item.originalPath).renameTo(File(item.binPath))
+
+    /** Drops the records of reserved items that weren't moved (failed, or never reached). */
+    @Synchronized
+    fun settle(unmoved: Collection<String>) {
+        if (unmoved.isEmpty()) return
+        val set = unmoved.toSet()
+        update(_items.value.filterNot { it.id in set })
     }
 
     @Synchronized
     fun record(added: List<BinItem>) {
         if (added.isEmpty()) return
-        update(added + _items.value)
+        update((added + _items.value).distinctBy { it.id })
     }
 
     /** Puts items back where they were; a clashing name gets " (1)" appended. */
@@ -64,13 +91,13 @@ class RecycleBin(context: Context, private val dirName: String) {
         val set = ids.toSet()
         val restored = ArrayList<String>()
         val keep = _items.value.filter { item ->
-            if (item.id !in set) return@filter true
+            if (item.id !in set || !available(item)) return@filter true
             val original = File(item.originalPath)
             original.parentFile?.mkdirs()
             val target = uniqueFile(original.parentFile ?: return@filter true, original.name)
             val ok = File(item.binPath).renameTo(target)
             if (ok) restored += target.absolutePath
-            !ok && File(item.binPath).exists()
+            !ok
         }
         update(keep)
         return restored
@@ -81,9 +108,9 @@ class RecycleBin(context: Context, private val dirName: String) {
         val set = ids.toSet()
         var freed = 0L
         val keep = _items.value.filter { item ->
-            if (item.id !in set) return@filter true
+            if (item.id !in set || !available(item)) return@filter true
             val f = File(item.binPath)
-            val ok = !f.exists() || f.deleteRecursively()
+            val ok = f.exists() && f.deleteRecursively()
             if (ok) freed += item.size
             !ok
         }
@@ -96,15 +123,38 @@ class RecycleBin(context: Context, private val dirName: String) {
         return deleteForever(_items.value.filter { it.deletedAt < cutoff }.map { it.id })
     }
 
-    /** Drops records whose files vanished (e.g. SD card wiped). */
+    /** A missing/unmounted volume must never be mistaken for an emptied recycle bin. */
+    fun available(item: BinItem): Boolean = File(item.binPath).exists()
+
+    /** The bin folder can be listed: its storage is there and readable (not unplugged, not revoked). */
+    private fun binFolderReadable(item: BinItem): Boolean = File(item.binPath).parentFile?.list() != null
+
+    /**
+     * Keeps missing records for recovery when an SD card or storage permission returns. Only a record
+     * whose move never happened (the app was stopped between [reserve] and the move: the original is
+     * still in place and the bin is readable) is dropped.
+     */
     @Synchronized
     fun reconcile() {
-        val keep = _items.value.filter { File(it.binPath).exists() }
-        if (keep.size != _items.value.size) update(keep)
+        val all = load()
+        val keep = all.filter { item -> available(item) || !(File(item.originalPath).exists() && binFolderReadable(item)) }
+        if (keep.size != all.size) update(keep) else _items.value = all
+    }
+
+    /**
+     * Removes records whose bytes are gone although their bin folder is readable (deleted by another
+     * app, say): there is nothing left to restore. Records on unavailable storage are kept.
+     */
+    @Synchronized
+    fun forget(ids: Collection<String>): Int {
+        val set = ids.toSet()
+        val keep = _items.value.filterNot { it.id in set && !available(it) && binFolderReadable(it) }
+        val removed = _items.value.size - keep.size
+        if (removed > 0) update(keep)
+        return removed
     }
 
     private fun update(list: List<BinItem>) {
-        _items.value = list
         val a = JSONArray()
         list.forEach {
             a.put(
@@ -113,6 +163,7 @@ class RecycleBin(context: Context, private val dirName: String) {
             )
         }
         json.write(a)
+        _items.value = list
     }
 
     private fun load(): List<BinItem> {

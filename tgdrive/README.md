@@ -130,7 +130,7 @@ Each result shows how it matched (exact, variant, similar, related). Filters by 
 
 | | |
 | --- | --- |
-| Your data (accounts, index, cache, logs) | `~/.local/share/tgdrive` (change with `--data DIR` or `TGDRIVE_DATA`) |
+| Your data (accounts, index, cache, logs) | Chosen at first launch; change in Settings → Data & maintenance. Platform defaults and restore instructions: `../UPDATE_NOTES.md`. |
 | Downloads | `~/Downloads/TG Drive` (Settings → Downloads) |
 | Logs | Settings → About & diagnostics, or `~/.local/share/tgdrive/logs/tgdrive.log` (and `tgdrive-debug.log` while debug logging is on) |
 

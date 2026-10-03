@@ -32,6 +32,7 @@ sealed interface Screen {
     data class SearchInput(val q: String = "", val scope: SearchScope? = null) : Screen
     data object Transfers : Screen
     data object Photos : Screen
+    data object Offline : Screen
     data object Storage : Screen
     data object Duplicates : Screen
     data object Index : Screen

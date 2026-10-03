@@ -49,7 +49,8 @@ def _default_data_dir() -> Path:
     legacy = ROOT / "data"
     if not PACKAGED and (legacy / "accounts").exists():
         return legacy
-    return _xdg("XDG_DATA_HOME", ".local/share") / APP_ID
+    from .data_location import selected
+    return selected()
 
 
 DATA_DIR = _default_data_dir().resolve()
@@ -71,6 +72,8 @@ RESYNC_INTERVAL = int(os.environ.get("TGDRIVE_RESYNC", "1800"))
 def default_download_dir() -> Path:
     if os.environ.get("TGDRIVE_DOWNLOADS"):   # the Android app passes the phone's Download folder
         return Path(os.environ["TGDRIVE_DOWNLOADS"])
+    # Downloads are the person's files, not app data: they stay in the usual Downloads folder
+    # (where earlier versions put them) whichever data folder is selected.
     d = None
     user_dirs = _xdg("XDG_CONFIG_HOME", ".config") / "user-dirs.dirs"
     try:

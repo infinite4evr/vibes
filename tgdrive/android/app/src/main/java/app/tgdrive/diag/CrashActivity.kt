@@ -36,6 +36,8 @@ class CrashActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // This screen already explains the failed launch: "Open again" goes straight to the app.
+        app.tgdrive.storage.DataLocation.launchFinished(this)
         val file = intent.getStringExtra(EXTRA_REPORT)?.let { File(it) }?.takeIf { it.isFile }
             ?: AppLog.unseenCrashes(this).firstOrNull()
         report = runCatching { file?.readText() }.getOrNull()?.takeIf { it.isNotBlank() }
@@ -140,6 +142,7 @@ class CrashActivity : Activity() {
         runCatching {
             getSharedPreferences("app", MODE_PRIVATE).edit().clear().putBoolean("welcomed", true).commit()
             getSharedPreferences("player", MODE_PRIVATE).edit().clear().commit()
+            app.tgdrive.storage.PortablePreferences.save(this)
             File(filesDir, "engine-state.json").delete()
             AppLog.i("crash", "the app's settings were reset from the crash screen")
         }

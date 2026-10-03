@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
@@ -151,6 +152,8 @@ class AppState(
 
     // ------------------------------------------------------------------ engine
     private var lastEngine: EngineState? = null
+    private var accountGeneration = 0L
+    private var bootJob: Job? = null
 
     private suspend fun onEngine(s: EngineState) {
         val prev = lastEngine
@@ -159,8 +162,10 @@ class AppState(
             EngineState.Phase.Ready -> if (prev?.ready != true || prev.startedAt != s.startedAt) {
                 if (appVisible()) bootstrap() else bootstrapWhenVisible = true
             }
-            EngineState.Phase.Failed -> { stopLive(); _reconnecting.value = false; _phase.value = Phase.Failed(s.error ?: "TG Drive's service didn't start.") }
+            EngineState.Phase.Failed -> { accountGeneration++; bootJob?.cancel(); stopLive(); _reconnecting.value = false; _phase.value = Phase.Failed(s.error ?: "TG Drive's service didn't start.") }
             else -> {
+                accountGeneration++
+                bootJob?.cancel()
                 stopLive()
                 when {
                     !welcomed -> _phase.value = Phase.Welcome
@@ -228,16 +233,22 @@ class AppState(
 
     // ------------------------------------------------------------------ bootstrap
     fun bootstrap() {
-        scope.launch {
+        accountGeneration++
+        bootJob?.cancel()
+        bootJob = scope.launch {
             try {
-                val t0 = System.currentTimeMillis()
-                val st = api.status()
-                val since = engine.state.value.startedAt.takeIf { it > 0 }?.let { " (${t0 - it} ms after the service was ready)" } ?: ""
-                AppLog.i("app", "status answered in ${System.currentTimeMillis() - t0} ms$since: " +
-                    "${st.accounts.size} account(s), key ${if (st.apiConfigured) "set" else "missing"}")
+                val st = kotlinx.coroutines.withTimeout(25_000) {
+                    while (true) {
+                        try { return@withTimeout api.status() }
+                        catch (e: kotlinx.coroutines.TimeoutCancellationException) { kotlinx.coroutines.currentCoroutineContext().ensureActive(); delay(800) }
+                        catch (e: kotlinx.coroutines.CancellationException) { throw e }
+                        catch (e: Exception) { if (!engine.state.value.ready) throw e; delay(800) }
+                    }
+                    @Suppress("UNREACHABLE_CODE")
+                    error("No status")
+                }
                 _status.value = st
                 _settings.value = st.settings
-                // Kept for the next start only while no passcode guards the files.
                 val cacheable = !st.locked && !st.lockSet && st.apiConfigured && st.accounts.isNotEmpty()
                 if (!cacheable) cache.clear()
                 _phase.value = when {
@@ -246,36 +257,29 @@ class AppState(
                     st.accounts.isEmpty() -> Phase.NeedsLogin
                     else -> {
                         val chosen = st.accounts.firstOrNull { it.id == _aid.value } ?: st.accounts.first()
-                        cache.start(st, chosen.id, engine.demo)
+                        if (cacheable) cache.start(st, chosen.id, engine.demo)
                         selectAccount(chosen.id, announce = false)
                         Phase.Ready
                     }
                 }
                 if (_phase.value == Phase.Ready) startLive()
-                bootFailedSince = 0
-                if (_reconnecting.value) {
-                    _reconnecting.value = false
-                    _changes.tryEmit("reconnected")   // lists on screen load again
-                }
+                if (_reconnecting.value) { _reconnecting.value = false; _changes.tryEmit("reconnected") }
+            } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                _reconnecting.value = false
+                _phase.value = Phase.Failed("TG Drive's service did not answer within 25 seconds. Try again.")
+            } catch (e: kotlinx.coroutines.CancellationException) { throw e
             } catch (e: Exception) {
-                val now = System.currentTimeMillis()
-                if (bootFailedSince == 0L) bootFailedSince = now
-                if (now - bootFailedSince > 25_000) {
-                    // Never wait on a service that runs but doesn't answer: say what it answers.
-                    AppLog.w("app", "the service doesn't answer", e)
-                    _reconnecting.value = false
-                    _phase.value = Phase.Failed("TG Drive's service is running but doesn't answer: ${e.message ?: e.javaClass.simpleName}")
-                    bootFailedSince = 0
-                    return@launch
-                }
-                delay(800)
-                if (engine.state.value.ready) bootstrap()
+                _reconnecting.value = false
+                _phase.value = Phase.Failed("TG Drive's service did not answer: ${e.message}")
             }
         }
     }
 
     fun selectAccount(id: Long, announce: Boolean = true) {
         if (_aid.value != id) {
+            accountGeneration++
+            _tags.value = emptyList(); _subjects.value = emptyList(); _filters.value = emptyList()
+            _transfers.value = TransfersResponse()
             _aid.value = id
             prefs.edit().putLong("aid", id).apply()
             _account.value = null
@@ -293,29 +297,41 @@ class AppState(
         scope.launch { loadTags() }
         scope.launch { loadSubjects() }
         scope.launch { loadTransfers() }
-        scope.launch { runCatching { api.accountStatus(_aid.value).let { a -> _account.value = a; cache.update { it.copy(account = a) } } } }
+        scope.launch { loadAccount() }
     }
 
-    suspend fun loadFolders() = safely {
-        _folders.value = api.folders(_aid.value)
-        cache.update { it.copy(folders = _folders.value) }
+    private suspend fun <T> accountLoad(fetch: suspend (Long) -> T, apply: (T) -> Unit) {
+        val id = _aid.value
+        val revision = accountGeneration
+        try {
+            val result = fetch(id)
+            if (id == _aid.value && revision == accountGeneration) apply(result)
+        } catch (e: kotlinx.coroutines.CancellationException) { throw e
+        } catch (e: Exception) {
+            if (id == _aid.value && revision == accountGeneration) {
+                if (e is ApiException && e.locked) onLocked() else e.explain("loading")
+            }
+        }
     }
-    suspend fun loadChats() = safely {
-        _chats.value = api.chats(_aid.value)
-        _filters.value = api.dialogFilters(_aid.value)
-        cache.update { it.copy(chats = _chats.value, filters = _filters.value) }
+    private suspend fun loadAccount() = accountLoad({ api.accountStatus(it) }) { a ->
+        _account.value = a; cache.update { it.copy(account = a) }
     }
-    suspend fun loadTags() = safely {
-        _tags.value = api.tags(_aid.value)
-        cache.update { it.copy(tags = _tags.value) }
+    suspend fun loadFolders() = accountLoad({ api.folders(it) }) { f ->
+        _folders.value = f; cache.update { it.copy(folders = f) }
     }
-    suspend fun loadSubjects() = safely {
-        val obj = api.subjects(_aid.value)
+    suspend fun loadChats() = accountLoad({ id -> api.chats(id) to api.dialogFilters(id) }) { (chats, filters) ->
+        _chats.value = chats; _filters.value = filters
+        cache.update { it.copy(chats = chats, filters = filters) }
+    }
+    suspend fun loadTags() = accountLoad({ api.tags(it) }) { tags ->
+        _tags.value = tags; cache.update { it.copy(tags = tags) }
+    }
+    suspend fun loadSubjects() = accountLoad({ api.subjects(it) }) { obj ->
         val list = obj["subjects"]?.let { JsonCodec.decodeFromJsonElement(kotlinx.serialization.builtins.ListSerializer(Subject.serializer()), it) }
         _subjects.value = if (obj.bool("enabled", true)) list.orEmpty() else emptyList()
         cache.update { it.copy(subjects = _subjects.value) }
     }
-    suspend fun loadTransfers() = safely { _transfers.value = api.transfers(_aid.value) }
+    suspend fun loadTransfers() = accountLoad({ api.transfers(it) }) { _transfers.value = it }
 
     suspend fun refreshStatus() = safely {
         val st = api.status()
@@ -393,6 +409,7 @@ class AppState(
     }
 
     fun onLocked() {
+        accountGeneration++
         cache.clear()
         _phase.value = Phase.Locked
         stopLive()

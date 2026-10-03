@@ -328,7 +328,13 @@ class Shell:
         self.theme = "system"
         self.players = []
         self.icon = load_icon()
-        self.qs = QSettings("tgdrive", "desktop")
+        from tgdrive import config
+        self.qs = QSettings(str(config.DATA_DIR / "desktop.ini"), QSettings.Format.IniFormat)
+        if not (config.DATA_DIR / "desktop.ini").exists():
+            legacy = QSettings("tgdrive", "desktop")
+            for key in legacy.allKeys():
+                self.qs.setValue(key, legacy.value(key))
+            self.qs.sync()
         self.token = secrets.token_urlsafe(24)
         self.media_token = secrets.token_urlsafe(18)
         self.server = self.thread = None      # in-process server (only when a child process can't be used)

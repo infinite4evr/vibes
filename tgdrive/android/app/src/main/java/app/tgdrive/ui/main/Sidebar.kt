@@ -140,6 +140,7 @@ fun Sidebar(
             if (open["tools"] == true) {
                 item("t-transfers") { NavRow(TgIcons.transfers, "Transfers", count = account?.transfers?.active?.toLong()?.takeIf { it > 0 },
                     selected = current == Screen.Transfers, onClick = { onGo(Screen.Transfers) }) }
+                item("t-offline") { NavRow(TgIcons.download, "Offline & recovery", selected = current == Screen.Offline, onClick = { onGo(Screen.Offline) }) }
                 item("t-storage") { NavRow(TgIcons.chart, "Storage", selected = current == Screen.Storage, onClick = { onGo(Screen.Storage) }) }
                 item("t-dupes") { NavRow(TgIcons.dupes, "Duplicates", selected = current == Screen.Duplicates, onClick = { onGo(Screen.Duplicates) }) }
                 item("t-index") { NavRow(TgIcons.database, "Chats and indexing", selected = current == Screen.Index, onClick = { onGo(Screen.Index) }) }

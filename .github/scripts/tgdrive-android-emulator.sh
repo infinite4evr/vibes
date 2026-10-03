@@ -4,9 +4,29 @@
 set -uo pipefail
 mkdir -p out/shots
 adb logcat -c || true
-adb install -r -g app/build/outputs/apk/staging/app-staging.apk
-adb install -r -g app/build/outputs/apk/androidTest/staging/app-staging-androidTest.apk
+# A test run against an app that didn't install would only report what an old install does: stop.
+adb install -r -g app/build/outputs/apk/staging/app-staging.apk || { echo "::error::Couldn't install the app APK"; exit 1; }
+adb install -r -g app/build/outputs/apk/androidTest/staging/app-staging-androidTest.apk || { echo "::error::Couldn't install the test APK"; exit 1; }
 status=0
+# Run the instrumented tests in [class list] into out/[name].txt; they must finish with at least one
+# test passed ("OK (n tests)"): an empty run or a crashed instrumentation is a failure too.
+run_tests() {
+  adb shell am instrument -w -r -e class "$1" app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee "out/$2.txt"
+  if grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" "out/$2.txt" || ! grep -Eq '^OK \([1-9][0-9]* tests?\)' "out/$2.txt"; then
+    echo "::error::$2: the tests failed or didn't run"; status=1
+  fi
+}
+# The data folder is shared storage (all-files access, granted here as a person would in Settings),
+# chosen before anything else runs: TG Drive's service only starts from a selected folder.
+grant_storage() { adb shell appops set --uid app.tgdrive MANAGE_EXTERNAL_STORAGE allow || true; }
+grant_storage
+run_tests app.tgdrive.DataFolderSetup data-folder
+# The real launcher entry from cold, and a damaged preferences file: TG Drive must show a screen, not vanish.
+bash ../../.github/scripts/tgdrive-startup-smoke.sh || status=1
+# Data folder lifecycle, durable upload handoff, recovery, startup cache and account switching.
+adb shell am instrument -w -r -e class app.tgdrive.ReliabilityTest,app.tgdrive.RecoveryJourneys,app.tgdrive.PortableStorageTest app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/reliability.txt
+grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/reliability.txt && status=1
+grep -Eq '^OK \([1-9][0-9]* tests?\)' out/reliability.txt || { echo "::error::reliability journeys failed or didn't run"; status=1; }
 adb shell am instrument -w -r -e class app.tgdrive.EngineTest app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/engine-test.txt
 grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/engine-test.txt && status=1
 adb shell am instrument -w -r -e class app.tgdrive.ScreenshotTour app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/tour.txt
@@ -33,20 +53,22 @@ if grep -q "CrashActivity" out/after-crash.txt; then echo "crash screen shown af
 else echo "::error::A crash of the app didn't show the crash screen"; status=1; fi
 adb shell am force-stop app.tgdrive || true
 adb pull /sdcard/Android/data/app.tgdrive/files/Pictures/tour/. out/shots/ || true
-adb shell run-as app.tgdrive cat files/tgdrive/logs/tgdrive.log > out/service-demo.log 2>/dev/null || true
-adb shell run-as app.tgdrive cat files/logs/app.log > out/app-demo.log 2>/dev/null || true
-adb shell run-as app.tgdrive cat files/logs/engine.log > out/engine-demo.log 2>/dev/null || true
+adb shell cat "'/sdcard/TG Drive/service/logs/tgdrive.log'" > out/service-demo.log 2>/dev/null || true
+adb shell cat "'/sdcard/TG Drive/android/logs/app.log'" > out/app-demo.log 2>/dev/null || true
+adb shell cat "'/sdcard/TG Drive/android/logs/engine.log'" > out/engine-demo.log 2>/dev/null || true
 
 # A first start on a fresh install: the real sign-in screens against Telegram (made-up key).
 adb shell pm clear app.tgdrive
 adb shell pm grant app.tgdrive android.permission.POST_NOTIFICATIONS || true   # as if Allow was tapped
+grant_storage   # SignInFlow picks a fresh data folder of its own
 adb shell am instrument -w -r -e class app.tgdrive.SignInFlow app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/signin.txt
 grep -q "FAILURES!!!\|INSTRUMENTATION_FAILED\|Process crashed" out/signin.txt && status=1
 adb pull /sdcard/Android/data/app.tgdrive/files/Pictures/tour/. out/shots/ || true
-adb shell run-as app.tgdrive cat files/engine-start.log > out/engine-start.log 2>/dev/null || true
+signin=$(adb shell 'ls -d /sdcard/TGDrive-Test-signin-* 2>/dev/null' | tr -d '\r' | tail -1)
+adb shell cat "'$signin/android/logs/engine-start.log'" > out/engine-start.log 2>/dev/null || true
 echo "---- service start steps"; cat out/engine-start.log || true
-adb shell run-as app.tgdrive cat files/tgdrive/logs/tgdrive.log > out/service.log 2>/dev/null || true
-adb shell run-as app.tgdrive cat files/logs/app.log > out/app.log 2>/dev/null || true
+adb shell cat "'$signin/service/logs/tgdrive.log'" > out/service.log 2>/dev/null || true
+adb shell cat "'$signin/android/logs/app.log'" > out/app.log 2>/dev/null || true
 # A big library (100 000 files, 1 700 chats) built on the phone: TG Drive must open to its main screen
 # and stay responsive. The test keeps its timings, frame statistics and memory (taken while the app
 # still runs) next to the screenshots.
