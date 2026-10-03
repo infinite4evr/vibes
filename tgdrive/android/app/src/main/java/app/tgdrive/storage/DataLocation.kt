@@ -61,7 +61,7 @@ object DataLocation {
         val pid=launchPid(c)?.takeIf{it!=android.os.Process.myPid()} ?: return null
         val how=if(android.os.Build.VERSION.SDK_INT<30) null else runCatching {
             c.getSystemService(android.app.ActivityManager::class.java).getHistoricalProcessExitReasons(c.packageName,pid,1).firstOrNull()
-                ?.let{app.tgdrive.engine.exitReasonName(it.reason)+(it.description?.let{d->": $d"}.orEmpty())}
+                ?.let{app.tgdrive.engine.exitReasonName(it.reason)+(it.description?.takeIf{d->d.isNotBlank()}?.let{d->": $d"}.orEmpty())}
         }.getOrNull()
         val step=app.tgdrive.diag.StartupTrail.lastStep(c,pid)
         return listOfNotNull(how?.let{"Android recorded: $it"},step?.let{"its last step: $it"}).joinToString("; ").ifBlank{"no record of how it ended"}

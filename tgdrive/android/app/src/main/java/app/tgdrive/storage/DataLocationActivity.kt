@@ -240,7 +240,7 @@ class DataLocationActivity:ComponentActivity(){
         return runCatching{
             getSystemService(ActivityManager::class.java).getHistoricalProcessExitReasons(packageName,0,10)
                 .firstOrNull{it.processName==packageName && it.timestamp>=openedAt}
-                ?.let{i->app.tgdrive.engine.exitReasonName(i.reason)+(i.description?.let{d->": $d"}.orEmpty())}
+                ?.let{i->app.tgdrive.engine.exitReasonName(i.reason)+(i.description?.takeIf{d->d.isNotBlank()}?.let{d->": $d"}.orEmpty())}
         }.getOrNull()
     }
     private fun open(restarted:Boolean=false)=checkFolder{f->
