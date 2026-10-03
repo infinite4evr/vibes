@@ -70,10 +70,19 @@ RESYNC_INTERVAL = int(os.environ.get("TGDRIVE_RESYNC", "1800"))
 
 
 def default_download_dir() -> Path:
-    if os.environ.get("TGDRIVE_DOWNLOADS"):
+    if os.environ.get("TGDRIVE_DOWNLOADS"):   # the Android app passes the phone's Download folder
         return Path(os.environ["TGDRIVE_DOWNLOADS"])
-    # App-owned downloads travel with the selected data folder.
-    return DATA_DIR / "downloads"
+    # Downloads are the person's files, not app data: they stay in the usual Downloads folder
+    # (where earlier versions put them) whichever data folder is selected.
+    d = None
+    user_dirs = _xdg("XDG_CONFIG_HOME", ".config") / "user-dirs.dirs"
+    try:
+        for line in user_dirs.read_text().splitlines():
+            if line.startswith("XDG_DOWNLOAD_DIR="):
+                d = Path(os.path.expandvars(line.split("=", 1)[1].strip().strip('"')))
+    except OSError:
+        pass
+    return (d or Path.home() / "Downloads") / APP_NAME
 
 
 def api_credentials() -> tuple[int, str]:

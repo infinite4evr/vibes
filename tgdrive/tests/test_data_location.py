@@ -110,3 +110,58 @@ def test_rebase_preserves_downloaded_databases_and_handles_windows_paths(tmp_pat
     with sqlite3.connect(root/'accounts/1/index.db') as c:
         assert c.execute('SELECT path,dest_dir FROM transfers').fetchone()==(str(root)+'\\downloads\\a.pdf',str(root))
     assert foreign.read_bytes()==b'This is a user file, not an app database'
+
+
+def test_failed_move_is_not_retried_on_every_start(tmp_path,locator,monkeypatch):
+    source=location.activate(lambda _:tmp_path/'old');(source/'settings.json').write_text('{}')
+    location.schedule(str(tmp_path/'new'),source)
+    def failure(*a,**kw):raise OSError('disk full')
+    monkeypatch.setattr(location.shutil,'copytree',failure)
+    with pytest.raises(OSError):location.activate()
+    monkeypatch.undo();monkeypatch.setenv('TGDRIVE_LOCATION_FILE',str(locator))
+    # The next start opens the original folder instead of failing again.
+    assert location.activate()==source and 'pending' not in json.loads(locator.read_text())
+
+
+def test_interrupted_publish_leaves_destination_empty(tmp_path,locator,monkeypatch):
+    source=location.activate(lambda _:tmp_path/'old');(source/'settings.json').write_text('{}')
+    (source/'accounts').mkdir();(source/'logs').mkdir()
+    target=tmp_path/'new';location.schedule(str(target),source)
+    real=Path.rename;calls=[]
+    def flaky(self,dest):
+        calls.append(dest)
+        if len(calls)==2:raise OSError('device removed')
+        return real(self,dest)
+    monkeypatch.setattr(Path,'rename',flaky)
+    with pytest.raises(OSError,match='device removed'):location.activate()
+    assert [p.name for p in target.iterdir() if p.name!='.tgdrive-data.lock']==[]
+    assert location.selected()==source and (source/'accounts').is_dir()
+
+
+def test_pending_move_waits_while_the_folder_is_open(tmp_path,locator):
+    source=location.activate(lambda _:tmp_path/'old');(source/'settings.json').write_text('{}')
+    location.schedule(str(tmp_path/'new'),source)
+    code='from pathlib import Path;from tgdrive.data_location import DataLock;import sys,time;l=DataLock(Path('+repr(str(source))+'));print("locked",flush=True);sys.stdin.read()'
+    holder=subprocess.Popen([sys.executable,'-c',code],stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True,cwd=Path(__file__).resolve().parents[1])
+    try:
+        assert holder.stdout.readline().strip()=='locked'
+        # A second launch (e.g. "Send to TG Drive") keeps using the open folder and the move stays pending.
+        assert location.activate()==source and json.loads(locator.read_text())['pending']==str(tmp_path/'new')
+    finally:
+        holder.stdin.close();holder.wait(10)
+    assert location.activate()==tmp_path/'new'
+
+
+def test_damaged_locator_does_not_stop_startup(tmp_path,locator):
+    locator.parent.mkdir(parents=True);locator.write_text('{not json')
+    assert location.activate(lambda default:tmp_path/'picked')==tmp_path/'picked'
+    assert locator.with_name(locator.name+'.damaged').exists()
+
+
+def test_missing_selected_folder_is_never_recreated_empty(tmp_path,locator):
+    drive=tmp_path/'usb'/'TG Drive'
+    assert location.activate(lambda _:drive)==drive;(drive/'settings.json').write_text('{}')
+    import shutil;shutil.rmtree(tmp_path/'usb')
+    with pytest.raises(location.DataUnavailable):location.activate()
+    assert not drive.exists()
+    assert location.use(tmp_path/'elsewhere')==tmp_path/'elsewhere' and location.selected()==tmp_path/'elsewhere'

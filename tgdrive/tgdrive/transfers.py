@@ -208,7 +208,10 @@ class Transfers:
             "AND status IN ('queued','running','paused')", (chat_id, msg_id))
         if existing:
             current = self.db.get_transfer(existing["id"])
-            if exact_path is None or current["path"] == exact_path:
+            # The same file already on its way to the same place. An offline copy being fetched is
+            # not a download the person asked for: theirs still goes to their download folder.
+            offline = bool(current["path"]) and Path(current["path"]).is_relative_to(self.acc.dir / "offline")
+            if current["path"] == exact_path or (exact_path is None and not offline):
                 return existing["id"]
         name = f["alias"] or f["name"]
         if exact_path:  # folder sync: this exact file (an existing one is replaced when the download finishes)

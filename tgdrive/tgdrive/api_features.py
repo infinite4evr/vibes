@@ -633,6 +633,8 @@ async def recovery_retry(aid: int, kind: str, key: str):
     from .offline import store, recovery
     a = acc(aid)
     if kind == "transfer":
+        if not key.isdigit():
+            raise AccountError("Unknown transfer")
         a.transfers.resume(int(key))
     elif kind == "offline":
         a._offline_error = ""

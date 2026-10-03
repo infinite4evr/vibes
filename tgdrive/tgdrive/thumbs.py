@@ -38,6 +38,8 @@ class Thumbs:
         self.acc = account
         self.dir = account.dir / "thumbs"
         self.dir.mkdir(exist_ok=True)
+        self._cache_bytes: Optional[int] = None   # estimate between full scans (see trim)
+        self._scanned = 0.0
         self.sem = asyncio.Semaphore(8)
         self.inflight: dict[str, asyncio.Future] = {}
         self.backoff_until = 0.0
@@ -162,8 +164,18 @@ class Thumbs:
         return path
 
     def trim(self, keep=None) -> None:
+        """Keep the cache near its target size. The folder is scanned only when the running estimate
+        says it may be over, or every few minutes: never once per thumbnail."""
         from .settings import settings
         limit = int(settings.get("thumb_cache_mb")) * 1024 * 1024
+        now = time.monotonic()
+        if self._cache_bytes is not None:
+            try:
+                self._cache_bytes += keep.stat().st_size if keep else 0
+            except OSError:
+                pass
+            if self._cache_bytes <= limit and now - self._scanned < 300:
+                return
         files = []
         for p in self.dir.rglob("*"):
             try:
@@ -177,6 +189,7 @@ class Thumbs:
             if p == keep: continue  # current response must remain readable
             try: p.unlink(missing_ok=True); total -= size
             except OSError: pass
+        self._cache_bytes, self._scanned = total, now
 
     def usage(self) -> dict:
         n = size = 0

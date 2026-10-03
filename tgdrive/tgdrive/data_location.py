@@ -2,12 +2,24 @@
 A folder change is copied only at the next start, before the service opens databases.
 """
 from __future__ import annotations
+import errno
 import json
+import logging
 import os
 import shutil
 import sys
 import uuid
 from pathlib import Path
+
+log = logging.getLogger(__name__)
+
+
+class DataInUse(RuntimeError):
+    """Another TG Drive process has this data folder open."""
+
+
+class DataUnavailable(RuntimeError):
+    """The selected data folder is missing (an unplugged drive, a deleted folder)."""
 
 
 def default_dir() -> Path:
@@ -27,8 +39,16 @@ def locator() -> Path:
 
 
 def _read() -> dict:
-    try:return json.loads(locator().read_text())
+    path=locator()
+    try:value=json.loads(path.read_text())
     except FileNotFoundError:return {}
+    except (OSError,ValueError) as exc:
+        # A damaged pointer must never stop TG Drive from starting: set it aside and ask again.
+        log.warning('unreadable data-folder locator %s: %s', path, exc)
+        try:path.replace(path.with_name(path.name+'.damaged'))
+        except OSError:pass
+        return {}
+    return value if isinstance(value,dict) else {}
 
 
 def _write(value):
@@ -74,11 +94,33 @@ class DataLock:
             else:
                 import fcntl
                 fcntl.flock(self.file,fcntl.LOCK_EX|fcntl.LOCK_NB)
-        except OSError:
-            self.file.close();raise RuntimeError('This data folder is open in another TG Drive process. Close it before switching folders.')
+        except OSError as exc:
+            if exc.errno in (errno.EAGAIN,errno.EWOULDBLOCK,errno.EACCES,getattr(errno,'EDEADLOCK',errno.EDEADLK)):
+                self.file.close();raise DataInUse('This data folder is open in another TG Drive process. Close it before switching folders.') from exc
+            # Some filesystems (network shares, a few phone/SD card mounts) can't lock files at all:
+            # run unlocked there rather than refusing to start.
+            log.warning('data folder %s cannot be locked (%s); continuing without the lock', path, exc)
     def close(self):self.file.close()
     def __enter__(self):return self
     def __exit__(self,*args):self.close()
+
+
+def _copy_into(current:Path, target:Path) -> None:
+    if any(p.name!='.tgdrive-data.lock' for p in target.iterdir()):
+        raise ValueError('The destination changed after it was chosen. Choose it again in Settings.')
+    stage=target.parent/f'.tgdrive-copy-{uuid.uuid4().hex}'
+    published=[]
+    try:
+        shutil.copytree(current,stage,ignore=shutil.ignore_patterns('.tgdrive-data.lock'),symlinks=False)
+        # All copying must succeed before anything becomes the selected data folder.
+        for child in stage.iterdir():
+            child.rename(target/child.name);published.append(target/child.name)
+    except BaseException:
+        # Leave the destination empty again (these are copies; the original is untouched).
+        for p in published:
+            shutil.rmtree(p,ignore_errors=True) if p.is_dir() else p.unlink(missing_ok=True)
+        raise
+    finally:shutil.rmtree(stage,ignore_errors=True)
 
 
 def activate(choose=None, legacy=None) -> Path:
@@ -86,16 +128,18 @@ def activate(choose=None, legacy=None) -> Path:
     saved=_read();current=selected()
     if not saved and legacy and existing(legacy) and not existing(current):current=legacy.resolve()
     if saved.get('pending'):
-        target=validate(saved['pending'])
-        with DataLock(current),DataLock(target):
-            if not saved.get('reuse'):
-                if any(p.name!='.tgdrive-data.lock' for p in target.iterdir()):raise ValueError('The destination changed. Choose it again before copying data.')
-                stage=target.parent/f'.tgdrive-copy-{uuid.uuid4().hex}'
-                try:
-                    shutil.copytree(current,stage,ignore=shutil.ignore_patterns('.tgdrive-data.lock'),symlinks=False)
-                    # All copying must succeed before anything becomes the selected data folder.
-                    for child in stage.iterdir():child.rename(target/child.name)
-                finally:shutil.rmtree(stage,ignore_errors=True)
+        try:
+            target=validate(saved['pending'])
+            with DataLock(current),DataLock(target):
+                if not saved.get('reuse'):_copy_into(current,target)
+        except DataInUse:
+            # TG Drive is still running from the current folder (e.g. a second launch handing files
+            # over to it): keep the move for the next full restart.
+            return validate(current)
+        except BaseException:
+            # A move that failed once is not retried on every start: keep the current folder.
+            _write({'path':str(current)})
+            raise
         current=target
     elif not saved and not existing(current) and choose:
         picked=choose(current)
@@ -103,9 +147,22 @@ def activate(choose=None, legacy=None) -> Path:
         current=validate(picked)
         if any(current.iterdir()) and not existing(current):
             raise ValueError('Choose an empty folder or an existing TG Drive data folder.')
-    else:current=validate(current)
+    else:
+        if saved.get('path') and not current.is_dir():
+            # Never create an empty profile in place of one on a drive that isn't connected.
+            raise DataUnavailable(f'The data folder {current} is not available. Connect its drive, or choose another folder.')
+        current=validate(current)
     _write({'path':str(current)})
     return current
+
+
+def use(path:str|Path) -> Path:
+    """Select `path` right away (the startup recovery screen): empty, or an existing TG Drive folder."""
+    p=validate(path)
+    if any(x.name!='.tgdrive-data.lock' for x in p.iterdir()) and not existing(p):
+        raise ValueError('Choose an empty folder or an existing TG Drive data folder.')
+    _write({'path':str(p)})
+    return p
 
 
 def rebase_owned_paths(root:Path, portable_android=False):
@@ -120,11 +177,12 @@ def rebase_owned_paths(root:Path, portable_android=False):
         if old and portable_android and Path(old).name == 'service':
             moves.append((str(Path(old).parent), str(root.parent)))
         if moves:
+            import contextlib
             import sqlite3
             # Never inspect or modify downloaded databases, sessions, or browser caches.
             for db in (root / 'accounts').glob('*/index.db'):
-                with sqlite3.connect(db) as c:
-                    for (table,) in c.execute("SELECT name FROM sqlite_master WHERE type='table'"):
+                with contextlib.closing(sqlite3.connect(db)) as c, c:
+                    for (table,) in c.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall():
                         if table not in ('transfers', 'sync_pairs', 'offline_pins'):
                             continue
                         for col in c.execute(f'PRAGMA table_info("{table}")').fetchall():

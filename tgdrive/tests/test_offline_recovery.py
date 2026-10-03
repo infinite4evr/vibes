@@ -103,3 +103,42 @@ def test_unpin_in_subscribed_folder_stays_removed_until_explicit_repin(tmp_path)
         r=s.pin([ref]);await wait_transfers(a,[r['items'][0]['tid']]);assert s.file(*ref).is_file()
         await a.stop()
     asyncio.run(go())
+
+
+def test_download_while_offline_copy_is_fetched_still_goes_to_downloads(tmp_path):
+    async def go():
+        a,_=make_account(tmp_path);await index_all(a);f=small(a);ref=(f['chat_id'],f['msg_id'])
+        pin=store(a).pin([ref])['items'][0]['tid']
+        a.db.update_transfer(pin,status='paused')   # the offline copy is still on its way
+        mine=a.transfers.add_download(*ref)
+        assert mine!=pin and not Path(a.db.get_transfer(mine)['path']).is_relative_to(a.dir/'offline')
+        assert a.transfers.add_download(*ref)==mine   # a second click still reuses the person's download
+        await a.stop()
+    asyncio.run(go())
+
+
+def test_unpin_removes_its_folder_and_bad_recovery_keys_are_rejected(tmp_path,monkeypatch):
+    async def go():
+        a,_=make_account(tmp_path);await index_all(a);monkeypatch.setattr(api.manager,'accounts',{1:a})
+        f=small(a);ref=(f['chat_id'],f['msg_id']);s=store(a)
+        await wait_transfers(a,[s.pin([ref])['items'][0]['tid']])
+        folder=s.file(*ref).parent;s.unpin(*ref);assert not folder.exists()
+        async with client() as c:
+            r=await c.post('/api/a/1/recovery/transfer/not-a-number');assert r.status_code==400,r.text
+        await a.stop()
+    asyncio.run(go())
+
+
+def test_upload_receipts_stay_bounded(tmp_path,monkeypatch):
+    async def go():
+        a,_=make_account(tmp_path);await index_all(a);monkeypatch.setattr(api.manager,'accounts',{1:a})
+        monkeypatch.setattr(a.transfers,'_spawn',lambda tid:None);await a.drive.ensure_channel();store(a)
+        for i in range(2500):a.db.x("INSERT INTO upload_receipts(key,tid) VALUES(?,?)",(f'old-{i}',i))
+        async with client() as c:
+            url='/api/a/1/upload?name=r.txt&upload_id=new-receipt'
+            r=await c.put(url,content=b'hello');assert r.status_code==200,r.text
+            again=await c.put(url,content=b'hello');assert again.json()=={'id':r.json()['id'],'recovered':True}
+        assert a.db.one('SELECT COUNT(*) AS n FROM upload_receipts')['n']<=2001
+        assert a.db.one("SELECT tid FROM upload_receipts WHERE key='new-receipt'")
+        await a.stop()
+    asyncio.run(go())

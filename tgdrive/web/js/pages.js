@@ -392,7 +392,7 @@ const SECTION_HTML = {
   },
   data: async () => {
     const about = await api('/api/about').catch(() => ({ data: {} }));
-    const location = await api('/api/data-location');
+    const location = await api('/api/data-location').catch(() => ({}));
     const backups = await api(A('/drive/backups')).catch(() => ({ backups: [] }));
     const legacy = await api('/api/legacy').catch(() => ({ candidates: [] }));
     return `<h2>Data & maintenance</h2>

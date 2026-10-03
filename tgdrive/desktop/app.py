@@ -161,15 +161,12 @@ def main(argv=None) -> None:
         uninstall_desktop_entry()
         return
 
+    # Qt settings TG Drive adds (here, or for a data-folder dialog below) are removed again for
+    # programs it starts: note which ones the system didn't set itself.
+    added = [k for k in ("QT_QPA_PLATFORM",) if k not in os.environ]
     if not args.version:
-        from tgdrive.data_location import activate, rebase_owned_paths
-        from .data_setup import choose
-        # Apply Qt platform/sandbox defaults before a first-run chooser creates QApplication.
-        if not sandbox_usable(): os.environ.setdefault("QTWEBENGINE_DISABLE_SANDBOX", "1")
-        os.environ.setdefault("QT_QPA_PLATFORM", "wayland;xcb" if os.environ.get("WAYLAND_DISPLAY") else "xcb")
-        location = activate(choose, legacy=ROOT / "data")
-        os.environ["TGDRIVE_DATA"] = str(location)
-        rebase_owned_paths(location)
+        from .data_setup import open_data_folder
+        open_data_folder(ROOT / "data")
     from tgdrive import config, maintenance
     if args.version:
         print(f"TG Drive {config.VERSION}")
@@ -183,7 +180,6 @@ def main(argv=None) -> None:
         return run_browser_mode(args, config)
 
     # Qt must be configured before it is imported.
-    added = [k for k in ("QT_QPA_PLATFORM",) if k not in os.environ]
     if "QTWEBENGINE_DISABLE_SANDBOX" not in os.environ and not sandbox_usable():
         # Keep the renderer sandbox wherever the system allows it; without it Chromium won't start at all.
         log.info("renderer sandbox unavailable on this system; running without it")

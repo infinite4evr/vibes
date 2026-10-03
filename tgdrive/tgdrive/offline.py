@@ -130,6 +130,10 @@ class Offline:
             if r["tid"] and self.db.get_transfer(r["tid"]):
                 self.acc.transfers.cancel(r["tid"])
             Path(r["path"]).unlink(missing_ok=True)
+            try:
+                Path(r["path"]).parent.rmdir()   # its own {chat}_{msg} folder, when nothing else is in it
+            except OSError:
+                pass
             self.db.x("INSERT OR IGNORE INTO offline_exclusions(chat_id,msg_id) VALUES(?,?)", (cid,mid))
             self.db.x("DELETE FROM offline_pins WHERE chat_id=? AND msg_id=?", (cid,mid))
         return self.summary()
