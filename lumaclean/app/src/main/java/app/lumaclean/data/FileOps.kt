@@ -47,6 +47,10 @@ class FileOps(
         var bytes = 0L
         val binned = ArrayList<BinItem>()
         val removed = ArrayList<String>()
+        // Recycling journals the whole batch in one write before anything moves, and settles it in one
+        // write after (also on cancellation): two writes, however many files.
+        val planned = if (toBin) bin.reserve(paths.map { it to sizeOf(File(it)) }) else emptyMap()
+        val moved = HashSet<String>()
         try { paths.forEachIndexed { i, path ->
             ctx.ensureActive()
             val f = File(path)
@@ -55,9 +59,10 @@ class FileOps(
                 removed += path
                 return@forEachIndexed
             }
-            val size = sizeOf(f)
+            val item = planned[path]
+            val size = item?.size ?: sizeOf(f)
             val ok = if (toBin) {
-                bin.moveIn(path, size)?.also { binned += it } != null
+                item != null && bin.moveReserved(item).also { if (it) { binned += item; moved += item.id } }
             } else {
                 if (f.isDirectory) f.deleteRecursively() else f.delete()
             }
@@ -68,11 +73,20 @@ class FileOps(
             } else failed++
         }
         } finally {
-            // moveIn journals each move. Keep the visible index correct even on cancellation.
+            if (toBin) bin.settle(planned.values.filter { it.id !in moved }.map { it.id })
+            // Keep the visible index correct even on cancellation.
             index.removePaths(removed)
             notifyMedia(removed)
         }
         return OpResult(done, failed, bytes, binned.map { it.id })
+    }
+
+    /** Partial copies left in [dir] by a copy the app was killed during (named only by this class). */
+    private fun removeStaleParts(dir: File) {
+        val hourAgo = System.currentTimeMillis() - 60 * 60 * 1000
+        dir.listFiles()?.forEach { f ->
+            if (STAGING.matches(f.name) && f.lastModified() < hourAgo) f.deleteRecursively()
+        }
     }
 
     fun restore(ids: Collection<String>): Int {
@@ -114,6 +128,7 @@ class FileOps(
                 throw IOException("Can't put a folder inside itself")
             }
         }
+        removeStaleParts(dest)
         val totalBytes = sources.sumOf { sizeOf(it) }.coerceAtLeast(1)
         var copied = 0L
         var done = 0
@@ -220,3 +235,6 @@ class FileOps(
         return Intent.createChooser(send, "Share")
     }
 }
+
+/** ".name.<uuid>.part": the temporary name a file or folder copy has until it is complete. */
+private val STAGING = Regex("""^\..+\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.part$""")

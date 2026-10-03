@@ -20,6 +20,7 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Compress
 import androidx.compose.material.icons.rounded.DeleteSweep
 import androidx.compose.material.icons.rounded.Forum
+import androidx.compose.material.icons.rounded.LinkOff
 import androidx.compose.material.icons.rounded.PhotoLibrary
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.RestoreFromTrash
@@ -415,6 +416,14 @@ fun RecycleBinScreen() {
                     onPrimary = { confirmDelete = true },
                     onClear = { selected = emptySet() },
                     actions = {
+                        if (chosen.any { !c.bin.available(it) }) IconButton(onClick = {
+                            val ids = chosen.map { it.id }
+                            c.operations.run("Removing records") {
+                                val n = c.bin.forget(ids)
+                                selected = emptySet()
+                                UiMessage(if (n > 0) "$n records of missing files removed" else "Their storage isn't available: records kept until it's back")
+                            }
+                        }) { Icon(Icons.Rounded.LinkOff, "Remove records of missing files") }
                         IconButton(onClick = {
                             c.restore(chosen.map { it.id })
                             selected = emptySet()

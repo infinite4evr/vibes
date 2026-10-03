@@ -39,3 +39,13 @@ def test_cancelled_preview_has_no_side_effects(tmp_path):
 def test_internal_actions_and_optional_tools_are_not_blocked():
     assert review([py_step('Internal',lambda:'done','Run internal action')])['ready']
     assert review([Step('Optional',['pc-test-missing-command'],optional=True)])['ready']
+
+
+def test_commands_installed_by_an_earlier_step_do_not_block():
+    steps=[Step('Install the tool',['apt-get','install','-y','pc-test-missing-command'],root=True),
+           Step('Use it',['pc-test-missing-command','--enable'],root=True)]
+    r=review(steps)
+    assert r['ready']
+    assert 'installed by an earlier step' in describe(steps)
+    # Without the install step it is still reported missing.
+    assert not review(steps[1:])['ready']
