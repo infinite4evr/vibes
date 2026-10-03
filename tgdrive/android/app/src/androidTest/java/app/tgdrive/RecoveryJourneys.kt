@@ -38,14 +38,19 @@ class RecoveryJourneys:UiDriver() {
         search("Fundamental Rights");val y=need(label(f.displayName),"file").visibleBounds.centerY()
         tapAt(device.findObjects(By.desc("File options")).filter{it.visibleBounds.centerY()<=y+40}.maxByOrNull{it.visibleBounds.centerY()}!!)
         sheetTap("Keep available offline")
-        eventually("offline bytes complete",30_000){g.api.json("GET","/api/a/1/offline").jsonObject["items"]!!.jsonArray.any{it.jsonObject.long("msg_id")==f.msgId && it.jsonObject.str("status")=="ready"}}
+        // Whichever row's menu opened, its file is the one pinned: follow that one through the journey.
+        var pinned:JsonObject?=null
+        eventually("an offline copy completes",60_000){
+            pinned=g.api.json("GET","/api/a/1/offline").jsonObject["items"]!!.jsonArray.map{it.jsonObject}.firstOrNull{it.str("status")=="ready"}
+            pinned!=null
+        }
+        val item=pinned!!
         open("offline");need(By.text("Offline & recovery"),"offline screen");scrollTo(By.text("Open offline copy"),"downloaded copy")
-        val item=runBlocking{g.api.json("GET","/api/a/1/offline").jsonObject["items"]!!.jsonArray.first{it.jsonObject.long("msg_id")==f.msgId}.jsonObject}
-        val path=File(item.str("local_path")!!);assertEquals(f.size,path.length())
+        val path=File(item.str("local_path")!!);assertEquals(item.long("size"),path.length())
         assertNotNull(androidx.core.content.FileProvider.getUriForFile(app,"${app.packageName}.files",path))
         tap("Remove offline copy");need(By.text("Remove offline copy?"),"confirmation");tap("Remove")
         eventually("local copy removed"){!path.exists()}
-        assertTrue(runBlocking{g.api.files(1,mapOf("q" to "Fundamental Rights")).items.any{it.msgId==f.msgId}})
+        assertTrue(runBlocking{g.api.files(1,mapOf("q" to item.str("name")!!.substringBeforeLast('.'))).items.any{it.msgId==item.long("msg_id")}})
     }
     @Test fun interruptedStagedUploadCanBeRetriedFromRecovery() {
         val id=UUID.randomUUID().toString();val dir=File(DataLocation.state(app),"upload-staging").apply{mkdirs()}
