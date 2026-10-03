@@ -10,11 +10,18 @@ prefs='/sdcard/TG Drive/android/preferences.json'
 
 resumed() { adb shell dumpsys activity activities | grep -E "ResumedActivity" | head -1 | tr -d '\r'; }
 
-# Start TG Drive the way the launcher does (whatever activity carries MAIN/LAUNCHER), from a stopped app.
+# The activity the home screen opens: whatever carries MAIN/LAUNCHER, as Android resolves it.
+launcher=$(adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.LAUNCHER app.tgdrive | tr -d '\r' | tail -1)
+echo "launcher entry: $launcher"
+case "$launcher" in app.tgdrive/*) ;; *) echo "::error::TG Drive has no launcher entry ($launcher)"; exit 1;; esac
+
+# Start TG Drive the way the launcher does, from a stopped app.
 launch() {
   adb shell am force-stop app.tgdrive
-  adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER app.tgdrive > /dev/null
+  adb logcat -c || true
+  adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n "$launcher"
   sleep 12   # long enough for a startup crash to have happened
+  adb logcat -d | grep -E "TGDrive|AndroidRuntime|ActivityTaskManager|app.tgdrive" > "out/$1-logcat.txt" || true
   adb exec-out screencap -p > "out/shots/$1.png" || true
   adb shell uiautomator dump /sdcard/window.xml > /dev/null 2>&1 && adb shell cat /sdcard/window.xml > "out/$1.xml" || true
 }
@@ -25,6 +32,7 @@ if echo "$now" | grep -q "app.tgdrive/.MainActivity" && [ -n "$(adb shell pidof 
   echo "cold launch stays on the main screen"
 else
   echo "::error::A cold launch from the launcher didn't stay on TG Drive's main screen ($now)"; status=1
+  tail -n 60 out/05-cold-launch-logcat.txt || true
 fi
 
 if adb shell "test -f '$prefs'"; then
@@ -35,6 +43,7 @@ if adb shell "test -f '$prefs'"; then
     echo "damaged preferences show the error screen with a way out"
   else
     echo "::error::With damaged preferences TG Drive didn't show its error screen ($now)"; status=1
+    tail -n 60 out/06-damaged-preferences-logcat.txt || true
   fi
   adb shell "mv '$prefs.smoke-backup' '$prefs'"
 else

@@ -216,6 +216,8 @@ private fun FileMenu(f: FileItem, actions: Actions, state: AppState, nav: Naviga
             SheetAction(TgIcons.info, "Details", { close(); nav.push(Screen.Details(f.ref)) })
             SheetAction(TgIcons.external, "Open with another app", { close(); actions.openWithApp(f) },
                 subtitle = if (playable) "Streams to VLC, MX Player …" else "Downloads it first")
+            SheetAction(TgIcons.download, "Keep available offline", { actions.pinOffline(listOf(f)); close() },
+                subtitle = "A copy on this phone, kept until you remove it")
             SheetAction(TgIcons.edit, "Rename…", { then(Overlay.Rename(f)) })
             SheetAction(TgIcons.note, "Note…", { then(Overlay.Note(f, "")) })
             SheetAction(TgIcons.book, "Subject…", { then(Overlay.SetSubject(listOf(f))) })

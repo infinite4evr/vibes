@@ -28,3 +28,8 @@
 -keep class app.tgdrive.engine.UploadJournal** { *; }
 -keep class app.tgdrive.data.StartupCache** { *; }
 -keep class app.tgdrive.data.BrowseModel** { *; }
+# Models the reliability instrumentation constructs directly (R8 would otherwise drop or merge
+# their default-argument constructors, which only the test APK calls).
+-keep class app.tgdrive.data.Account { *; }
+-keep class app.tgdrive.data.AppStatus { *; }
+-keep class app.tgdrive.data.IndexStatus { *; }

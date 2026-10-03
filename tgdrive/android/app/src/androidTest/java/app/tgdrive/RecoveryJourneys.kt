@@ -29,7 +29,7 @@ class RecoveryJourneys:UiDriver() {
     }
     @Test fun selectedDataFolderAndChangeActionAreVisible() {
         open("settings/data")
-        need(By.text("Data folder"),"persistent storage section")
+        need(By.text("DATA FOLDER"),"persistent storage section")   // section titles are shown in capitals
         need(By.text(DataLocation.root(app)!!.path),"current data location")
         need(By.text("Change data folder"),"folder selection action")
     }
