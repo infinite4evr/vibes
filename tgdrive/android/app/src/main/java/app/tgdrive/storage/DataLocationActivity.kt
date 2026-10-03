@@ -26,7 +26,12 @@ class DataLocationActivity:Activity(){
     }
     override fun onDestroy(){runCatching{unregisterReceiver(readyReceiver)};super.onDestroy()}
     override fun onResume(){super.onResume()
-        if(opening){if(!received)show("TG Drive returned before its main screen finished opening. View startup details below, then retry.");return}
+        if(opening){if(!received)show("TG Drive returned before its main screen finished opening${mainExit()?.let{" ($it)"}.orEmpty()}. View startup details below, then retry.");return}
+        if(first && intent.getBooleanExtra("relaunch",false)){
+            // The main screen's old process ends itself as it asks for this: open a fresh one once it's gone.
+            first=false;show("Restarting TG Drive…")
+            Handler(Looper.getMainLooper()).postDelayed({open(restarted=true)},800);return
+        }
         val choose=intent.getBooleanExtra("choose",false)||DataLocation.switching(this)
         val recover=first && intent.getBooleanExtra("recover",false)
         if(first && !choose && !recover && permission()){
@@ -58,7 +63,14 @@ class DataLocationActivity:Activity(){
         if(opening || DataLocation.ready(this))button(if(opening)"Retry opening TG Drive" else "Open TG Drive"){opening=false;open()}
         button("Startup details"){
             val reports=app.tgdrive.diag.AppLog.unseenCrashes(this).take(2).joinToString("\n\n"){it.readText().takeLast(12000)}
-            val details=reports+"\n\nRecent app log:\n"+app.tgdrive.diag.AppLog.tail(this)+"\n\nAndroid process history:\n"+processExitHistory(this,"")
+            // Android's own record first: it says how the main screen's process ended even when nothing was logged.
+            val privateLog=File(DataLocation.privateLogs(this),"app.log").takeIf{it.isFile}?.let{f->runCatching{f.readLines().takeLast(120).joinToString("\n")}.getOrNull()}.orEmpty()
+            val details="Android process history (main screen):\n"+processExitHistory(this,"")+
+                "\n\nAndroid process history (service):\n"+processExitHistory(this,":engine")+
+                "\n\nData folder: "+(DataLocation.problem(this)?:"usable from this screen")+
+                (if(reports.isNotBlank()) "\n\nCrash reports:\n$reports" else "")+
+                "\n\nRecent app log:\n"+app.tgdrive.diag.AppLog.tail(this)+
+                (if(privateLog.isNotBlank()) "\n\nApp log kept in TG Drive's own storage:\n$privateLog" else "")
             val content=TextView(this).apply{text=details.ifBlank{"No crash log was recorded. Try opening again."};setTextIsSelectable(true);setPadding(20,15,20,15)}
             android.app.AlertDialog.Builder(this).setTitle("Startup details").setView(ScrollView(this).apply{addView(content)}).setPositiveButton("Close",null).show()
         }
@@ -81,11 +93,23 @@ class DataLocationActivity:Activity(){
             }catch(t:Throwable){runOnUiThread{busy=false;show(t.message?:t.toString())}}
         }.start()
     }
-    private fun open(){
-        if(!DataLocation.ready(this)){show("The selected folder is unavailable. Reconnect its storage or choose it again.");return}
+    private var openedAt=0L
+    /** How the main screen's process last ended after this screen opened it, as Android recorded it. */
+    private fun mainExit():String?{
+        if(Build.VERSION.SDK_INT<30) return null
+        return runCatching{
+            getSystemService(ActivityManager::class.java).getHistoricalProcessExitReasons(packageName,0,10)
+                .firstOrNull{it.processName==packageName && it.timestamp>=openedAt}
+                ?.let{i->app.tgdrive.engine.exitReasonName(i.reason)+(i.description?.let{d->": $d"}.orEmpty())}
+        }.getOrNull()
+    }
+    private fun open(restarted:Boolean=false){
+        DataLocation.problem(this)?.let{show("$it Reconnect its storage or choose the folder again.");return}
         opening=true;show("Opening TG Drive…")
+        openedAt=System.currentTimeMillis()
         DataLocation.launchFinished(this)   // a fresh attempt: MainActivity marks it again
         val target=Intent(this,MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            .putExtra(MainActivity.EXTRA_FROM_STARTUP,true).putExtra(MainActivity.EXTRA_RESTARTED,restarted)
         intent.getParcelableExtra<Intent>("forward")?.let{target.action=it.action;target.clipData=it.clipData;target.putExtras(it);target.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)}
         startActivity(target)
     }

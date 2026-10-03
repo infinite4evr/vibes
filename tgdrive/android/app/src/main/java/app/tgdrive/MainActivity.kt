@@ -38,7 +38,23 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val location = app.tgdrive.storage.DataLocation
         val crashed = location.launchFailed(this)
-        if (!location.ready(this) || crashed) {
+        val problem = location.problem(this)
+        if (problem != null && intent.getBooleanExtra(EXTRA_FROM_STARTUP, false)) {
+            // The startup screen (its own process) has just found the folder usable, this process can't use
+            // it: never send the person back there in a loop. A process started before storage access was
+            // granted can keep its old view of storage: start a fresh one once, then say what is wrong.
+            app.tgdrive.diag.AppLog.w("startup", "main screen can't use the data folder: $problem")
+            if (!intent.getBooleanExtra(EXTRA_RESTARTED, false)) {
+                startActivity(Intent(this, app.tgdrive.storage.DataLocationActivity::class.java).putExtra("relaunch", true)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
+                finish()
+                android.os.Process.killProcess(android.os.Process.myPid())   // the start above is already with Android
+                return
+            }
+            startupProblem(problem)
+            return
+        }
+        if (problem != null || crashed) {
             // The startup screen runs in its own process: it still opens when this one can't.
             startActivity(Intent(this,app.tgdrive.storage.DataLocationActivity::class.java).putExtra("forward",intent).putExtra("recover",crashed))
             finish(); return
@@ -60,6 +76,21 @@ class MainActivity : ComponentActivity() {
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
+    }
+
+    /** Plain views (nothing here may depend on the data folder): the reason, and the ways out. */
+    private fun startupProblem(problem: String) {
+        val box = android.widget.LinearLayout(this).apply { orientation = android.widget.LinearLayout.VERTICAL; setPadding(30, 40, 30, 30) }
+        box.addView(android.widget.TextView(this).apply {
+            text = "TG Drive can't open its data folder from the main screen.\n\n$problem\n\nChoose the folder again, or allow all-files access for TG Drive in Android's settings."
+            textSize = 16f; setTextIsSelectable(true)
+        })
+        box.addView(android.widget.Button(this).apply { text = "Choose data folder"; setOnClickListener { app.tgdrive.storage.DataLocation.openChooser(this@MainActivity) } })
+        if (Build.VERSION.SDK_INT >= 30) box.addView(android.widget.Button(this).apply {
+            text = "All-files access settings"
+            setOnClickListener { runCatching { startActivity(Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:$packageName"))) } }
+        })
+        setContentView(android.widget.ScrollView(this).apply { addView(box) })
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -113,6 +144,10 @@ class MainActivity : ComponentActivity() {
             ProcessLifecycleOwner.get().lifecycle.addObserver(AppVisibility(context))
         }
 
+        /** Opened by the startup screen, which has just checked the data folder. */
+        const val EXTRA_FROM_STARTUP = "from_startup"
+        /** ... in a main-screen process started fresh for it. */
+        const val EXTRA_RESTARTED = "restarted"
         const val EXTRA_OPEN_PATH = "open_path"
         const val EXTRA_OPEN_PLAYER = "open_player"
         const val EXTRA_OPEN_SCREEN = "open_screen"

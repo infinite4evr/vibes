@@ -15,10 +15,28 @@ object DataLocation {
     private fun locator(c:Context)=AtomicFile(File(c.filesDir,"data-location.json"))
     fun root(c:Context):File?=try { JSONObject(locator(c).openRead().bufferedReader().use{it.readText()}).optString("path").takeIf{it.isNotBlank()}?.let(::File) }catch(_:Exception){null}
     fun switching(c:Context)=File(c.filesDir,"data-switching").exists()
-    fun ready(c:Context)=!switching(c) && root(c)?.let{it.isDirectory && it.canRead() && it.canWrite()}==true
+    /** Why this process can't use the selected folder right now, in words for the person (null: it can). */
+    fun problem(c:Context):String? {
+        if(switching(c)) return "A data folder change is in progress."
+        val r=root(c) ?: return "No data folder is selected."
+        if(android.os.Build.VERSION.SDK_INT>=30 && !Environment.isExternalStorageManager()) return "TG Drive no longer has all-files access, which it needs for ${r.path}."
+        if(!r.isDirectory) return "${r.path} isn't available (a removed card, or the folder was deleted)."
+        if(r.list()==null) return "TG Drive can't read ${r.path}."
+        if(!writable(r)) return "TG Drive can't write to ${r.path}."
+        return null
+    }
+    /** A real write, not File.canWrite(): on shared storage (served through FUSE) that permission check
+     *  can disagree with what writing actually does. */
+    fun writable(dir:File):Boolean {
+        val probe=File(dir,".tgdrive-write-check-${android.os.Process.myPid()}")
+        return try { probe.writeText("ok"); true } catch(_:Exception) { false } finally { probe.delete() }
+    }
+    fun ready(c:Context)=problem(c)==null
     fun service(c:Context)=File(root(c)?:error("Choose a data folder first."),"service")
     fun state(c:Context)=root(c)?.let{File(it,"android/state").apply{mkdirs()}}?:c.noBackupFilesDir
-    fun logs(c:Context)=root(c)?.let{File(it,"android/logs").apply{mkdirs()}}?:File(c.filesDir,"logs").apply{mkdirs()}
+    /** The folder's logs, or the app's own when the folder can't be written (the log must never be lost). */
+    fun logs(c:Context)=root(c)?.let{File(it,"android/logs").apply{mkdirs()}}?.takeIf{writable(it)}?:privateLogs(c)
+    fun privateLogs(c:Context)=File(c.filesDir,"logs").apply{mkdirs()}
     /** Gallery and music apps must not list thumbnails, offline copies or caches as the person's media. */
     fun prepare(root:File) {
         for(dir in listOf(File(root,"service"),File(root,"android"))) {
@@ -27,7 +45,7 @@ object DataLocation {
             if(!marker.exists()) runCatching { marker.createNewFile() }
         }
     }
-    fun prepare(c:Context) { root(c)?.takeIf{it.isDirectory && it.canWrite()}?.let{prepare(it)} }
+    fun prepare(c:Context) { root(c)?.takeIf{it.isDirectory && writable(it)}?.let{prepare(it)} }
 
     // A launch that never reached the main screen (the process died first): the next launch opens the
     // startup screen with its details instead of trying blindly again.
