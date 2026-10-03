@@ -32,9 +32,14 @@ object GitHubIssue {
     fun openAsync(context: Context, title: String, what: String?, detail: String?) {
         val app = context.applicationContext
         Thread({
-            val url = runCatching { link(title, body(app, what, detail)) }.getOrElse {
-                AppLog.w("report", "couldn't prepare the GitHub issue", it)
-                link(title, (what ?: "") + "\n\n" + (detail ?: "").take(3000))
+            // The logs in the data folder (shared storage) can take long, or never come, when the folder doesn't
+            // answer: the issue opens after a few seconds anyway, with what TG Drive's own storage has.
+            val full = java.util.concurrent.FutureTask(java.util.concurrent.Callable { link(title, body(app, what, detail)) })
+            Thread(full, "tgdrive-issue-logs").apply { isDaemon = true }.start()
+            val url = runCatching { full.get(4, java.util.concurrent.TimeUnit.SECONDS) }.getOrElse {
+                AppLog.w("report", "couldn't prepare the GitHub issue with the data folder's logs", it)
+                runCatching { link(title, body(app, what, detail, folder = false)) }
+                    .getOrElse { link(title, (what ?: "") + "\n\n" + (detail ?: "").take(3000)) }
             }
             android.os.Handler(android.os.Looper.getMainLooper()).post {
                 try {
@@ -92,7 +97,8 @@ object GitHubIssue {
         return text.take((text.length * 0.85).toInt()) + "\n…"
     }
 
-    fun body(context: Context, what: String?, detail: String?): String = buildString {
+    /** [folder]: false leaves out what is read from the data folder (it isn't answering). */
+    fun body(context: Context, what: String?, detail: String?, folder: Boolean = true): String = buildString {
         appendLine("### What happened")
         appendLine(what?.trim()?.takeIf { it.isNotEmpty() }?.let { AppLog.clean(it) } ?: "_Describe what you were doing when it went wrong._")
         appendLine()
@@ -115,6 +121,20 @@ object GitHubIssue {
                 " · last: ${BackgroundSync.last(context).let { if (it.at == 0L) "never" else it.result }}")
         }
         appendLine()
+        // How the interface's last starts went, from TG Drive's own storage (always readable).
+        val steps = StartupTrail.tail(context, 25)
+        if (steps.isNotBlank()) {
+            appendLine("### Startup log (kept in TG Drive's own storage)")
+            appendLine("```text")
+            appendLine(ReportPrivacy.clean(AppLog.clean(steps), false))
+            appendLine("```")
+            appendLine()
+        }
+        if (!folder) {
+            appendLine("_The data folder didn't answer, so its logs are left out._")
+            appendLine()
+            return@buildString
+        }
         latestServiceCrash(context)?.let { crash ->
             appendLine("### The service's latest crash report")
             appendLine("```text")

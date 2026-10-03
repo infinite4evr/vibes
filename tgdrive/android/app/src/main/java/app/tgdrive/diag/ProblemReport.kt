@@ -21,7 +21,9 @@ import java.util.zip.ZipOutputStream
  * phone and handed to the share sheet (to send by mail, Telegram, or upload anywhere):
  *
  *   report.txt           the phone, the service's state, how its process last ended, what went wrong
- *   app/                 the interface's log and crash reports (logs/app.log, crash-*.txt)
+ *   own/                 what TG Drive keeps in its own storage: the startup steps (startup.log), crash
+ *                        reports, and app log lines the data folder couldn't take
+ *   app/                 the interface's log in the data folder (logs/app.log, crash report copies)
  *   engine/              the service's Android log and its start steps
  *   service/             the Python service's logs (tgdrive.log, and tgdrive-debug.log when detailed
  *                        logging is on) and its crash reports
@@ -55,6 +57,9 @@ object ProblemReport {
             text("report.txt", if (includeNames) StartupReport.build(context, engine, error) else
                 "TG Drive ${app.tgdrive.BuildConfig.VERSION_NAME}\nAndroid ${android.os.Build.VERSION.SDK_INT}\n" +
                 "Service: ${engine?.state?.value?.phase}\nPersonal text omitted. Log timestamps, severity and code locations retained.\n")
+            // TG Drive's own storage first (always readable): the startup steps, crash reports, and any app log
+            // that couldn't be written to the data folder.
+            AppLog.crashDir(context).listFiles().orEmpty().filter { it.isFile }.sortedBy { it.name }.forEach { file("own/${it.name}", it) }
             val logs = AppLog.dir(context)
             logs.listFiles().orEmpty().sortedBy { it.name }.forEach { f ->
                 when {

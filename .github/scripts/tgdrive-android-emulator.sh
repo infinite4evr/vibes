@@ -21,7 +21,8 @@ run_tests() {
 grant_storage() { adb shell appops set --uid app.tgdrive MANAGE_EXTERNAL_STORAGE allow || true; }
 grant_storage
 run_tests app.tgdrive.DataFolderSetup data-folder
-# The real launcher entry from cold, and a damaged preferences file: TG Drive must show a screen, not vanish.
+# The real launcher entry from cold, a damaged preferences file, a data folder a cleaner app went through, and
+# a launch that hangs: TG Drive must show a screen of its own each time, never vanish or leave the icon up.
 bash ../../.github/scripts/tgdrive-startup-smoke.sh || status=1
 # Data folder lifecycle, durable upload handoff, recovery, startup cache and account switching.
 adb shell am instrument -w -r -e class app.tgdrive.ReliabilityTest,app.tgdrive.RecoveryJourneys,app.tgdrive.PortableStorageTest app.tgdrive.test/androidx.test.runner.AndroidJUnitRunner | tee out/reliability.txt
@@ -56,6 +57,7 @@ adb pull /sdcard/Android/data/app.tgdrive/files/Pictures/tour/. out/shots/ || tr
 adb shell cat "'/sdcard/TG Drive/service/logs/tgdrive.log'" > out/service-demo.log 2>/dev/null || true
 adb shell cat "'/sdcard/TG Drive/android/logs/app.log'" > out/app-demo.log 2>/dev/null || true
 adb shell cat "'/sdcard/TG Drive/android/logs/engine.log'" > out/engine-demo.log 2>/dev/null || true
+adb shell run-as app.tgdrive cat files/logs/startup.log > out/startup-trail-demo.txt 2>/dev/null || true
 
 # A first start on a fresh install: the real sign-in screens against Telegram (made-up key).
 adb shell pm clear app.tgdrive

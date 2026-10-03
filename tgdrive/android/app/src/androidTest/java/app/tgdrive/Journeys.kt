@@ -597,7 +597,8 @@ class Journeys : UiDriver() {
                 val zips = File(app.cacheDir, "reports").listFiles().orEmpty().filter { it.name.endsWith(".zip") }
                 val zip = zips.maxByOrNull { it.lastModified() } ?: throw AssertionError("no report file was made")
                 val names = java.util.zip.ZipFile(zip).use { z -> z.entries().toList().map { it.name } }
-                for (entry in listOf("report.txt", "app/app.log", "engine/engine.log", "service/tgdrive.log"))
+                // own/startup.log: the startup steps, kept in TG Drive's own storage (they survive what the data folder may not).
+                for (entry in listOf("report.txt", "app/app.log", "engine/engine.log", "service/tgdrive.log", "own/startup.log"))
                     if (entry !in names) throw AssertionError("the report has no $entry (has: $names)")
                 back()
                 if (find(By.text("What went wrong"), 1000) != null) tap("Close")

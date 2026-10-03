@@ -35,6 +35,50 @@ _debug_handler: Optional[RotatingFileHandler] = None
 _debug_since: float = 0.0
 
 
+class LogFileHandler(RotatingFileHandler):
+    """A rotating log that comes back when its file is deleted while TG Drive runs (a cleaner app, someone
+    tidying the data folder). A plain handler keeps writing into the deleted file, and the log looks as if
+    nothing new happened. Whether the file is still there is checked every few seconds, not per line."""
+
+    CHECK_EVERY = 5.0
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._checked = time.monotonic()
+
+    def emit(self, record):
+        now = time.monotonic()
+        if now - self._checked >= self.CHECK_EVERY:
+            self._checked = now
+            try:
+                self._reopen_if_gone()
+            except Exception:   # never let a log line fail the code that writes it
+                pass
+        super().emit(record)
+
+    def _reopen_if_gone(self) -> None:
+        try:
+            st = os.stat(self.baseFilename)
+            if self.stream is None or (st.st_dev, st.st_ino) == _file_id(self.stream):
+                return
+        except FileNotFoundError:
+            pass
+        except OSError:
+            return
+        try:
+            Path(self.baseFilename).parent.mkdir(parents=True, exist_ok=True)
+            if self.stream is not None:
+                self.stream.close()
+            self.stream = self._open()
+        except OSError:
+            self.stream = None   # tried again at the next line (logging.FileHandler opens it lazily)
+
+
+def _file_id(stream) -> tuple:
+    st = os.fstat(stream.fileno())
+    return st.st_dev, st.st_ino
+
+
 def log_path() -> Path:
     return config.LOG_DIR / "tgdrive.log"
 
@@ -48,7 +92,7 @@ def setup_logging(level: int = logging.INFO) -> Path:
     path = log_path()
     root = logging.getLogger()
     if not any(isinstance(h, RotatingFileHandler) and Path(h.baseFilename) == path for h in root.handlers):
-        fh = RotatingFileHandler(path, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8")
+        fh = LogFileHandler(path, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8")
         fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s [%(threadName)s]: %(message)s"))
         fh.setLevel(level)
         root.addHandler(fh)
@@ -88,7 +132,7 @@ def set_debug_logging(on: bool) -> None:
         for h in root.handlers:
             if h.level == logging.NOTSET:
                 h.setLevel(logging.INFO)
-        h = RotatingFileHandler(debug_log_path(), maxBytes=20 * 1024 * 1024, backupCount=4, encoding="utf-8")
+        h = LogFileHandler(debug_log_path(), maxBytes=20 * 1024 * 1024, backupCount=4, encoding="utf-8")
         h.setLevel(logging.DEBUG)
         h.setFormatter(logging.Formatter(DEBUG_FORMAT, "%Y-%m-%d %H:%M:%S"))
         root.addHandler(h)

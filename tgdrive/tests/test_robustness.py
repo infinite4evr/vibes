@@ -827,3 +827,47 @@ def test_sign_in_gives_up_when_telegram_is_unreachable(monkeypatch):
     t0 = time.monotonic()
     asyncio.run(go())
     assert time.monotonic() - t0 < 3
+
+
+# ------------------------------------------------------------ files removed while TG Drive runs
+# Phones keep the data folder in shared storage, where cleaner apps delete thumbnails, caches and logs.
+def test_thumbnails_come_back_when_their_cache_folder_is_deleted(tmp_path):
+    """The whole thumbnail cache deleted while TG Drive runs: thumbnails are saved again, instead of every
+    one failing until the next start."""
+    import shutil
+    acc, _ = make_account(tmp_path)
+    shutil.rmtree(acc.thumbs.dir)
+    p = acc.thumbs._path(-CH - 101, 5, "s")
+    p.write_bytes(b"jpeg")
+    assert acc.thumbs.cached(-CH - 101, 5, "s") == p
+    assert acc.thumbs.usage()["files"] == 1
+    acc.db.close()
+
+
+def test_service_log_comes_back_when_its_file_is_deleted(tmp_path, monkeypatch):
+    """tgdrive.log (or its whole folder) deleted while TG Drive runs: the next lines go to a new file, not
+    into the deleted one, where nobody can read them and the log looks as if nothing happened."""
+    import logging
+    import shutil
+    from tgdrive import maintenance
+    monkeypatch.setattr(maintenance.LogFileHandler, "CHECK_EVERY", 0.0)
+    path = tmp_path / "logs" / "tgdrive.log"
+    path.parent.mkdir()
+    h = maintenance.LogFileHandler(path, maxBytes=1024 * 1024, backupCount=1, encoding="utf-8")
+    h.setFormatter(logging.Formatter("%(message)s"))
+    log = logging.getLogger("tgdrive.test-deleted-log")
+    log.addHandler(h)
+    log.setLevel(logging.INFO)
+    log.propagate = False
+    try:
+        log.info("before")
+        assert path.read_text().split() == ["before"]
+        path.unlink()
+        log.info("after the file")
+        assert path.read_text().strip() == "after the file"
+        shutil.rmtree(path.parent)
+        log.info("after the folder")
+        assert path.read_text().strip() == "after the folder"
+    finally:
+        log.removeHandler(h)
+        h.close()

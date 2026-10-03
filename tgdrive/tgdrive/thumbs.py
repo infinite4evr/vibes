@@ -46,7 +46,9 @@ class Thumbs:
 
     def _path(self, chat_id: int, msg_id: int, variant: str) -> Path:
         sub = self.dir / str(abs(chat_id) % 256)
-        sub.mkdir(exist_ok=True)
+        # parents: the whole cache may have been deleted while TG Drive runs (a cleaner app on phones);
+        # thumbnails are fetched again instead of every one failing until the next start.
+        sub.mkdir(parents=True, exist_ok=True)
         return sub / f"{chat_id}_{msg_id}_{variant}"
 
     # ---- first pages of PDFs, rendered by the window (pdf.js) and kept here, so the grid shows them

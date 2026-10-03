@@ -35,6 +35,7 @@ import kotlinx.coroutines.delay
 fun AppRoot(activity: MainActivity) {
     LaunchedEffect(Unit) {
         app.tgdrive.storage.DataLocation.launchFinished(activity)
+        app.tgdrive.diag.StartupTrail.done(activity, "Main screen shown")
         activity.sendBroadcast(android.content.Intent("${activity.packageName}.UI_READY").setPackage(activity.packageName))
     }
     val g = activity.graph
