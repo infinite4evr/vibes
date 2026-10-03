@@ -1,0 +1,82 @@
+2026-10-03T17:17:55.756Z [2808] Starting the app's process (libraries)
+2026-10-03T17:17:56.325550Z [2808] App process: checking the data folder
+2026-10-03T17:17:56.328072Z [2808] Data folder not usable: No data folder is selected.
+2026-10-03T17:17:56.328488Z [2808] App process ready
+2026-10-03T17:17:58.581813Z [3746] Starting the app's process (libraries)
+2026-10-03T17:17:58.741579Z [3746] App process: checking the data folder
+2026-10-03T17:17:58.759133Z [3746] App process: restoring phone settings from the data folder
+2026-10-03T17:17:58.827659Z [3746] App process ready
+2026-10-03T17:17:58.886893Z [3746] Main screen: opening
+2026-10-03T17:17:58.924539Z [3746] Main screen: checking the data folder
+2026-10-03T17:17:59.239990Z [3746] Main screen: loading the app's state
+2026-10-03T17:17:59.422948Z [3746] Main screen: drawing the first screen
+2026-10-03T17:18:01.191708Z [3746] Main screen shown
+2026-10-03T17:18:16.242792Z [4767] Starting the app's process (libraries)
+2026-10-03T17:18:16.295166Z [4767] App process: checking the data folder
+2026-10-03T17:18:16.339951Z [4767] App process: restoring phone settings from the data folder
+2026-10-03T17:18:16.364194Z [4767] Phone settings file damaged (JSONException); kept this phone's own settings
+2026-10-03T17:18:16.375245Z [4767] App process ready
+2026-10-03T17:18:16.414310Z [4767] Main screen: opening
+2026-10-03T17:18:16.430153Z [4767] Main screen: checking the data folder
+2026-10-03T17:18:16.443145Z [4767] Main screen: loading the app's state
+2026-10-03T17:18:16.581522Z [4767] Main screen: drawing the first screen
+2026-10-03T17:18:18.021814Z [4767] Main screen shown
+2026-10-03T17:18:33.316619Z [5617] Starting the app's process (libraries)
+2026-10-03T17:18:33.348148Z [5617] App process: checking the data folder
+2026-10-03T17:18:33.376651Z [5617] App process: restoring phone settings from the data folder
+2026-10-03T17:18:33.391286Z [5617] App process ready
+2026-10-03T17:18:33.447291Z [5617] Main screen: opening
+2026-10-03T17:18:33.463353Z [5617] Main screen: checking the data folder
+2026-10-03T17:18:33.474565Z [5617] Main screen: loading the app's state
+2026-10-03T17:18:33.610145Z [5617] Main screen: drawing the first screen
+2026-10-03T17:18:34.852097Z [5617] Main screen shown
+2026-10-03T17:18:49.956808Z [5909] Starting the app's process (libraries)
+2026-10-03T17:18:50.005499Z [5909] App process: checking the data folder
+2026-10-03T17:18:50.022615Z [5909] App process: restoring phone settings from the data folder
+2026-10-03T17:18:50.029367Z [5909] App process ready
+2026-10-03T17:18:50.052900Z [5909] Main screen: opening
+2026-10-03T17:18:50.087782Z [5909] Main screen: checking the data folder
+2026-10-03T17:18:50.112694Z [5909] Main screen: a test launch that hangs
+2026-10-03T17:18:55.727145Z [5909] The main thread hasn't answered for 5 s, while: Main screen: a test launch that hangs
+	at java.lang.Thread.sleep(Native Method)
+	at java.lang.Thread.sleep(Thread.java:450)
+	at java.lang.Thread.sleep(Thread.java:355)
+	at app.tgdrive.MainActivity.onCreate(MainActivity.kt:75)
+	at android.app.Activity.performCreate(Activity.java:8595)
+	at android.app.Activity.performCreate(Activity.java:8573)
+	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1456)
+	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3764)
+	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3922)
+	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:103)
+	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:139)
+	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:96)
+	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2443)
+	at android.os.Handler.dispatchMessage(Handler.java:106)
+	at android.os.Looper.loopOnce(Looper.java:205)
+	at android.os.Looper.loop(Looper.java:294)
+	at android.app.ActivityThread.main(ActivityThread.java:8177)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+2026-10-03T17:19:05.738875Z [5909] The main thread hasn't answered for 15 s, while: Main screen: a test launch that hangs
+	at java.lang.Thread.sleep(Native Method)
+	at java.lang.Thread.sleep(Thread.java:450)
+	at java.lang.Thread.sleep(Thread.java:355)
+	at app.tgdrive.MainActivity.onCreate(MainActivity.kt:75)
+	at android.app.Activity.performCreate(Activity.java:8595)
+	at android.app.Activity.performCreate(Activity.java:8573)
+	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1456)
+	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3764)
+	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3922)
+	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:103)
+	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:139)
+	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:96)
+	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2443)
+	at android.os.Handler.dispatchMessage(Handler.java:106)
+	at android.os.Looper.loopOnce(Looper.java:205)
+	at android.os.Looper.loop(Looper.java:294)
+	at android.app.ActivityThread.main(ActivityThread.java:8177)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+2026-10-03T17:19:05.740042Z [5909] Stuck: no answer from the main thread for 15 s, while: Main screen: a test launch that hangs. Opening the startup screen.

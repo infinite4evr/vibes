@@ -1,0 +1,10 @@
+building 100 000 files: 23358 ms
+service ready: 387 ms
+main screen after the service was ready: 1070 ms
+sidebar with every chat: 11375 ms
+All files, five pages: 14026 ms
+Photos: 9886 ms
+search: 7731 ms
+Storage: 2339 ms
+Chats and indexing: 11235 ms
+slowest status + first page of files (of 8): 105 ms

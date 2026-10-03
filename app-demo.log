@@ -1,0 +1,225 @@
+2026-10-03 17:18:33.345 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process app (5617)
+2026-10-03 17:18:33.347 I startup [main]: App process: checking the data folder
+2026-10-03 17:18:33.376 I startup [main]: App process: restoring phone settings from the data folder
+2026-10-03 17:18:33.390 I startup [main]: App process ready
+2026-10-03 17:18:33.446 I startup [main]: Main screen: opening
+2026-10-03 17:18:33.463 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:18:33.474 I startup [main]: Main screen: loading the app's state
+2026-10-03 17:18:33.579 I app [main]: now: Welcome
+2026-10-03 17:18:33.609 I startup [main]: Main screen: drawing the first screen
+2026-10-03 17:18:34.851 I startup [main]: Main screen shown
+2026-10-03 17:18:49.993 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process app (5909)
+2026-10-03 17:18:50.005 I startup [main]: App process: checking the data folder
+2026-10-03 17:18:50.022 I startup [main]: App process: restoring phone settings from the data folder
+2026-10-03 17:18:50.029 I startup [main]: App process ready
+2026-10-03 17:18:50.052 I startup [main]: Main screen: opening
+2026-10-03 17:18:50.087 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:18:50.112 I startup [main]: Main screen: a test launch that hangs
+2026-10-03 17:18:55.726 I startup [tgdrive-startup-watch]: The main thread hasn't answered for 5 s, while: Main screen: a test launch that hangs
+2026-10-03 17:19:05.738 I startup [tgdrive-startup-watch]: The main thread hasn't answered for 15 s, while: Main screen: a test launch that hangs
+2026-10-03 17:19:05.739 I startup [tgdrive-startup-watch]: Stuck: no answer from the main thread for 15 s, while: Main screen: a test launch that hangs. Opening the startup screen.
+2026-10-03 17:19:17.194 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process app (6130)
+2026-10-03 17:19:17.197 I startup [main]: App process: checking the data folder
+2026-10-03 17:19:17.206 I startup [main]: App process: restoring phone settings from the data folder
+2026-10-03 17:19:17.214 I startup [main]: App process ready
+2026-10-03 17:19:17.245 I startup [main]: Main screen: opening
+2026-10-03 17:19:17.261 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:19:17.270 I startup [main]: The last start never reached the main screen: opening the startup screen
+2026-10-03 17:19:33.528 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process app (6352)
+2026-10-03 17:19:33.532 I startup [main]: App process: checking the data folder
+2026-10-03 17:19:33.542 I startup [main]: App process: restoring phone settings from the data folder
+2026-10-03 17:19:33.552 I startup [main]: App process ready
+2026-10-03 17:19:33.639 I engine-client [Instr: androidx.test.runner.AndroidJUnitRunner]: start (sample data: true)
+2026-10-03 17:19:33.641 I app [main]: now: Welcome
+2026-10-03 17:19:33.960 I engine-client [main]: service Stopped → Starting (pid 6385)
+2026-10-03 17:19:36.680 I engine-client [main]: service Starting → Ready (pid 6385)
+2026-10-03 17:19:36.756 I report [DefaultDispatcher-worker-1]: problem report made: tgdrive-report-20261003-171936-6b190a14-0942-4db1-b498-b2266a8f100c.zip (3 KB)
+2026-10-03 17:19:36.798 I report [DefaultDispatcher-worker-1]: problem report made: tgdrive-report-20261003-171936-a94f760f-a6f7-4754-aa1e-a3760e9b2469.zip (6 KB)
+2026-10-03 17:19:36.820 I app [main]: now: Starting
+2026-10-03 17:19:37.033 I app [main]: now: Starting
+2026-10-03 17:19:37.149 I app [main]: now: Ready
+2026-10-03 17:19:37.438 I app [main]: now: Starting
+2026-10-03 17:19:39.752 I app [main]: now: Ready
+2026-10-03 17:19:42.315 I app [main]: now: Starting
+2026-10-03 17:20:07.421 I app [main]: now: Failed (TG Drive's service did not answer within 25 seconds. Try again.)
+2026-10-03 17:20:07.469 I engine-client [Instr: androidx.test.runner.AndroidJUnitRunner]: start (sample data: true)
+2026-10-03 17:20:07.586 I startup [main]: Main screen: opening
+2026-10-03 17:20:07.604 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:20:07.610 I startup [main]: Main screen: loading the app's state
+2026-10-03 17:20:07.635 I startup [main]: Main screen: drawing the first screen
+2026-10-03 17:20:08.636 I startup [main]: Main screen shown
+2026-10-03 17:20:08.666 I app [main]: now: Ready
+2026-10-03 17:20:12.432 I engine-client [Instr: androidx.test.runner.AndroidJUnitRunner]: start (sample data: true)
+2026-10-03 17:20:12.475 I startup [main]: Main screen: opening
+2026-10-03 17:20:12.494 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:20:12.504 I startup [main]: Main screen: loading the app's state
+2026-10-03 17:20:12.506 I startup [main]: Main screen: drawing the first screen
+2026-10-03 17:20:12.762 I startup [main]: Main screen shown
+2026-10-03 17:20:24.751 I engine-client [Instr: androidx.test.runner.AndroidJUnitRunner]: start (sample data: true)
+2026-10-03 17:20:24.815 I startup [main]: Main screen: opening
+2026-10-03 17:20:24.829 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:20:24.837 I startup [main]: Main screen: loading the app's state
+2026-10-03 17:20:24.844 I startup [main]: Main screen: drawing the first screen
+2026-10-03 17:20:25.061 I startup [main]: Main screen shown
+2026-10-03 17:20:47.230 I engine-client [Instr: androidx.test.runner.AndroidJUnitRunner]: start (sample data: true)
+2026-10-03 17:20:47.273 I startup [main]: Main screen: opening
+2026-10-03 17:20:47.287 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:20:47.301 I startup [main]: Main screen: loading the app's state
+2026-10-03 17:20:47.302 I startup [main]: Main screen: drawing the first screen
+2026-10-03 17:20:47.501 I startup [main]: Main screen shown
+2026-10-03 17:20:47.618 I startup [main]: Main screen: opening
+2026-10-03 17:20:47.624 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:20:47.636 I startup [main]: Main screen: loading the app's state
+2026-10-03 17:20:47.638 I startup [main]: Main screen: drawing the first screen
+2026-10-03 17:20:47.904 I startup [main]: Main screen shown
+2026-10-03 17:20:48.284 I report [DefaultDispatcher-worker-5]: problem report made: tgdrive-report-20261003-172048-b446c156-170e-4924-b72d-2a80aeadb9c4.zip (3 KB)
+2026-10-03 17:20:51.987 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process app (6760)
+2026-10-03 17:20:51.990 I startup [main]: App process: checking the data folder
+2026-10-03 17:20:51.999 I startup [main]: App process: restoring phone settings from the data folder
+2026-10-03 17:20:52.013 I startup [main]: App process ready
+2026-10-03 17:20:52.080 I engine-client [Instr: androidx.test.runner.AndroidJUnitRunner]: start (sample data: true)
+2026-10-03 17:20:52.084 I app [main]: now: Starting
+2026-10-03 17:20:52.115 I app [main]: showing the saved screen while the service starts (2 list(s))
+2026-10-03 17:20:52.116 I app [main]: now: Ready
+2026-10-03 17:20:52.389 I engine-client [main]: service Stopped → Starting (pid 6793)
+2026-10-03 17:20:54.711 I engine-client [main]: service Starting → Ready (pid 6793)
+2026-10-03 17:20:59.462 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process app (6848)
+2026-10-03 17:20:59.465 I startup [main]: App process: checking the data folder
+2026-10-03 17:20:59.475 I startup [main]: App process: restoring phone settings from the data folder
+2026-10-03 17:20:59.491 I startup [main]: App process ready
+2026-10-03 17:20:59.586 I startup [main]: Main screen: opening
+2026-10-03 17:20:59.605 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:20:59.616 I startup [main]: Main screen: loading the app's state
+2026-10-03 17:20:59.683 I app [main]: now: Starting
+2026-10-03 17:20:59.703 I startup [main]: Main screen: drawing the first screen
+2026-10-03 17:20:59.736 I app [main]: showing the saved screen while the service starts (2 list(s))
+2026-10-03 17:20:59.737 I app [main]: now: Ready
+2026-10-03 17:21:00.971 I startup [main]: Main screen shown
+2026-10-03 17:21:01.086 I engine-client [main]: service Stopped → Starting (pid 6887)
+2026-10-03 17:21:02.481 I engine-client [main]: service Starting → Ready (pid 6887)
+2026-10-03 17:25:07.184 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process app (7243)
+2026-10-03 17:25:07.187 I startup [main]: App process: checking the data folder
+2026-10-03 17:25:07.199 I startup [main]: App process: restoring phone settings from the data folder
+2026-10-03 17:25:07.210 I startup [main]: App process ready
+2026-10-03 17:25:07.318 I startup [main]: Main screen: opening
+2026-10-03 17:25:07.338 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:25:07.354 I startup [main]: Main screen: loading the app's state
+2026-10-03 17:25:07.395 I startup [main]: Main screen: drawing the first screen
+2026-10-03 17:25:07.445 I app [main]: now: Starting
+2026-10-03 17:25:08.369 I startup [main]: Main screen shown
+2026-10-03 17:25:08.387 I app [main]: showing the saved screen while the service starts (4 list(s))
+2026-10-03 17:25:08.399 I app [main]: now: Ready
+2026-10-03 17:25:08.401 I engine-client [main]: service Stopped → Starting (pid 7280)
+2026-10-03 17:25:10.539 I engine-client [main]: service Starting → Ready (pid 7280)
+2026-10-03 17:29:09.975 W upload [DefaultDispatcher-worker-4]: refused 1 shared item(s) that aren't another app's files
+2026-10-03 17:29:09.976 W message [DefaultDispatcher-worker-4]: Skipped 1 of the shared items: TG Drive only uploads files other apps share.
+2026-10-03 17:29:54.519 I app [main]: now: Locked
+2026-10-03 17:29:55.684 I app [main]: now: Ready
+2026-10-03 17:30:25.975 I startup [main]: Main screen: opening
+2026-10-03 17:30:25.986 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:30:26.017 I startup [main]: Main screen: loading the app's state
+2026-10-03 17:30:26.019 I startup [main]: Main screen: drawing the first screen
+2026-10-03 17:30:26.208 I startup [main]: Main screen shown
+2026-10-03 17:30:32.994 I startup [main]: Main screen: opening
+2026-10-03 17:30:33.008 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:30:33.023 I startup [main]: Main screen: loading the app's state
+2026-10-03 17:30:33.025 I startup [main]: Main screen: drawing the first screen
+2026-10-03 17:30:33.188 I startup [main]: Main screen shown
+2026-10-03 17:30:57.449 I sync [DefaultDispatcher-worker-4]: background sync starting (attempt 1; background allowed · standby bucket active · battery optimised)
+2026-10-03 17:31:02.655 I sync [DefaultDispatcher-worker-6]: background sync done: Up to date · took 5s
+2026-10-03 17:31:14.301 W engine-client [main]: the service process 7280 is gone (killed by a signal:  (status 9)) while Ready at “”
+2026-10-03 17:31:14.303 I engine-client [main]: start (sample data: true)
+2026-10-03 17:31:14.573 I engine-client [main]: service Stopped → Starting (pid 7791)
+2026-10-03 17:31:16.861 I engine-client [main]: service Starting → Ready (pid 7791)
+2026-10-03 17:31:26.563 W message [main]: E2E planted error (planted by the test)
+E2E planted error failed:
+java.lang.IllegalStateException: E2E planted error (planted by the test)
+	at app.tgdrive.Journeys$whatPeopleDo$2$34$1$1.invokeSuspend(Journeys.kt:583)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at android.os.Handler.handleCallback(Handler.java:958)
+	at android.os.Handler.dispatchMessage(Handler.java:99)
+	at android.os.Looper.loopOnce(Looper.java:205)
+	at android.os.Looper.loop(Looper.java:294)
+	at android.app.ActivityThread.main(ActivityThread.java:8177)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+2026-10-03 17:31:28.628 I report [DefaultDispatcher-worker-4]: problem report made: tgdrive-report-20261003-173128-05a319f1-3413-4cf8-b843-a2e2c557a517.zip (5 KB)
+2026-10-03 17:31:36.329 W message [main]: E2E planted error for the GitHub issue
+E2E planted error failed:
+java.lang.IllegalStateException: E2E planted error for the GitHub issue
+	at app.tgdrive.Journeys$whatPeopleDo$2$35$1$1.invokeSuspend(Journeys.kt:611)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at android.os.Handler.handleCallback(Handler.java:958)
+	at android.os.Handler.dispatchMessage(Handler.java:99)
+	at android.os.Looper.loopOnce(Looper.java:205)
+	at android.os.Looper.loop(Looper.java:294)
+	at android.app.ActivityThread.main(ActivityThread.java:8177)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+2026-10-03 17:31:49.282 I report [DefaultDispatcher-worker-4]: problem report made: tgdrive-report-20261003-173149-a4fdfd75-31dc-4c76-80e6-a1aa7a94bb11.zip (5 KB)
+2026-10-03 17:31:56.686 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process app (8138)
+2026-10-03 17:31:56.689 I startup [main]: App process: checking the data folder
+2026-10-03 17:31:56.696 I startup [main]: App process: restoring phone settings from the data folder
+2026-10-03 17:31:56.710 I startup [main]: App process ready
+2026-10-03 17:31:59.290 I app [main]: now: Starting
+2026-10-03 17:31:59.323 I app [main]: showing the saved screen while the service starts (2 list(s))
+2026-10-03 17:31:59.324 I app [main]: now: Ready
+2026-10-03 17:32:01.276 W engine-client [main]: the service process 7791 is gone (stopped by the user: [FORCE STOP] stop app.tgdrive due to finished inst (status 0)) while Ready at “”
+2026-10-03 17:32:02.349 I sync [DefaultDispatcher-worker-1]: background sync starting (attempt 1; background allowed · standby bucket active · battery optimised)
+2026-10-03 17:32:02.627 I engine-client [main]: service Stopped → Starting (pid 8178)
+2026-10-03 17:32:02.699 I startup [main]: Main screen: opening
+2026-10-03 17:32:02.718 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:32:02.727 I startup [main]: Main screen: loading the app's state
+2026-10-03 17:32:02.731 I startup [main]: Main screen: drawing the first screen
+2026-10-03 17:32:03.916 I startup [main]: Main screen shown
+2026-10-03 17:32:05.178 I engine-client [main]: service Starting → Ready (pid 8178)
+2026-10-03 17:32:10.492 I sync [DefaultDispatcher-worker-6]: background sync done: Up to date · took 8s
+2026-10-03 17:32:21.661 I engine-client [main]: service Ready → Stopped (pid 0)
+2026-10-03 17:32:24.683 I sync [DefaultDispatcher-worker-6]: background sync starting (attempt 1; background allowed · standby bucket active · battery optimised)
+2026-10-03 17:32:24.949 I engine-client [main]: service Stopped → Starting (pid 8257)
+2026-10-03 17:32:27.126 I engine-client [main]: service Starting → Ready (pid 8257)
+2026-10-03 17:32:32.333 I sync [DefaultDispatcher-worker-6]: background sync done: Up to date · took 7s
+2026-10-03 17:32:32.542 I engine-client [main]: service Ready → Stopped (pid 0)
+2026-10-03 17:32:33.789 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process app (8306)
+2026-10-03 17:32:33.791 I startup [main]: App process: checking the data folder
+2026-10-03 17:32:33.801 I startup [main]: App process: restoring phone settings from the data folder
+2026-10-03 17:32:33.819 I startup [main]: App process ready
+2026-10-03 17:32:41.035 I startup [main]: Main screen: opening
+2026-10-03 17:32:41.048 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:32:41.055 I startup [main]: Main screen: loading the app's state
+2026-10-03 17:32:41.098 I app [main]: now: Starting
+2026-10-03 17:32:41.113 I startup [main]: Main screen: drawing the first screen
+2026-10-03 17:32:42.093 I startup [main]: Main screen shown
+2026-10-03 17:32:42.105 I app [main]: showing the saved screen while the service starts (2 list(s))
+2026-10-03 17:32:42.108 I app [main]: now: Ready
+2026-10-03 17:32:42.113 I engine-client [main]: service Stopped → Starting (pid 8380)
+2026-10-03 17:32:44.530 I engine-client [main]: service Starting → Ready (pid 8380)
+2026-10-03 17:32:45.765 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process app (8451)
+2026-10-03 17:32:45.767 I startup [main]: App process: checking the data folder
+2026-10-03 17:32:45.776 I startup [main]: App process: restoring phone settings from the data folder
+2026-10-03 17:32:45.793 I startup [main]: App process ready
+2026-10-03 17:32:45.819 I startup [main]: Main screen: opening
+2026-10-03 17:32:45.830 I startup [main]: Main screen: checking the data folder
+2026-10-03 17:32:45.836 I startup [main]: Main screen: loading the app's state
+2026-10-03 17:32:45.880 I app [main]: now: Starting
+2026-10-03 17:32:45.896 I startup [main]: Main screen: drawing the first screen
+2026-10-03 17:32:46.887 I startup [main]: Main screen shown
+2026-10-03 17:32:46.903 I app [main]: showing the saved screen while the service starts (2 list(s))
+2026-10-03 17:32:46.904 I app [main]: now: Ready
+2026-10-03 17:32:46.909 I engine-client [main]: service Stopped → Starting (pid 8483)
+2026-10-03 17:32:49.097 I engine-client [main]: service Starting → Ready (pid 8483)
+2026-10-03 17:32:54.935 E crash [main]: android.app.RemoteServiceException$CrashedByAdbException: shell-induced crash
+	at android.app.ActivityThread.throwRemoteServiceException(ActivityThread.java:2090)
+	at android.app.ActivityThread.-$$Nest$mthrowRemoteServiceException(Unknown Source:0)
+	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2369)
+	at android.os.Handler.dispatchMessage(Handler.java:106)
+	at android.os.Looper.loopOnce(Looper.java:205)
+	at android.os.Looper.loop(Looper.java:294)
+	at android.app.ActivityThread.main(ActivityThread.java:8177)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)

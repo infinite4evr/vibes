@@ -1,0 +1,5 @@
+2026-10-03 17:33:06,391 INFO tgdrive.crypto [MainThread]: encryption: openssl (+ OpenSSL AES-CTR)
+2026-10-03 17:33:06,594 INFO tgdrive.mobile [MainThread]: android service 2.4.0 starting: {'fts5': 'extension', 'crypto': 'openssl', 'numpy': True}
+2026-10-03 17:33:06,749 WARNING tgdrive.data_location [MainThread]: data folder /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service cannot be locked ([Errno 38] Function not implemented); continuing without the lock
+2026-10-03 17:33:06,763 INFO tgdrive.api [tgdrive-server]: accounts opened in 0.00 s
+2026-10-03 17:33:06,771 INFO tgdrive.mobile [MainThread]: service up in 0.02 s (accounts opened, server listening)

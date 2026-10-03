@@ -1,0 +1,199 @@
+2026-10-03 17:19:34,814 INFO tgdrive.crypto [MainThread]: encryption: openssl (+ OpenSSL AES-CTR)
+2026-10-03 17:19:35,006 INFO tgdrive.mobile [MainThread]: android service 2.4.0 starting: {'fts5': 'extension', 'crypto': 'openssl', 'numpy': True}
+2026-10-03 17:19:35,189 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v1
+2026-10-03 17:19:35,193 INFO tgdrive.db [MainThread]: schema v1 ready in 0.0s
+2026-10-03 17:19:35,193 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v2
+2026-10-03 17:19:35,199 INFO tgdrive.db [MainThread]: schema v2 ready in 0.0s
+2026-10-03 17:19:35,199 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v3
+2026-10-03 17:19:35,200 INFO tgdrive.db [MainThread]: schema v3 ready in 0.0s
+2026-10-03 17:19:35,200 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v4
+2026-10-03 17:19:35,202 INFO tgdrive.db [MainThread]: schema v4 ready in 0.0s
+2026-10-03 17:19:35,202 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v5
+2026-10-03 17:19:35,203 INFO tgdrive.db [MainThread]: schema v5 ready in 0.0s
+2026-10-03 17:19:35,203 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v6
+2026-10-03 17:19:35,204 INFO tgdrive.db [MainThread]: schema v6 ready in 0.0s
+2026-10-03 17:19:36,623 WARNING tgdrive.data_location [MainThread]: data folder /storage/emulated/0/TG Drive/service cannot be locked ([Errno 38] Function not implemented); continuing without the lock
+2026-10-03 17:19:36,643 INFO tgdrive.api [tgdrive-server]: accounts opened in 0.00 s
+2026-10-03 17:19:36,666 INFO tgdrive.mobile [MainThread]: service up in 0.04 s (accounts opened, server listening)
+2026-10-03 17:19:56,714 INFO tgdrive.search [tgdrive-reader-0]: search vocabulary: 152 terms
+2026-10-03 17:19:56,832 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (53 changed, 0 removed) in 0.15 s
+2026-10-03 17:19:56,899 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (0 changed, 0 removed) in 0.01 s
+2026-10-03 17:19:56,921 INFO tgdrive.semantic [tgdrive-semantic]: meaning index statistics: 266 files, 157 distinct tokens, 0.0 s
+2026-10-03 17:20:36,913 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (0 changed, 0 removed) in 0.00 s
+2026-10-03 17:20:52,981 INFO tgdrive.crypto [MainThread]: encryption: openssl (+ OpenSSL AES-CTR)
+2026-10-03 17:20:53,092 INFO tgdrive.mobile [MainThread]: android service 2.4.0 starting: {'fts5': 'extension', 'crypto': 'openssl', 'numpy': True}
+2026-10-03 17:20:53,309 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v1
+2026-10-03 17:20:53,312 INFO tgdrive.db [MainThread]: schema v1 ready in 0.0s
+2026-10-03 17:20:53,312 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v2
+2026-10-03 17:20:53,319 INFO tgdrive.db [MainThread]: schema v2 ready in 0.0s
+2026-10-03 17:20:53,319 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v3
+2026-10-03 17:20:53,319 INFO tgdrive.db [MainThread]: schema v3 ready in 0.0s
+2026-10-03 17:20:53,320 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v4
+2026-10-03 17:20:53,322 INFO tgdrive.db [MainThread]: schema v4 ready in 0.0s
+2026-10-03 17:20:53,322 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v5
+2026-10-03 17:20:53,322 INFO tgdrive.db [MainThread]: schema v5 ready in 0.0s
+2026-10-03 17:20:53,322 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v6
+2026-10-03 17:20:53,323 INFO tgdrive.db [MainThread]: schema v6 ready in 0.0s
+2026-10-03 17:20:54,677 WARNING tgdrive.data_location [MainThread]: data folder /storage/emulated/0/TG Drive/service cannot be locked ([Errno 38] Function not implemented); continuing without the lock
+2026-10-03 17:20:54,692 INFO tgdrive.api [tgdrive-server]: accounts opened in 0.00 s
+2026-10-03 17:20:54,699 INFO tgdrive.mobile [MainThread]: service up in 0.02 s (accounts opened, server listening)
+2026-10-03 17:20:54,751 INFO tgdrive.search [tgdrive-reader-0]: search vocabulary: 152 terms
+2026-10-03 17:21:00,663 INFO tgdrive.crypto [MainThread]: encryption: openssl (+ OpenSSL AES-CTR)
+2026-10-03 17:21:00,753 INFO tgdrive.mobile [MainThread]: android service 2.4.0 starting: {'fts5': 'extension', 'crypto': 'openssl', 'numpy': True}
+2026-10-03 17:21:01,004 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v1
+2026-10-03 17:21:01,014 INFO tgdrive.db [MainThread]: schema v1 ready in 0.0s
+2026-10-03 17:21:01,014 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v2
+2026-10-03 17:21:01,019 INFO tgdrive.db [MainThread]: schema v2 ready in 0.0s
+2026-10-03 17:21:01,020 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v3
+2026-10-03 17:21:01,020 INFO tgdrive.db [MainThread]: schema v3 ready in 0.0s
+2026-10-03 17:21:01,020 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v4
+2026-10-03 17:21:01,022 INFO tgdrive.db [MainThread]: schema v4 ready in 0.0s
+2026-10-03 17:21:01,022 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v5
+2026-10-03 17:21:01,026 INFO tgdrive.db [MainThread]: schema v5 ready in 0.0s
+2026-10-03 17:21:01,026 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v6
+2026-10-03 17:21:01,027 INFO tgdrive.db [MainThread]: schema v6 ready in 0.0s
+2026-10-03 17:21:02,445 WARNING tgdrive.data_location [MainThread]: data folder /storage/emulated/0/TG Drive/service cannot be locked ([Errno 38] Function not implemented); continuing without the lock
+2026-10-03 17:21:02,459 INFO tgdrive.api [tgdrive-server]: accounts opened in 0.00 s
+2026-10-03 17:21:02,467 INFO tgdrive.mobile [MainThread]: service up in 0.02 s (accounts opened, server listening)
+2026-10-03 17:21:02,594 INFO tgdrive.search [tgdrive-reader-3]: search vocabulary: 152 terms
+2026-10-03 17:21:22,554 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (53 changed, 0 removed) in 0.09 s
+2026-10-03 17:21:22,762 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (0 changed, 0 removed) in 0.02 s
+2026-10-03 17:21:22,777 INFO tgdrive.semantic [tgdrive-semantic]: meaning index statistics: 266 files, 157 distinct tokens, 0.1 s
+2026-10-03 17:22:03,899 WARNING tgdrive.streaming [tgdrive-server]: stream 100001 chunk 1: gave up after 5 attempts (short answer (0 of 524288 bytes))
+2026-10-03 17:22:03,899 WARNING tgdrive.streaming [tgdrive-server]: stream 100001 chunk 2: gave up after 5 attempts (short answer (0 of 524288 bytes))
+2026-10-03 17:22:03,899 WARNING tgdrive.streaming [tgdrive-server]: stream 100001 chunk 3: gave up after 5 attempts (short answer (0 of 524288 bytes))
+2026-10-03 17:22:03,899 WARNING tgdrive.streaming [tgdrive-server]: stream 100001 chunk 4: gave up after 5 attempts (short answer (0 of 202848 bytes))
+2026-10-03 17:22:03,899 WARNING tgdrive.streaming [tgdrive-server]: stream 100001 chunk 0: gave up after 5 attempts (short answer (5000 of 524288 bytes))
+2026-10-03 17:25:08,671 INFO tgdrive.crypto [MainThread]: encryption: openssl (+ OpenSSL AES-CTR)
+2026-10-03 17:25:08,764 INFO tgdrive.mobile [MainThread]: android service 2.4.0 starting: {'fts5': 'extension', 'crypto': 'openssl', 'numpy': True}
+2026-10-03 17:25:08,996 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v1
+2026-10-03 17:25:08,999 INFO tgdrive.db [MainThread]: schema v1 ready in 0.0s
+2026-10-03 17:25:08,999 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v2
+2026-10-03 17:25:09,003 INFO tgdrive.db [MainThread]: schema v2 ready in 0.0s
+2026-10-03 17:25:09,003 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v3
+2026-10-03 17:25:09,003 INFO tgdrive.db [MainThread]: schema v3 ready in 0.0s
+2026-10-03 17:25:09,004 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v4
+2026-10-03 17:25:09,005 INFO tgdrive.db [MainThread]: schema v4 ready in 0.0s
+2026-10-03 17:25:09,005 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v5
+2026-10-03 17:25:09,005 INFO tgdrive.db [MainThread]: schema v5 ready in 0.0s
+2026-10-03 17:25:09,005 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v6
+2026-10-03 17:25:09,006 INFO tgdrive.db [MainThread]: schema v6 ready in 0.0s
+2026-10-03 17:25:10,501 WARNING tgdrive.data_location [MainThread]: data folder /storage/emulated/0/TG Drive/service cannot be locked ([Errno 38] Function not implemented); continuing without the lock
+2026-10-03 17:25:10,516 INFO tgdrive.api [tgdrive-server]: accounts opened in 0.00 s
+2026-10-03 17:25:10,524 INFO tgdrive.mobile [MainThread]: service up in 0.02 s (accounts opened, server listening)
+2026-10-03 17:25:10,647 INFO tgdrive.search [tgdrive-reader-2]: search vocabulary: 152 terms
+2026-10-03 17:25:30,603 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (53 changed, 0 removed) in 0.08 s
+2026-10-03 17:25:30,616 INFO tgdrive.semantic [tgdrive-semantic]: meaning index statistics: 266 files, 157 distinct tokens, 0.1 s
+2026-10-03 17:25:30,628 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (0 changed, 0 removed) in 0.00 s
+2026-10-03 17:25:33,983 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (2 changed, 0 removed) in 0.00 s
+2026-10-03 17:25:43,497 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (0 changed, 0 removed) in 0.00 s
+2026-10-03 17:25:49,659 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (0 changed, 0 removed) in 0.01 s
+2026-10-03 17:25:55,649 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (0 changed, 0 removed) in 0.01 s
+2026-10-03 17:26:08,014 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (0 changed, 0 removed) in 0.00 s
+2026-10-03 17:26:45,805 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (0 changed, 0 removed) in 0.00 s
+2026-10-03 17:26:52,670 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (0 changed, 0 removed) in 0.00 s
+2026-10-03 17:27:21,250 WARNING tgdrive.streaming [tgdrive-server]: stream 100001 chunk 1: gave up after 5 attempts (short answer (0 of 524288 bytes))
+2026-10-03 17:27:21,250 WARNING tgdrive.streaming [tgdrive-server]: stream 100001 chunk 2: gave up after 5 attempts (short answer (0 of 524288 bytes))
+2026-10-03 17:27:21,250 WARNING tgdrive.streaming [tgdrive-server]: stream 100001 chunk 3: gave up after 5 attempts (short answer (0 of 524288 bytes))
+2026-10-03 17:27:21,250 WARNING tgdrive.streaming [tgdrive-server]: stream 100001 chunk 4: gave up after 5 attempts (short answer (0 of 202848 bytes))
+2026-10-03 17:27:21,250 WARNING tgdrive.streaming [tgdrive-server]: stream 100001 chunk 0: gave up after 5 attempts (short answer (5000 of 524288 bytes))
+2026-10-03 17:28:33,788 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (0 changed, 0 removed) in 0.00 s
+2026-10-03 17:30:43,904 INFO tgdrive.maintenance [tgdrive-server]: removed 24 files of types no longer indexed (gif) in 1.1 s
+2026-10-03 17:30:43,996 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 10 groups, 19 extra copies (0 changed, 0 removed) in 0.00 s
+2026-10-03 17:31:15,148 INFO tgdrive.crypto [MainThread]: encryption: openssl (+ OpenSSL AES-CTR)
+2026-10-03 17:31:15,237 INFO tgdrive.mobile [MainThread]: android service 2.4.0 starting: {'fts5': 'extension', 'crypto': 'openssl', 'numpy': True}
+2026-10-03 17:31:15,463 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v1
+2026-10-03 17:31:15,466 INFO tgdrive.db [MainThread]: schema v1 ready in 0.0s
+2026-10-03 17:31:15,466 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v2
+2026-10-03 17:31:15,472 INFO tgdrive.db [MainThread]: schema v2 ready in 0.0s
+2026-10-03 17:31:15,472 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v3
+2026-10-03 17:31:15,472 INFO tgdrive.db [MainThread]: schema v3 ready in 0.0s
+2026-10-03 17:31:15,472 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v4
+2026-10-03 17:31:15,474 INFO tgdrive.db [MainThread]: schema v4 ready in 0.0s
+2026-10-03 17:31:15,474 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v5
+2026-10-03 17:31:15,475 INFO tgdrive.db [MainThread]: schema v5 ready in 0.0s
+2026-10-03 17:31:15,475 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v6
+2026-10-03 17:31:15,476 INFO tgdrive.db [MainThread]: schema v6 ready in 0.0s
+2026-10-03 17:31:16,823 WARNING tgdrive.data_location [MainThread]: data folder /storage/emulated/0/TG Drive/service cannot be locked ([Errno 38] Function not implemented); continuing without the lock
+2026-10-03 17:31:16,838 INFO tgdrive.api [tgdrive-server]: accounts opened in 0.00 s
+2026-10-03 17:31:16,844 INFO tgdrive.mobile [MainThread]: service up in 0.02 s (accounts opened, server listening)
+2026-10-03 17:31:16,939 INFO tgdrive.search [tgdrive-reader-0]: search vocabulary: 152 terms
+2026-10-03 17:31:36,886 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (53 changed, 0 removed) in 0.04 s
+2026-10-03 17:31:36,923 INFO tgdrive.dupes [tgdrive-dupes]: duplicates: 11 groups, 42 extra copies (0 changed, 0 removed) in 0.00 s
+2026-10-03 17:31:36,955 INFO tgdrive.semantic [tgdrive-semantic]: meaning index statistics: 266 files, 157 distinct tokens, 0.1 s
+2026-10-03 17:32:03,372 INFO tgdrive.crypto [MainThread]: encryption: openssl (+ OpenSSL AES-CTR)
+2026-10-03 17:32:03,512 INFO tgdrive.mobile [MainThread]: android service 2.4.0 starting: {'fts5': 'extension', 'crypto': 'openssl', 'numpy': True}
+2026-10-03 17:32:03,707 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v1
+2026-10-03 17:32:03,709 INFO tgdrive.db [MainThread]: schema v1 ready in 0.0s
+2026-10-03 17:32:03,709 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v2
+2026-10-03 17:32:03,713 INFO tgdrive.db [MainThread]: schema v2 ready in 0.0s
+2026-10-03 17:32:03,714 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v3
+2026-10-03 17:32:03,714 INFO tgdrive.db [MainThread]: schema v3 ready in 0.0s
+2026-10-03 17:32:03,714 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v4
+2026-10-03 17:32:03,715 INFO tgdrive.db [MainThread]: schema v4 ready in 0.0s
+2026-10-03 17:32:03,715 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v5
+2026-10-03 17:32:03,716 INFO tgdrive.db [MainThread]: schema v5 ready in 0.0s
+2026-10-03 17:32:03,716 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v6
+2026-10-03 17:32:03,716 INFO tgdrive.db [MainThread]: schema v6 ready in 0.0s
+2026-10-03 17:32:05,142 WARNING tgdrive.data_location [MainThread]: data folder /storage/emulated/0/TG Drive/service cannot be locked ([Errno 38] Function not implemented); continuing without the lock
+2026-10-03 17:32:05,157 INFO tgdrive.api [tgdrive-server]: accounts opened in 0.00 s
+2026-10-03 17:32:05,164 INFO tgdrive.mobile [MainThread]: service up in 0.02 s (accounts opened, server listening)
+2026-10-03 17:32:05,181 INFO tgdrive.mobile [MainThread]: background mode off
+2026-10-03 17:32:05,286 INFO tgdrive.search [tgdrive-reader-0]: search vocabulary: 152 terms
+2026-10-03 17:32:21,656 INFO tgdrive.api [tgdrive-server]: shutdown finished in 0.0 s
+2026-10-03 17:32:21,657 INFO tgdrive.mobile [MainThread]: android service stopped
+2026-10-03 17:32:25,479 INFO tgdrive.crypto [MainThread]: encryption: openssl (+ OpenSSL AES-CTR)
+2026-10-03 17:32:25,562 INFO tgdrive.mobile [MainThread]: android service 2.4.0 starting: {'fts5': 'extension', 'crypto': 'openssl', 'numpy': True}
+2026-10-03 17:32:25,741 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v1
+2026-10-03 17:32:25,743 INFO tgdrive.db [MainThread]: schema v1 ready in 0.0s
+2026-10-03 17:32:25,743 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v2
+2026-10-03 17:32:25,750 INFO tgdrive.db [MainThread]: schema v2 ready in 0.0s
+2026-10-03 17:32:25,750 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v3
+2026-10-03 17:32:25,751 INFO tgdrive.db [MainThread]: schema v3 ready in 0.0s
+2026-10-03 17:32:25,751 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v4
+2026-10-03 17:32:25,754 INFO tgdrive.db [MainThread]: schema v4 ready in 0.0s
+2026-10-03 17:32:25,754 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v5
+2026-10-03 17:32:25,754 INFO tgdrive.db [MainThread]: schema v5 ready in 0.0s
+2026-10-03 17:32:25,754 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v6
+2026-10-03 17:32:25,755 INFO tgdrive.db [MainThread]: schema v6 ready in 0.0s
+2026-10-03 17:32:27,091 WARNING tgdrive.data_location [MainThread]: data folder /storage/emulated/0/TG Drive/service cannot be locked ([Errno 38] Function not implemented); continuing without the lock
+2026-10-03 17:32:27,106 INFO tgdrive.api [tgdrive-server]: accounts opened in 0.00 s
+2026-10-03 17:32:27,113 INFO tgdrive.mobile [MainThread]: service up in 0.02 s (accounts opened, server listening)
+2026-10-03 17:32:32,538 INFO tgdrive.api [tgdrive-server]: shutdown finished in 0.0 s
+2026-10-03 17:32:32,539 INFO tgdrive.mobile [MainThread]: android service stopped
+2026-10-03 17:32:42,482 INFO tgdrive.crypto [MainThread]: encryption: openssl (+ OpenSSL AES-CTR)
+2026-10-03 17:32:42,572 INFO tgdrive.mobile [MainThread]: android service 2.4.0 starting: {'fts5': 'extension', 'crypto': 'openssl', 'numpy': True}
+2026-10-03 17:32:42,801 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v1
+2026-10-03 17:32:42,804 INFO tgdrive.db [MainThread]: schema v1 ready in 0.0s
+2026-10-03 17:32:42,804 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v2
+2026-10-03 17:32:42,809 INFO tgdrive.db [MainThread]: schema v2 ready in 0.0s
+2026-10-03 17:32:42,809 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v3
+2026-10-03 17:32:42,809 INFO tgdrive.db [MainThread]: schema v3 ready in 0.0s
+2026-10-03 17:32:42,810 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v4
+2026-10-03 17:32:42,813 INFO tgdrive.db [MainThread]: schema v4 ready in 0.0s
+2026-10-03 17:32:42,814 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v5
+2026-10-03 17:32:42,814 INFO tgdrive.db [MainThread]: schema v5 ready in 0.0s
+2026-10-03 17:32:42,814 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v6
+2026-10-03 17:32:42,815 INFO tgdrive.db [MainThread]: schema v6 ready in 0.0s
+2026-10-03 17:32:44,494 WARNING tgdrive.data_location [MainThread]: data folder /storage/emulated/0/TG Drive/service cannot be locked ([Errno 38] Function not implemented); continuing without the lock
+2026-10-03 17:32:44,510 INFO tgdrive.api [tgdrive-server]: accounts opened in 0.00 s
+2026-10-03 17:32:44,516 INFO tgdrive.mobile [MainThread]: service up in 0.02 s (accounts opened, server listening)
+2026-10-03 17:32:44,638 INFO tgdrive.search [tgdrive-reader-2]: search vocabulary: 152 terms
+2026-10-03 17:32:47,188 INFO tgdrive.crypto [MainThread]: encryption: openssl (+ OpenSSL AES-CTR)
+2026-10-03 17:32:47,276 INFO tgdrive.mobile [MainThread]: android service 2.4.0 starting: {'fts5': 'extension', 'crypto': 'openssl', 'numpy': True}
+2026-10-03 17:32:47,486 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v1
+2026-10-03 17:32:47,489 INFO tgdrive.db [MainThread]: schema v1 ready in 0.0s
+2026-10-03 17:32:47,489 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v2
+2026-10-03 17:32:47,494 INFO tgdrive.db [MainThread]: schema v2 ready in 0.0s
+2026-10-03 17:32:47,494 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v3
+2026-10-03 17:32:47,495 INFO tgdrive.db [MainThread]: schema v3 ready in 0.0s
+2026-10-03 17:32:47,495 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v4
+2026-10-03 17:32:47,496 INFO tgdrive.db [MainThread]: schema v4 ready in 0.0s
+2026-10-03 17:32:47,496 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v5
+2026-10-03 17:32:47,497 INFO tgdrive.db [MainThread]: schema v5 ready in 0.0s
+2026-10-03 17:32:47,497 INFO tgdrive.db [MainThread]: upgrading index /storage/emulated/0/TG Drive/service/demo/1/index.db to schema v6
+2026-10-03 17:32:47,497 INFO tgdrive.db [MainThread]: schema v6 ready in 0.0s
+2026-10-03 17:32:49,060 WARNING tgdrive.data_location [MainThread]: data folder /storage/emulated/0/TG Drive/service cannot be locked ([Errno 38] Function not implemented); continuing without the lock
+2026-10-03 17:32:49,075 INFO tgdrive.api [tgdrive-server]: accounts opened in 0.00 s
+2026-10-03 17:32:49,082 INFO tgdrive.mobile [MainThread]: service up in 0.02 s (accounts opened, server listening)
+2026-10-03 17:32:49,200 INFO tgdrive.search [tgdrive-reader-2]: search vocabulary: 152 terms

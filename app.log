@@ -1,0 +1,4 @@
+2026-10-03 17:33:02.228 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process app (8704)
+2026-10-03 17:33:02.233 I startup [main]: App process: checking the data folder
+2026-10-03 17:33:02.233 I startup [main]: Data folder not usable: No data folder is selected.
+2026-10-03 17:33:02.234 I startup [main]: App process ready

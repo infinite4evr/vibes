@@ -1,0 +1,59 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 1060904 Realtime: 1060904
+
+** MEMINFO in pid 9084 [app.tgdrive] **
+                   Pss  Private  Private     Swap      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap    27079    27008        0        0    30284    77220    27918    45535
+  Dalvik Heap    17071    16880        0        0    24736    23806    11919    11887
+ Dalvik Other     8325     5544        0        0    11688                           
+        Stack     3204     3204        0        0     3208                           
+       Ashmem       16        0        0        0      556                           
+    Other dev       41        0       40        0      372                           
+     .so mmap     5091      640     1464        0    46288                           
+    .jar mmap     2500        0       24        0    40696                           
+    .apk mmap     5529     1108      184        0    11464                           
+    .ttf mmap      187        0        0        0      840                           
+    .dex mmap       12        0        0        0      700                           
+    .oat mmap       41        0        0        0     1656                           
+    .art mmap     6545     6008        0        0    27072                           
+   Other mmap      200        8       68        0     2496                           
+      Unknown    64625    64620        0        0    65196                           
+        TOTAL   140466   125020     1780        0   267252   101026    39837    57422
+ 
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:    22888                          51808
+         Native Heap:    27008                          30284
+                Code:     3436                         107212
+               Stack:     3204                           3208
+            Graphics:        0                              0
+       Private Other:    70264
+              System:    13666
+             Unknown:                                   74740
+ 
+           TOTAL PSS:   140466            TOTAL RSS:   267252      TOTAL SWAP (KB):        0
+ 
+ Objects
+               Views:       11         ViewRootImpl:        1
+         AppContexts:        7           Activities:        1
+              Assets:       24        AssetManagers:        0
+       Local Binders:       28        Proxy Binders:       42
+       Parcel memory:       12         Parcel count:       51
+    Death Recipients:        0             WebViews:        0
+ 
+ SQL
+         MEMORY_USED:      343
+  PAGECACHE_OVERFLOW:      109          MALLOC_SIZE:       46
+ 
+ DATABASES
+      pgsz     dbsz   Lookaside(b) cache hits cache misses cache size  Dbname
+PER CONNECTION STATS
+         4      104            123    14    59    16  /data/user/0/app.tgdrive/no_backup/androidx.work.workdb
+         4        8                    0     0     0    (attached) temp
+         4      104             29     1    14     2  /data/user/0/app.tgdrive/no_backup/androidx.work.workdb (3)
+POOL STATS
+     cache hits  cache misses    cache size  Dbname
+             21           108           129  /data/user/0/app.tgdrive/no_backup/androidx.work.workdb

@@ -1,0 +1,76 @@
+10-03 17:18:15.641   525   542 V WindowManager: Sent Transition #7 createdAt=10-03 17:18:15.490 via request=TransitionRequestInfo { type = CLOSE, triggerTask = TaskInfo{userId=0 taskId=8 displayId=0 isRunning=false baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 cmp=app.tgdrive/.MainActivity } baseActivity=null topActivity=null origActivity=null realActivity=ComponentInfo{app.tgdrive/app.tgdrive.MainActivity} numActivities=0 lastActiveTime=40862 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{b43ab1c Task{5535c6d #8 type=standard A=10192:app.tgdrive}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=null launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=true isVisible=true isVisibleRequested=true isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+10-03 17:18:15.641   525   542 V WindowManager:     info={id=7 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{RemoteToken{b43ab1c Task{5535c6d #8 type=standard A=10192:app.tgdrive}}} m=CLOSE f=NONE leash=Surface(name=Task=8)/@0xaf4efee sb=Rect(0, 0 - 320, 640) eb=Rect(0, 0 - 320, 640) d=0},{WCT{RemoteToken{7441cfa Task{1eabfe5 #1 type=home}}} m=TO_FRONT f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0xf73948f sb=Rect(0, 0 - 320, 640) eb=Rect(0, 0 - 320, 640) d=0},{null m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{15269e0 token=android.os.Binder@c0c0be3})/@0x66737ed sb=Rect(0, 0 - 320, 640) eb=Rect(0, 0 - 320, 640) d=0}]}
+10-03 17:18:15.697   525  1001 W ActivityTaskManager: callingPackage for (uid=2000, pid=4759) has no WPC
+10-03 17:18:15.716   525  1001 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 cmp=app.tgdrive/.MainActivity} with LAUNCH_SINGLE_TASK from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
+10-03 17:18:15.717   840   874 V WindowManagerShell: Transition requested: android.os.BinderProxy@15a5d10 TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=9 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 cmp=app.tgdrive/.MainActivity } baseActivity=ComponentInfo{app.tgdrive/app.tgdrive.MainActivity} topActivity=ComponentInfo{app.tgdrive/app.tgdrive.MainActivity} origActivity=null realActivity=ComponentInfo{app.tgdrive/app.tgdrive.MainActivity} numActivities=1 lastActiveTime=58234 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@634b009} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=ActivityInfo{207e20e app.tgdrive.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+10-03 17:18:15.746   525   554 I ActivityManager: Start proc 4767:app.tgdrive/u0a192 for next-top-activity {app.tgdrive/app.tgdrive.MainActivity}
+10-03 17:18:15.778  4767  4767 I app.tgdrive: Late-enabling -Xcheck:jni
+10-03 17:18:15.799   525   542 V WindowManager: Sent Transition #8 createdAt=10-03 17:18:15.700 via request=TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=9 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 cmp=app.tgdrive/.MainActivity } baseActivity=ComponentInfo{app.tgdrive/app.tgdrive.MainActivity} topActivity=ComponentInfo{app.tgdrive/app.tgdrive.MainActivity} origActivity=null realActivity=ComponentInfo{app.tgdrive/app.tgdrive.MainActivity} numActivities=1 lastActiveTime=58234 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{94642f9 Task{b15c6ca #9 type=standard A=10192:app.tgdrive}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=ActivityInfo{e8923e app.tgdrive.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+10-03 17:18:15.799   525   542 V WindowManager:     info={id=8 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{RemoteToken{94642f9 Task{b15c6ca #9 type=standard A=10192:app.tgdrive}}} m=OPEN f=NONE leash=Surface(name=Task=9)/@0x23263fd sb=Rect(0, 0 - 320, 640) eb=Rect(0, 0 - 320, 640) d=0},{WCT{RemoteToken{7441cfa Task{1eabfe5 #1 type=home}}} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0xf73948f sb=Rect(0, 0 - 320, 640) eb=Rect(0, 0 - 320, 640) d=0}]}
+10-03 17:18:15.808  4767  4767 I app.tgdrive: Using CollectorTypeCC GC.
+10-03 17:18:15.810  4767  4767 W app.tgdrive: Unexpected CPU variant for x86: x86_64.
+10-03 17:18:15.810  4767  4767 W app.tgdrive: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+10-03 17:18:15.931  4767  4767 W ziparchive: Unable to open '/data/app/~~Ra4cjOyms4m07RRQ3Tppug==/app.tgdrive-EZsoOMjFT05szw2sMPCLFw==/base.dm': No such file or directory
+10-03 17:18:15.931  4767  4767 W ziparchive: Unable to open '/data/app/~~Ra4cjOyms4m07RRQ3Tppug==/app.tgdrive-EZsoOMjFT05szw2sMPCLFw==/base.dm': No such file or directory
+10-03 17:18:16.139  1052  1052 D CarrierSvcBindHelper: onHandleForceStop: [app.tgdrive]
+10-03 17:18:16.203  4767  4767 D nativeloader: Configuring clns-6 for other apk /data/app/~~Ra4cjOyms4m07RRQ3Tppug==/app.tgdrive-EZsoOMjFT05szw2sMPCLFw==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~Ra4cjOyms4m07RRQ3Tppug==/app.tgdrive-EZsoOMjFT05szw2sMPCLFw==/lib/x86_64:/data/app/~~Ra4cjOyms4m07RRQ3Tppug==/app.tgdrive-EZsoOMjFT05szw2sMPCLFw==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/app.tgdrive
+10-03 17:18:16.224  4767  4767 V GraphicsEnvironment: ANGLE GameManagerService for app.tgdrive: false
+10-03 17:18:16.224  4767  4767 V GraphicsEnvironment: app.tgdrive is not listed in per-application setting
+10-03 17:18:16.238  4767  4767 I TGDrive/startup: Starting the app's process (libraries)
+10-03 17:18:16.291  4767  4767 I TGDrive/log: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process app (4767)
+10-03 17:18:16.294  4767  4767 I TGDrive/startup: App process: checking the data folder
+10-03 17:18:16.304  1636  1636 I AiAiEcho: AppFetcherImpl onPackageChanged app.tgdrive.
+10-03 17:18:16.305  1636  2724 I AiAiEcho: AppIndexer Package:[app.tgdrive] UserProfile:[0] Enabled:[true].
+10-03 17:18:16.306  1636  2724 I AiAiEcho: AppFetcherImplV2 updateApps package:[app.tgdrive], userId:[0], reason:[package is updated.].
+10-03 17:18:16.307  1662  2191 I MediaProvider: Deleted 1 0 0 0 0 0 0 items on external_primary due to app.tgdrive
+10-03 17:18:16.313  1662  3874 I MediaProvider: Deleted 1 0 0 0 0 0 0 items on external_primary due to app.tgdrive
+10-03 17:18:16.339  4767  4767 I TGDrive/startup: App process: restoring phone settings from the data folder
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: The phone settings saved in the data folder can't be read; set aside as preferences.json.damaged, and this phone's own settings are kept
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: org.json.JSONException: Value not of type java.lang.String cannot be converted to JSONObject
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at org.json.JSON.typeMismatch(JSON.java:112)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at org.json.JSONObject.<init>(JSONObject.java:172)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at org.json.JSONObject.<init>(JSONObject.java:185)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at app.tgdrive.storage.PortablePreferences.read(PortablePreferences.kt:63)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at app.tgdrive.storage.PortablePreferences.attach(PortablePreferences.kt:35)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at app.tgdrive.TGDriveApp.onCreate(TGDriveApp.kt:67)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at android.app.Instrumentation.callApplicationOnCreate(Instrumentation.java:1316)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6998)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2236)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at android.os.Looper.loopOnce(Looper.java:205)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at android.os.Looper.loop(Looper.java:294)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at java.lang.reflect.Method.invoke(Native Method)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+10-03 17:18:16.363  4767  4767 W TGDrive/storage: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+10-03 17:18:16.368  4767  4767 I TGDrive/startup: App process ready
+10-03 17:18:16.413  4767  4767 I TGDrive/startup: Main screen: opening
+10-03 17:18:16.421  1662  3874 I MediaProvider: Deleted 1 0 0 0 0 0 0 items on external_primary due to app.tgdrive
+10-03 17:18:16.429  4767  4767 I TGDrive/startup: Main screen: checking the data folder
+10-03 17:18:16.442  1662  3599 I MediaProvider: Deleted 1 0 0 0 0 0 0 items on external_primary due to app.tgdrive
+10-03 17:18:16.442  4767  4767 I TGDrive/startup: Main screen: loading the app's state
+10-03 17:18:16.450  1662  2171 I MediaProvider: Deleted 1 0 0 0 0 0 0 items on external_primary due to app.tgdrive
+10-03 17:18:16.542  4767  4767 I TGDrive/app: now: Welcome
+10-03 17:18:16.581  4767  4767 I TGDrive/startup: Main screen: drawing the first screen
+10-03 17:18:16.658   525   829 D CoreBackPreview: Window{4483f1e u0 app.tgdrive/app.tgdrive.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@e18d015, mPriority=-1, mIsAnimationCallback=false}
+10-03 17:18:18.015  4767  4767 W app.tgdrive: Accessing hidden method Landroid/os/SystemProperties;->addChangeCallback(Ljava/lang/Runnable;)V (unsupported, reflection, allowed)
+10-03 17:18:18.017   525   542 W ziparchive: Unable to open '/data/app/~~Ra4cjOyms4m07RRQ3Tppug==/app.tgdrive-EZsoOMjFT05szw2sMPCLFw==/base.dm': No such file or directory
+10-03 17:18:18.020   525   542 I ActivityTaskManager: Displayed app.tgdrive/.MainActivity for user 0: +2s320ms
+10-03 17:18:18.021  4767  4767 I TGDrive/startup: Main screen shown
+10-03 17:18:18.038   525  1253 I ImeTracker: app.tgdrive:67b571cc: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+10-03 17:18:18.039   525  1253 I ImeTracker: app.tgdrive:67b571cc: onCancelled at PHASE_SERVER_SHOULD_HIDE
+10-03 17:18:18.044   525   539 W InputManager-JNI: Input channel object 'bfa5278 Splash Screen app.tgdrive (client)' was disposed without first being removed with the input manager!
+10-03 17:18:18.066  1516  1516 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=app.tgdrive fieldId=0 fieldName=null extras=null}, false)
+10-03 17:18:19.138   525   576 I AppsFilter: interaction: PackageSetting{3234cc4 app.tgdrive.test/10193} -> PackageSetting{258b7cf com.google.android.youtube/10139} BLOCKED
+10-03 17:18:19.138   525   576 I AppsFilter: interaction: PackageSetting{e1855c app.tgdrive/10192} -> PackageSetting{258b7cf com.google.android.youtube/10139} BLOCKED
+10-03 17:18:19.138   525   576 I AppsFilter: interaction: PackageSetting{3234cc4 app.tgdrive.test/10193} -> PackageSetting{7d00065 com.google.android.apps.messaging/10129} BLOCKED
+10-03 17:18:19.138   525   576 I AppsFilter: interaction: PackageSetting{e1855c app.tgdrive/10192} -> PackageSetting{7d00065 com.google.android.apps.messaging/10129} BLOCKED
+10-03 17:18:19.138   525   576 I AppsFilter: interaction: PackageSetting{3234cc4 app.tgdrive.test/10193} -> PackageSetting{6cd213a com.google.android.as/10125} BLOCKED
+10-03 17:18:19.138   525   576 I AppsFilter: interaction: PackageSetting{e1855c app.tgdrive/10192} -> PackageSetting{6cd213a com.google.android.as/10125} BLOCKED
+10-03 17:18:19.138   525   576 I AppsFilter: interaction: PackageSetting{3234cc4 app.tgdrive.test/10193} -> PackageSetting{8bd3328 com.google.android.apps.maps/10153} BLOCKED
+10-03 17:18:19.138   525   576 I AppsFilter: interaction: PackageSetting{3234cc4 app.tgdrive.test/10193} -> PackageSetting{25301eb com.google.android.contacts/10154} BLOCKED
+10-03 17:18:20.428   525  2302 W NotificationService: Toast already killed. pkg=app.tgdrive token=android.os.BinderProxy@1e48f89
+10-03 17:18:20.432   525  2658 I AppsFilter: interaction: PackageSetting{3234cc4 app.tgdrive.test/10193} -> PackageSetting{ceb3fbc com.google.android.settings.intelligence/10118} BLOCKED
+10-03 17:18:20.432   525  2658 I AppsFilter: interaction: PackageSetting{e1855c app.tgdrive/10192} -> PackageSetting{ceb3fbc com.google.android.settings.intelligence/10118} BLOCKED
+10-03 17:18:22.575  4767  5316 D ProfileInstaller: Installing profile for app.tgdrive

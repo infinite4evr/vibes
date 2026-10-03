@@ -1,0 +1,71 @@
+2026-10-03 17:19:33.877 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process engine (6385)
+2026-10-03 17:19:33.930 I engine [tgdrive-engine]: Preparing
+2026-10-03 17:19:33.953 I engine [tgdrive-engine]: Loading search (full-text index)
+2026-10-03 17:19:33.968 I engine [tgdrive-engine]: Unpacking Python (first start takes longer)
+2026-10-03 17:19:34.254 I engine [tgdrive-engine]: Unpacking the meaning model
+2026-10-03 17:19:34.431 I engine [tgdrive-engine]: Starting TG Drive with sample data
+2026-10-03 17:19:36.669 I engine [tgdrive-engine]: started: {"fts5": "extension", "crypto": "openssl", "numpy": true, "port": 40917, "media_port": 39731, "version": "2.4.0", "demo": true, "data_dir": "/storage/emulated/0/TG Drive/service", "log": "/storage/emulated/0/TG Drive/service/logs/tgdrive.log"}
+2026-10-03 17:20:52.319 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process engine (6793)
+2026-10-03 17:20:52.363 I engine [tgdrive-engine]: Preparing
+2026-10-03 17:20:52.388 I engine [tgdrive-engine]: Loading search (full-text index)
+2026-10-03 17:20:52.398 I engine [tgdrive-engine]: Unpacking Python (first start takes longer)
+2026-10-03 17:20:52.594 I engine [tgdrive-engine]: Unpacking the meaning model
+2026-10-03 17:20:52.612 I engine [tgdrive-engine]: Starting TG Drive with sample data
+2026-10-03 17:20:54.702 I engine [tgdrive-engine]: started: {"fts5": "extension", "crypto": "openssl", "numpy": true, "port": 38079, "media_port": 46221, "version": "2.4.0", "demo": true, "data_dir": "/storage/emulated/0/TG Drive/service", "log": "/storage/emulated/0/TG Drive/service/logs/tgdrive.log"}
+2026-10-03 17:20:59.938 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process engine (6887)
+2026-10-03 17:20:59.984 I engine [tgdrive-engine]: Preparing
+2026-10-03 17:21:00.005 I engine [tgdrive-engine]: Loading search (full-text index)
+2026-10-03 17:21:00.013 I engine [tgdrive-engine]: Unpacking Python (first start takes longer)
+2026-10-03 17:21:00.212 I engine [tgdrive-engine]: Unpacking the meaning model
+2026-10-03 17:21:00.231 I engine [tgdrive-engine]: Starting TG Drive with sample data
+2026-10-03 17:21:02.470 I engine [tgdrive-engine]: started: {"fts5": "extension", "crypto": "openssl", "numpy": true, "port": 33277, "media_port": 45989, "version": "2.4.0", "demo": true, "data_dir": "/storage/emulated/0/TG Drive/service", "log": "/storage/emulated/0/TG Drive/service/logs/tgdrive.log"}
+2026-10-03 17:25:07.715 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process engine (7280)
+2026-10-03 17:25:07.759 I engine [tgdrive-engine]: Preparing
+2026-10-03 17:25:07.779 I engine [tgdrive-engine]: Loading search (full-text index)
+2026-10-03 17:25:07.790 I engine [tgdrive-engine]: Unpacking Python (first start takes longer)
+2026-10-03 17:25:08.033 I engine [tgdrive-engine]: Unpacking the meaning model
+2026-10-03 17:25:08.053 I engine [tgdrive-engine]: Starting TG Drive with sample data
+2026-10-03 17:25:10.527 I engine [tgdrive-engine]: started: {"fts5": "extension", "crypto": "openssl", "numpy": true, "port": 46219, "media_port": 38479, "version": "2.4.0", "demo": true, "data_dir": "/storage/emulated/0/TG Drive/service", "log": "/storage/emulated/0/TG Drive/service/logs/tgdrive.log"}
+2026-10-03 17:30:57.453 I engine [tgdrive-engine]: background sync bound (running: Ready)
+2026-10-03 17:31:02.660 I engine [tgdrive-engine]: background sync let go (started by the app: true)
+2026-10-03 17:31:14.508 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process engine (7791)
+2026-10-03 17:31:14.546 I engine [tgdrive-engine]: Preparing
+2026-10-03 17:31:14.572 I engine [tgdrive-engine]: Loading search (full-text index)
+2026-10-03 17:31:14.583 I engine [tgdrive-engine]: Unpacking Python (first start takes longer)
+2026-10-03 17:31:14.765 I engine [tgdrive-engine]: Unpacking the meaning model
+2026-10-03 17:31:14.787 I engine [tgdrive-engine]: Starting TG Drive with sample data
+2026-10-03 17:31:16.848 I engine [tgdrive-engine]: started: {"fts5": "extension", "crypto": "openssl", "numpy": true, "port": 42609, "media_port": 37727, "version": "2.4.0", "demo": true, "data_dir": "/storage/emulated/0/TG Drive/service", "log": "/storage/emulated/0/TG Drive/service/logs/tgdrive.log"}
+2026-10-03 17:32:02.562 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process engine (8178)
+2026-10-03 17:32:02.576 I engine [tgdrive-engine]: background sync bound (running: Stopped)
+2026-10-03 17:32:02.603 I engine [tgdrive-engine]: Preparing
+2026-10-03 17:32:02.625 I engine [tgdrive-engine]: Loading search (full-text index)
+2026-10-03 17:32:02.642 I engine [tgdrive-engine]: Unpacking Python (first start takes longer)
+2026-10-03 17:32:02.947 I engine [tgdrive-engine]: Unpacking the meaning model
+2026-10-03 17:32:02.972 I engine [tgdrive-engine]: Starting TG Drive with sample data
+2026-10-03 17:32:05.168 I engine [tgdrive-engine]: started: {"fts5": "extension", "crypto": "openssl", "numpy": true, "port": 43917, "media_port": 39521, "version": "2.4.0", "demo": true, "data_dir": "/storage/emulated/0/TG Drive/service", "log": "/storage/emulated/0/TG Drive/service/logs/tgdrive.log"}
+2026-10-03 17:32:10.495 I engine [tgdrive-engine]: background sync let go (started by the app: true)
+2026-10-03 17:32:21.359 I engine [tgdrive-engine]: stopping (holds: [])
+2026-10-03 17:32:24.890 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process engine (8257)
+2026-10-03 17:32:24.899 I engine [tgdrive-engine]: background sync bound (running: Stopped)
+2026-10-03 17:32:24.927 I engine [tgdrive-engine]: Preparing
+2026-10-03 17:32:24.947 I engine [tgdrive-engine]: Loading search (full-text index)
+2026-10-03 17:32:24.957 I engine [tgdrive-engine]: Unpacking Python (first start takes longer)
+2026-10-03 17:32:25.124 I engine [tgdrive-engine]: Unpacking the meaning model
+2026-10-03 17:32:25.143 I engine [tgdrive-engine]: Starting TG Drive with sample data
+2026-10-03 17:32:27.116 I engine [tgdrive-engine]: started: {"fts5": "extension", "crypto": "openssl", "numpy": true, "port": 39149, "media_port": 39903, "version": "2.4.0", "demo": true, "data_dir": "/storage/emulated/0/TG Drive/service", "log": "/storage/emulated/0/TG Drive/service/logs/tgdrive.log"}
+2026-10-03 17:32:32.338 I engine [tgdrive-engine]: background sync let go (started by the app: false)
+2026-10-03 17:32:32.340 I engine [tgdrive-engine]: stopping (holds: [])
+2026-10-03 17:32:41.364 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process engine (8380)
+2026-10-03 17:32:41.424 I engine [tgdrive-engine]: Preparing
+2026-10-03 17:32:41.457 I engine [tgdrive-engine]: Loading search (full-text index)
+2026-10-03 17:32:41.470 I engine [tgdrive-engine]: Unpacking Python (first start takes longer)
+2026-10-03 17:32:41.790 I engine [tgdrive-engine]: Unpacking the meaning model
+2026-10-03 17:32:41.828 I engine [tgdrive-engine]: Starting TG Drive with sample data
+2026-10-03 17:32:44.520 I engine [tgdrive-engine]: started: {"fts5": "extension", "crypto": "openssl", "numpy": true, "port": 39491, "media_port": 44677, "version": "2.4.0", "demo": true, "data_dir": "/storage/emulated/0/TG Drive/service", "log": "/storage/emulated/0/TG Drive/service/logs/tgdrive.log"}
+2026-10-03 17:32:46.139 I log [main]: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process engine (8483)
+2026-10-03 17:32:46.196 I engine [tgdrive-engine]: Preparing
+2026-10-03 17:32:46.223 I engine [tgdrive-engine]: Loading search (full-text index)
+2026-10-03 17:32:46.238 I engine [tgdrive-engine]: Unpacking Python (first start takes longer)
+2026-10-03 17:32:46.545 I engine [tgdrive-engine]: Unpacking the meaning model
+2026-10-03 17:32:46.569 I engine [tgdrive-engine]: Starting TG Drive with sample data
+2026-10-03 17:32:49.085 I engine [tgdrive-engine]: started: {"fts5": "extension", "crypto": "openssl", "numpy": true, "port": 38015, "media_port": 42571, "version": "2.4.0", "demo": true, "data_dir": "/storage/emulated/0/TG Drive/service", "log": "/storage/emulated/0/TG Drive/service/logs/tgdrive.log"}

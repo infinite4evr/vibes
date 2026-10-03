@@ -1,0 +1,2 @@
+    topResumedActivity=ActivityRecord{5cc94a8 u0 app.tgdrive/.diag.CrashActivity t30}
+  ResumedActivity: ActivityRecord{5cc94a8 u0 app.tgdrive/.diag.CrashActivity t30}

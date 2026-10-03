@@ -1,0 +1,300 @@
+10-03 17:33:25.984  1662  3875 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:33:26.003  9084  9104 I TestRunner: started: aHundredThousandFilesOpenFastAndStayResponsive(app.tgdrive.BigLibraryTest)
+10-03 17:33:26.005  1662  3836 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:33:26.005  1662  3836 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:33:26.006  1662  3836 W MediaProvider: Database update failed while renaming /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/preferences.json.new
+10-03 17:33:26.082  9084  9084 I TGDrive/app: now: Starting
+10-03 17:33:28.070  9084  9084 W TGDrive/engine-client: the service process 8875 is gone (stopped by the user: [FORCE STOP] stop app.tgdrive due to finished inst (status 0)) while Ready at “”
+10-03 17:33:28.138  9084  9084 W roidJUnitRunner: type=1400 audit(0.0:867): avc:  granted  { execute } for  path="/data/data/app.tgdrive/files/chaquopy/bootstrap-native/x86_64/zlib.cpython-313-x86_64-linux-android.so" dev="dm-40" ino=344085 scontext=u:r:untrusted_app:s0:c192,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c192,c256,c512,c768 tclass=file app=app.tgdrive
+10-03 17:33:28.158  9084  9084 W roidJUnitRunner: type=1400 audit(0.0:868): avc:  granted  { execute } for  path="/data/data/app.tgdrive/files/chaquopy/bootstrap-native/x86_64/java/chaquopy.so" dev="dm-40" ino=344074 scontext=u:r:untrusted_app:s0:c192,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c192,c256,c512,c768 tclass=file app=app.tgdrive
+10-03 17:33:28.162  9084  9084 W roidJUnitRunner: type=1400 audit(0.0:869): avc:  granted  { execute } for  path="/data/data/app.tgdrive/files/chaquopy/bootstrap-native/x86_64/_ctypes.cpython-313-x86_64-linux-android.so" dev="dm-40" ino=344077 scontext=u:r:untrusted_app:s0:c192,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c192,c256,c512,c768 tclass=file app=app.tgdrive
+10-03 17:33:28.162  9084  9084 W roidJUnitRunner: type=1400 audit(0.0:870): avc:  granted  { execute } for  path="/data/data/app.tgdrive/files/chaquopy/bootstrap-native/x86_64/_struct.cpython-313-x86_64-linux-android.so" dev="dm-40" ino=344084 scontext=u:r:untrusted_app:s0:c192,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c192,c256,c512,c768 tclass=file app=app.tgdrive
+10-03 17:33:28.174  9084  9084 W roidJUnitRunner: type=1400 audit(0.0:871): avc:  granted  { execute } for  path="/data/data/app.tgdrive/files/chaquopy/bootstrap-native/x86_64/_bz2.cpython-313-x86_64-linux-android.so" dev="dm-40" ino=344076 scontext=u:r:untrusted_app:s0:c192,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c192,c256,c512,c768 tclass=file app=app.tgdrive
+10-03 17:33:28.174  9084  9084 W roidJUnitRunner: type=1400 audit(0.0:872): avc:  granted  { execute } for  path="/data/data/app.tgdrive/files/chaquopy/bootstrap-native/x86_64/_lzma.cpython-313-x86_64-linux-android.so" dev="dm-40" ino=344079 scontext=u:r:untrusted_app:s0:c192,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c192,c256,c512,c768 tclass=file app=app.tgdrive
+10-03 17:33:51.442  9084  9104 I BigLibrary: building 100 000 files: 23358 ms
+10-03 17:33:51.529  9084  9084 I TGDrive/startup: Main screen: opening
+10-03 17:33:51.549  9084  9084 I TGDrive/startup: Main screen: checking the data folder
+10-03 17:33:51.563  9084  9084 I TGDrive/startup: Main screen: loading the app's state
+10-03 17:33:51.584  9084  9084 I TGDrive/startup: Main screen: drawing the first screen
+10-03 17:33:51.855  9218  9218 I TGDrive/log: ---- TG Drive 2.4.0 · Android 14 (API 34) · Google sdk_gphone64_x86_64 · process engine (9218)
+10-03 17:33:51.909  9218  9240 I TGDrive/engine: Preparing
+10-03 17:33:51.915  1662  9197 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:33:51.934  1662  1961 E StorageManager: Failed to open /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/.tgdrive-write-check-9218 to set project id.: No such file or directory
+10-03 17:33:51.934  1662  1961 W MediaProvider: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/.tgdrive-write-check-9218
+10-03 17:33:51.934  1662  1961 W MediaProvider: java.io.IOException: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/.tgdrive-write-check-9218
+10-03 17:33:51.936  9218  9240 I TGDrive/engine: Loading search (full-text index)
+10-03 17:33:51.944  9218  9240 I TGDrive/engine: Unpacking Python (first start takes longer)
+10-03 17:33:51.963  1662  1961 E StorageManager: Failed to open /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218 to set project id.: No such file or directory
+10-03 17:33:51.963  1662  1961 W MediaProvider: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218
+10-03 17:33:51.963  1662  1961 W MediaProvider: java.io.IOException: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218
+10-03 17:33:51.980  1662  1961 E StorageManager: Failed to open /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218 to set project id.: No such file or directory
+10-03 17:33:51.988  1662  1961 W MediaProvider: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218
+10-03 17:33:51.988  1662  1961 W MediaProvider: java.io.IOException: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218
+10-03 17:33:51.978  9218  9218 W tgdrive-engine: type=1400 audit(0.0:893): avc:  granted  { execute } for  path="/data/data/app.tgdrive/files/chaquopy/bootstrap-native/x86_64/zlib.cpython-313-x86_64-linux-android.so" dev="dm-40" ino=344085 scontext=u:r:untrusted_app:s0:c192,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c192,c256,c512,c768 tclass=file app=app.tgdrive
+10-03 17:33:52.012  1662  1961 E StorageManager: Failed to open /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218 to set project id.: No such file or directory
+10-03 17:33:52.013  1662  1961 W MediaProvider: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218
+10-03 17:33:52.013  1662  1961 W MediaProvider: java.io.IOException: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218
+10-03 17:33:52.018  9218  9218 W tgdrive-engine: type=1400 audit(0.0:894): avc:  granted  { execute } for  path="/data/data/app.tgdrive/files/chaquopy/bootstrap-native/x86_64/java/chaquopy.so" dev="dm-40" ino=344074 scontext=u:r:untrusted_app:s0:c192,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c192,c256,c512,c768 tclass=file app=app.tgdrive
+10-03 17:33:52.026  9218  9218 W tgdrive-engine: type=1400 audit(0.0:895): avc:  granted  { execute } for  path="/data/data/app.tgdrive/files/chaquopy/bootstrap-native/x86_64/_ctypes.cpython-313-x86_64-linux-android.so" dev="dm-40" ino=344077 scontext=u:r:untrusted_app:s0:c192,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c192,c256,c512,c768 tclass=file app=app.tgdrive
+10-03 17:33:52.053  1662  1961 E StorageManager: Failed to open /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218 to set project id.: No such file or directory
+10-03 17:33:52.053  1662  1961 W MediaProvider: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218
+10-03 17:33:52.053  1662  1961 W MediaProvider: java.io.IOException: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218
+10-03 17:33:52.038  9218  9218 W tgdrive-engine: type=1400 audit(0.0:896): avc:  granted  { execute } for  path="/data/data/app.tgdrive/files/chaquopy/bootstrap-native/x86_64/_struct.cpython-313-x86_64-linux-android.so" dev="dm-40" ino=344084 scontext=u:r:untrusted_app:s0:c192,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c192,c256,c512,c768 tclass=file app=app.tgdrive
+10-03 17:33:52.201  9218  9240 I TGDrive/engine: Unpacking the meaning model
+10-03 17:33:52.227  9218  9240 I TGDrive/engine: Starting TG Drive
+10-03 17:33:52.232  1662  1961 E StorageManager: Failed to open /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218 to set project id.: No such file or directory
+10-03 17:33:52.234  1662  1961 W MediaProvider: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218
+10-03 17:33:52.234  1662  1961 W MediaProvider: java.io.IOException: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218
+10-03 17:33:52.262  9218  9240 W python.stderr: data folder /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service cannot be locked ([Errno 38] Function not implemented); continuing without the lock
+10-03 17:33:52.266  1662  1961 E StorageManager: Failed to open /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.tgdrive-root.tmp to set project id.: No such file or directory
+10-03 17:33:52.267  1662  1961 W MediaProvider: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.tgdrive-root.tmp
+10-03 17:33:52.267  1662  1961 W MediaProvider: java.io.IOException: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.tgdrive-root.tmp
+10-03 17:33:52.271  1662  1961 E StorageManager: Failed to open /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.tgdrive-root.tmp to set project id.: No such file or directory
+10-03 17:33:52.271  1662  1961 W MediaProvider: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.tgdrive-root.tmp
+10-03 17:33:52.271  1662  1961 W MediaProvider: java.io.IOException: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.tgdrive-root.tmp
+10-03 17:33:52.369  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:52.374  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:52.375  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:52.375  1662  9204 W MediaProvider: Database update failed while renaming /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/settings.tmp
+10-03 17:33:52.377  1662  9199 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:52.580  9084  9084 I TGDrive/startup: Main screen shown
+10-03 17:33:52.598  9084  9084 I TGDrive/engine-client: service Stopped → Starting (pid 9218)
+10-03 17:33:52.998  9218  9218 W tgdrive-engine: type=1400 audit(0.0:939): avc:  granted  { execute } for  path="/data/data/app.tgdrive/files/chaquopy/AssetFinder/stdlib-x86_64/_interpqueues.cpython-313-x86_64-linux-android.so" dev="dm-40" ino=344684 scontext=u:r:untrusted_app:s0:c192,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c192,c256,c512,c768 tclass=file app=app.tgdrive
+10-03 17:33:53.002  9218  9218 W tgdrive-engine: type=1400 audit(0.0:940): avc:  granted  { execute } for  path="/data/data/app.tgdrive/files/chaquopy/AssetFinder/stdlib-x86_64/_interpreters.cpython-313-x86_64-linux-android.so" dev="dm-40" ino=344685 scontext=u:r:untrusted_app:s0:c192,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c192,c256,c512,c768 tclass=file app=app.tgdrive
+10-03 17:33:53.089  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:53.091  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:53.095  1662  9199 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:53.103  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:53.109  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:53.117  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:53.120  1662  1961 E StorageManager: Failed to open /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/accounts/424242/session.session-journal to set project id.: No such file or directory
+10-03 17:33:53.121  1662  1961 W MediaProvider: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/accounts/424242/session.session-journal
+10-03 17:33:53.121  1662  1961 W MediaProvider: java.io.IOException: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/accounts/424242/session.session-journal
+10-03 17:33:53.124  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:53.131  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:53.143  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:53.160  9218  9240 I TGDrive/engine: started: {"fts5": "extension", "crypto": "openssl", "numpy": true, "port": 37253, "media_port": 44697, "version": "2.4.0", "demo": false, "data_dir": "/storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service", "log": "/storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/logs/tgdrive.log"}
+10-03 17:33:53.164  1662  1961 E StorageManager: Failed to open /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218 to set project id.: No such file or directory
+10-03 17:33:53.164  1662  1961 W MediaProvider: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218
+10-03 17:33:53.164  1662  1961 W MediaProvider: java.io.IOException: Failed to update quota type for /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/logs/.tgdrive-write-check-9218
+10-03 17:33:53.170  9084  9084 I TGDrive/engine-client: service Starting → Ready (pid 9218)
+10-03 17:33:53.180  9084  9104 I BigLibrary: service ready: 387 ms
+10-03 17:33:53.227  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:33:53.235  9084  9084 I TGDrive/app: now: Ready
+10-03 17:33:53.246  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:33:53.246  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:33:53.247  1662  9190 W MediaProvider: Database update failed while renaming /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/preferences.json.new
+10-03 17:33:54.250  9084  9104 I BigLibrary: main screen after the service was ready: 1070 ms
+10-03 17:33:55.020  1662  9199 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:55.029  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:33:55.289  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:33:55.293  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:33:55.293  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.243  9084  9104 I BigLibrary: sidebar with every chat: 11375 ms
+10-03 17:34:07.700  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.724  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.724  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.760  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.772  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.778  1662  9305 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.781  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.781  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.783  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.784  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.787  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.795  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.795  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.800  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:07.800  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:08.888  1662  9197 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:08.895  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:08.899  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:08.899  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:08.901  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:08.901  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:09.708  1662  9305 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:09.715  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:09.715  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:09.716  1662  9201 W MediaProvider: Database update failed while renaming /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/state/startup-cache.json.tmp
+10-03 17:34:09.898  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:09.903  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:09.909  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:09.912  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:09.916  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:09.917  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:11.837  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:11.846  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:11.860  1662  9305 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:11.860  1662  9305 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:11.863  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:11.864  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:15.918  1662  9197 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:15.944  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:15.955  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:15.955  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:15.961  1662  9197 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:15.962  1662  9197 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:17.238  1662  9197 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:17.245  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:17.252  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:17.252  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:17.255  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:17.257  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:19.394  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:34:19.936  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:34:19.941  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:34:19.941  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:34:20.074  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:34:20.077  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:34:21.269  9084  9104 I BigLibrary: All files, five pages: 14026 ms
+10-03 17:34:22.250  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:22.258  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:22.266  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:22.266  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:22.269  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:22.269  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:22.904  1662  9305 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:22.916  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:22.931  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:22.931  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:22.945  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:22.945  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:22.987  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.013  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.025  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.026  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.029  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.029  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.045  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.050  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.065  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.072  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.083  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.085  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.085  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.095  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.112  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.113  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.117  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.117  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.701  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.713  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.718  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.721  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.726  1662  9305 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.726  1662  9305 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.728  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.728  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.732  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.732  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.735  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:23.735  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:24.266  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:24.277  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:24.286  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:24.295  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:24.295  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:24.299  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:24.299  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:24.303  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:24.310  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:24.310  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:24.314  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:24.316  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:25.555  1662  9305 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:25.564  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:25.572  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:25.580  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:25.583  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:25.583  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:25.585  1662  9197 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:25.586  1662  9197 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:25.588  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:25.589  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:25.592  1662  9305 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:25.592  1662  9305 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.166  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.177  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.183  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.188  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.188  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.197  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.197  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.203  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.212  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.212  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.215  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.216  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.821  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.828  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.833  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.836  1662  9305 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.846  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.846  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.850  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.850  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.854  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.855  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.858  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:26.859  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.037  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.049  1662  9193 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.066  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.066  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.069  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.069  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.080  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.085  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.094  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.096  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.100  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.100  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.633  1662  9197 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.647  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.652  1662  9197 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.656  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.657  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.664  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.664  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.668  1662  9200 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.671  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.671  1662  9306 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.677  1662  9305 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:28.678  1662  9305 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:31.155  9084  9104 I BigLibrary: Photos: 9886 ms
+10-03 17:34:36.224  1662  9197 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:36.231  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:36.236  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:36.236  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:36.241  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:36.241  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:36.305  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:34:38.203  1662  9204 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:38.210  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:38.211  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:38.211  1662  9190 W MediaProvider: Database update failed while renaming /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/state/startup-cache.json.tmp
+10-03 17:34:38.886  9084  9104 I BigLibrary: search: 7731 ms
+10-03 17:34:41.225  9084  9104 I BigLibrary: Storage: 2339 ms
+10-03 17:34:43.731  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:43.735  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:43.735  1662  9196 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/.nomedia
+10-03 17:34:43.736  1662  9196 W MediaProvider: Database update failed while renaming /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/android/state/startup-cache.json.tmp
+10-03 17:34:50.248  1662  9198 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:34:50.266  1662  9201 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:34:50.270  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:34:50.270  1662  9190 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:34:52.460  9084  9104 I BigLibrary: Chats and indexing: 11235 ms
+10-03 17:34:55.387  1662  9197 I MediaProvider: Observed non-standard /storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/.nomedia
+10-03 17:34:58.499  9084  9104 I BigLibrary: timings:
+10-03 17:34:58.499  9084  9104 I BigLibrary: building 100 000 files: 23358 ms
+10-03 17:34:58.499  9084  9104 I BigLibrary: service ready: 387 ms
+10-03 17:34:58.499  9084  9104 I BigLibrary: main screen after the service was ready: 1070 ms
+10-03 17:34:58.499  9084  9104 I BigLibrary: sidebar with every chat: 11375 ms
+10-03 17:34:58.499  9084  9104 I BigLibrary: All files, five pages: 14026 ms
+10-03 17:34:58.499  9084  9104 I BigLibrary: Photos: 9886 ms
+10-03 17:34:58.499  9084  9104 I BigLibrary: search: 7731 ms
+10-03 17:34:58.499  9084  9104 I BigLibrary: Storage: 2339 ms
+10-03 17:34:58.499  9084  9104 I BigLibrary: Chats and indexing: 11235 ms
+10-03 17:34:58.499  9084  9104 I BigLibrary: slowest status + first page of files (of 8): 105 ms
+10-03 17:34:58.850  9084  9104 I TestRunner: finished: aHundredThousandFilesOpenFastAndStayResponsive(app.tgdrive.BigLibraryTest)
+10-03 17:34:58.892  9071  9071 I AndroidRuntime: VM exiting with result code 0.

@@ -1,0 +1,6 @@
+2026-10-03T17:33:05.495255Z [8875] Preparing
+2026-10-03T17:33:05.526127Z [8875] Loading search (full-text index)
+2026-10-03T17:33:05.536099Z [8875] Unpacking Python (first start takes longer)
+2026-10-03T17:33:05.824300Z [8875] Unpacking the meaning model
+2026-10-03T17:33:05.973522Z [8875] Starting TG Drive
+2026-10-03T17:33:06.786021Z [8875] started: {"fts5": "extension", "crypto": "openssl", "numpy": true, "port": 39155, "media_port": 43595, "version": "2.4.0", "demo": false, "data_dir": "/storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service", "log": "/storage/emulated/0/TGDrive-Test-signin-a2209e10-1255-4dab-a880-e169118a2744/service/logs/tgdrive.log"}
