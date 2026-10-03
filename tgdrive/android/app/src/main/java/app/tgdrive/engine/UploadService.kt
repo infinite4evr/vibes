@@ -73,8 +73,15 @@ class UploadService : Service() {
                 val tree = intent?.getStringExtra(EXTRA_TREE)?.let(Uri::parse)
                 val all = if (tree != null) walkTree(tree) else uris.map { it to "" }
                 val persisted = contentResolver.persistedUriPermissions.filter { it.isReadPermission }.map { it.uri }.toSet()
+                // Only what other apps and Android's pickers hand over: never a file path, or TG Drive's own files
+                // (a share naming them would make TG Drive read its private data, e.g. a Telegram session).
+                val refused = all.count { (uri, _) -> !uploadable(uri) }
+                if (refused > 0) {
+                    AppLog.w("upload", "refused $refused shared item(s) that aren't another app's files")
+                    graph.state.message("Skipped $refused of the shared items: TG Drive only uploads files other apps share.", error = true)
+                }
                 for ((uri, rel) in all) {
-                    if (!uploadable(uri)) { graph.state.message("Skipped a private or unsupported file", error = true); continue }
+                    if (!uploadable(uri)) continue
                     val name = runCatching { describe(uri).first }.getOrDefault("Shared file")
                     val grant = (tree ?: uri).takeIf { it in persisted }?.toString().orEmpty()
                     journal.put(UploadJournal.Entry(java.util.UUID.randomUUID().toString(), intent?.getLongExtra(EXTRA_AID,0) ?: 0,
