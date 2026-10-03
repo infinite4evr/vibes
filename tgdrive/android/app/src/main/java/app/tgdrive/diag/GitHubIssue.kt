@@ -118,7 +118,7 @@ object GitHubIssue {
         latestServiceCrash(context)?.let { crash ->
             appendLine("### The service's latest crash report")
             appendLine("```text")
-            appendLine(AppLog.clean(crash).trim())
+            appendLine(ReportPrivacy.clean(AppLog.clean(crash), false).trim())
             appendLine("```")
             appendLine()
         }
@@ -126,7 +126,7 @@ object GitHubIssue {
         if (appLog.isNotBlank()) {
             appendLine("### App log (end)")
             appendLine("```text")
-            appendLine(AppLog.clean(appLog))
+            appendLine(ReportPrivacy.clean(AppLog.clean(appLog), false))
             appendLine("```")
             appendLine()
         }
@@ -134,7 +134,7 @@ object GitHubIssue {
         if (serviceLog.isNotBlank()) {
             appendLine("### Service log (end)")
             appendLine("```text")
-            appendLine(AppLog.clean(serviceLog))
+            appendLine(ReportPrivacy.clean(AppLog.clean(serviceLog), false))
             appendLine("```")
             appendLine()
         }
@@ -142,11 +142,12 @@ object GitHubIssue {
         if (start.isNotBlank()) {
             appendLine("### Service start steps")
             appendLine("```text")
-            appendLine(AppLog.clean(start))
+            appendLine(ReportPrivacy.clean(AppLog.clean(start), false))
             appendLine("```")
             appendLine()
         }
-        appendLine("_The complete logs are in the problem report: TG Drive → Settings → About & diagnostics → **Send report**. " +
+        appendLine("_Log messages are left out of this public issue (file, chat and search names can be in them). " +
+            "The complete logs are in the problem report: TG Drive → Settings → About & diagnostics → **Send report**. " +
             "Attach that .zip here if you can._")
     }
 

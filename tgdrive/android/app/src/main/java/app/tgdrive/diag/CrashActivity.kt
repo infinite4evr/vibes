@@ -36,6 +36,8 @@ class CrashActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // This screen already explains the failed launch: "Open again" goes straight to the app.
+        app.tgdrive.storage.DataLocation.launchFinished(this)
         val file = intent.getStringExtra(EXTRA_REPORT)?.let { File(it) }?.takeIf { it.isFile }
             ?: AppLog.unseenCrashes(this).firstOrNull()
         report = runCatching { file?.readText() }.getOrNull()?.takeIf { it.isNotBlank() }

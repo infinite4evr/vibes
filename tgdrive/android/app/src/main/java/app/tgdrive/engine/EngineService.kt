@@ -158,6 +158,7 @@ class EngineService : Service() {
         if (!app.tgdrive.storage.DataLocation.ready(this)) {
             publish(state.copy(phase=EngineState.Phase.Failed,error="Choose an available data folder from TG Drive’s startup screen.")); stopSelf(); return
         }
+        app.tgdrive.storage.DataLocation.prepare(this)
         startLog().delete()
         stage(EngineState(phase = EngineState.Phase.Starting, demo = demo, pid = Process.myPid()), "Preparing")
         try {
@@ -298,7 +299,15 @@ class EngineService : Service() {
     // ------------------------------------------------------------------ paths
     /** The phone's Download/TG Drive where Android lets apps write there directly (11+, or with the
      *  storage permission before that), else this app's own folder on the shared storage. */
-    private fun downloadDir(): File = File(app.tgdrive.storage.DataLocation.root(this), "downloads").apply { mkdirs() }
+    private fun downloadDir(): File {
+        val pub = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "TG Drive")
+        val allowed = Build.VERSION.SDK_INT >= 30 ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+        if (allowed && writable(pub)) return pub
+        // No access to Download/ (it can't happen with the data folder's storage permission, but never fail):
+        // the selected data folder, which survives reinstalling too.
+        return File(app.tgdrive.storage.DataLocation.root(this) ?: filesDir, "downloads").apply { mkdirs() }
+    }
 
     private fun writable(dir: File): Boolean = try {
         dir.mkdirs()

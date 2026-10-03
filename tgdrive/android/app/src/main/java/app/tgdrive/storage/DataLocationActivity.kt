@@ -28,12 +28,14 @@ class DataLocationActivity:Activity(){
     override fun onResume(){super.onResume()
         if(opening){if(!received)show("TG Drive returned before its main screen finished opening. View startup details below, then retry.");return}
         val choose=intent.getBooleanExtra("choose",false)||DataLocation.switching(this)
-        if(first && !choose && permission()){
+        val recover=first && intent.getBooleanExtra("recover",false)
+        if(first && !choose && !recover && permission()){
             first=false
             if(DataLocation.ready(this)){open();return}
             if(DataLocation.existing(DataLocation.defaultRoot())){select(DataLocation.defaultRoot());return}
         }
-        first=false;show()
+        first=false
+        show(if(recover) "TG Drive closed before its main screen opened last time. Startup details below show why; then open it again or choose another data folder." else "")
     }
     private fun permission()=if(Build.VERSION.SDK_INT>=30)Environment.isExternalStorageManager() else checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)==android.content.pm.PackageManager.PERMISSION_GRANTED
     private fun show(message:String=""){
@@ -41,7 +43,7 @@ class DataLocationActivity:Activity(){
         fun text(s:String){box.addView(TextView(this).apply{text=s;textSize=16f;setPadding(0,12,0,12)})}
         fun button(s:String,action:()->Unit){box.addView(Button(this).apply{text=s;isEnabled=!busy;setOnClickListener{action()}})}
         text("TG Drive · data folder")
-        text(message.ifBlank{"Settings, API credentials, Telegram sign-in sessions, offline files and downloads are kept here. This folder survives uninstalling. Keep it private."})
+        text(message.ifBlank{"Settings, API credentials, Telegram sign-in sessions, the index and offline files are kept here. This folder survives uninstalling: choose it again after reinstalling to continue where you left off. Keep it private."})
         text("Current: ${DataLocation.root(this)?.path?:"Not selected"}\nDefault: ${DataLocation.defaultRoot().path}")
         if(!permission())button("Allow storage access"){
             if(Build.VERSION.SDK_INT>=30)startActivity(Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,Uri.parse("package:$packageName")))
@@ -53,7 +55,7 @@ class DataLocationActivity:Activity(){
             startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION),3)
         }
         DataLocation.root(this)?.let{root->button("Open selected folder"){select(root)}}
-        if(opening)button("Retry opening TG Drive"){opening=false;open()}
+        if(opening || DataLocation.ready(this))button(if(opening)"Retry opening TG Drive" else "Open TG Drive"){opening=false;open()}
         button("Startup details"){
             val reports=app.tgdrive.diag.AppLog.unseenCrashes(this).take(2).joinToString("\n\n"){it.readText().takeLast(12000)}
             val details=reports+"\n\nRecent app log:\n"+app.tgdrive.diag.AppLog.tail(this)+"\n\nAndroid process history:\n"+processExitHistory(this,"")
@@ -82,6 +84,7 @@ class DataLocationActivity:Activity(){
     private fun open(){
         if(!DataLocation.ready(this)){show("The selected folder is unavailable. Reconnect its storage or choose it again.");return}
         opening=true;show("Opening TG Drive…")
+        DataLocation.launchFinished(this)   // a fresh attempt: MainActivity marks it again
         val target=Intent(this,MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         intent.getParcelableExtra<Intent>("forward")?.let{target.action=it.action;target.clipData=it.clipData;target.putExtras(it);target.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)}
         startActivity(target)

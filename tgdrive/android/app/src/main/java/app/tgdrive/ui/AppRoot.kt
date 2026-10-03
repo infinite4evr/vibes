@@ -33,7 +33,10 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun AppRoot(activity: MainActivity) {
-    LaunchedEffect(Unit) { activity.sendBroadcast(android.content.Intent("${activity.packageName}.UI_READY").setPackage(activity.packageName)) }
+    LaunchedEffect(Unit) {
+        app.tgdrive.storage.DataLocation.launchFinished(activity)
+        activity.sendBroadcast(android.content.Intent("${activity.packageName}.UI_READY").setPackage(activity.packageName))
+    }
     val g = activity.graph
     val state = g.state
     val settings by state.settings.collectAsState()

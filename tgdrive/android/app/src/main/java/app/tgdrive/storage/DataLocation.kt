@@ -19,6 +19,30 @@ object DataLocation {
     fun service(c:Context)=File(root(c)?:error("Choose a data folder first."),"service")
     fun state(c:Context)=root(c)?.let{File(it,"android/state").apply{mkdirs()}}?:c.noBackupFilesDir
     fun logs(c:Context)=root(c)?.let{File(it,"android/logs").apply{mkdirs()}}?:File(c.filesDir,"logs").apply{mkdirs()}
+    /** Gallery and music apps must not list thumbnails, offline copies or caches as the person's media. */
+    fun prepare(root:File) {
+        for(dir in listOf(File(root,"service"),File(root,"android"))) {
+            dir.mkdirs()
+            val marker=File(dir,".nomedia")
+            if(!marker.exists()) runCatching { marker.createNewFile() }
+        }
+    }
+    fun prepare(c:Context) { root(c)?.takeIf{it.isDirectory && it.canWrite()}?.let{prepare(it)} }
+
+    // A launch that never reached the main screen (the process died first): the next launch opens the
+    // startup screen with its details instead of trying blindly again.
+    private fun launchMarker(c:Context)=File(c.filesDir,"launch-pending")
+    fun launchStarted(c:Context) { runCatching { launchMarker(c).writeText(android.os.Process.myPid().toString()) } }
+    fun launchFinished(c:Context) { launchMarker(c).delete() }
+    fun launchFailed(c:Context):Boolean {
+        val pid=runCatching { launchMarker(c).readText().trim().toInt() }.getOrNull() ?: return false
+        if(pid==android.os.Process.myPid()) return false
+        if(android.os.Build.VERSION.SDK_INT<30) return true
+        val info=runCatching { c.getSystemService(android.app.ActivityManager::class.java).getHistoricalProcessExitReasons(c.packageName,pid,1).firstOrNull() }.getOrNull() ?: return false
+        return info.reason in setOf(android.app.ApplicationExitInfo.REASON_CRASH, android.app.ApplicationExitInfo.REASON_CRASH_NATIVE,
+            android.app.ApplicationExitInfo.REASON_ANR, android.app.ApplicationExitInfo.REASON_INITIALIZATION_FAILURE)
+    }
+
     fun existing(f:File)=File(f,"tgdrive-folder.json").isFile || File(f,"service/settings.json").isFile || File(f,"service/accounts").isDirectory
     private fun write(f:AtomicFile,text:String){val out=f.startWrite();try{out.write(text.toByteArray());f.finishWrite(out)}catch(t:Throwable){f.failWrite(out);throw t}}
     fun select(c:Context,chosen:File) {
@@ -60,7 +84,7 @@ object DataLocation {
                 stage.listFiles().orEmpty().forEach{check(it.renameTo(File(dest,it.name))){"Could not finish the data copy; the original remains safe."}}
             } finally {stage.deleteRecursively()}
         }
-        File(dest,"service").mkdirs();File(dest,"downloads").mkdirs()
+        prepare(dest)
         write(AtomicFile(File(dest,"tgdrive-folder.json")),JSONObject().put("format",1).toString())
         write(locator(c),JSONObject().put("path",dest.path).toString())
         File(c.filesDir,"data-switching").delete()

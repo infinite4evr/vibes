@@ -25,9 +25,11 @@ import java.util.concurrent.TimeUnit
 
 class TGDriveApp : Application(), SingletonImageLoader.Factory, androidx.work.Configuration.Provider {
 
-    var startupError: Throwable? = null
-        private set
-    val graph: AppGraph by lazy { startupError?.let { throw it }; AppGraph(this) }
+    /** Preferences come from the selected data folder first (a no-op once restored; retried after a failure). */
+    val graph: AppGraph by lazy {
+        if (app.tgdrive.storage.DataLocation.ready(this)) app.tgdrive.storage.PortablePreferences.attach(this)
+        AppGraph(this)
+    }
 
     /** "app" (the interface), "engine" (TG Drive's Python service) or "crash" (the crash screen). */
     private val process: String by lazy {
@@ -54,8 +56,11 @@ class TGDriveApp : Application(), SingletonImageLoader.Factory, androidx.work.Co
         if (process != "app") return
         try {
             EngineService.createChannels(this)
-            if (app.tgdrive.storage.DataLocation.ready(this)) app.tgdrive.storage.PortablePreferences.attach(this)
-        } catch(t: Throwable) { startupError=t; AppLog.e("startup","Could not load the selected data folder",t) }
+            if (app.tgdrive.storage.DataLocation.ready(this)) {
+                app.tgdrive.storage.DataLocation.prepare(this)
+                app.tgdrive.storage.PortablePreferences.attach(this)
+            }
+        } catch(t: Throwable) { AppLog.e("startup","Could not load the selected data folder",t) }   // shown by MainActivity
     }
 
     /** WorkManager (background sync) lives in this process only, never in the engine's. */

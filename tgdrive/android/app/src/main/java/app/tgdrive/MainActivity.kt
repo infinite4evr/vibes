@@ -36,11 +36,16 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
         )
         super.onCreate(savedInstanceState)
-        if (!app.tgdrive.storage.DataLocation.ready(this)) {
-            startActivity(Intent(this,app.tgdrive.storage.DataLocationActivity::class.java).putExtra("forward",intent))
+        val location = app.tgdrive.storage.DataLocation
+        val crashed = location.launchFailed(this)
+        if (!location.ready(this) || crashed) {
+            // The startup screen runs in its own process: it still opens when this one can't.
+            startActivity(Intent(this,app.tgdrive.storage.DataLocationActivity::class.java).putExtra("forward",intent).putExtra("recover",crashed))
             finish(); return
         }
-        try { graph } catch(t:Throwable) {
+        location.launchStarted(this)   // until the main screen is up (AppRoot)
+        try { app.tgdrive.storage.PortablePreferences.attach(applicationContext); graph } catch(t:Throwable) {
+            location.launchFinished(this)   // this screen is the answer; don't send the next launch to the startup screen
             val text=android.widget.TextView(this).apply { this.text="TG Drive could not start.\n\n${t.message}\n\nOpen TG Drive again to choose a data folder or view startup details."; setPadding(30,40,30,30); setTextIsSelectable(true) }
             val box=android.widget.LinearLayout(this).apply { orientation=android.widget.LinearLayout.VERTICAL; addView(text); addView(android.widget.Button(this@MainActivity).apply { this.text="Choose data folder"; setOnClickListener { app.tgdrive.storage.DataLocation.openChooser(this@MainActivity) } }) }
             setContentView(box)

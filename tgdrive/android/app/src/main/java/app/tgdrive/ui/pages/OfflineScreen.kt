@@ -93,7 +93,7 @@ fun OfflineScreen(state: AppState, onMenu: () -> Unit, onBack: (() -> Unit)? = n
                 Text(e.error.ifBlank { "Waiting for phone-to-engine handoff" }, color=Tg.colors.ink2)
                 TgButton("Retry pending uploads", { UploadService.retry(ctx) }, small=true)
                 if(e.error.isNotEmpty()) TgButton("Remove pending upload", { scope.launch { withContext(Dispatchers.IO) {
-                    journal.remove(e.id); if(e.staged.isNotEmpty()) File(e.staged).delete()
+                    journal.discard(ctx, e)
                 }; load() } }, small=true)
             }
             item { Text("Pinned folders", style=Tg.type.subheading, color=Tg.colors.ink) }

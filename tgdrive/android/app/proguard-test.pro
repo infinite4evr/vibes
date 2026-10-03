@@ -10,3 +10,4 @@
 -keep class app.tgdrive.ReliabilityTest { *; }
 -keep class app.tgdrive.RecoveryJourneys { *; }
 -keep class app.tgdrive.PortableStorageTest { *; }
+-keep class app.tgdrive.DataFolderSetup { *; }

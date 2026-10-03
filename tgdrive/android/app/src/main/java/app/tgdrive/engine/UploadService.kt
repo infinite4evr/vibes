@@ -72,12 +72,15 @@ class UploadService : Service() {
                 }
                 val tree = intent?.getStringExtra(EXTRA_TREE)?.let(Uri::parse)
                 val all = if (tree != null) walkTree(tree) else uris.map { it to "" }
+                val persisted = contentResolver.persistedUriPermissions.filter { it.isReadPermission }.map { it.uri }.toSet()
                 for ((uri, rel) in all) {
                     if (!uploadable(uri)) { graph.state.message("Skipped a private or unsupported file", error = true); continue }
                     val name = runCatching { describe(uri).first }.getOrDefault("Shared file")
+                    val grant = (tree ?: uri).takeIf { it in persisted }?.toString().orEmpty()
                     journal.put(UploadJournal.Entry(java.util.UUID.randomUUID().toString(), intent?.getLongExtra(EXTRA_AID,0) ?: 0,
                         uri.toString(), name, intent?.getStringExtra(EXTRA_FOLDER), rel,
-                        intent?.getLongExtra(EXTRA_CHAT,0)?.takeIf { it != 0L }, intent?.getStringExtra(EXTRA_CAPTION).orEmpty(), demo=graph.engine.demo))
+                        intent?.getLongExtra(EXTRA_CHAT,0)?.takeIf { it != 0L }, intent?.getStringExtra(EXTRA_CAPTION).orEmpty(),
+                        demo=graph.engine.demo, grant=grant))
                 }
                 val retry = intent?.action == ACTION_RETRY
                 for (e in journal.list()) if (e.demo == graph.engine.demo && (retry || e.error.isEmpty()) && scheduled.add(e.id)) queue.send(e.id)
@@ -92,46 +95,30 @@ class UploadService : Service() {
         val g = graph
         withContext(Dispatchers.Main) { g.engine.hold("upload", true) }
         try {
-            // Stage a private durable copy before handing it off. Failed staging keeps the journal entry
-            // visible in Recovery (the picker permission may need to be granted again).
             val dir = File(app.tgdrive.storage.DataLocation.state(this), "upload-staging").apply { mkdirs() }
             val staged = File(dir, "$id.bin")
-            if (entry.staged.isEmpty() || !staged.exists()) {
-                val tmp = File(dir, "$id.part")
+            val uri = Uri.parse(entry.uri)
+            // A file kept readable by a persisted permission is read again after a restart: no copy. One
+            // shared with only a temporary permission is copied first (within the staging limit), so a
+            // restart doesn't lose it; one too big for that is sent straight away.
+            if (entry.grant.isEmpty() && (entry.staged.isEmpty() || !staged.exists())) {
                 val limit = (g.state.setting("upload_staging_limit_mb")?.toLongOrNull() ?: 4096L) * 1024 * 1024
-                val other = dir.listFiles().orEmpty().filter { it != tmp }.sumOf { it.length() }
-                try {
-                    contentResolver.openInputStream(Uri.parse(entry.uri))?.use { input ->
-                        java.io.FileOutputStream(tmp).use { output ->
-                            val buf = ByteArray(256 * 1024)
-                            var count = 0L
-                            while (true) {
-                                currentCoroutineContext().ensureActive()
-                                val n = input.read(buf); if (n < 0) break
-                                count += n
-                                check(other + count <= limit && dir.usableSpace > n + 256L * 1024 * 1024) {
-                                    "Upload staging limit or free-space reserve reached. Increase the limit in Offline & recovery."
-                                }
-                                output.write(buf,0,n)
-                            }
-                            output.fd.sync()
-                        }
-                    } ?: error("File permission expired. Select this file again; remove this pending entry in Recovery.")
-                    check(tmp.renameTo(staged)) { "Could not save upload staging file" }
-                } finally { tmp.delete() }
-                entry = entry.copy(staged=staged.absolutePath, error="")
-                journal.put(entry)
+                if (stage(uri, dir, staged, limit)) {
+                    entry = entry.copy(staged = staged.absolutePath, error = "")
+                    journal.put(entry)
+                }
             }
             withTimeoutOrNull(60_000) { g.engine.state.first { it.ready } } ?: error("TG Drive's service isn't running.")
             check(g.engine.state.value.demo == entry.demo) { "Switch back to the account mode where this upload was queued." }
             sending.value = Sending(entry.name, 1, scheduled.size)
             update("Sending ${entry.name}", null)
-            val body = staged.asRequestBody("application/octet-stream".toMediaTypeOrNull())
+            val body = if (staged.exists()) staged.asRequestBody("application/octet-stream".toMediaTypeOrNull())
+                else UriBody(this, uri, runCatching { describe(uri).second }.getOrDefault(-1L), contentResolver.getType(uri)?.toMediaTypeOrNull())
             g.api.upload(entry.aid, entry.name, body, entry.folder,
                 rel=if (entry.rel.isEmpty()) "" else "${entry.rel}/${entry.name}", caption=entry.caption,
                 chatId=entry.chat, uploadId=entry.id)
             // The engine durably acknowledged this id. Replaying it cannot enqueue a second upload.
-            journal.remove(entry.id)
+            journal.discard(this, entry)
             staged.delete()
             g.state.changed("upload")
         } catch (e: kotlinx.coroutines.CancellationException) { throw e
@@ -149,6 +136,33 @@ class UploadService : Service() {
                 }
             }
         }
+    }
+
+    /** Copies [uri] to [staged]; false (nothing kept) when it is bigger than [limit] allows. */
+    private suspend fun stage(uri: Uri, dir: File, staged: File, limit: Long): Boolean {
+        val tmp = File(dir, "${staged.nameWithoutExtension}.part")
+        val other = dir.listFiles().orEmpty().filter { it != tmp && it != staged }.sumOf { it.length() }
+        val size = runCatching { describe(uri).second }.getOrDefault(-1L)
+        if (size >= 0 && other + size > limit) return false
+        try {
+            contentResolver.openInputStream(uri)?.use { input ->
+                java.io.FileOutputStream(tmp).use { output ->
+                    val buf = ByteArray(256 * 1024)
+                    var count = 0L
+                    while (true) {
+                        currentCoroutineContext().ensureActive()
+                        val n = input.read(buf); if (n < 0) break
+                        count += n
+                        if (other + count > limit) return false
+                        check(dir.usableSpace > n + 256L * 1024 * 1024) { "Not enough free space to prepare this upload." }
+                        output.write(buf, 0, n)
+                    }
+                    output.fd.sync()
+                }
+            } ?: error("File permission expired. Select this file again; remove this pending entry in Recovery.")
+            check(tmp.renameTo(staged)) { "Could not save upload staging file" }
+            return true
+        } finally { tmp.delete() }
     }
 
     private suspend fun walkTree(tree: Uri): List<Pair<Uri, String>> {
