@@ -52,7 +52,7 @@
         <!-- Data folder choice and startup recovery: plain views in their own process, so it opens even
              when the main one can't. MainActivity sends launches here when it needs to. -->
         <activity android:name=".storage.DataLocationActivity" android:exported="false" android:process=":bootstrap"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+            android:theme="@style/Theme.TGDrive" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -62,9 +62,9 @@ class MainActivity : ComponentActivity() {
         location.launchStarted(this)   // until the main screen is up (AppRoot)
         try { app.tgdrive.storage.PortablePreferences.attach(applicationContext); graph } catch(t:Throwable) {
             location.launchFinished(this)   // this screen is the answer; don't send the next launch to the startup screen
-            val text=android.widget.TextView(this).apply { this.text="TG Drive could not start.\n\n${t.message}\n\nOpen TG Drive again to choose a data folder or view startup details."; setPadding(30,40,30,30); setTextIsSelectable(true) }
-            val box=android.widget.LinearLayout(this).apply { orientation=android.widget.LinearLayout.VERTICAL; addView(text); addView(android.widget.Button(this@MainActivity).apply { this.text="Choose data folder"; setOnClickListener { app.tgdrive.storage.DataLocation.openChooser(this@MainActivity) } }) }
-            setContentView(box)
+            setContent { app.tgdrive.storage.StartupMessage("TG Drive could not start",
+                "${t.message}\n\nChoose the data folder again, or open TG Drive again to see its startup details.",
+                listOf("Choose data folder" to { app.tgdrive.storage.DataLocation.openChooser(this) })) }
             app.tgdrive.diag.AppLog.e("startup","Main screen initialization failed",t)
             return
         }
@@ -78,19 +78,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** Plain views (nothing here may depend on the data folder): the reason, and the ways out. */
+    /** The reason, and the ways out (nothing here may depend on the data folder). */
     private fun startupProblem(problem: String) {
-        val box = android.widget.LinearLayout(this).apply { orientation = android.widget.LinearLayout.VERTICAL; setPadding(30, 40, 30, 30) }
-        box.addView(android.widget.TextView(this).apply {
-            text = "TG Drive can't open its data folder from the main screen.\n\n$problem\n\nChoose the folder again, or allow all-files access for TG Drive in Android's settings."
-            textSize = 16f; setTextIsSelectable(true)
-        })
-        box.addView(android.widget.Button(this).apply { text = "Choose data folder"; setOnClickListener { app.tgdrive.storage.DataLocation.openChooser(this@MainActivity) } })
-        if (Build.VERSION.SDK_INT >= 30) box.addView(android.widget.Button(this).apply {
-            text = "All-files access settings"
-            setOnClickListener { runCatching { startActivity(Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:$packageName"))) } }
-        })
-        setContentView(android.widget.ScrollView(this).apply { addView(box) })
+        val actions = mutableListOf<Pair<String, () -> Unit>>("Choose data folder" to { app.tgdrive.storage.DataLocation.openChooser(this) })
+        if (Build.VERSION.SDK_INT >= 30) actions += "All-files access settings" to {
+            runCatching { startActivity(Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:$packageName"))) }
+            Unit
+        }
+        setContent { app.tgdrive.storage.StartupMessage("TG Drive can't open its data folder",
+            "$problem\n\nChoose the folder again, or allow all-files access for TG Drive in Android's settings.", actions) }
     }
 
     override fun onNewIntent(intent: Intent) {
