@@ -13,7 +13,6 @@ Results recorded for the updated source on 2026-10-03. Android compilation is no
 | TG Drive Android Kotlin, staging application + instrumentation sources | Compiled successfully |
 | LumaClean Android Kotlin, debug application + instrumentation sources | Compiled successfully |
 | Python parsing, web JavaScript parsing, workflow YAML and CI shell syntax | Passed |
-| ZIP CRC, relative paths and byte comparison against changed source | Passed |
 
 The browser and service suites use a sample Telegram transport and real temporary SQLite/filesystem state. They verify UI-to-service behavior without accessing a real Telegram account. The Android build retains the supplied dependency versions. A final incremental Kotlin build reported conflicting overloads with no duplicate source declarations; recompiling with `-Pkotlin.incremental=false` succeeded. The service run emits one upstream Starlette/httpx deprecation warning. Optional dependency/platform checks account for the skips; they are not represented as passes.
 
@@ -54,7 +53,7 @@ The suite adds **14 TG Drive Android instrumentation cases** and **5 LumaClean c
 
 - Android emulator/instrumentation or tests on a physical phone: this environment has no usable KVM device. The sources compile and the workflows run the tests before publishing when required. Their runtime outcome is still pending.
 - The new launcher smoke checks and malformed-preferences UI case: included in the staging emulator workflow, not run locally.
-- A complete release APK/NDK packaging build or installation on the user's device. The supplied ZIP contains source changes, not a signed APK.
+- A complete release APK/NDK packaging build or installation on the user's device.
 - Native desktop Qt and GTK window interaction on Windows/macOS/Linux. Service/browser behavior and the Textual confirmation flow were exercised; native GUI and OS-specific storage/permission behavior still need platform checks.
 - The exact reported phone crash: no device crash/exit log was available. Do not interpret successful compilation as proof that the user's crash is resolved.
 

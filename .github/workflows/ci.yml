@@ -80,11 +80,13 @@ jobs:
             android_app:
               - "tgdrive/android/**"
               - ".github/scripts/tgdrive-android-emulator.sh"
+              - ".github/scripts/tgdrive-startup-smoke.sh"
               - ".github/workflows/tgdrive-android.yml"
             lumaclean:
               - *ci
               - "lumaclean/**"
               - ".github/workflows/lumaclean-apk.yml"
+              - ".github/scripts/lumaclean-emulator.sh"
       - name: Summary
         run: |
           {
