@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
             return
         }
         app.tgdrive.engine.BackgroundSync.schedule(this)
-        ProcessLifecycleOwner.get().lifecycle.addObserver(appVisibility)
+        watchVisibility(applicationContext)
         handle(intent)
         setContent { AppRoot(this) }
         if (Build.VERSION.SDK_INT >= 33 &&
@@ -80,33 +80,39 @@ class MainActivity : ComponentActivity() {
         intent?.getStringExtra(EXTRA_OPEN_SCREEN)?.let { openScreen.value = it }
     }
 
-    override fun onDestroy() {
-        ProcessLifecycleOwner.get().lifecycle.removeObserver(appVisibility)
-        super.onDestroy()
-    }
-
     /** While the app is on screen the engine stays up; a minute after it leaves, the engine may stop. */
-    private val appVisibility = object : DefaultLifecycleObserver {
+    private class AppVisibility(private val context: android.content.Context) : DefaultLifecycleObserver {
         override fun onStart(owner: LifecycleOwner) {
-            val g = graph
+            val g = context.graph
             if (g.state.needsWelcome()) return   // nothing runs until the first-run choice
             g.engine.hold("ui", true)             // starts the engine if it isn't running
             if (g.engine.keepRunning) g.engine.hold("keep", true)
             g.scope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                val pending = runCatching { app.tgdrive.engine.UploadJournal(this@MainActivity).list().any { it.demo == g.engine.demo && it.error.isEmpty() } }.getOrDefault(false)
+                val pending = runCatching { app.tgdrive.engine.UploadJournal(context).list().any { it.demo == g.engine.demo && it.error.isEmpty() } }.getOrDefault(false)
                 if (pending) withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    runCatching { ContextCompat.startForegroundService(this@MainActivity, Intent(this@MainActivity, app.tgdrive.engine.UploadService::class.java)) }
+                    runCatching { ContextCompat.startForegroundService(context, Intent(context, app.tgdrive.engine.UploadService::class.java)) }
                         .onFailure { app.tgdrive.diag.AppLog.w("upload", "Pending uploads can be retried in Recovery", it) }
                 }
             }
         }
 
         override fun onStop(owner: LifecycleOwner) {
-            graph.engine.hold("ui", false)
+            context.graph.engine.hold("ui", false)
         }
     }
 
     companion object {
+        /** Watched once per process and never unregistered: Android reports the app leaving the screen
+         *  0.7 s after the last activity stops, often after that activity is already destroyed, and a
+         *  per-activity observer removed in onDestroy would miss it. The "ui" hold then stayed on for
+         *  good and the service never stopped (also after a background sync). */
+        private var visibilityWatched = false
+        private fun watchVisibility(context: android.content.Context) {
+            if (visibilityWatched) return
+            visibilityWatched = true
+            ProcessLifecycleOwner.get().lifecycle.addObserver(AppVisibility(context))
+        }
+
         const val EXTRA_OPEN_PATH = "open_path"
         const val EXTRA_OPEN_PLAYER = "open_player"
         const val EXTRA_OPEN_SCREEN = "open_screen"

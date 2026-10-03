@@ -115,10 +115,11 @@ def test_rebase_preserves_downloaded_databases_and_handles_windows_paths(tmp_pat
 def test_failed_move_is_not_retried_on_every_start(tmp_path,locator,monkeypatch):
     source=location.activate(lambda _:tmp_path/'old');(source/'settings.json').write_text('{}')
     location.schedule(str(tmp_path/'new'),source)
+    real=location.shutil.copytree
     def failure(*a,**kw):raise OSError('disk full')
     monkeypatch.setattr(location.shutil,'copytree',failure)
     with pytest.raises(OSError):location.activate()
-    monkeypatch.undo();monkeypatch.setenv('TGDRIVE_LOCATION_FILE',str(locator))
+    monkeypatch.setattr(location.shutil,'copytree',real)
     # The next start opens the original folder instead of failing again.
     assert location.activate()==source and 'pending' not in json.loads(locator.read_text())
 

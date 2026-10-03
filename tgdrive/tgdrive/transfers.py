@@ -203,15 +203,13 @@ class Transfers:
         f = self.db.get_file(chat_id, msg_id)
         if not f:
             raise TransferError("That file isn't in the index.")
-        existing = self.db.one(
-            "SELECT id FROM transfers WHERE direction='down' AND chat_id=? AND msg_id=? "
-            "AND status IN ('queued','running','paused')", (chat_id, msg_id))
-        if existing:
-            current = self.db.get_transfer(existing["id"])
-            # The same file already on its way to the same place. An offline copy being fetched is
-            # not a download the person asked for: theirs still goes to their download folder.
-            offline = bool(current["path"]) and Path(current["path"]).is_relative_to(self.acc.dir / "offline")
-            if current["path"] == exact_path or (exact_path is None and not offline):
+        # The same file already on its way to the same place. An offline copy being fetched is not a
+        # download the person asked for: theirs still goes to their download folder.
+        for existing in self.db.q(
+                "SELECT id, path FROM transfers WHERE direction='down' AND chat_id=? AND msg_id=? "
+                "AND status IN ('queued','running','paused') ORDER BY id", (chat_id, msg_id)):
+            offline = bool(existing["path"]) and Path(existing["path"]).is_relative_to(self.acc.dir / "offline")
+            if existing["path"] == exact_path or (exact_path is None and not offline):
                 return existing["id"]
         name = f["alias"] or f["name"]
         if exact_path:  # folder sync: this exact file (an existing one is replaced when the download finishes)

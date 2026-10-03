@@ -105,9 +105,10 @@ def test_unpin_in_subscribed_folder_stays_removed_until_explicit_repin(tmp_path)
     asyncio.run(go())
 
 
-def test_download_while_offline_copy_is_fetched_still_goes_to_downloads(tmp_path):
+def test_download_while_offline_copy_is_fetched_still_goes_to_downloads(tmp_path,monkeypatch):
     async def go():
         a,_=make_account(tmp_path);await index_all(a);f=small(a);ref=(f['chat_id'],f['msg_id'])
+        monkeypatch.setattr(a.transfers,'_spawn',lambda tid:None)   # both downloads stay queued
         pin=store(a).pin([ref])['items'][0]['tid']
         a.db.update_transfer(pin,status='paused')   # the offline copy is still on its way
         mine=a.transfers.add_download(*ref)
