@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import app.tgdrive.diag.AppLog
+import app.tgdrive.diag.StartupTrail
 import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
 import java.util.concurrent.TimeUnit
@@ -47,6 +48,9 @@ class TGDriveApp : Application(), SingletonImageLoader.Factory, androidx.work.Co
         // As early as possible: before the libraries' content providers start, so a crash anywhere
         // (even while the app is still starting) reaches the crash screen instead of closing the app.
         AppLog.installCrashHandler(this, process)
+        // Every step of the interface's start is written down at once, in the app's own storage, and a hang is
+        // caught (StartupTrail): a launch never just shows the icon and closes with nothing said.
+        if (process == "app") StartupTrail.begin(this, "Starting the app's process (libraries)")
     }
 
     override fun onCreate() {
@@ -56,11 +60,22 @@ class TGDriveApp : Application(), SingletonImageLoader.Factory, androidx.work.Co
         if (process != "app") return
         try {
             EngineService.createChannels(this)
-            if (app.tgdrive.storage.DataLocation.ready(this)) {
-                app.tgdrive.storage.DataLocation.prepare(this)
+            StartupTrail.begin(this, "App process: checking the data folder")
+            val problem = app.tgdrive.storage.DataLocation.problem(this)
+            if (problem == null) {
+                StartupTrail.begin(this, "App process: restoring phone settings from the data folder")
                 app.tgdrive.storage.PortablePreferences.attach(this)
-            }
-        } catch(t: Throwable) { AppLog.e("startup","Could not load the selected data folder",t) }   // shown by MainActivity
+                // Only keeps gallery apps out of TG Drive's files: never on the main thread, where creating a
+                // missing .nomedia (a cleaner app removes them) can wait on Android rescanning the folder.
+                Thread({ runCatching { app.tgdrive.storage.DataLocation.prepare(this) } }, "tgdrive-folder-markers")
+                    .apply { isDaemon = true }.start()
+            } else StartupTrail.mark(this, "Data folder not usable: $problem")
+        } catch(t: Throwable) {
+            AppLog.e("startup","Could not load the selected data folder",t)   // shown by MainActivity
+            StartupTrail.mark(this, "Could not load the selected data folder: $t")
+        }
+        // A screen, if one is opening, watches its own start (MainActivity).
+        StartupTrail.done(this, "App process ready")
     }
 
     /** WorkManager (background sync) lives in this process only, never in the engine's. */

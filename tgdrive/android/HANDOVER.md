@@ -67,6 +67,7 @@ a home-screen widget, a notification when new files arrive.
 | `data/Api.kt`, `data/Models.kt` | HTTP API and models. **Response bodies are read on Dispatchers.IO** (reading them on Main threw NetworkOnMainThreadException and broke every list). `FlexBoolean` accepts 0/1 for every Boolean (SQLite has no booleans). |
 | `data/AppState.kt` | Shared state: phases (Welcome, Starting, NeedsApiKey, NeedsLogin, Ready, Locked, Failed), live events (SSE), messages, `failed()`. It loads data only once the app is visible (`bootstrapWhenVisible`), so a background sync waking the process costs nothing. New-file events are bundled: lists refresh at most every 15 s. |
 | `diag/AppLog.kt`, `diag/ProblemReport.kt`, `diag/ReportUi.kt` | Log files, crash reports, the problem-report zip and its UI (see §6). The crash handler is installed in `TGDriveApp.attachBaseContext`, before any library starts. |
+| `diag/StartupTrail.kt` | How each start of the interface went, step by step, in `files/logs/startup.log` (the app's own storage, written at once, never cleaned by other apps), and the startup watchdog: the main thread busy 5 s → its stack is written down; stuck 15 s while the person looks at it → the startup screen opens with where, and the stuck process ends. |
 | `diag/GitHubIssue.kt` | "Create GitHub issue": a pre-filled issue link on `infinite4evr/vibes` with the error, stack, phone, service state, the service's latest crash report and log tails (tokens removed), kept under 7 600 characters. |
 | `diag/CrashActivity.kt` | The crash screen, in its own process `:crash` with plain Android views. Any crash in the interface's process lands here instead of the app vanishing, with Create GitHub issue, Send report, Copy, Open again, and (after 2+ crashes in 10 min) Reset settings. The reset clears only the `app` and `player` prefs and `engine-state.json`, never the service's data. |
 | `ui/…` | Compose UI: `main` (scaffold, drawer, top bar), `browse`, `viewer`, `photos`, `pages` (Transfers, Storage, Duplicates, Index, Activity), `settings`, `onboarding` (welcome, API key, sign-in, lock, splash, error), `actions` (every menu, sheet and dialog), `search`, `components`, `theme`. |
@@ -104,6 +105,28 @@ a home-screen widget, a notification when new files arrive.
 - **Crashes:** a crash in the interface's process opens the crash screen (`CrashActivity`), so the
   app never just closes, or closes again at every launch. The service's own crashes are shown by
   the app (Failed screen).
+- **A launch never ends with nothing said** (the owner's "opens, closes, the icon stays, no new logs"). The data
+  folder is shared storage: cleaner apps delete its logs, thumbnails, caches and `.nomedia` files, and it can be slow
+  (Android's media scanner serves it). So:
+  - Every step of the interface's start is written to `files/logs/startup.log` (`StartupTrail`) at once, in the
+    app's own storage, before anything touches the data folder. A watchdog checks the main thread from
+    `attachBaseContext` until AppRoot is composed: busy 5 s → its stack goes in the trail; stuck 15 s while TG Drive
+    is in front → the startup screen opens ("stopped responding while …") and the stuck process ends.
+  - A launch that never reached its main screen counts however it ended (crash, kill, a hang closed from recent
+    apps): the next launch opens the startup screen with Android's exit reason and the last step
+    (`DataLocation.lastLaunch`). It used to count only crashes and ANRs, and retried anything else blindly.
+  - The startup screen (`DataLocationActivity`, `:bootstrap` process) only looks at the data folder on a background
+    thread; when it doesn't answer for 6 s the screen says so. Its *Startup details* show TG Drive's own storage
+    first (trail, exit history, crash reports) and the data folder's part when it comes; *Create GitHub issue* there.
+  - Crash reports are written to the app's own storage first (`AppLog.crashDir`), then copied to the data folder
+    on a thread waited on for 1.5 s at most: the crash screen never waits on the data folder.
+  - The app log finds its file on the writer thread (never on the thread that starts the app), recreates a deleted
+    `android/logs`, and writes to the app's own storage when the data folder refuses (said once in the trail).
+    The service's `tgdrive.log` reopens a deleted file (`maintenance.LogFileHandler`); thumbnails recreate a
+    deleted cache folder (`Thumbs._path`).
+  - A damaged `android/preferences.json` is set aside as `preferences.json.damaged`; TG Drive opens with the
+    phone's own settings and says so once. It used to stop at an error screen at every launch.
+  - `.nomedia` markers are recreated off the main thread (creating one can wait on a media rescan of the folder).
 - **Answers are read and closed on Dispatchers.IO** (`Api.rawOnce`, `Call.await`). A request cancelled
   just as its answer arrived (a screen closing, the lock screen giving way) used to close the
   response on the main thread. Closing an unread body reads the socket, so Android ended the app
@@ -148,7 +171,15 @@ a home-screen widget, a notification when new files arrive.
 
 There's no Android SDK in cloud sessions, and Google's Maven (dl.google.com) is blocked there, so
 **the Android app is only compiled by CI**. Be careful with Kotlin you can't compile: read every
-change back. Two traps that cost CI runs:
+change back.
+
+Changed files can still be type-checked before pushing: a scratch Kotlin/JVM Gradle project that copies them in
+(a `Sync` task, as `contract/` does) and compiles against `org.robolectric:android-all:16-robolectric-13921718`
+(`compileOnly`: the whole Android 16 API, from Maven Central) plus stubs for the app classes left out. Compose
+screens compile with the `org.jetbrains.kotlin.plugin.compose` plugin and Compose Multiplatform **1.6.11** desktop
+artifacts (`org.jetbrains.compose.{runtime,foundation,ui,material3}:*-desktop`; newer ones need Google's Maven),
+with stubs for androidx.activity (`ComponentActivity`, `setContent`, `enableEdgeToEdge`) and the app's controls
+(copy their real signatures). Plant a known error once to see the check bite. Two traps that cost CI runs:
 - In test classes with a property called `app`, a fully qualified `app.tgdrive.X` resolves
   `app` to that property and fails to compile. Import the class instead.
 - Assignments are fine inside `when` branches only where the `when` is a statement.
@@ -194,6 +225,11 @@ the Android app (`tgdrive/android/**`):
    - `BackgroundSyncTest`: a sync with the app closed starts the service by binding, finishes,
      and the service stops afterwards. And the app opened during a sync: the main screen shows,
      and the service keeps running for it when the sync lets go.
+   - `tgdrive-startup-smoke.sh` (before the instrumented tests): the launcher entry from cold; a damaged
+     `preferences.json` (set aside, main screen); a data folder a cleaner app went through (logs, caches, thumbnails,
+     `.nomedia` and `android/state` deleted: main screen, `app.log` written again, markers back); a launch whose main
+     thread hangs (`--ez test_hang true`, debuggable builds only): the startup screen within 25 s, the stack in
+     `startup.log` (read with `run-as`); and the next launch explains how that one ended.
    - `CrashScreenTest`: the crash screen with a planted report (error, buttons, the GitHub link,
      Open again). After it, the script crashes the interface's process for real (`am crash <pid>`
      of `app.tgdrive`; `am crash app.tgdrive` hit the `:engine` process instead) and fails if the
@@ -242,7 +278,10 @@ the Android app (`tgdrive/android/**`):
 
 ## 6. Diagnostics (how the owner sends problems)
 
-- The app writes `files/logs/app.log` and `files/logs/engine.log` (2 MB × 3, tokens removed).
+- `files/logs/startup.log` (the app's own storage, not the data folder): every start of the interface step by step,
+  main-thread stacks when it was busy 5 s or stuck, crashes. It's in the startup screen's *Startup details*, every
+  GitHub issue ("Startup log") and the report zip (`own/`, with the crash reports, which live there too).
+- The app writes `android/logs/app.log` and `android/logs/engine.log` in the data folder (2 MB × 3, tokens removed).
   "Detailed debug logging" (Settings → About & diagnostics, shared with the service) adds every
   request, screen and action. Uncaught crashes go to `files/logs/crash-<process>-<time>.txt`, and
   the next start offers to send them.
@@ -256,8 +295,9 @@ the Android app (`tgdrive/android/**`):
   reports arrive as issues on `infinite4evr/vibes` (label `android`, `bug` if the labels exist).
   The body has "What happened", "Details" (the stack), "Phone and app", "The service's latest
   crash report" and log tails. Read them with the GitHub tools. The zip may be attached too.
-- When the owner uploads one, read `report.txt` first, then `engine/engine-start.log` (timings),
-  `app/app.log` (phases, "status answered in"), then `service/tgdrive.log`.
+- When the owner uploads one, read `report.txt` first, then `own/startup.log` (how the starts went, stacks of a
+  stuck main thread), `engine/engine-start.log` (timings), `app/app.log` (phases, "status answered in"), then
+  `service/tgdrive.log`.
 
 ## 7. Signing and releases (why updates wouldn't install)
 
@@ -311,6 +351,10 @@ Also fixed in the last batch:
   manager", the desktop's name; the sidebar and the owner call it *Chats and indexing*.
 
 Open items:
+0. **"Opens and closes, the icon stays, no new logs"** (owner, October 2026; started after a cleaner app ran, fixed
+   only by deleting the data and re-indexing). Not reproduced. Every silent path found is closed (§4, "A launch never
+   ends with nothing said"); the cause is still unknown. If it happens again, the startup screen opens (at once, or
+   at the next launch) with the last step and Android's exit reason: ask for its **Create GitHub issue**.
 1. **Signing: done (October 2026).** The secrets are set, release `tgdrive-android-v2.4.0-43` was the
    first APK signed with the permanent key, and `signing/expected-certificate.sha256` holds its
    certificate, so CI refuses any other key. The owner uninstalls once and installs build 43 (or later);

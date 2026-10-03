@@ -58,6 +58,16 @@ The launcher icon still opens the main screen directly (existing home-screen ico
 
 **The exact crash on your phone has not been reproduced or identified without its crash/exit log.** These changes address silent startup handling and known startup failure paths. A native/library/device-specific failure still needs the new Startup details output or logcat to identify its cause. The added emulator smoke test covers both a normal cold launch and intentionally corrupted portable preferences.
 
+**Follow-up (the icon stays, no new logs, after a cleaner app).** Starting TG Drive no longer depends on the shared data folder answering, and no failure goes unrecorded:
+
+- Every start is recorded step by step in TG Drive's own app storage (`startup.log`), written at once, before the data folder is touched. Cleaner apps can't reach it.
+- A watchdog checks the main thread until the first screen shows. If it's busy for 5 s, its stack is recorded. If it's stuck for 15 s, the startup screen opens and says where it was stuck, instead of the icon staying on screen.
+- A start that ended before its main screen, however it ended, is explained at the next launch: Android's exit reason and the last step. Before, only crashes and freezes reported by Android counted, and anything else was retried blindly.
+- The startup screen, the crash screen and "Create GitHub issue" never wait on the data folder. Crash reports go to TG Drive's own storage first, and the startup screen says when the folder isn't answering.
+- Files cleaner apps delete come back on their own: the app log and its folder, the service log (it used to keep writing into the deleted file), the thumbnail cache (every thumbnail used to fail until a restart), the `.nomedia` markers and the startup cache folder.
+- A damaged `preferences.json` is set aside as `preferences.json.damaged`. TG Drive opens with the phone's own settings and says so, instead of stopping at an error screen at every launch.
+- The emulator smoke test now covers a cleaned-out data folder, a damaged preferences file and a launch that hangs.
+
 ## Features added
 
 - **Offline files and folders:** pin from file/folder actions, view completion and byte counts, open complete local copies, retry missing/failed copies and remove only the local copy. Folder subscriptions include descendants and pick up new indexed files. Removing an individual copy excludes it from automatic re-pinning until explicitly pinned again. Stopping a folder subscription keeps existing copies.

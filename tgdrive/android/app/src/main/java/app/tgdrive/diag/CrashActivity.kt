@@ -45,7 +45,7 @@ class CrashActivity : Activity() {
         // Shown: not offered again by the notice at the next start (the file stays for problem reports).
         if (file != null && !file.name.endsWith(".seen.txt")) AppLog.markSeen(listOf(file))
         val since = System.currentTimeMillis() - REPEAT_WINDOW
-        recent = AppLog.dir(this).listFiles { f -> f.name.startsWith("crash-app-") && f.lastModified() > since }?.size ?: 1
+        recent = AppLog.crashDir(this).listFiles { f -> f.name.startsWith("crash-app-") && f.lastModified() > since }?.size ?: 1
         setContentView(build())
     }
 

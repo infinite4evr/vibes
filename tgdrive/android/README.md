@@ -79,6 +79,13 @@ see it before sending. If the app crashes, it shows a crash screen with the same
 of closing (in its own process, so it works whatever broke). If the crashes repeat, the screen
 also offers to reset the app's settings, keeping accounts and the index.
 
+A start that hangs never leaves just the icon on screen: after 15 seconds TG Drive opens its startup screen
+saying where it was stuck. A start that ended any other way (closed from recent apps, ended by Android) is
+explained at the next launch instead of being tried again blindly. Each start is recorded step by step in
+TG Drive's own storage, which cleaner apps can't reach; the startup screen's *Startup details*, GitHub issues
+and problem reports include it. Files a cleaner app removes from the data folder (logs, thumbnails, caches,
+`.nomedia`) come back by themselves, and a damaged settings file is set aside instead of stopping the app.
+
 ### Problem reports
 
 *Settings → About & diagnostics → Send report* (also *Account menu → Report a problem*, error

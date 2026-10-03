@@ -47,18 +47,24 @@ object DataLocation {
     }
     fun prepare(c:Context) { root(c)?.takeIf{it.isDirectory && writable(it)}?.let{prepare(it)} }
 
-    // A launch that never reached the main screen (the process died first): the next launch opens the
-    // startup screen with its details instead of trying blindly again.
+    // A launch that never reached the main screen (the process ended first): the next launch opens the
+    // startup screen with its details instead of trying blindly again. However it ended counts: a crash, a
+    // hang the person closed from recent apps, a kill by Android. Retrying blindly is how a launch that
+    // fails the same way every time looks like an app that "just closes".
     private fun launchMarker(c:Context)=File(c.filesDir,"launch-pending")
     fun launchStarted(c:Context) { runCatching { launchMarker(c).writeText(android.os.Process.myPid().toString()) } }
     fun launchFinished(c:Context) { launchMarker(c).delete() }
-    fun launchFailed(c:Context):Boolean {
-        val pid=runCatching { launchMarker(c).readText().trim().toInt() }.getOrNull() ?: return false
-        if(pid==android.os.Process.myPid()) return false
-        if(android.os.Build.VERSION.SDK_INT<30) return true
-        val info=runCatching { c.getSystemService(android.app.ActivityManager::class.java).getHistoricalProcessExitReasons(c.packageName,pid,1).firstOrNull() }.getOrNull() ?: return false
-        return info.reason in setOf(android.app.ApplicationExitInfo.REASON_CRASH, android.app.ApplicationExitInfo.REASON_CRASH_NATIVE,
-            android.app.ApplicationExitInfo.REASON_ANR, android.app.ApplicationExitInfo.REASON_INITIALIZATION_FAILURE)
+    private fun launchPid(c:Context)=runCatching { launchMarker(c).readText().trim().toInt() }.getOrNull()
+    fun launchFailed(c:Context):Boolean { val pid=launchPid(c) ?: return false; return pid!=android.os.Process.myPid() }
+    /** How the last launch that never reached the main screen ended, in words (null: there is none). */
+    fun lastLaunch(c:Context):String? {
+        val pid=launchPid(c)?.takeIf{it!=android.os.Process.myPid()} ?: return null
+        val how=if(android.os.Build.VERSION.SDK_INT<30) null else runCatching {
+            c.getSystemService(android.app.ActivityManager::class.java).getHistoricalProcessExitReasons(c.packageName,pid,1).firstOrNull()
+                ?.let{app.tgdrive.engine.exitReasonName(it.reason)+(it.description?.takeIf{d->d.isNotBlank()}?.let{d->": $d"}.orEmpty())}
+        }.getOrNull()
+        val step=app.tgdrive.diag.StartupTrail.lastStep(c,pid)
+        return listOfNotNull(how?.let{"Android recorded: $it"},step?.let{"its last step: $it"}).joinToString("; ").ifBlank{"no record of how it ended"}
     }
 
     fun existing(f:File)=File(f,"tgdrive-folder.json").isFile || File(f,"service/settings.json").isFile || File(f,"service/accounts").isDirectory

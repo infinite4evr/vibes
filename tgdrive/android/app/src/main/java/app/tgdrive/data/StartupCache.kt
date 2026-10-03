@@ -39,7 +39,8 @@ class StartupCache(context: Context, private val scope: CoroutineScope) {
         val pages: Map<String, Page> = emptyMap(),
     )
 
-    private val file = File(app.tgdrive.storage.DataLocation.state(context), "startup-cache.json")
+    /** Found on first use, which is on a background thread: the data folder is shared storage, which can be slow. */
+    private val file by lazy { File(app.tgdrive.storage.DataLocation.state(context), "startup-cache.json") }
     private var saveJob: Job? = null
     private val diskLock = Any()
     @Volatile private var generation = 0L
@@ -116,6 +117,7 @@ class StartupCache(context: Context, private val scope: CoroutineScope) {
                     val text = JsonCodec.encodeToString(Snapshot.serializer(), s)
                     synchronized(diskLock) {
                         if (revision == generation) {
+                            file.parentFile?.mkdirs()   // a cleaner app may have removed the folder meanwhile
                             val tmp = File(file.parentFile, "${file.name}.tmp")
                             tmp.writeText(text)
                             check(tmp.renameTo(file)) { "Could not commit startup cache" }
