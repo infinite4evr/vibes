@@ -277,6 +277,7 @@ private fun SelectionMenu(files: List<FileItem>, actions: Actions, state: AppSta
             actions.model?.let { m ->
                 if (m.selected.size < m.items.size) SheetAction(TgIcons.check, "Select all ${Format.num(m.items.size)} shown", { m.selectAll(); close() })
             }
+            SheetAction(TgIcons.download, "Keep available offline", { actions.pinOffline(files); done() })
             SheetAction(TgIcons.download, "Download ${Format.plural(files.size, "file")}", { actions.download(files); done() })
             SheetAction(TgIcons.stack, "Download as .zip", { actions.download(files, zip = true); done() })
             SheetAction(TgIcons.move, "Move to folder…", { actions.open(Overlay.Move(files)) })
@@ -420,6 +421,7 @@ private fun FolderMenu(f: Folder, actions: Actions, state: AppState, nav: Naviga
             SheetAction(TgIcons.move, "Move to…", { actions.open(Overlay.FolderMove(f)) })
             if (!f.smart) {
                 Divider(Modifier.padding(vertical = 4.dp))
+                SheetAction(TgIcons.download, "Keep folder offline", { actions.pinFolderOffline(f); close() })
                 SheetAction(TgIcons.download, "Download folder", { actions.open(Overlay.FolderDownload(f)) })
             }
             Divider(Modifier.padding(vertical = 4.dp))

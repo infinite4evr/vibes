@@ -69,6 +69,7 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
     private var job: Job? = null
     private var recorded = false
     private var statsJob: Job? = null
+    private var moreJob: Job? = null
     private var gen = 0
 
     val aid: Long get() = state.aid.value
@@ -158,6 +159,8 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
         hasNew = false
         job?.cancel()
         val my = ++gen
+        moreJob?.cancel(); moreJob = null
+        loadingMore = false
         next = null
         error = null
         moreError = null
@@ -170,7 +173,8 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
             items.clear(); loading = false; loaded = true
             return
         }
-        val cacheKey = StartupCache.key(aid, p)
+        val accountId = aid
+        val cacheKey = StartupCache.key(accountId, p)
         if (!state.engine.state.value.ready) {
             // The service is still starting (the app opened onto the saved screen): show this list as
             // it was last time, if it was kept; the "reconnected" change loads it for real.
@@ -185,8 +189,8 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
         }
         job = scope.launch {
             try {
-                val page = state.api.files(aid, p)
-                if (my != gen) return@launch
+                val page = state.api.files(accountId, p)
+                if (my != gen || accountId != aid) return@launch
                 items.clear()
                 items.addAll(page.items)
                 state.cache.putPage(cacheKey, page.items, page.next)
@@ -197,13 +201,13 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
                 effectiveSort = page.sort ?: sort
                 loaded = true
             } catch (e: ApiException) {
-                if (my != gen) return@launch
+                if (my != gen || accountId != aid) return@launch
                 if (e.locked) state.onLocked()
                 if (e.status != 408 || !e.message.orEmpty().contains("Superseded")) error = e.explain("loading ${view}")
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {
-                if (my == gen) error = e.explain("loading ${view}")
+                if (my == gen && accountId == aid) error = e.explain("loading ${view}")
             } finally {
                 if (my == gen) loading = false
             }
@@ -215,18 +219,20 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
         val cursor = next ?: return
         if (loadingMore || loading) return
         val my = gen
+        val accountId = aid
         loadingMore = true
         moreError = null
-        val p = params(mapOf("limit" to PAGE.toString(), "cursor" to cursor)) ?: return
-        scope.launch {
+        val p = params(mapOf("limit" to PAGE.toString(), "cursor" to cursor)) ?: run { loadingMore = false; return }
+        moreJob = scope.launch {
             try {
-                val page = state.api.files(aid, p)
-                if (my != gen) return@launch
+                val page = state.api.files(accountId, p)
+                if (my != gen || accountId != aid) return@launch
                 val have = items.mapTo(HashSet()) { it.key }
                 items.addAll(page.items.filter { it.key !in have })
                 next = page.next
+            } catch (e: kotlinx.coroutines.CancellationException) { throw e
             } catch (e: Exception) {
-                if (my == gen) moreError = e.explain("loading more of ${view}")
+                if (my == gen && accountId == aid) moreError = e.explain("loading more of ${view}")
             } finally {
                 if (my == gen) loadingMore = false
             }
@@ -236,9 +242,12 @@ class BrowseModel(val state: AppState, val view: View, private val scope: Corout
     private fun loadStats() {
         statsJob?.cancel()
         val p = params(withKind = false) ?: return
+        val accountId = aid
+        val my = gen
         statsJob = scope.launch {
             try {
-                stats = state.api.stats(aid, p - "sort" - "order")
+                val result = state.api.stats(accountId, p - "sort" - "order")
+                if (my == gen && accountId == aid) stats = result
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {

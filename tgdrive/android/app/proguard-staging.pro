@@ -22,3 +22,9 @@
 -keep class app.tgdrive.data.Phase { *; }
 -keep class app.tgdrive.data.Phase$* { *; }
 -keepclassmembers class app.tgdrive.engine.EngineState { public *; }
+
+# Public entry points exercised directly by the reliability instrumentation.
+-keep class app.tgdrive.storage.** { *; }
+-keep class app.tgdrive.engine.UploadJournal** { *; }
+-keep class app.tgdrive.data.StartupCache** { *; }
+-keep class app.tgdrive.data.BrowseModel** { *; }

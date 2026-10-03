@@ -186,6 +186,8 @@ class ConfirmScreen(Dialog):
             if self.explain:
                 yield Static(self.explain, classes="d-body", markup=False)
             with VerticalScroll(classes="cmds"):
+                from ..core.action_preview import describe
+                yield Static(describe(self.steps), markup=False, id="action-preview")
                 for s in self.steps:
                     yield Static(Text("▸ " + s.title, style="bold"), classes="cmd-title")
                     yield Static(Text("  $ " + s.display()), classes="cmd")
@@ -193,7 +195,8 @@ class ConfirmScreen(Dialog):
                 yield Static("Needs your password (admin rights) - you'll be asked in the terminal if it isn't cached.", classes="note")
             with Horizontal(classes="d-buttons"):
                 yield Button("Cancel", id="no")
-                yield Button(self.ok_label, id="yes", variant="error" if self.danger else "primary")
+                from ..core.action_preview import review
+                yield Button(self.ok_label, id="yes", variant="error" if self.danger else "primary", disabled=not review(self.steps)["ready"])
 
     def on_mount(self) -> None:
         self.query_one("#yes", Button).focus()

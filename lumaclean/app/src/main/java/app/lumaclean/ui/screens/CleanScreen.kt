@@ -191,7 +191,7 @@ fun CleanScreen() {
     if (confirm) {
         ConfirmDialog(
             title = "Clean ${chosenBytes.formatBytes()}?",
-            text = "${chosen.size.formatCount()} items will be deleted for good. Apps rebuild caches and thumbnails when they need them.",
+            text = "${chosen.size.formatCount()} items will be deleted for good. This cannot be undone.\n\n" + chosen.joinToString("\n\n") { item -> "${item.name} (${item.size.formatBytes()})\n${item.path}\nWhy: ${item.note ?: report?.groups?.firstOrNull { group -> group.items.any { it.path == item.path } }?.kind?.description ?: "Selected cleanup item"}" },
             confirmLabel = "Clean",
             destructive = false,
             onConfirm = { c.cleanJunk(chosen) },
@@ -318,7 +318,7 @@ private fun JunkGroupCard(
             group.items.take(limit).forEach { item ->
                 ItemRow(
                     title = item.name.ifBlank { item.path },
-                    subtitle = listOfNotNull(item.note, item.path.substringBeforeLast('/').substringAfter("/0/")).joinToString(" · "),
+                    subtitle = listOfNotNull("Why: ${item.note ?: group.kind.description}", if(item.safe) "Suggested cleanup; review before deleting" else "Personal file: review required", item.path.substringBeforeLast('/').substringAfter("/0/")).joinToString(" · "),
                     leading = { Checkbox(checked = item.path in selected, onCheckedChange = { onToggle(item) }) },
                     trailing = { Text(item.size.formatBytes(), style = MaterialTheme.typography.labelMedium) },
                     onClick = { onToggle(item) },

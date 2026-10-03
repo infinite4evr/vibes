@@ -10,18 +10,20 @@ import java.io.File
 
 /** A JSON array persisted in the app's private files; small lists only. */
 internal class JsonFile(context: Context, name: String) {
-    private val file = File(context.filesDir, name)
+    private val file = android.util.AtomicFile(File(context.filesDir, name))
 
     @Synchronized
-    fun read(): JSONArray = runCatching { JSONArray(file.readText()) }.getOrDefault(JSONArray())
+    fun read(): JSONArray = runCatching { JSONArray(file.openRead().bufferedReader().use { it.readText() }) }.getOrDefault(JSONArray())
 
     @Synchronized
     fun write(array: JSONArray) {
-        val tmp = File(file.parentFile, file.name + ".tmp")
-        tmp.writeText(array.toString())
-        if (!tmp.renameTo(file)) {
-            file.writeText(array.toString())
-            tmp.delete()
+        val stream = file.startWrite()
+        try {
+            stream.write(array.toString().toByteArray(Charsets.UTF_8))
+            file.finishWrite(stream)
+        } catch (e: Throwable) {
+            file.failWrite(stream)
+            throw e
         }
     }
 }

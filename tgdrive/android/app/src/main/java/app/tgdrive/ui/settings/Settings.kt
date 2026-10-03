@@ -847,6 +847,10 @@ private fun ThisPhone(state: AppState) {
 @Composable
 private fun DataSection(state: AppState) {
     val ctx = LocalContext.current
+    Group("Data folder", "Survives uninstalling. Reuse the same folder after reinstalling to restore API credentials, sessions and settings. Keep this folder private.") {
+        Text(app.tgdrive.storage.DataLocation.root(ctx)?.path ?: "Not selected", color=Tg.colors.ink2)
+        TgButton("Change data folder", { app.tgdrive.storage.DataLocation.openChooser(ctx) }, small=true)
+    }
     val aid by state.aid.collectAsState()
     val folders by state.folders.collectAsState()
     val scope = rememberCoroutineScope()

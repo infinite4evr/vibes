@@ -49,7 +49,8 @@ def _default_data_dir() -> Path:
     legacy = ROOT / "data"
     if not PACKAGED and (legacy / "accounts").exists():
         return legacy
-    return _xdg("XDG_DATA_HOME", ".local/share") / APP_ID
+    from .data_location import selected
+    return selected()
 
 
 DATA_DIR = _default_data_dir().resolve()
@@ -69,17 +70,10 @@ RESYNC_INTERVAL = int(os.environ.get("TGDRIVE_RESYNC", "1800"))
 
 
 def default_download_dir() -> Path:
-    if os.environ.get("TGDRIVE_DOWNLOADS"):   # the Android app passes the phone's Download folder
+    if os.environ.get("TGDRIVE_DOWNLOADS"):
         return Path(os.environ["TGDRIVE_DOWNLOADS"])
-    d = None
-    user_dirs = _xdg("XDG_CONFIG_HOME", ".config") / "user-dirs.dirs"
-    try:
-        for line in user_dirs.read_text().splitlines():
-            if line.startswith("XDG_DOWNLOAD_DIR="):
-                d = Path(os.path.expandvars(line.split("=", 1)[1].strip().strip('"')))
-    except OSError:
-        pass
-    return (d or Path.home() / "Downloads") / APP_NAME
+    # App-owned downloads travel with the selected data folder.
+    return DATA_DIR / "downloads"
 
 
 def api_credentials() -> tuple[int, str]:

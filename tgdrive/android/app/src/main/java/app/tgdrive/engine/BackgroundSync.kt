@@ -83,6 +83,13 @@ object BackgroundSync {
         }.onFailure { AppLog.w("sync", "couldn't schedule the background sync", it) }
     }
 
+    internal fun indexComplete(states: List<Pair<Long, app.tgdrive.data.IndexStatus>>): Boolean {
+        val failed = states.firstOrNull { (_, index) -> index.phase == "error" || !index.error.isNullOrBlank() }
+        if (failed != null) error("Account ${failed.first}: ${failed.second.error ?: "indexing failed"}")
+        if (states.any { it.second.phase == "paused" }) error("Indexing is paused. Resume indexing to complete sync.")
+        return states.isNotEmpty() && states.all { it.second.phase == "idle" }
+    }
+
     /** Settings → Sync now (still waits for a network). */
     fun syncNow(c: Context) {
         val req = OneTimeWorkRequestBuilder<SyncWorker>()
@@ -112,7 +119,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             override fun onServiceDisconnected(name: ComponentName?) {}
         }
         var bound = false
-        return try {
+        return try { kotlinx.coroutines.withTimeout(BackgroundSync.BUDGET_MS) {
             val intent = Intent(c, EngineService::class.java).putExtra(EngineService.EXTRA_DEMO, g.engine.demo)
             val boundAt = System.currentTimeMillis()
             bound = c.bindService(intent, conn, Context.BIND_AUTO_CREATE)
@@ -127,19 +134,20 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             if (st.locked) {
                 // A locked TG Drive shows nothing, not even its accounts, until the passcode is entered.
                 BackgroundSync.finished(c, "Locked with the app passcode: syncs after you unlock TG Drive", true)
-                return Result.success()
+                return@withTimeout Result.success()
             }
             val accounts = st.accounts.filter { it.status != "logged_out" }
             if (accounts.isEmpty()) {
                 BackgroundSync.finished(c, "Not signed in: nothing to sync", true)
-                return Result.success()
+                return@withTimeout Result.success()
             }
             val before = HashMap<Long, Long>()
             for (a in accounts) {
                 // Signed-in accounts connect to Telegram first (a few seconds).
                 withTimeoutOrNull(60_000) {
                     while (g.api.accountStatus(a.id).account?.status != "online") delay(1000)
-                }
+                    true
+                } ?: error("Account ${a.id}: could not connect to Telegram")
                 before[a.id] = g.api.accountStatus(a.id).index.files
                 g.api.index(a.id, "resync")
             }
@@ -147,7 +155,8 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             delay(5000)
             var done = false
             while (!done && System.currentTimeMillis() - t0 < BackgroundSync.BUDGET_MS && !isStopped) {
-                done = accounts.all { g.api.accountStatus(it.id).index.phase in QUIET }
+                val states = accounts.map { it.id to g.api.accountStatus(it.id).index }
+                done = BackgroundSync.indexComplete(states)
                 if (!done) delay(4000)
             }
             val added = accounts.sumOf { (g.api.accountStatus(it.id).index.files - (before[it.id] ?: 0)).coerceAtLeast(0) }
@@ -158,11 +167,14 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                 else -> "Up to date · took ${secs}s"
             }
             AppLog.i("sync", "background sync done: $text")
-            BackgroundSync.finished(c, text, true)
+            BackgroundSync.finished(c, text, done)
+            Result.success()
+        } } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+            BackgroundSync.finished(c, "Sync time limit reached; some accounts may be incomplete. Retry in Recovery.", false)
             Result.success()
         } catch (e: kotlinx.coroutines.CancellationException) {
             AppLog.i("sync", "background sync stopped by Android")
-            BackgroundSync.finished(c, "Stopped by Android (continues next time)", true)
+            BackgroundSync.finished(c, "Stopped by Android (continues next time)", false)
             throw e
         } catch (e: Exception) {
             AppLog.w("sync", "background sync failed", e)
@@ -174,7 +186,4 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         }
     }
 
-    private companion object {
-        val QUIET = setOf("idle", "paused", "error", "")
-    }
 }

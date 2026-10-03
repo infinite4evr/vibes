@@ -36,12 +36,15 @@ def confirm(parent: Gtk.Widget, title: str, steps: list[Step], explain: str = ""
     if hasattr(d, "set_prefer_wide_layout"):  # libadwaita 1.6+
         d.set_prefer_wide_layout(True)
     extra = vbox(spacing=10)
+    from ..core.action_preview import describe, review
+    extra.append(label(describe(steps), wrap=True, selectable=True))
     extra.append(_commands_view(steps))
     if needs_root(steps):
         extra.append(label("Ubuntu will ask for your password once.", ["warn-text"], wrap=True))
     d.set_extra_child(extra)
     d.add_response("cancel", "Cancel")
     d.add_response("run", ok_label)
+    d.set_response_enabled("run", review(steps)["ready"])
     d.set_response_appearance("run", Adw.ResponseAppearance.DESTRUCTIVE if danger else Adw.ResponseAppearance.SUGGESTED)
     d.set_default_response("run")
     d.set_close_response("cancel")

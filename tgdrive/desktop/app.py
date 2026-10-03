@@ -161,6 +161,15 @@ def main(argv=None) -> None:
         uninstall_desktop_entry()
         return
 
+    if not args.version:
+        from tgdrive.data_location import activate, rebase_owned_paths
+        from .data_setup import choose
+        # Apply Qt platform/sandbox defaults before a first-run chooser creates QApplication.
+        if not sandbox_usable(): os.environ.setdefault("QTWEBENGINE_DISABLE_SANDBOX", "1")
+        os.environ.setdefault("QT_QPA_PLATFORM", "wayland;xcb" if os.environ.get("WAYLAND_DISPLAY") else "xcb")
+        location = activate(choose, legacy=ROOT / "data")
+        os.environ["TGDRIVE_DATA"] = str(location)
+        rebase_owned_paths(location)
     from tgdrive import config, maintenance
     if args.version:
         print(f"TG Drive {config.VERSION}")
@@ -197,7 +206,7 @@ def main(argv=None) -> None:
 
     from . import shell
     sys.argv[0] = APP_ID
-    app = QApplication([APP_ID, *sys.argv[1:]])
+    app = QApplication.instance() or QApplication([APP_ID, *sys.argv[1:]])
     shell.run(app, args, log_path)
 
 

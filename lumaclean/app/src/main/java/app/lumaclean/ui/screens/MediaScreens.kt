@@ -431,7 +431,7 @@ fun RecycleBinScreen() {
             }
             item {
                 Text(
-                    "Items are deleted for good after ${settings.recycleDays} days. Tap to select, then restore or delete.",
+                    "Items on available storage expire after ${settings.recycleDays} days. Disconnected storage records are kept; reconnect the card before restoring.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -441,7 +441,7 @@ fun RecycleBinScreen() {
                 val isSel = b.id in selected
                 ItemRow(
                     title = b.name,
-                    subtitle = "Deleted ${b.deletedAt.relativeTime()} · from ${b.originalPath.substringBeforeLast('/').substringAfter("/0/")}",
+                    subtitle = (if (!c.bin.available(b)) "Storage unavailable — reconnect the card or restore file access. Record kept. · " else "") + "Deleted ${b.deletedAt.relativeTime()} · from ${b.originalPath.substringBeforeLast('/').substringAfter("/0/")}",
                     leading = { FileThumb(b.binPath, b.isDir) },
                     trailing = { Text(b.size.formatBytes(), style = MaterialTheme.typography.labelLarge) },
                     selected = isSel,

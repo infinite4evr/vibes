@@ -182,6 +182,9 @@ class Step:
     mutates: bool | None = None
     config_key: str = ""
     timeout: float | None = None
+    prerequisites: tuple[str, ...] = ()
+    expected_change: str = ""
+    rollback: str = ""
 
     def argv(self) -> list[str]:
         args = list(self.cmd)

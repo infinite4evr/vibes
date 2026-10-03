@@ -52,7 +52,7 @@ class Journeys : UiDriver() {
         val until = System.currentTimeMillis() + 15_000
         while (System.currentTimeMillis() < until) {
             if (device.currentPackageName != app.packageName) return true
-            if (device.hasObject(By.textContains("problem report"))) return true
+            if (device.hasObject(By.text("Send the problem report"))) return true
             Thread.sleep(300)
         }
         return false
@@ -588,6 +588,9 @@ class Journeys : UiDriver() {
                 shot("e2e-error-details", 500)
                 tap("Send report")
                 // The share sheet (another app's window) with the report.
+                need(By.text("Preview problem report"), "report preview")
+                eventually("report ready", 30_000) { find(By.text("SHARE REPORT"), 100)?.isEnabled == true || find(By.text("Share report"), 100)?.isEnabled == true }
+                tapAt(find(By.text("SHARE REPORT"), 100) ?: need(By.text("Share report"), "share preview"))
                 val chooser = shareSheetOpened()
                 shot("e2e-report-share", 1500)
                 if (!chooser) throw AssertionError("the share sheet for the report didn't open")
@@ -634,6 +637,9 @@ class Journeys : UiDriver() {
                 home()
                 tapDesc("Account")
                 sheetTap("Report a problem")
+                need(By.text("Preview problem report"), "report preview")
+                eventually("report ready", 30_000) { find(By.text("SHARE REPORT"), 100)?.isEnabled == true || find(By.text("Share report"), 100)?.isEnabled == true }
+                tapAt(find(By.text("SHARE REPORT"), 100) ?: need(By.text("Share report"), "share preview"))
                 val chooser = shareSheetOpened()
                 shot("e2e-report-account-menu", 1000)
                 if (!chooser) throw AssertionError("the share sheet for the report didn't open")

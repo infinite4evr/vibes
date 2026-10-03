@@ -130,8 +130,8 @@ Each result shows how it matched (exact, variant, similar, related). Filters by 
 
 | | |
 | --- | --- |
-| Your data (accounts, index, cache, logs) | `~/.local/share/tgdrive` (change with `--data DIR` or `TGDRIVE_DATA`) |
-| Downloads | `~/Downloads/TG Drive` (Settings → Downloads) |
+| Your data (accounts, index, cache, logs) | Chosen at first launch; change in Settings → Data & maintenance. Platform defaults and restore instructions: `../UPDATE_NOTES.md`. |
+| New default downloads | `downloads/` inside the selected data folder (explicit existing destinations remain configured) |
 | Logs | Settings → About & diagnostics, or `~/.local/share/tgdrive/logs/tgdrive.log` (and `tgdrive-debug.log` while debug logging is on) |
 
 Command line: `tgdrive --send FILE…` (upload files or folders; what the right-click menu uses), `--open search|upload|new-window`, `tgdrive --minimized` (start in the tray), `TGDRIVE_IN_PROCESS=1` (run the service inside the window's process, as before 2.3), `--browser` (use your web browser instead of the window), `--port N`, `--no-gpu` (graphics driver problems), `--data DIR`, `--version`.

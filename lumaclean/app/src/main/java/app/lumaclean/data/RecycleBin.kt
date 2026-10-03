@@ -43,19 +43,26 @@ class RecycleBin(context: Context, private val dirName: String) {
     }
 
     /** Moves one path into the bin. Returns null when it can't (then nothing changed). */
+    @Synchronized
     fun moveIn(path: String, size: Long): BinItem? {
         val src = File(path)
         if (!src.exists()) return null
         val id = "${System.currentTimeMillis()}-${Random.nextInt(1_000_000)}"
         val dest = File(binDirFor(path), id)
-        if (!src.renameTo(dest)) return null
-        return BinItem(id, path, dest.absolutePath, size, System.currentTimeMillis(), dest.isDirectory)
+        val item = BinItem(id, path, dest.absolutePath, size, System.currentTimeMillis(), src.isDirectory)
+        // Write the recovery record BEFORE moving bytes. A kill or cancellation cannot orphan a file.
+        update(listOf(item) + _items.value)
+        if (!src.renameTo(dest)) {
+            update(_items.value.filterNot { it.id == id })
+            return null
+        }
+        return item
     }
 
     @Synchronized
     fun record(added: List<BinItem>) {
         if (added.isEmpty()) return
-        update(added + _items.value)
+        update((added + _items.value).distinctBy { it.id })
     }
 
     /** Puts items back where they were; a clashing name gets " (1)" appended. */
@@ -64,13 +71,13 @@ class RecycleBin(context: Context, private val dirName: String) {
         val set = ids.toSet()
         val restored = ArrayList<String>()
         val keep = _items.value.filter { item ->
-            if (item.id !in set) return@filter true
+            if (item.id !in set || !available(item)) return@filter true
             val original = File(item.originalPath)
             original.parentFile?.mkdirs()
             val target = uniqueFile(original.parentFile ?: return@filter true, original.name)
             val ok = File(item.binPath).renameTo(target)
             if (ok) restored += target.absolutePath
-            !ok && File(item.binPath).exists()
+            !ok
         }
         update(keep)
         return restored
@@ -81,9 +88,9 @@ class RecycleBin(context: Context, private val dirName: String) {
         val set = ids.toSet()
         var freed = 0L
         val keep = _items.value.filter { item ->
-            if (item.id !in set) return@filter true
+            if (item.id !in set || !available(item)) return@filter true
             val f = File(item.binPath)
-            val ok = !f.exists() || f.deleteRecursively()
+            val ok = f.exists() && f.deleteRecursively()
             if (ok) freed += item.size
             !ok
         }
@@ -96,15 +103,18 @@ class RecycleBin(context: Context, private val dirName: String) {
         return deleteForever(_items.value.filter { it.deletedAt < cutoff }.map { it.id })
     }
 
-    /** Drops records whose files vanished (e.g. SD card wiped). */
+    /** A missing/unmounted volume must never be mistaken for an emptied recycle bin. */
+    fun available(item: BinItem): Boolean = File(item.binPath).exists()
+
+    /** Keeps missing records for recovery when an SD card or storage permission returns. */
     @Synchronized
     fun reconcile() {
-        val keep = _items.value.filter { File(it.binPath).exists() }
-        if (keep.size != _items.value.size) update(keep)
+        // Deliberately preserve records. Existence alone cannot distinguish disconnected storage,
+        // revoked permission, and a genuinely missing file. Restore/delete require available bytes.
+        _items.value = load()
     }
 
     private fun update(list: List<BinItem>) {
-        _items.value = list
         val a = JSONArray()
         list.forEach {
             a.put(
@@ -113,6 +123,7 @@ class RecycleBin(context: Context, private val dirName: String) {
             )
         }
         json.write(a)
+        _items.value = list
     }
 
     private fun load(): List<BinItem> {

@@ -17,6 +17,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import app.tgdrive.ui.AppRoot
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
 
@@ -34,6 +36,18 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
         )
         super.onCreate(savedInstanceState)
+        if (!app.tgdrive.storage.DataLocation.ready(this)) {
+            startActivity(Intent(this,app.tgdrive.storage.DataLocationActivity::class.java).putExtra("forward",intent))
+            finish(); return
+        }
+        try { graph } catch(t:Throwable) {
+            val text=android.widget.TextView(this).apply { this.text="TG Drive could not start.\n\n${t.message}\n\nOpen TG Drive again to choose a data folder or view startup details."; setPadding(30,40,30,30); setTextIsSelectable(true) }
+            val box=android.widget.LinearLayout(this).apply { orientation=android.widget.LinearLayout.VERTICAL; addView(text); addView(android.widget.Button(this@MainActivity).apply { this.text="Choose data folder"; setOnClickListener { app.tgdrive.storage.DataLocation.openChooser(this@MainActivity) } }) }
+            setContentView(box)
+            app.tgdrive.diag.AppLog.e("startup","Main screen initialization failed",t)
+            return
+        }
+        app.tgdrive.engine.BackgroundSync.schedule(this)
         ProcessLifecycleOwner.get().lifecycle.addObserver(appVisibility)
         handle(intent)
         setContent { AppRoot(this) }
@@ -73,6 +87,13 @@ class MainActivity : ComponentActivity() {
             if (g.state.needsWelcome()) return   // nothing runs until the first-run choice
             g.engine.hold("ui", true)             // starts the engine if it isn't running
             if (g.engine.keepRunning) g.engine.hold("keep", true)
+            g.scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                val pending = runCatching { app.tgdrive.engine.UploadJournal(this@MainActivity).list().any { it.demo == g.engine.demo && it.error.isEmpty() } }.getOrDefault(false)
+                if (pending) withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    runCatching { ContextCompat.startForegroundService(this@MainActivity, Intent(this@MainActivity, app.tgdrive.engine.UploadService::class.java)) }
+                        .onFailure { app.tgdrive.diag.AppLog.w("upload", "Pending uploads can be retried in Recovery", it) }
+                }
+            }
         }
 
         override fun onStop(owner: LifecycleOwner) {

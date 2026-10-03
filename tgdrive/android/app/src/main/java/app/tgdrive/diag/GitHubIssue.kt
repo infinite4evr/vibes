@@ -130,7 +130,7 @@ object GitHubIssue {
             appendLine("```")
             appendLine()
         }
-        val serviceLog = tailOf(File(context.filesDir, "tgdrive/logs/tgdrive.log"), 40)
+        val serviceLog = tailOf(File(app.tgdrive.storage.DataLocation.root(context)?.resolve("service") ?: File(context.filesDir,"tgdrive"), "logs/tgdrive.log"), 40)
         if (serviceLog.isNotBlank()) {
             appendLine("### Service log (end)")
             appendLine("```text")
@@ -138,7 +138,7 @@ object GitHubIssue {
             appendLine("```")
             appendLine()
         }
-        val start = tailOf(File(context.filesDir, EngineService.START_LOG), 15)
+        val start = tailOf(File(app.tgdrive.storage.DataLocation.logs(context), EngineService.START_LOG), 15)
         if (start.isNotBlank()) {
             appendLine("### Service start steps")
             appendLine("```text")
@@ -152,7 +152,7 @@ object GitHubIssue {
 
     /** The newest crash report the service saved in the last day (the traceback of a server error), shortened. */
     private fun latestServiceCrash(context: Context): String? {
-        val dir = File(context.filesDir, "tgdrive/crashes")
+        val dir = File(app.tgdrive.storage.DataLocation.root(context)?.resolve("service") ?: File(context.filesDir,"tgdrive"), "crashes")
         val f = dir.listFiles { x -> x.name.endsWith(".txt") }.orEmpty().maxByOrNull { it.lastModified() } ?: return null
         if (System.currentTimeMillis() - f.lastModified() > 86_400_000) return null
         return runCatching { f.readText().take(2500) }.getOrNull()

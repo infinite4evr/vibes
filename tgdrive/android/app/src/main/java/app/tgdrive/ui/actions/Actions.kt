@@ -19,6 +19,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.jsonPrimitive
@@ -162,6 +163,17 @@ class Actions(val state: AppState, private val scope: CoroutineScope, private va
         state.api.forgetFiles(aid, refs(files))
         model?.remove(refs(files))
         "Removed ${label(files)} from TG Drive's index (Telegram is unchanged)"
+    }
+
+    fun pinOffline(files: List<FileItem>) = act {
+        state.api.json("POST", "/api/a/$aid/offline", buildJsonObject {
+            put("items", buildJsonArray { files.forEach { f -> add(buildJsonArray { add(JsonPrimitive(f.chatId)); add(JsonPrimitive(f.msgId)) }) } })
+        })
+        "Offline copies queued. See Offline & recovery."
+    }
+    fun pinFolderOffline(f: Folder) = act {
+        state.api.json("POST", "/api/a/$aid/offline", buildJsonObject { put("folder_id", JsonPrimitive(f.id)) })
+        "Folder pinned. New indexed files will download within your daily budget."
     }
 
     fun download(files: List<FileItem>, zip: Boolean = false) = act {

@@ -140,6 +140,7 @@ class CrashActivity : Activity() {
         runCatching {
             getSharedPreferences("app", MODE_PRIVATE).edit().clear().putBoolean("welcomed", true).commit()
             getSharedPreferences("player", MODE_PRIVATE).edit().clear().commit()
+            app.tgdrive.storage.PortablePreferences.save(this)
             File(filesDir, "engine-state.json").delete()
             AppLog.i("crash", "the app's settings were reset from the crash screen")
         }

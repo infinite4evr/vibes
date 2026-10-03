@@ -218,6 +218,8 @@ class Indexer:
                         if fresh and not fresh["excluded"]:
                             await self.index_chat(fresh)
                 self.phase, self.current_title, self.current_chat, self.error = "idle", None, None, None
+                from .offline import store
+                store(self.acc).sync_folders()
                 for part in ("autofile", "subjects"):
                     obj = getattr(self.acc, part, None)
                     if obj is not None:

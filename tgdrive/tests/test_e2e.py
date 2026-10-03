@@ -51,6 +51,7 @@ def server():
             port = _free_port()
     env = dict(os.environ, DEMO_PORT=str(port), TGDRIVE_DATA=tempfile.mkdtemp(prefix="tgdrive-e2e-"),
                PYTHONUNBUFFERED="1")
+    env["TGDRIVE_LOCATION_FILE"] = str(Path(env["TGDRIVE_DATA"]) / "test-location.json")
     proc = subprocess.Popen([sys.executable, "-m", "tests.demo_server"], cwd=ROOT, env=env,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     lines = []
@@ -81,7 +82,7 @@ def server():
 def browser():
     with sync_playwright() as p:
         try:
-            b = p.chromium.launch()
+            b = p.chromium.launch(executable_path=os.environ.get("TGDRIVE_TEST_CHROMIUM"), args=["--no-sandbox", "--disable-dev-shm-usage"])
         except Exception:
             exe = sorted(glob.glob(os.path.join(os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "/opt/pw-browsers"),
                                                 "chromium-*/chrome-linux/chrome")))
@@ -757,3 +758,77 @@ def test_every_error_opens_dialog_with_github_issue(app):
     assert "What%20happened" in url and "System" in url and len(url) <= 7600
     app.close_error_dialogs()   # closes the two that waited their turn as well
     assert p.locator(".error-dialog").count() == 0
+    app.api("/api/crashes", "DELETE")  # remove intentionally planted crash before later journeys
+
+
+# Offline / recovery journeys: real browser and service, sample Telegram transport.
+def test_offline_pin_open_and_remove_via_ui(app):
+    a=app.open('#all');p=a.page
+    f=next(x for x in first_file(a,kinds='document') if 0<x['size']<1000000)
+    a.api(f'/api/a/{a.aid()}/offline','POST',{'items':[[f['chat_id'],f['msg_id']]]})
+    a.go('#offline');expect(p.get_by_role('heading',name='Offline & recovery',exact=True)).to_be_visible()
+    row=p.locator('.setting-row').filter(has=p.locator('strong',has_text=f['name'])).last
+    for _ in range(30):
+        p.get_by_role('button',name='Refresh',exact=True).click();p.wait_for_timeout(300)
+        if row.get_by_role('link',name='Open copy').count():break
+    with p.expect_download() as dl:row.get_by_role('link',name='Open copy').click()
+    assert Path(dl.value.path()).stat().st_size==f['size']
+    row.get_by_role('button',name='Remove offline copy').click();p.locator('.dialog [data-submit]').click()
+    expect(p.locator('[data-unpin-file="%s/%s"]'%(f['chat_id'],f['msg_id']))).to_have_count(0)
+    assert a.api(f'/api/a/{a.aid()}/files?limit=1')['items']
+
+
+def test_offline_budgets_persist_across_reload(app):
+    a=app.open('#offline');p=a.page;field=p.locator('[data-budget="offline_limit_mb"]')
+    expect(field).to_be_visible();original=field.input_value()
+    try:
+        field.fill('2048');p.get_by_role('button',name='Save limits',exact=True).click();a.toast('Limits saved')
+        a.open('#offline');expect(field).to_have_value('2048')
+    finally:a.api('/api/settings','PATCH',{'offline_limit_mb':int(original)})
+
+
+def test_file_menu_offline_action_and_recovery_empty_state(app):
+    a=app.open('#all');p=a.page;p.locator('#grid [data-key]').first.click(button='right')
+    expect(p.get_by_role('menuitem',name='Keep available offline',exact=True)).to_be_visible();p.keyboard.press('Escape')
+    a.go('#offline');expect(p.get_by_role('heading',name='Recovery',exact=True)).to_be_visible()
+    expect(p.get_by_role('heading',name='Pinned folders',exact=True)).to_be_visible()
+
+
+def test_folder_pin_and_stop_automatic_downloads(app):
+    a=app.open();p=a.page
+    p.locator('#newBtn').click();p.get_by_role('menuitem',name='New folder',exact=True).click()
+    p.locator('.dialog input').first.fill('Offline E2E Folder');p.locator('.dialog [data-submit]').click()
+    a.settle()
+    fid=next(f['id'] for f in a.api(f'/api/a/{a.aid()}/folders')['folders'] if f['name']=='Offline E2E Folder')
+    # Use another file: the previous journey explicitly excluded its file from automatic pins.
+    f=[x for x in first_file(a,kinds='document') if 0<x['size']<1000000][-1]
+    a.api(f'/api/a/{a.aid()}/files/place','POST',{'items':[[f['chat_id'],f['msg_id']]],'folder_id':fid})
+    try:
+        a.go('#drive')
+        p.locator(f'[data-folder-menu="{fid}"]').click()
+        p.get_by_role('menuitem',name='Keep folder offline',exact=True).click();a.go('#offline')
+        expect(p.locator(f'[data-unpin-folder="{fid}"]')).to_be_visible();p.locator(f'[data-unpin-folder="{fid}"]').click()
+        expect(p.locator(f'[data-unpin-folder="{fid}"]')).to_have_count(0)
+        assert a.api(f'/api/a/{a.aid()}/offline')['items']
+    finally:
+        a.api(f'/api/a/{a.aid()}/offline/{f["chat_id"]}/{f["msg_id"]}','DELETE');a.api(f'/api/a/{a.aid()}/folders/{fid}','DELETE')
+
+
+def test_recovery_resumes_indexing_through_ui(app):
+    a=app.open();p=a.page;a.api(f'/api/a/{a.aid()}/index/pause','POST')
+    try:
+        a.go('#offline');b=p.locator('[data-recover-kind="index"]');expect(b).to_be_visible();b.click()
+        expect(p.locator('[data-recover-kind="index"]')).to_have_count(0)
+    finally:a.api(f'/api/a/{a.aid()}/index/resume','POST')
+
+
+def test_data_folder_selection_is_scheduled_from_settings(app,tmp_path):
+    p=app.open('#settings/data').page
+    p.locator('[data-data-folder]').click()
+    expect(p.locator('.dialog h2',has_text='TG Drive data folder')).to_be_visible()
+    p.locator('.dialog input').fill(str(tmp_path/'portable'))
+    p.locator('.dialog [data-submit]').click()
+    app.toast('Data folder selected')
+    result=app.api('/api/data-location')
+    assert result['pending']==str(tmp_path/'portable')
+    assert result['path']!=result['pending']  # no copy while databases are live

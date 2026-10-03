@@ -4,6 +4,7 @@
 
     <!-- Telegram, and TG Drive's service on 127.0.0.1 -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- The service keeps running while transfers or the player need it, with a notification -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -11,7 +12,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <!-- Downloads into Download/TG Drive on Android 8–10 (11+ needs no permission for that folder) -->
+    <!-- The selected persistent shared folder: runtime permission on Android 8–10;
+         Android 11+ uses the all-files access screen above. -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
@@ -47,16 +49,20 @@
         android:theme="@style/Theme.TGDrive"
         tools:targetApi="36">
 
+        <activity android:name=".storage.DataLocationActivity" android:exported="true" android:process=":bootstrap"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode|density">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+
             <!-- Share any file from another app to upload it (the desktop's "Send to TG Drive") -->
             <intent-filter android:label="@string/share_to">
                 <action android:name="android.intent.action.SEND" />

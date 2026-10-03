@@ -25,13 +25,15 @@ import java.util.concurrent.TimeUnit
 
 class TGDriveApp : Application(), SingletonImageLoader.Factory, androidx.work.Configuration.Provider {
 
-    lateinit var graph: AppGraph
+    var startupError: Throwable? = null
         private set
+    val graph: AppGraph by lazy { startupError?.let { throw it }; AppGraph(this) }
 
     /** "app" (the interface), "engine" (TG Drive's Python service) or "crash" (the crash screen). */
     private val process: String by lazy {
         val p = processName()
         when {
+            p.endsWith(":bootstrap") -> "bootstrap"
             p.endsWith(":engine") -> "engine"
             p.endsWith(":crash") -> "crash"
             else -> "app"
@@ -50,9 +52,10 @@ class TGDriveApp : Application(), SingletonImageLoader.Factory, androidx.work.Co
         AppLog.init(this, process)
         // The engine process (TG Drive's Python service) and the crash screen need none of the interface's objects.
         if (process != "app") return
-        EngineService.createChannels(this)
-        graph = AppGraph(this)
-        BackgroundSync.schedule(this)
+        try {
+            EngineService.createChannels(this)
+            if (app.tgdrive.storage.DataLocation.ready(this)) app.tgdrive.storage.PortablePreferences.attach(this)
+        } catch(t: Throwable) { startupError=t; AppLog.e("startup","Could not load the selected data folder",t) }
     }
 
     /** WorkManager (background sync) lives in this process only, never in the engine's. */
@@ -67,7 +70,7 @@ class TGDriveApp : Application(), SingletonImageLoader.Factory, androidx.work.Co
         .memoryCache { MemoryCache.Builder().maxSizePercent(context, 0.2).build() }
         // Thumbnails are cached by TG Drive's service already; a small disk cache still makes
         // scrolling back instant after the service restarts.
-        .diskCache { DiskCache.Builder().directory(cacheDir.resolve("images").toOkioPath()).maxSizeBytes(128L * 1024 * 1024).build() }
+        .diskCache { DiskCache.Builder().directory((app.tgdrive.storage.DataLocation.root(this)?.resolve("android/images") ?: cacheDir.resolve("images")).toOkioPath()).maxSizeBytes(128L * 1024 * 1024).build() }
         .crossfade(180)
         .build()
 

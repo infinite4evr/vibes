@@ -40,6 +40,9 @@ def make_server(host: str = config.HOST, port: int = config.PORT, media_port: Op
                 token: str = "", desktop: bool = False, fallback: bool = True):
     """Create (server, sockets). Media (thumbnails, streams) gets its own port."""
     from tgdrive import api
+    from tgdrive.data_location import DataLock
+    global _data_lock
+    if globals().get("_data_lock") is None: _data_lock = DataLock(config.DATA_DIR)
     if token:
         config.ACCESS_TOKEN = token
     main = bind(host, port, fallback=fallback)

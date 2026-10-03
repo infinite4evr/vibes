@@ -1214,26 +1214,38 @@ async def start_downloads(aid: int, body: dict = Body(...)):
 async def upload(aid: int, request: Request, name: str, folder_id: Optional[str] = None, rel: str = "",
                  caption: str = "", chat_id: Optional[int] = None):
     a = acc(aid)
-    a.require_online()
-    a.drive.require_files_folder(folder_id or None)   # before reading the file, not after
-    tmp = a.transfers.new_upload_path()
-    try:
-        length = int(request.headers.get("content-length") or 0)
-    except ValueError:
-        length = 0
-    ensure_space(tmp, length, f"“{name}”")
-    try:
-        with open(tmp, "wb") as fh:
-            async for chunk in request.stream():
-                fh.write(chunk)
-        fid = folder_id or None
-        parts = [p for p in rel.split("/")[:-1] if p.strip()]
-        if parts:
-            fid = await a.drive.ensure_path(fid, parts)
-        return {"id": a.transfers.add_upload(tmp, name, fid, caption=caption, target_chat=chat_id)}
-    except BaseException:   # also a closed connection or a cancelled request: never leave the copy behind
-        Path(tmp).unlink(missing_ok=True)
-        raise
+    from .offline import store
+    store(a)  # additive receipt table
+    key = request.headers.get("x-upload-id", "") or request.query_params.get("upload_id", "")
+    if key and not re.fullmatch(r"[a-zA-Z0-9-]{1,100}", key):
+        raise TransferError("Invalid upload receipt")
+    if not hasattr(a, "_upload_handoff_lock"):
+        a._upload_handoff_lock = asyncio.Lock()
+    async with a._upload_handoff_lock:
+        if key:
+            done = a.db.one("SELECT tid FROM upload_receipts WHERE key=?", (key,))
+            if done: return {"id": done["tid"], "recovered": True}
+        a.require_online()
+        a.drive.require_files_folder(folder_id or None)
+        tmp = a.transfers.new_upload_path()
+        try: length = max(0, int(request.headers.get("content-length") or 0))
+        except ValueError: length = 0
+        ensure_space(tmp, length, f"“{name}”")
+        try:
+            with open(tmp, "wb") as fh:
+                async for chunk in request.stream():
+                    ensure_space(tmp, len(chunk), f"“{name}”")
+                    fh.write(chunk)
+            fid = folder_id or None
+            parts = [p for p in rel.split("/")[:-1] if p.strip()]
+            if parts: fid = await a.drive.ensure_path(fid, parts)
+            with a.db.tx():
+                tid = a.transfers.add_upload(tmp, name, fid, caption=caption, target_chat=chat_id)
+                if key: a.db.x("INSERT INTO upload_receipts(key,tid) VALUES(?,?)", (key,tid))
+            return {"id": tid}
+        except BaseException:
+            Path(tmp).unlink(missing_ok=True)
+            raise
 
 
 @app.post("/api/a/{aid}/upload/paths")

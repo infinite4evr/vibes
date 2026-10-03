@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
+    <root-path name="portable_storage" path="storage/"/>
     <external-path name="downloads" path="Download/"/>
     <!-- A download folder chosen elsewhere on the phone's storage (links are only ever granted per file) -->
     <external-path name="storage" path="."/>

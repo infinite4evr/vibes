@@ -6,3 +6,7 @@
 -keep class org.junit.** { *; }
 -keep class androidx.test.** { *; }
 -keep class app.tgdrive.SignInFlow { *; }
+
+-keep class app.tgdrive.ReliabilityTest { *; }
+-keep class app.tgdrive.RecoveryJourneys { *; }
+-keep class app.tgdrive.PortableStorageTest { *; }

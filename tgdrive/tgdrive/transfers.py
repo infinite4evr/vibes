@@ -207,7 +207,9 @@ class Transfers:
             "SELECT id FROM transfers WHERE direction='down' AND chat_id=? AND msg_id=? "
             "AND status IN ('queued','running','paused')", (chat_id, msg_id))
         if existing:
-            return existing["id"]
+            current = self.db.get_transfer(existing["id"])
+            if exact_path is None or current["path"] == exact_path:
+                return existing["id"]
         name = f["alias"] or f["name"]
         if exact_path:  # folder sync: this exact file (an existing one is replaced when the download finishes)
             target = Path(exact_path)
@@ -333,6 +335,8 @@ class Transfers:
 
     def remove(self, tid: int, delete_file: bool = False) -> None:
         t = self._get(tid)
+        if delete_file and t["path"] and Path(t["path"]).is_relative_to(self.acc.dir / "offline"):
+            raise TransferError("Remove this pinned copy from Offline & recovery first.")
         self._cancel_task(tid)
         self._cleanup_partial(t)
         if delete_file and t["direction"] == "down" and t["status"] == "done" and t["path"]:

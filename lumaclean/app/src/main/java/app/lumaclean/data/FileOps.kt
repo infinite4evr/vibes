@@ -47,7 +47,7 @@ class FileOps(
         var bytes = 0L
         val binned = ArrayList<BinItem>()
         val removed = ArrayList<String>()
-        paths.forEachIndexed { i, path ->
+        try { paths.forEachIndexed { i, path ->
             ctx.ensureActive()
             val f = File(path)
             progress.report(i / paths.size.toFloat(), f.name)
@@ -67,9 +67,11 @@ class FileOps(
                 removed += path
             } else failed++
         }
-        bin.record(binned)
-        index.removePaths(removed)
-        notifyMedia(removed)
+        } finally {
+            // moveIn journals each move. Keep the visible index correct even on cancellation.
+            index.removePaths(removed)
+            notifyMedia(removed)
+        }
         return OpResult(done, failed, bytes, binned.map { it.id })
     }
 
@@ -121,45 +123,61 @@ class FileOps(
         val verb = if (move) "Moving" else "Copying"
 
         fun copyFile(src: File, target: File) {
-            FileInputStream(src).use { input ->
-                FileOutputStream(target).use { output ->
-                    val buf = ByteArray(256 * 1024)
-                    while (true) {
-                        val n = input.read(buf)
-                        if (n < 0) break
-                        output.write(buf, 0, n)
-                        copied += n
-                        progress.report(copied / totalBytes.toFloat(), "$verb ${src.name} · ${copied.formatBytes()}")
+            val expected = src.length()
+            val modified = src.lastModified()
+            val tmp = File(target.parentFile, ".${target.name}.${java.util.UUID.randomUUID()}.part")
+            try {
+                FileInputStream(src).use { input ->
+                    FileOutputStream(tmp).use { output ->
+                        val buf = ByteArray(256 * 1024)
+                        while (true) {
+                            ctx.ensureActive()
+                            val n = input.read(buf)
+                            if (n < 0) break
+                            output.write(buf, 0, n)
+                            copied += n
+                            progress.report(copied / totalBytes.toFloat(), "$verb ${src.name} · ${copied.formatBytes()}")
+                        }
+                        output.fd.sync()
                     }
                 }
-            }
-            target.setLastModified(src.lastModified())
+                ctx.ensureActive()
+                if (tmp.length() != expected || src.length() != expected || src.lastModified() != modified)
+                    throw IOException("Source changed while copying ${src.name}; original kept")
+                tmp.setLastModified(modified)
+                java.nio.file.Files.move(tmp.toPath(), target.toPath()) // fails if a new destination appeared
+            } finally { tmp.delete() }
         }
 
         suspend fun copyTree(src: File, target: File) {
             ctx.ensureActive()
             if (src.isDirectory) {
                 if (!target.exists() && !target.mkdirs()) throw IOException("Couldn't create ${target.name}")
-                src.listFiles()?.forEach { copyTree(it, File(target, it.name)) }
+                val children = src.listFiles() ?: throw IOException("Cannot read ${src.name}; original kept")
+                children.forEach { copyTree(it, File(target, it.name)) }
             } else copyFile(src, target)
         }
 
         for (src in sources) {
             ctx.ensureActive()
             val target = uniqueFile(dest, src.name)
+            val staging = File(dest, ".${src.name}.${java.util.UUID.randomUUID()}.part")
             val ok = runCatching {
                 if (move && src.renameTo(target)) {
                     copied += sizeOf(target)
                     true
                 } else {
-                    copyTree(src, target)
+                    copyTree(src, staging)
+                    ctx.ensureActive()
+                    java.nio.file.Files.move(staging.toPath(), target.toPath())
                     if (move) src.deleteRecursively() else true
                 }
             }.getOrElse { e ->
                 if (e is kotlinx.coroutines.CancellationException) {
-                    target.deleteRecursively()
+                    staging.deleteRecursively()
                     throw e
                 }
+                staging.deleteRecursively()
                 false
             }
             if (ok) {

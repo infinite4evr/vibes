@@ -151,7 +151,7 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
     }
 
     // ------------------------------------------------------------------ app
-    suspend fun status(): AppStatus = get("/api/status", AppStatus.serializer(), background = true)
+    suspend fun status(): AppStatus = kotlinx.coroutines.withTimeout(8_000) { get("/api/status", AppStatus.serializer(), background = true) }
     suspend fun setup(apiId: String, apiHash: String) = json("POST", "/api/setup", buildJsonObject { put("api_id", apiId); put("api_hash", apiHash) })
     suspend fun settings(): JsonObject = get("/api/settings", JsonObject.serializer())
     suspend fun patchSettings(changes: JsonObject): JsonObject = json("PATCH", "/api/settings", changes).jsonObject
@@ -297,9 +297,9 @@ class Api(private val http: OkHttpClient, private val engine: () -> EngineState)
 
     /** Stream a local file into TG Drive (PUT /upload): it is queued for Telegram once fully received. */
     suspend fun upload(aid: Long, name: String, body: RequestBody, folderId: String?, rel: String = "", caption: String = "",
-                       chatId: Long? = null): JsonObject {
+                       chatId: Long? = null, uploadId: String? = null): JsonObject {
         val text = raw("PUT", "${a(aid)}/upload", mapOf("name" to name, "folder_id" to folderId, "rel" to rel,
-            "caption" to caption, "chat_id" to chatId), body)
+            "caption" to caption, "chat_id" to chatId, "upload_id" to uploadId), body)
         return JsonCodec.parseToJsonElement(text).jsonObject
     }
 
